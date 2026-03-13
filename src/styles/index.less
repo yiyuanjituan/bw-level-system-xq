@@ -1,0 +1,120 @@
+@import './variables.less';
+@import './theme.less';
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 和 Edge 旧版 */
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+/* 只移除垂直间距，但仍保留换行效果 */
+br, span, p {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  z-index: 1;
+  overflow-wrap: break-word;
+}
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  color: var(--van-text-color);
+  //background-color: var(--color-background-2);
+}
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Segoe UI", Arial, Roboto, "PingFang SC", miui, "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+  font-size: calc(100vw / (750 / 100));
+}
+
+#app {
+  height: 100%;
+  overflow-x: hidden;
+  font-size: 13px;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 过渡动画样式保持不变 */
+.page-slide-forward-enter-active,
+.page-slide-forward-leave-active {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-forward-enter-from {
+  transform: translateX(100%);
+}
+
+.page-slide-forward-enter-to {
+  transform: translateX(0);
+}
+
+.page-slide-forward-leave-from {
+  transform: translateX(0);
+}
+
+.page-slide-forward-leave-to {
+  transform: translateX(-100%);
+}
+
+.page-slide-backward-enter-active,
+.page-slide-backward-leave-active {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-backward-enter-from {
+  transform: translateX(-100%);
+}
+
+.page-slide-backward-enter-to {
+  transform: translateX(0);
+}
+
+.page-slide-backward-leave-from {
+  transform: translateX(0);
+}
+
+.page-slide-backward-leave-to {
+  transform: translateX(100%);
+}
+
+body {
+  .van-floating-bubble {
+    --van-floating-bubble-background: transparent;
+    --van-floating-bubble-size: 48px;
+  }
+  .dragger-box {
+    z-index: 1999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: var(--van-floating-bubble-size);
+    height: var(--van-floating-bubble-size);
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: solid .015rem rgba(255, 255, 255, 0.65);
+    border-radius: 50%;
+    box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-drag: none;
+
+    .text {
+      line-height: 14px;
+      margin-top: 1px;
+    }
+  }
+}

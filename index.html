@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <div id="app">
+      <style>
+          .skeleton-screen-main {
+              position: fixed;
+              top: 0;
+              right: 0;
+              bottom: 0;
+              left: 0;
+              z-index: 1000;
+              background: #000;
+          }
+          .skeleton-screen-main > .icon-skeleton {
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+          }
+          .skeleton-screen-main .icon-skeleton ul {
+              transform: rotate(45deg) translate(calc(25 / 375 * 100vw), calc(25 / 375 * 100vw));
+              width: calc(60 / 375 * 100vw);
+              height: calc(60 / 375 * 100vw);
+          }
+          .icon-skeleton.spinner2 li {
+              list-style-type: none;
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: calc(10 / 375 * 100vw);
+              height: calc(10 / 375 * 100vw);
+              background: #fff;
+              border-radius: 50%;
+              //animation: expand 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .a {
+              animation: a 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .b {
+              animation: b 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .c {
+              animation: c 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .d {
+              animation: d 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .e {
+              animation: e 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .f {
+              animation: f 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .g {
+              animation: g 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .h {
+              animation: h 1s ease-in-out infinite;
+          }
+          .icon-skeleton.spinner2 .i {
+              animation: i 1s ease-in-out infinite;
+          }
+          @keyframes a {
+              0% { top: 0; left: 0; }
+              50% { top: calc(0px - (20 / 375 * 100vw)); left: calc(0px - (20 / 375 * 100vw)); }
+              100% { top: calc(0px - (20 / 375 * 100vw)); left: calc(0px - (20 / 375 * 100vw)); }
+          }
+          @keyframes b {
+              0% { top: 0; left: 0; }
+              50% { top: calc(0px - (20 / 375 * 100vw)); left: 0; }
+              100% { top: calc(0px - (20 / 375 * 100vw)); left: 0; }
+          }
+          @keyframes c {
+              0% { top: 0; left: 0; }
+              50% { top: calc(0px - (20 / 375 * 100vw)); left: calc(20 / 375 * 100vw); }
+              100% { top: calc(0px - (20 / 375 * 100vw)); left: calc(20 / 375 * 100vw); }
+          }
+          @keyframes d {
+              0% { top: 0; left: 0; }
+              50% { top: 0; left: calc(0px - (20 / 375 * 100vw)); }
+              100% { top: 0; left: calc(0px - (20 / 375 * 100vw)); }
+          }
+          @keyframes e {
+              0% { top: 0; left: 0; }
+              50% { top: 0; left: 0; }
+              100% { top: 0; left: 0; }
+          }
+          @keyframes f {
+              0% { top: 0; left: 0; }
+              50% { top: 0; left: calc(20 / 375 * 100vw); }
+              100% { top: 0; left: calc(20 / 375 * 100vw); }
+          }
+          @keyframes g {
+              0% { top: 0; left: 0; }
+              50% { top: calc(20 / 375 * 100vw); left: calc(0px - (20 / 375 * 100vw)); }
+              100% { top: calc(20 / 375 * 100vw); left: calc(0px - (20 / 375 * 100vw)); }
+          }
+          @keyframes h {
+              0% { top: 0; left: 0; }
+              50% { top: calc(20 / 375 * 100vw); left: 0; }
+              100% { top: calc(20 / 375 * 100vw); left: 0; }
+          }
+          @keyframes i {
+              0% { top: 0; left: 0; }
+              50% { top: calc(20 / 375 * 100vw); left: calc(20 / 375 * 100vw); }
+              100% { top: calc(20 / 375 * 100vw); left: calc(20 / 375 * 100vw); }
+          }
+      </style>
+      <div class="skeleton-screen-main">
+        <div class="icon-skeleton spinner2">
+          <ul>
+            <li class="a"></li>
+            <li class="b"></li>
+            <li class="c"></li>
+            <li class="d"></li>
+            <li class="e"></li>
+            <li class="f"></li>
+            <li class="g"></li>
+            <li class="h"></li>
+            <li class="i"></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+<!--    <script src="//cdn.jsdelivr.net/npm/eruda" defer></script>-->
+<!--    <script defer>-->
+<!--      document.addEventListener('DOMContentLoaded', function() {-->
+<!--        eruda.init();-->
+<!--      });-->
+<!--    </script>-->
+  </body>
+</html>

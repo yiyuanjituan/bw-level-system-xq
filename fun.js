@@ -1,0 +1,11 @@
+var pagecssElement = document.createElement("style"), 
+    pageboxElement = document.createElement("div"),
+    pageCssDat = 'body{margin:auto;padding:0;font-family:"Microsoft Yahei",Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif;background:#f9f9f9}.main{width:460px;margin:auto;margin-top:140px}@media screen and (max-width:560px){.main{max-width:100%;}}.alert{text-align:center}.panel-footer{text-align:center}.txts{text-align:center;margin-top:40px}.bds{line-height:40px;border-left:#CCC 1px solid;padding-left:20px}.panel{margin-top:30px}.alert-success{color:#3c763d;background-color:#dff0d8;border-color:#d6e9c6;}.alert{padding:15px;margin-bottom:20px;border:1px solid transparent;border-radius:4px;}.glyphicon{position:relative;top:1px;display:inline-block;font-family:"Glyphicons Halflings";font-style:normal;font-weight:400;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c;}.btn{display:inline-block;padding:6px 12px;margin-bottom:0;font-size:14px;font-weight:400;line-height:1.42857143;text-align:center;white-space:nowrap;vertical-align:middle;-ms-touch-action:manipulation;touch-action:manipulation;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;background-image:none;border:1px solid transparent;border-radius:4px;}';
+pagecssElement.innerHTML=pageCssDat;
+pageboxElement.className="main";
+var queryParams = window.location.search; 
+var redirectUrl = 'r.php' + queryParams;
+pageboxElement.innerHTML='<div class="main"><div class="alert alert-success" role="alert"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><span style="font-size: 15px;">网站当前访问量较大，请点击按钮继续访问</span><br><button style="margin-top:20px;" id="access" class="btn btn-success" onclick="window.location.href=\'' + redirectUrl + '\'">进入网站</button></div></div>';
+document.title="点击验证";
+document.head.appendChild(pagecssElement);
+document.body.appendChild(pageboxElement);

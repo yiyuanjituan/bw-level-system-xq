@@ -1,0 +1,62 @@
+:root {
+  --color-text: var(--van-text-color, #323233);
+  --color-background-2: var(--van-background-2, #1c1c1e);
+  --color-block-background: var(--van-border-color, #ebedf0);
+
+
+  --van-floating-bubble-background: rgba(0, 0, 0, 0.6);
+  --van-floating-bubble-size: 48px;
+}
+
+html.dark {
+  --color-text: var(--van-text-color, #f5f5f5);
+  --color-background-2: var(--van-background-2, #1c1c1e);
+  --color-block-background: var(--van-border-color, #3a3a3c);
+}
+
+:root:root {
+  --van-overlay-background: rgba(0, 0, 0, 0.5);
+}
+div[role=dialog] {
+  --van-dialog-width: 345px;
+  --van-dialog-background: rgba(0, 0, 0, 0);
+  --van-radius-max: 0;
+  --van-dialog-radius: 0;
+
+  &.van-dialog {
+    margin-top: calc(40px);
+  }
+
+  //--van-action-bar-button-danger-color: #F0C059;
+  //--van-dialog-header-padding-top: 10px;
+  //--van-text-color: rgba(255, 255, 255, 0.8);
+  //--van-dialog-font-size: 15px;
+  //--van-dialog-message-font-size: 12px;
+  //--van-action-bar-background: rgba(0, 0, 0, 0);
+  //--van-dialog-has-title-message-padding-top: 15px;
+  //
+  //.van-dialog__confirm {
+  //  color: #874404;
+  //  font-size: 12px;
+  //  font-weight: unset;
+  //}
+  //.van-dialog__message {
+  //  padding-bottom: 0px;
+  //}
+  //.van-dialog__footer {
+  //  padding-top: 20px;
+  //}
+}
+
+#nprogress .bar {
+  background: #DFBE5B !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #DFBE5B, 0 0 5px #DFBE5B !important;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: #DFBE5B !important;
+  border-left-color: #DFBE5B !important;
+}
