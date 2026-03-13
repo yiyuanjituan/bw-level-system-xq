@@ -12,12 +12,14 @@ const app = useAppStore();
 function handleWithdraw() {
   if (!auth.user.hasPayPassword) {
     router.push("/home/security");
-    return showCustomToast({ type: 'warning', message: '为了资金安全，需先设置提现密码哦！' })
+    return showCustomToast({
+      type: "warning",
+      message: "为了资金安全，需先设置提现密码哦！"
+    });
   } else {
     router.push("/home/withdraw");
   }
 }
-
 </script>
 
 <template>
@@ -43,11 +45,14 @@ function handleWithdraw() {
                     <svg-icon name="top_kf2" class="absolute text-[#F0C059]" />
                   </div>
                 </div>
-                <ui-badge :content="999" :size="[2,-2]">
+                <ui-badge :content="999" :size="[2, -2]">
                   <div class="btn-container">
                     <div class="w-[24px] h-[24px] text-[24px]">
                       <svg-icon name="top_xx" class="absolute text-[#68707B]" />
-                      <svg-icon name="top_xx2" class="absolute text-[#F0C059]" />
+                      <svg-icon
+                        name="top_xx2"
+                        class="absolute text-[#F0C059]"
+                      />
                     </div>
                   </div>
                 </ui-badge>
@@ -61,13 +66,32 @@ function handleWithdraw() {
             <div class="nav-item" @click="handleWithdraw">
               <div class="icon">
                 <svg-icon name="style_2_icon_mid_tx" class="svg-icon" />
-                <svg-icon name="style_2_icon_mid_tx2" class="svg-icon text-[#04BE02]" />
+                <svg-icon
+                  name="style_2_icon_mid_tx2"
+                  class="svg-icon text-[#04BE02]"
+                />
               </div>
               <div class="label">提现</div>
             </div>
             <div class="nav-item">
               <div class="icon">
-                <img src="@/assets/mine/gif_profile_style2.avif" alt="" srcset="" class="svg-icon">
+                <picture>
+                  <source
+                    srcset="@/assets/mine/gif_profile_style2.avif"
+                    type="image/avif"
+                    class="svg-icon"
+                  />
+                  <source
+                    srcset="@/assets/mine/gif_profile_style2.avif"
+                    type="image/png"
+                    class="svg-icon"
+                  />
+                  <img
+                    src="@/assets/mine/gif_profile_style2.avif"
+                    alt="Description"
+                    class="svg-icon"
+                  />
+                </picture>
               </div>
               <div class="label">存款</div>
             </div>
@@ -75,7 +99,10 @@ function handleWithdraw() {
               <ui-badge content="80%">
                 <div class="icon">
                   <svg-icon name="style_2_icon_mid_lxb" class="svg-icon" />
-                  <svg-icon name="style_2_icon_mid_lxb2" class="svg-icon text-[#EA4E3D]" />
+                  <svg-icon
+                    name="style_2_icon_mid_lxb2"
+                    class="svg-icon text-[#EA4E3D]"
+                  />
                 </div>
               </ui-badge>
               <div class="label">利息宝</div>
@@ -100,7 +127,7 @@ function handleWithdraw() {
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: #ADB6C3;
+    color: #adb6c3;
     position: absolute;
     z-index: 9;
   }
@@ -114,12 +141,12 @@ function handleWithdraw() {
         z-index: 1;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, #F0C059, transparent);
+        background: linear-gradient(to bottom, #f0c059, transparent);
         opacity: 0.15;
-        color: #ADB6C3;
+        color: #adb6c3;
       }
       .row-user-card {
-        background-image: url('@/assets/mine/style_2_topbg_yd.avif');
+        background-image: url("@/assets/mine/style_2_topbg_yd.avif");
         background-size: 100%;
         position: relative;
         z-index: 2;
@@ -189,7 +216,7 @@ function handleWithdraw() {
             .label {
               text-align: center;
               padding-top: 2.5px;
-              color: #ADB6C3;
+              color: #adb6c3;
               word-break: break-word;
               height: 35px;
               line-height: 17.5px;

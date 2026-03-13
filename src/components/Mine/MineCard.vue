@@ -279,15 +279,5 @@ const updateWallet = () => {
   .animate__spin {
     animation: spin 0.2s linear infinite; /* 2秒一次，匀速，无限循环 */
   }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0);
-    }
-
-    100% {
-      transform: rotate(360deg);
-    }
-  }
 }
 </style>

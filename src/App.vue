@@ -49,7 +49,7 @@ const busListen = () => {
     router.replace({ path: "/home/login" });
   });
   // 点开找到我们
-  bus.on("findUs", refs["findUs"].open);
+  bus.on("findUs", refs["findUs"]?.open);
 };
 
 onMounted(() => {
