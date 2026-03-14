@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SubNavbar from "@/components/SubNavbar.vue";
 import { handleBack } from "@/utils/common";
 import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
 </script>
@@ -52,7 +51,7 @@ import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
       position: absolute;
       min-width: 40px;
       flex-shrink: 0;
-      z-index: 9999;
+      z-index: 9;
 
       display: flex;
       align-items: center;

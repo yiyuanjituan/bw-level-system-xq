@@ -142,3 +142,11 @@ export function setPayPassword(data: any): Promise<any> {
     data: data
   });
 }
+
+export function getWithdrawInfo(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/v1/finance/withdrawInfo",
+    method: "post",
+    data: data
+  });
+}

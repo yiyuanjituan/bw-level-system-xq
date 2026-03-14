@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import UiButton from "@/components/Common/Button.vue";
 import { useWindowSize } from "@vant/use";
 import { getFindUsData } from "@/api/common";
 import MailBox from "@/components/Top/find/MailBox.vue";
