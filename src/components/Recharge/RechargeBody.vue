@@ -2,6 +2,9 @@
 import { computed, ref, watch } from "vue";
 import UiInput from "@/components/UI/input.vue";
 import UiButton from "@/components/Common/Button.vue";
+import { createNoWalletUser, getSiteWalletInfo } from "@/api/common";
+import { useClipboard } from "@vueuse/core";
+import { showCustomToast } from "@/hooks/useCommon";
 
 interface Props {
   listData?: any[];
@@ -15,18 +18,35 @@ const showTotalChildren = ref(true)
 const isLoading = ref(false)
 const activeIds = ref<number[]>([0, 0]) // 大分类ID， 渠道ID
 const inputAmount = ref<number>()
+const isGetSiteWallet = ref(false)
+const siteWalletInfo = ref<any>({})
+const isRefreshWallet = ref(false)
+
+function refreshSiteWallet() {
+  isRefreshWallet.value = true
+  getSiteWalletData().then(() => {
+    isRefreshWallet.value = false
+  })
+}
+
+function clickToBuyBalance() {
+  window.open(siteWalletInfo.value.buyUrl)
+}
 
 function handleChangeActiveId(record: Record<string, any>) {
   activeIds.value[0] = record.id;
   activeIds.value[1] = 0;
   inputAmount.value = void 0
+  isGetSiteWallet.value = false
 }
 
 function handleChangeActiveChildrenId(record: Record<string, any>) {
   activeIds.value[1] = record.id;
   inputAmount.value = void 0
+  isGetSiteWallet.value = false
 }
 
+// 点击创建订单
 function handleSubmit() {
   isLoading.value = true
   setTimeout(() => {
@@ -46,12 +66,44 @@ const activeGroup = computed(() => {
   const info = props.listData.find(v => v.id == activeIds.value[0])
   return info ?? {}
 })
+
 const activeInfo = computed(() => {
   const info = activeGroup.value
   if (activeIds.value[1] == 0 && info?.children?.length > 0) activeIds.value[1] = info.children[0].id
   const childrenData = info?.children?.find(v => v.id == activeIds.value[1])
   return childrenData ?? {}
 })
+
+
+async function getSiteWalletData() {
+  isGetSiteWallet.value = true;
+  return new Promise((resolve) => {
+    getSiteWalletInfo({ id: activeInfo.value.id }).then(res => {
+      siteWalletInfo.value = res;
+    }).finally(() => resolve(void 0));
+  })
+}
+
+function handleBindNoWallet() {
+  window.open(siteWalletInfo.value?.bindUrl);
+}
+
+function createBindUserByNo() {
+  createNoWalletUser({ id: activeInfo.value.id }).then(res => {
+    window.open(res.buyUrl)
+    getSiteWalletData()
+  });
+}
+
+function copyText(text: string) {
+  useClipboard().copy(text).then(() => showCustomToast({ type: "success", message: '复制成功' }))
+}
+
+watch(() => activeIds.value, () => {
+  if (activeInfo.value?.id && !isGetSiteWallet.value && !!activeInfo.value.siteWallet) {
+    getSiteWalletData()
+  }
+}, { immediate: true, deep: true })
 
 </script>
 
@@ -108,7 +160,29 @@ const activeInfo = computed(() => {
       </div>
       <div class="line" style="border-width: var(--lobby__px);"></div>
     </template>
-    <template v-if="activeInfo.siteWallet == 0">
+
+    <template v-if="activeInfo.siteWallet == 1 && isGetSiteWallet && activeInfo.siteWalletKeyword == 'wallet-no' && siteWalletInfo.bind == 1">
+      <div class="no-balance">
+        <div class="noWallet-id">
+          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="mr-[5px] w-[25px]">
+          <span>钱包账号：</span>
+          <span class="id">{{ siteWalletInfo.qAccount }}</span>
+          <span class="copy-id" @click="copyText(siteWalletInfo.qAccount)">
+            <svg-icon name="comm_icon_copy" />
+          </span>
+        </div>
+        <div class="bind-wallet">
+          <span>NO钱包余额</span>
+          <span class="balance">{{ (Number(siteWalletInfo.rmbBalance) ?? 0).toFixed(2) }}</span>
+          <span class="refresh-icon" :class="[isRefreshWallet ? 'animate__spin' : '']" @click="refreshSiteWallet">
+            <svg-icon name="comm_icon_sx" />
+          </span>
+          <ui-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">购买余额</ui-button>
+        </div>
+      </div>
+    </template>
+
+    <template v-if="activeInfo.siteWallet == 0 || ([1].includes(siteWalletInfo?.bind))">
       <div class="title-box">
         <span>存款金额</span>
         <div class="no-poster" v-html="activeGroup.tipRichText"></div>
@@ -131,15 +205,15 @@ const activeInfo = computed(() => {
       </div>
       <ui-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</ui-button>
     </template>
-    <template v-if="activeInfo.siteWallet == 1 && activeInfo.siteWalletKeyword == 'wallet-no'">
+    <template v-if="activeInfo.siteWallet == 1 && activeInfo.siteWalletKeyword == 'wallet-no' && ([2,3].includes(siteWalletInfo?.bind))">
       <div class="bind-container">
         <div class="bindTips"><p>已有账号，可登录绑定</p><p>首次使用？只需设置支付密码</p></div>
         <div class="content">
           <div class="bind">
-            <ui-button type="info" plain>立即绑定</ui-button>
+            <ui-button type="info" plain @click="handleBindNoWallet">立即绑定</ui-button>
           </div>
           <div class="setting">
-            <ui-button type="primary">立即设置</ui-button>
+            <ui-button type="primary" @click="createBindUserByNo">立即设置</ui-button>
           </div>
         </div>
         <div class="no-poster"><span class=""><p><span style="font-family: 'Segoe UI';">用NO钱包：赚积分，抽大奖，最高<span style="color: #e67e23;">88888.88</span></span></p></span></div>
@@ -325,6 +399,64 @@ const activeInfo = computed(() => {
     margin-left: 10px;
     text-align: center;
     font-size: 12px !important;
+  }
+}
+.no-balance {
+  margin-bottom: 15px;
+  .noWallet-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--skin__lead);
+    font-size: 12px;
+    padding-bottom: 5px;
+    >span {
+      line-height: 12px;
+      color: var(--skin__lead);
+    }
+    .id {
+      color: var(--skin__neutral_2);
+    }
+    .copy-id {
+      font-size: 15px;
+      margin-left: 5px;
+      line-height: 12px;
+      color: var(--skin__primary);
+      cursor: pointer;
+    }
+  }
+  .bind-wallet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    color: var(--skin__neutral_2);
+    font-size: 12px;
+    .balance {
+      display: inline-flex;
+      align-items: center;
+      margin: 0 5px;
+      color: var(--skin__primary);
+      font-size: 16px;
+    }
+    .refresh-icon {
+      vertical-align: middle;
+      color: var(--skin__primary);
+    }
+    .animate__spin {
+      animation: spin 0.3s linear infinite; /* 2秒一次，匀速，无限循环 */
+    }
+    .buy-balance-btn {
+      margin-left: 10px;
+      height: 20px;
+      width: auto;
+      font-size: 9px;
+      border-radius: 4px;
+      padding: 0 5px;
+      color: var(--skin__text_primary);
+      background: var(--skin__primary);
+      border: var(--lobby__px) solid var(--skin__primary);
+    }
   }
 }
 </style>

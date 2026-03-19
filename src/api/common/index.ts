@@ -185,3 +185,21 @@ export function getChannelList(data: any = {}): Promise<any> {
     data: data
   });
 }
+
+// 获取站内钱包的充值方式
+export function getSiteWalletInfo(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/base/recharge/siteWalletInfo",
+    method: "post",
+    data: data
+  });
+}
+
+// 创建No钱包用户
+export function createNoWalletUser(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/base/recharge/createNoWalletUser",
+    method: "post",
+    data: data
+  });
+}
