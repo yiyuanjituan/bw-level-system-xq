@@ -106,7 +106,7 @@ export async function getCopyText() {
     // 读取剪贴板文本（需用户交互触发，如点击按钮）
     return await navigator.clipboard.readText();
   } catch (err) {
-    console.error('粘贴失败：', err);
+    // console.error('粘贴失败：', err);
     // 创建隐藏输入框，模拟粘贴
     const textarea = document.createElement('textarea');
     textarea.style.position = 'absolute';

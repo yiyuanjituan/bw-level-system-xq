@@ -110,14 +110,12 @@ const updateWallet = () => {
           </div>
         </div>
         <div class="menu-button !mr-[5px]">
-          <ui-button
-            class="!w-[80px] !h-[27px] !p-[0px] !rounded-[5px] !mr-[0px]"
-          >
+          <ui-button class="!w-[80px] !h-[27px] !p-[0px] !rounded-[5px] !mr-[0px]" style="border-width: 0">
             <div class="flex w-full h-full items-center relative">
-              <div class="w-[58.5px] text-[11px]">存 款</div>
+              <div class="w-[58.5px] text-[11px] text-[#874404]">存 款</div>
               <div class="popover" @click="isShowMore = !isShowMore">
                 <i
-                  class="inline-flex justify-center items-center"
+                  class="inline-flex justify-center items-center text-[#874404]"
                   :class="{
                     'rotate-[-180deg]': isShowMore,
                     'rotate-0': !isShowMore

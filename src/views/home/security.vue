@@ -91,8 +91,8 @@ onMounted(() => {})
           </div>
 
           <!-- 数字键盘 -->
-          <van-number-keyboard v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" />
-          <van-number-keyboard v-model="form.password_confirmation" :show="showKeyboardByConfirm" @blur="hideKeyboard" />
+          <van-number-keyboard :maxlength="6" v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" />
+          <van-number-keyboard :maxlength="6" v-model="form.password_confirmation" :show="showKeyboardByConfirm" @blur="hideKeyboard" />
         </div>
       </div>
       <div class="footer">

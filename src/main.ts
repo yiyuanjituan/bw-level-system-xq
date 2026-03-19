@@ -25,8 +25,8 @@ app.use(i18n);
 app.use(Dialog);
 app.use(Geetest, {
   // captchaId: '54088bb07d2df3c46b79f80300b0abbe11'
-  captchaId: '54088bb07d2df3c46b79f80300b0abbe'
-  // captchaId: 'c7f7181c75483c121ad718b7a636f0d0'
+  // captchaId: '54088bb07d2df3c46b79f80300b0abbe'
+  captchaId: 'c7f7181c75483c121ad718b7a636f0d0'
 })
 
 initApp().finally(() => app.mount("#app"))

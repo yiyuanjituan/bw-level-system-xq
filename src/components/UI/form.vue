@@ -8,8 +8,8 @@ defineOptions({
 
 
 interface Props {
-  rule: object
-  model: object
+  rule?: object
+  model?: object
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -66,7 +66,7 @@ defineExpose({
 </script>
 
 <template>
-  <form autocomplete="off">
+  <form autocomplete="off" method="post">
     <slot />
   </form>
 </template>

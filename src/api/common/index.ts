@@ -150,3 +150,38 @@ export function getWithdrawInfo(data: any = {}): Promise<any> {
     data: data
   });
 }
+
+export function verifyWithdrawalPassword(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/v1/finance/verifyWithdrawalPassword",
+    method: "post",
+    data: data
+  });
+}
+
+// 绑定银行卡
+export function bindCard(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/v1/finance/bindCard",
+    method: "post",
+    data: data
+  });
+}
+
+// 设置为默认银行卡
+export function setDefault(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/v1/finance/setDefault",
+    method: "post",
+    data: data
+  });
+}
+
+// 获取所有的充值渠道
+export function getChannelList(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/base/recharge/channelList",
+    method: "post",
+    data: data
+  });
+}

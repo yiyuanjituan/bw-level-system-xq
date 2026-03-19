@@ -1,29 +1,41 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, provide, ref } from "vue";
 import useAuthStore from "@/store/modules/user";
+import ApplyBankWithdraw from "@/components/Withdraw/ApplyBankWithdraw.vue";
+import { getWithdrawInfo } from "@/api/common";
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
+const userCardList = ref([])
 const typeList = [
   // { id: 0, name: 'No钱包' },
-  { id: 1, name: '正常提现' },
-  { id: 2, name: '转为数字货币' },
-  { id: 3, name: '三方钱包' },
-]
-const selectTypeId = ref(1)
+  { id: 1, name: "正常提现" },
+  { id: 2, name: "转为数字货币" },
+  { id: 3, name: "三方钱包" }
+];
+const selectTypeId = ref(1);
+provide('userCardList', userCardList)
 
 function handleChangeType(item) {
   selectTypeId.value = item.id;
 }
 
-
 const updateWallet = () => {
   walletIsLoading.value = true;
   auth.updateInfo();
+  init();
   setTimeout(() => {
     walletIsLoading.value = false;
   }, 1000);
 };
+
+function init() {
+  getWithdrawInfo().then(data => {
+    userCardList.value = data?.cardList ?? [];
+  })
+}
+
+onMounted(() => updateWallet());
 </script>
 
 <template>
@@ -32,7 +44,8 @@ const updateWallet = () => {
       <div class="withdraw-info-main">
         <div class="withdraw-info">
           <div class="left">
-            余额&nbsp;<span class="currency">{{  auth.user.money }}</span>&nbsp;
+            余额&nbsp;<span class="currency">{{ auth.user.money }}</span
+            >&nbsp;
             <div
               class="refresh-icon"
               :class="[walletIsLoading ? 'ml-[4px] animate__spin' : 'ml-[4px]']"
@@ -52,9 +65,12 @@ const updateWallet = () => {
           v-for="(item, index) in typeList"
           :key="index"
           @click="handleChangeType(item)"
-        >{{ item.name }}</div>
+        >
+          {{ item.name }}
+        </div>
       </div>
 
+      <apply-bank-withdraw v-if="selectTypeId == 1" />
     </div>
   </div>
 </template>
@@ -102,10 +118,11 @@ const updateWallet = () => {
       cursor: pointer;
       padding: 15px 10px;
       display: flex;
-      
+
       .choose-item {
         position: relative;
-        flex: 1;
+        //flex: 1;
+        width: calc(25% - 1px);
         height: 35px;
         border-radius: 7px;
         margin-right: 5px;
@@ -122,7 +139,7 @@ const updateWallet = () => {
         }
       }
       .choose-item-active {
-        border-color: #DFBE5B;
+        border-color: #dfbe5b;
         color: #dfbe5b;
       }
     }

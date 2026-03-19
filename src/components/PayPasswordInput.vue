@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { verifyWithdrawalPassword } from "@/api/common";
+import { showCustomDialog } from "@/hooks/useCommon";
 
+const emits = defineEmits(['input-true'])
 const show = ref(false);
 const showKeyboard = ref(false)
 const showEye = ref(false);
+const showError = ref(false);
 const form = reactive({
   password: "",
 })
 
 function open() {
   show.value = true;
+  showKeyboard.value = true;
+  form.password = "";
 }
 
 function close() {
@@ -21,6 +27,26 @@ const handleShowPassword = () => {
 }
 const hideKeyboard = () => {
   showKeyboard.value = false
+}
+
+const handleNext = () => {
+  if (!form.password || form.password.length != 6) {
+    showError.value = true;
+    return;
+  }
+  verifyWithdrawalPassword(form).then(res => {
+    emits('input-true')
+    close()
+  })
+}
+
+function handleForgetPassword() {
+  showCustomDialog({ title: '温馨提示', message: '请联系客服找回密码！\n', showClose: true, showCancelButton: true, confirmButtonText: '客服', width: 300, bgColor: '#191919' }).then((res) => {
+    if (res) {
+      // @todo 实现跳转客服界面
+      console.log(res);
+    }
+  })
 }
 
 defineExpose({
@@ -51,11 +77,17 @@ defineExpose({
             <div class="form-withdraw-pass">
               <van-password-input :mask="!showEye" :value="form.password" :focused="showKeyboard" @focus="handleShowPassword" />
             </div>
+            <div class="explain" v-if="showError">
+              <div class="error-icon">
+                <svg-icon name="comm_icon_tip3" />
+              </div>
+              <span class="text">6位纯数字</span>
+            </div>
             <div class="remark">
               <span>为了您的账户安全，请输入提现密码</span>
-              <span class="active">忘记密码?</span>
+              <span class="active" @click="handleForgetPassword">忘记密码?</span>
             </div>
-            <van-button native-type="submit" class="button">下一步</van-button>
+            <van-button native-type="submit" class="button" @click="handleNext">下一步</van-button>
           </div>
         </div>
       </div>
@@ -68,7 +100,7 @@ defineExpose({
   </div>
   <teleport to="body">
     <div class="absolute z-[99999] input-keyboard">
-      <van-number-keyboard :maxlength="6" v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" />
+      <van-number-keyboard :maxlength="6" v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" @input="showError = false" />
     </div>
   </teleport>
 </template>
@@ -159,6 +191,7 @@ defineExpose({
         margin-top: 11px;
         color: var(--skin__lead);
         font-size: 11px;
+        line-height: 1;
         .active {
           color: var(--skin__primary);
           text-align: right;
@@ -175,6 +208,35 @@ defineExpose({
         background: var(--skin__primary);
         color: white;
         border: var(--lobby__px) solid var(--skin__primary);
+      }
+      .explain {
+        display: flex;
+        align-items: flex-start;
+        line-height: 1.3;
+        min-height: 15px;
+        margin-top: 4px;
+        font-size: 11px;
+        transition: color .3s cubic-bezier(.215, .61, .355, 1);
+        color: var(--skin__accent_2);
+
+        .error-icon {
+          background-color: var(--skin__accent_2);
+          margin-right: 5px;
+          color: #fff;
+          width: 13px;
+          height: 13px;
+          font-size: 13px;
+          line-height: 8px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 9999.99rem;
+        }
+        .text {
+          flex: 1;
+          display: flex;
+          align-items: flex-start;
+        }
       }
     }
   }

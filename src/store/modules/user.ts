@@ -10,8 +10,9 @@ export const useAuthStore = defineStore('user', () => {
     token.value = data.trim()
   }
 
-  const updateInfo = () => {
-    getUserInfo().then((res) => user.value = res)
+  const updateInfo = async () => {
+    await getUserInfo().then((res) => user.value = res)
+    return 'success'
   }
 
   const logout = () => {

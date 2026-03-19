@@ -16,6 +16,7 @@ export interface IProps {
   titleColor?: string;
   width?: number | string;
   showClose?: boolean;
+  bgColor?: string;
 }
 
 export type ICustomDialogOptions = DialogOptions & IProps
@@ -56,13 +57,13 @@ onMounted(() => {
 <template>
   <van-dialog v-model:show="show" :show-cancel-button="params.showCancelButton" :width="dialogWidth">
     <template #default>
-      <div class="dialog-container">
+      <div class="dialog-container" :style="{ '--bg-color': params.bgColor }">
         <div class="dialog-content">
           <div class="title" v-if="params.title" :style="{ '--title-color': params.titleColor ?? 'white' }">{{ params.title }}</div>
           <div class="message" v-if="params.message">{{ params.message }}</div>
           <div class="btn-list pt-[20px] pb-[5px] flex">
             <ui-button @click="handleClose" v-if="params.showCancelButton" plain>{{ params?.cancelButtonText || '取消' }}</ui-button>
-            <ui-button class="!mr-[0px]" @click="handleConfirm">{{ params?.confirmButtonText }}</ui-button>
+            <ui-button class="!mr-[0px] !text-white" @click="handleConfirm">{{ params?.confirmButtonText }}</ui-button>
           </div>
         </div>
       </div>
@@ -83,7 +84,7 @@ div[role="dialog"] {
   .dialog-container {
     width: 100%;
     border: solid 1px #313843;
-    background: #1c1e23;
+    background: var(--bg-color, #1c1e23);
     border-radius: 10px;
     backface-visibility: hidden;
     overflow: auto;

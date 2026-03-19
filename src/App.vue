@@ -13,6 +13,7 @@
   <ui-dialog />
   <van-watermark content="YG游戏" opacity="0.04" v-if="app.appInfo?.isDemo" />
   <FindUs :ref="setRefs('findUs')" />
+  <recharge-drawer :ref="setRefs('rechargeDrawer')" />
 
 </template>
 
@@ -50,6 +51,8 @@ const busListen = () => {
   });
   // 点开找到我们
   bus.on("findUs", refs["findUs"]?.open);
+  // 点击充值按钮
+  bus.on('showRecharge', refs["rechargeDrawer"]?.open);
 };
 
 onMounted(() => {

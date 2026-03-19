@@ -15,13 +15,16 @@ const params = ref<IToastOptions>({})
 let timer = null;
 
 function showToast(options: IToastOptions) {
-  show.value = true;
-  title.value = typeof options == 'string' ? options : options.message
-  params.value = options
-  clearTimeout(timer)
-  timer = setTimeout(() => {
-    show.value = false;
-  }, options?.duration || 2000)
+  show.value = false;
+  setTimeout(() => {
+    show.value = true;
+    title.value = typeof options == 'string' ? options : options.message
+    params.value = options
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      show.value = false;
+    }, options?.duration || 2000)
+  }, 20)
 }
 
 onMounted(() => {

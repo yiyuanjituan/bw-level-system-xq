@@ -16,7 +16,7 @@
             :key="item.name"
           >
             <template #title>
-              <ui-badge :content="0" :size="[-1, -10]">
+              <ui-badge :offset="0" :size="[-1, -10]">
                 {{ item.name }}
               </ui-badge>
             </template>

@@ -9,6 +9,7 @@ export interface IToastOptions extends Omit<ToastOptions, 'type'> {
 export type MittEvent = {
   showDialog: DialogOptions
   showToast: String | IToastOptions
+  showRecharge: null
   'error': Error
   'logout': null
   'findUs': null

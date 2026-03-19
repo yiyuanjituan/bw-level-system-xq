@@ -4,7 +4,7 @@ defineOptions({
 });
 
 interface Props {
-  size?: number | number[];
+  size?: number | number[] | string | string[];
   zIndex?: number;
   content?: number | string;
 }
@@ -13,6 +13,22 @@ const props = withDefaults(defineProps<Props>(), {
   zIndex: 1,
   content: 0
 });
+
+const getSizeValue = (position) => {
+  if (typeof props.size === 'number') {
+    return props.size;
+  }
+
+  if (Array.isArray(props.size)) {
+    if (position === 'top') {
+      return props.size[0] || 0;
+    } else {
+      return props.size[1] || (props.size[0] || 0);
+    }
+  }
+
+  return 0;
+}
 </script>
 
 <template>
@@ -22,10 +38,8 @@ const props = withDefaults(defineProps<Props>(), {
       v-if="props.content && props.content != '0'"
       class="ui-badge ui-badge--top-right ui-badge--fixed"
       :style="{
-        top: `${typeof props.size == 'number' ? props.size : props.size[0]}px`,
-        right: `${
-          typeof props.size == 'number' ? props.size : props.size[1]
-        }px`,
+        top: `${getSizeValue('top')}px`,
+        right: `${getSizeValue('right')}px`,
         zIndex: props.zIndex
       }"
     >

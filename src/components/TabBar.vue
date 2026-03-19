@@ -5,6 +5,7 @@ import { useRoute } from "vue-router";
 import { setSystemName, setTabBarName } from "@/hooks/useTransition";
 import routes from "@/router/routes";
 import { flattenRoutes } from "@/utils/common";
+import { bus } from "@/utils/mitt";
 
 const active = ref(0);
 const route = useRoute();
@@ -28,7 +29,7 @@ const tabBar = ref<any[]>([
   },
   {
     name: "存款",
-    path: "/about",
+    path: "/recharge",
     light_prefix: "icon_btm_cz",
     active_icon: "icon_btm_cz1",
     default_icon: "icon_btm_cz0",
@@ -61,6 +62,9 @@ watch(() => route.path, path => {
 );
 
 function handleClick(item: any) {
+  if (item.path === '/recharge') {
+    return bus.emit('showRecharge')
+  }
   const nextIndex = tabBar.value.findIndex(v => v.path === item.path);
   const nowIndex = tabBar.value.findIndex(v => v.path === route.path);
   let animation = "page-slide-backward";
