@@ -3,12 +3,11 @@
   <div class="main-layout">
     <!-- 使用 RouterView 替代动态组件 -->
     <div class="content-area">
-      <router-view v-slot="{ Component }" v-if="tabbarTransitionName != 'none'">
+      <router-view v-slot="{ Component, route }">
         <transition :name="tabbarTransitionName">
-          <component :is="Component" class="page-content" />
+          <component :is="Component" :key="route.matched[1]?.path || route.path" class="page-content" />
         </transition>
       </router-view>
-      <router-view v-else />
     </div>
 
     <!-- 底部导航栏保持不变 -->

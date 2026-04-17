@@ -2,13 +2,11 @@
   <SvgIcons />
   <router-view
     v-slot="{ Component, route }"
-    v-if="systemTransitionName != 'none'"
   >
     <transition :name="systemTransitionName">
-      <component :is="Component" :key="route.path" class="page-content" />
+      <component :is="Component" :key="route.matched[0]?.path || route.path" class="page-content" />
     </transition>
   </router-view>
-  <router-view v-else />
   <ui-toast />
   <ui-dialog />
   <van-watermark content="YG游戏" opacity="0.04" v-if="app.appInfo?.isDemo" />
@@ -18,16 +16,14 @@
 </template>
 
 <script setup lang="ts">
-import { setSystemName, systemTransitionName } from "./hooks/useTransition";
+import { systemTransitionName } from "./hooks/useTransition";
 import UiToast from "@/components/UI/toast.vue";
 import UiDialog from "@/components/UI/dialog.vue";
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import useAppStore from "@/store/modules/app";
 import useAuthStore from "@/store/modules/user";
 import { bus, userMoneyIn } from "@/utils/mitt";
 import router from "@/router";
-import { useCachedViewStoreHook } from "@/store/modules/cachedView";
-import { useRoute } from "vue-router";
 import useDataStore from "@/store/modules/data";
 import { useRefs } from "@/hooks/useRefs";
 
@@ -35,8 +31,6 @@ const { refs, setRefs } = useRefs();
 const app = useAppStore();
 const auth = useAuthStore();
 const appData = useDataStore();
-const cacheView = useCachedViewStoreHook();
-const route = useRoute();
 
 const busListen = () => {
   // 资金回归
