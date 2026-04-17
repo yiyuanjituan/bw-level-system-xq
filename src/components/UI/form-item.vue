@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { inject, provide, ref } from "vue";
+import { computed, inject, provide, toRef } from "vue";
+import { FORM_CONTEXT_KEY, FORM_ITEM_PROP_KEY } from "./form-context";
 
 defineOptions({
   name: "ui-form-item"
@@ -12,20 +13,29 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   prop: ""
 });
-provide('prop', props.prop);
-const rules = inject("formRules");
-const form = inject("form");
-const errors = inject("errors");
+
+const propRef = toRef(props, "prop");
+const formContext = inject(FORM_CONTEXT_KEY, null);
+const errorMessage = computed(() => {
+  if (!props.prop)
+    return "";
+  return formContext?.errors.value?.[props.prop] ?? "";
+});
+
+provide(FORM_ITEM_PROP_KEY, propRef);
+
+// Keep legacy injection for existing field components.
+provide("prop", props.prop);
 </script>
 
 <template>
   <div class="ui-form-item">
     <slot />
-    <div class="explain" v-if="errors[props.prop]">
+    <div class="explain" v-if="errorMessage">
       <div class="explain-icon">
         <img src="@/assets/common/comm_icon_tip1.avif" alt="." />
       </div>
-      <span class="explain-text">{{ errors[props.prop] }}</span>
+      <span class="explain-text">{{ errorMessage }}</span>
     </div>
   </div>
 </template>

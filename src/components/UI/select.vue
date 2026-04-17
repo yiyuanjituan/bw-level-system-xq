@@ -1,59 +1,94 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { computed, inject, ref } from "vue";
+import { FORM_CONTEXT_KEY, FORM_ITEM_PROP_KEY } from "./form-context";
 
 defineOptions({
   name: "ui-select"
 });
 
+interface SelectOption {
+  id?: string | number;
+  label?: string;
+  icon?: string;
+  [key: string]: any;
+}
+
 interface Props {
   required?: boolean;
-  password?: boolean;
-  showEye?: boolean;
+  disabled?: boolean;
   placeholder?: string;
   prefix?: string;
   suffix?: string;
   suffix_color?: string;
-  options: any[];
+  options: SelectOption[];
+  showEye?: boolean;
 }
 
-const modelValue = defineModel({ type: String, default: "" });
-const showPassword = ref<boolean>(false);
-const rules = inject("formRules");
-const prop: any = inject("prop");
-const validateField: any = inject("validateField");
+const modelValue = defineModel<string | number>({ default: "" });
 const isFocus = ref(false);
 
-const handleInput = (e: any) => {
-  modelValue.value = e.target.value;
-  if (prop && rules[prop] && rules[prop].length) {
-    validateField(prop);
-  }
-};
-const handleBlur = () => {
-  if (prop && rules[prop] && rules[prop].length) {
-    validateField(prop);
-  }
-};
-
-const handleSelect =(e: any) => {
-  modelValue.value = e.id
-  isFocus.value = false;
-
-  if (prop && rules[prop] && rules[prop].length) {
-    validateField(prop);
-  }
-}
+const formContext = inject(FORM_CONTEXT_KEY, null);
+const legacyProp = inject<any>("prop", "");
+const itemProp = inject(FORM_ITEM_PROP_KEY, null);
+const prop = computed(() => itemProp?.value || legacyProp || "");
 
 const props = withDefaults(defineProps<Props>(), {
   required: false,
-  password: false,
-  showEye: false,
-  placeholder: "请输入....",
+  disabled: false,
+  placeholder: "请选择",
   prefix: "",
   suffix: "",
   suffix_color: "",
-  options: () => []
+  options: () => [],
+  showEye: false
 });
+
+const selectedOption = computed(() => {
+  return props.options.find(option => option.id === modelValue.value);
+});
+
+const hasValue = computed(() => {
+  return modelValue.value !== "" && modelValue.value !== null && modelValue.value !== undefined;
+});
+
+const hasError = computed(() => {
+  const field = prop.value;
+  if (!field)
+    return false;
+  return !!formContext?.errors.value?.[field];
+});
+
+function fieldHasRules() {
+  const field = prop.value;
+  return !!(field && formContext?.rules.value?.[field]);
+}
+
+function runValidation(trigger: string) {
+  if (!fieldHasRules() || !prop.value)
+    return;
+  formContext?.validateField(prop.value, trigger).catch(() => {});
+}
+
+function togglePopover() {
+  if (props.disabled)
+    return;
+  isFocus.value = !isFocus.value;
+  if (!isFocus.value)
+    runValidation("blur");
+}
+
+function handleBlur() {
+  isFocus.value = false;
+  runValidation("blur");
+}
+
+function handleSelect(option: SelectOption) {
+  if (props.disabled)
+    return;
+  modelValue.value = option.id ?? "";
+  isFocus.value = false;
+  runValidation("change");
+}
 </script>
 
 <template>
@@ -63,55 +98,50 @@ const props = withDefaults(defineProps<Props>(), {
     :offset="[0, 0]"
     style="width: 315px"
     placement="top"
+    @update:show="(value) => { if (!value) handleBlur() }"
   >
     <template #reference>
       <div
-        class="ui-input ui-input-select"
-        :class="{ 'select-focus': isFocus }"
+        class="ui-select"
+        :class="{
+          'ui-select--focused': isFocus,
+          'ui-select--disabled': disabled,
+          'ui-select--invalid': hasError && !isFocus
+        }"
+        @click="togglePopover"
       >
-        <span class="ui-input__prefix" v-if="$slots.prefix || props.prefix">
+        <span class="ui-select__prefix" v-if="$slots.prefix || prefix">
           <slot name="prefix" v-if="$slots.prefix" />
           <svg-icon
-            :name="props.prefix"
-            v-if="props.prefix && !$slots.prefix"
+            v-else-if="prefix"
+            :name="prefix"
             class-name="!w-[15px] !h-[15px]"
           />
         </span>
-        <div class="ui-input__input-wrap">
-          <span class="ui-input__star-sign" v-if="props.required && false"
-            >*</span
-          >
-          <div class="ui-input__input-container">
-            <span class="text-white" v-if="!modelValue">请选择币种</span>
-            <template v-if="modelValue">
-              <span class="flex items-center justify-center pr-[5px]">
-                <img :src="props.options.find(v => v.id == modelValue)?.icon" alt="." class="w-[18px] h-[18px]">
+
+        <div class="ui-select__wrap">
+          <span class="ui-select__required-star" v-if="required && !hasValue">*</span>
+
+          <div class="ui-select__value">
+            <span class="ui-select__placeholder" v-if="!selectedOption">{{ placeholder }}</span>
+            <template v-else>
+              <span class="ui-select__icon-wrap" v-if="selectedOption.icon">
+                <img :src="selectedOption.icon" alt="." class="ui-select__icon" />
               </span>
-              <span class="flex items-center justify-center text-white text-[11px]">{{ props.options.find(v => v.id == modelValue)?.label }}</span>
+              <span class="ui-select__label">{{ selectedOption.label }}</span>
             </template>
           </div>
         </div>
-        <span class="ui-input__suffix" v-if="$slots.suffix || props.suffix">
+
+        <span class="ui-select__suffix" v-if="$slots.suffix || suffix || showEye">
           <slot name="suffix" v-if="$slots.suffix" />
           <svg-icon
-            :name="props.suffix"
-            v-if="props.suffix && !$slots.suffix"
+            v-else-if="suffix"
+            :name="suffix"
             class-name="!w-[15px] !h-[15px]"
-            :style="{
-              color: props.suffix_color ? props.suffix_color : 'unset'
-            }"
+            :style="{ color: suffix_color || 'unset' }"
           />
-          <template v-if="!$slots.suffix && !props.suffix">
-            <!--        <svg-icon name="eye_show" class-name="!w-[15px] !h-[15px]" />-->
-            <!--        <svg-icon name="eye_hide" class-name="!w-[15px] !h-[15px]" />-->
-          </template>
-        </span>
-        <span
-          class="ui-input__suffix"
-          v-if="!$slots.suffix && !props.suffix && showEye"
-          @click="showPassword = !showPassword"
-        >
-          <i class="icon inline-flex justify-center items-center text-[9px]">
+          <i v-else-if="showEye" class="icon inline-flex justify-center items-center text-[9px]">
             <svg
               width="1em"
               height="1em"
@@ -125,12 +155,13 @@ const props = withDefaults(defineProps<Props>(), {
         </span>
       </div>
     </template>
+
     <div class="select-options">
       <div class="scroll-box">
-        <div class="options" v-for="i in options" :key="i">
-          <div class="span-content" @click="handleSelect(i)">
-            <img :src="i.icon" alt="." class="country-icon" />
-            <span>{{ i.label }}</span>
+        <div class="options" v-for="option in options" :key="option.id ?? option.label">
+          <div class="span-content" @click="handleSelect(option)">
+            <img :src="option.icon" alt="." class="country-icon" v-if="option.icon" />
+            <span>{{ option.label }}</span>
           </div>
         </div>
       </div>
@@ -139,7 +170,7 @@ const props = withDefaults(defineProps<Props>(), {
 </template>
 
 <style scoped lang="less">
-.ui-input {
+.ui-select {
   border: 1px solid #313843;
   height: 35px;
   width: 100%;
@@ -151,9 +182,20 @@ const props = withDefaults(defineProps<Props>(), {
   color: #68707b;
   font-size: 11px;
   padding: 0 10px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 
-  &:focus-within {
+  &--focused {
     border-color: #f0c059;
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--invalid {
+    border-color: #ea4e3d;
   }
 
   &__prefix {
@@ -163,47 +205,61 @@ const props = withDefaults(defineProps<Props>(), {
     height: 100%;
   }
 
-  &__input-wrap {
+  &__wrap {
     flex: 1 1 0;
     height: 100%;
     line-height: 35px;
     display: flex;
     overflow: hidden;
+    min-width: 0;
   }
 
-  &__star-sign {
+  &__required-star {
     display: block;
     color: #ea4e3d;
     width: 6px;
     height: 100%;
+    flex-shrink: 0;
   }
 
-  &__input-container {
+  &__value {
     flex: 1 1 0;
     display: flex;
+    align-items: center;
+    min-width: 0;
     padding-left: 2px;
   }
 
-  &__input {
-    background-color: transparent;
-    border: 0;
+  &__placeholder {
+    color: #525252;
+  }
+
+  &__icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 5px;
+  }
+
+  &__icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  &__label {
     color: white;
-    width: 100%;
-    height: 100%;
+    font-size: 11px;
     overflow: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__suffix {
     display: flex;
     align-items: center;
     height: 100%;
+    margin-left: 5px;
   }
-}
-
-.ui-input-select.select-focus {
-  border-color: #f0c059;
 }
 
 .select-options {
@@ -230,7 +286,7 @@ const props = withDefaults(defineProps<Props>(), {
     .options {
       background-color: #1c1e23;
       width: 100%;
-      height: 40px;
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: start;
@@ -260,10 +316,6 @@ const props = withDefaults(defineProps<Props>(), {
           border-radius: 9999rem;
         }
       }
-    }
-
-    .options-active {
-      color: #f0c059;
     }
   }
 }

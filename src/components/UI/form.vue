@@ -1,76 +1,145 @@
 <script setup lang="ts">
-import { provide, ref } from "vue";
-import Schema from 'async-validator'
+import Schema from "async-validator";
+import { computed, provide, ref } from "vue";
+import {
+  FORM_CONTEXT_KEY,
+  type FormErrors,
+  type FormModel,
+  type FormRuleItem,
+  type FormRules
+} from "./form-context";
 
 defineOptions({
-  name: 'ui-form'
-})
-
+  name: "ui-form"
+});
 
 interface Props {
-  rule?: object
-  model?: object
+  rule?: FormRules;
+  model?: FormModel;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rule: () => ({}),
-  model: () => ({}),
+  model: () => ({})
 });
 
-const errors = ref({})
-const handleFieldBlur = async (field: string) => {
-  errors.value[field] = ''
+const errors = ref<FormErrors>({});
+const rulesRef = computed<FormRules>(() => props.rule ?? {});
+const modelRef = computed<FormModel>(() => props.model ?? {});
 
-  const schema = new Schema({ [field]: props.rule[field] })
+function toFieldList(fields?: string | string[]) {
+  if (!fields)
+    return Object.keys(rulesRef.value);
+  return Array.isArray(fields) ? fields : [fields];
+}
 
+function getFieldRules(field: string) {
+  const rules = rulesRef.value[field];
+  if (!rules)
+    return [];
+  return Array.isArray(rules) ? rules : [rules];
+}
+
+function matchTrigger(rule: FormRuleItem, trigger?: string) {
+  if (!trigger)
+    return true;
+  if (!rule.trigger)
+    return true;
+  const triggers = Array.isArray(rule.trigger) ? rule.trigger : [rule.trigger];
+  return triggers.includes(trigger);
+}
+
+function buildSchemaRules(field: string, trigger?: string) {
+  return getFieldRules(field).filter(rule => matchTrigger(rule, trigger));
+}
+
+function clearValidate(fields?: string | string[]) {
+  const targetFields = fields ? toFieldList(fields) : Object.keys(errors.value);
+  targetFields.forEach((field) => {
+    if (!field)
+      return;
+    errors.value[field] = "";
+  });
+}
+
+async function validateField(field: string, trigger?: string) {
+  if (!field)
+    return;
+
+  const schemaRules = buildSchemaRules(field, trigger);
+  if (!schemaRules.length)
+    return;
+
+  errors.value[field] = "";
+
+  const schema = new Schema({ [field]: schemaRules });
   try {
-    await schema.validate({ [field]: props.model[field] })
-  } catch (err) {
-    errors.value[field] = err.errors[0].message
+    await schema.validate({ [field]: modelRef.value?.[field] });
+  }
+  catch (error: any) {
+    const message = error?.errors?.[0]?.message;
+    if (message)
+      errors.value[field] = message;
   }
 }
 
-// 5. 表单整体提交校验
-const validateAll = async () => {
-  return new Promise(async (resolve, reject) => {
-    // 重置所有错误信息
-    Object.keys(errors.value).forEach(key => {
-      errors.value[key] = ''
-    })
-    // 实例化完整规则的 Schema
-    const schema = new Schema(props.rule as any)
+async function validate(fields?: string | string[]) {
+  const targetFields = toFieldList(fields).filter(field => getFieldRules(field).length);
+  clearValidate(targetFields);
 
-    try {
-      await schema.validate(props.model, {})
-      resolve(void 0)
-    } catch (err) {
-      // 校验失败：收集所有字段的错误信息
-      err.errors.forEach(({ field, message }) => {
-        errors.value[field] = message
-      })
-      reject(err.errors[0].message)
-    }
-  })
+  if (!targetFields.length)
+    return;
+
+  const schemaRules = targetFields.reduce<FormRules>((result, field) => {
+    result[field] = getFieldRules(field);
+    return result;
+  }, {});
+
+  const schema = new Schema(schemaRules as any);
+  const payload = targetFields.reduce<FormModel>((result, field) => {
+    result[field] = modelRef.value?.[field];
+    return result;
+  }, {});
+
+  try {
+    await schema.validate(payload, { firstFields: true });
+  }
+  catch (error: any) {
+    error?.errors?.forEach(({ field, message }: { field: string; message: string }) => {
+      if (field)
+        errors.value[field] = message;
+    });
+    throw error;
+  }
 }
 
+const formContext = {
+  rules: rulesRef,
+  model: modelRef,
+  errors,
+  validateField,
+  validate,
+  clearValidate
+};
+
+provide(FORM_CONTEXT_KEY, formContext);
+
+// Keep legacy injections for existing components that still use string keys.
 provide("formRules", props.rule);
 provide("form", props.model);
 provide("errors", errors);
-provide("validateField", handleFieldBlur);
-
+provide("validateField", validateField);
 
 defineExpose({
-  validateField: handleFieldBlur,
-  validate: validateAll
-})
+  validateField,
+  validate,
+  clearValidate,
+  errors
+});
 </script>
 
 <template>
-  <form autocomplete="off" method="post">
+  <form autocomplete="off" method="post" @submit.prevent>
     <slot />
   </form>
 </template>
-
-<style scoped lang="less">
-
-</style>

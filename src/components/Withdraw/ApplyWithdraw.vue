@@ -8,7 +8,7 @@ const walletIsLoading = ref(false);
 const auth = useAuthStore();
 const userCardList = ref([])
 const typeList = [
-  // { id: 0, name: 'No钱包' },
+  { id: 0, name: '钱包' },
   { id: 1, name: "正常提现" },
   { id: 2, name: "转为数字货币" },
   { id: 3, name: "三方钱包" }
