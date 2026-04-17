@@ -148,7 +148,7 @@ onMounted(() => {
             </ui-checkbox>
           </div>
         </div>
-        <ui-button class="mt-[10px]" @click="handleQuery" :loading="showLoading">
+        <ui-button class="mt-[10px] w-[100%]" @click="handleQuery" :loading="showLoading">
           {{ activeTabs == 0 ? '注册' : '登录' }}
         </ui-button>
 
