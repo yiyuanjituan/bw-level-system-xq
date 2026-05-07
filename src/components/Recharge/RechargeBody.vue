@@ -2,9 +2,11 @@
 import { computed, ref, watch } from "vue";
 import UiInput from "@/components/UI/input.vue";
 import UiButton from "@/components/Common/Button.vue";
-import { createNoWalletUser, getSiteWalletInfo } from "@/api/common";
+import { createNoWalletUser, createOrder, getSiteWalletInfo } from "@/api/common";
 import { useClipboard } from "@vueuse/core";
 import { showCustomToast } from "@/hooks/useCommon";
+import { openUrlInNewWindow } from "@/utils/common";
+import { bus } from "@/utils/mitt";
 
 interface Props {
   listData?: any[];
@@ -13,6 +15,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   listData: () => ([])
 });
+
+const emits = defineEmits(['close'])
+
 const showTotalWallet = ref(true)
 const showTotalChildren = ref(true)
 const isLoading = ref(false)
@@ -48,10 +53,25 @@ function handleChangeActiveChildrenId(record: Record<string, any>) {
 
 // 点击创建订单
 function handleSubmit() {
+  if (activeIds.value.length != 2 || !activeIds.value[1]) return showCustomToast({ type: 'warning', message: '订单创建错误' })
+
   isLoading.value = true
-  setTimeout(() => {
-    isLoading.value = false
-  }, 1000)
+  const orderWindow = openUrlInNewWindow()
+
+  createOrder({ id: activeIds.value[1], money: inputAmount.value })
+    .then(res => {
+      const url = res?.url
+      if (!url) {
+        orderWindow?.close()
+        return showCustomToast({ type: 'warning', message: '订单创建错误' })
+      }
+
+      openUrlInNewWindow(url, orderWindow)
+      emits('close')
+      bus.emit('showRechargeDetail', { id: res.orderId })
+    })
+    .catch(() => orderWindow?.close())
+    .finally(() => isLoading.value = false)
 }
 
 watch(() => props.listData, () => {

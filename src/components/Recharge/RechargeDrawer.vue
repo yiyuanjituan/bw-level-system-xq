@@ -28,7 +28,7 @@ defineExpose({
   <van-popup v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }">
     <div class="popup-container">
       <div class="popup-header">
-        <div class="back-icon">
+        <div class="back-icon" @click="show = false">
           <svg-icon name="arrow-back" class-name="ml-[-7.5px]"></svg-icon>
         </div>
         <p class="title">存款</p>
@@ -52,7 +52,7 @@ defineExpose({
                 <span class="pl-[5px]">在线存款</span>
               </recharge-badge>
             </template>
-            <recharge-body :listData="listData.filter(v => v.type == 1)" />
+            <recharge-body :listData="listData.filter(v => v.type == 1)" @close="show = false" />
           </van-tab>
           <van-tab>
             <template #title>

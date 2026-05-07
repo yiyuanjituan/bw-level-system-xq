@@ -5,10 +5,12 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 interface Props {
   title?: string
+  backClassName?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
+  backClassName: '',
 });
 
 function handleBack() {
@@ -21,7 +23,7 @@ function handleBack() {
 
 <template>
   <header class="sub-header">
-    <div class="arrow-left" @click="handleBack">
+    <div class="arrow-left" :class="props.backClassName" @click="handleBack">
       <svg-icon name="arrow-back"></svg-icon>
     </div>
     <div class="title">

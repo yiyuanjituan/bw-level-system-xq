@@ -10,6 +10,7 @@ export type MittEvent = {
   showDialog: DialogOptions
   showToast: String | IToastOptions
   showRecharge: null
+  showRechargeDetail: any
   'error': Error
   'logout': null
   'findUs': null

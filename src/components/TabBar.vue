@@ -37,7 +37,7 @@ const tabBar = ref<any[]>([
   },
   {
     name: "客服",
-    path: "/home/login",
+    path: "/home/notice",
     light_prefix: "icon_btm_kf",
     active_icon: "icon_btm_kf1",
     default_icon: "icon_btm_kf0",

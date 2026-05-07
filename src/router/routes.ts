@@ -149,6 +149,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: "plazza",
+        name: "Plazza",
+        component: () => import("@/views/home/plazza.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
         path: "login",
         name: "LoginPage",
         component: () => import("@/views/home/login.vue"),
@@ -197,6 +206,15 @@ const routes: Array<RouteRecordRaw> = [
         path: "withdraw",
         name: "Withdraw",
         component: () => import("@/views/home/withdraw.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
+        path: "notice",
+        name: "Notice",
+        component: () => import("@/views/notice/index.vue"),
         meta: {
           isSecondary: true,
           pageTransition: "page-slide-forward"

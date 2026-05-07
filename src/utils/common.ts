@@ -37,6 +37,33 @@ export function handleBack() {
     router.replace('/index')
   }
 }
+
+export function openUrlInNewWindow(url = '', openedWindow?: Window | null) {
+  if (openedWindow && !openedWindow.closed) {
+    if (url) openedWindow.location.href = url;
+    return openedWindow;
+  }
+
+  const newWindow = window.open(url, '_blank');
+  if (newWindow) {
+    newWindow.opener = null;
+    return newWindow;
+  }
+
+  if (url) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  return null;
+}
+
 /**
  * 预测输入内容是否为手机号
  * @param {string} input - 输入的内容

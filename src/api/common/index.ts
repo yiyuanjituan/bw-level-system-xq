@@ -203,3 +203,30 @@ export function createNoWalletUser(data: any = {}): Promise<any> {
     data: data
   });
 }
+
+// 创建支付
+export function createOrder(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/app/base/recharge/createOrder",
+    method: "post",
+    data: data
+  });
+}
+
+// 客服信息
+export function serviceList(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/open/service/info/list",
+    method: "post",
+    data: data
+  });
+}
+
+// 帮助信息
+export function getHelpData(data: any = {}): Promise<any> {
+  return http.request({
+    url: "/open/v1/home/helpData",
+    method: "post",
+    data: data
+  });
+}

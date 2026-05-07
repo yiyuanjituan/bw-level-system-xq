@@ -12,6 +12,8 @@
   <van-watermark content="YG游戏" opacity="0.04" v-if="app.appInfo?.isDemo" />
   <FindUs :ref="setRefs('findUs')" />
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
+  <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
+
 
 </template>
 
@@ -47,6 +49,7 @@ const busListen = () => {
   bus.on("findUs", refs["findUs"]?.open);
   // 点击充值按钮
   bus.on('showRecharge', refs["rechargeDrawer"]?.open);
+  bus.on('showRechargeDetail', refs["rechargeDetailDrawer"]?.open);
 };
 
 onMounted(() => {
