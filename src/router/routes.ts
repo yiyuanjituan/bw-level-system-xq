@@ -218,8 +218,17 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           isSecondary: true,
           pageTransition: "page-slide-forward"
-        }
+        },
       },
+      {
+        path: 'notice/detail',
+        name: 'NoticeDetail',
+        component: () => import("@/views/notice/detail.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        },
+      }
     ]
   }
 ];

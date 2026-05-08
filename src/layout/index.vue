@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { tabbarTransitionName } from "@/hooks/useTransition";
 </script>
 

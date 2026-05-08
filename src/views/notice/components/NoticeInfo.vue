@@ -1,8 +1,29 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+import { computed, onMounted, reactive, ref } from "vue";
 import RangePicker from "./RangePicker.vue";
 import UiRadiusSelect from "@/components/UI/radius-select.vue";
+import { service } from "@/api/service";
+import router from "@/router";
 
+dayjs.extend(isoWeek);
+
+type NoticeItem = {
+  isRead?: boolean;
+  title?: string;
+  createTime?: string | number;
+  [key: string]: any;
+};
+
+type TimeRangeOption = {
+  text: string;
+  value: string;
+  startTime: number;
+  endTime: number;
+};
+
+const totalList = ref<NoticeItem[]>([]);
 const dayOptions = ref([
   { label: "全部", key: 0 },
   { label: "已读", key: 1 },
@@ -15,14 +36,136 @@ const formInfo = reactive({
   keyword: ""
 });
 
-const richText = `<div class=""><p>重要通知！</p></div>`
+const timeRangeOptions = computed<TimeRangeOption[]>(() => [
+  {
+    text: "今日",
+    value: "today",
+    startTime: dayjs().startOf("day").unix(),
+    endTime: dayjs().endOf("day").unix()
+  },
+  {
+    text: "昨日",
+    value: "yesterday",
+    startTime: dayjs().subtract(1, "day").startOf("day").unix(),
+    endTime: dayjs().subtract(1, "day").endOf("day").unix()
+  },
+  {
+    text: "本周",
+    value: "this-week",
+    startTime: dayjs().startOf("isoWeek").unix(),
+    endTime: dayjs().endOf("isoWeek").unix()
+  },
+  {
+    text: "上周",
+    value: "last-week",
+    startTime: dayjs().subtract(1, "week").startOf("isoWeek").unix(),
+    endTime: dayjs().subtract(1, "week").endOf("isoWeek").unix()
+  },
+  {
+    text: "本月",
+    value: "this-month",
+    startTime: dayjs().startOf("month").unix(),
+    endTime: dayjs().endOf("month").unix()
+  },
+  {
+    text: "上月",
+    value: "last-month",
+    startTime: dayjs().subtract(1, "month").startOf("month").unix(),
+    endTime: dayjs().subtract(1, "month").endOf("month").unix()
+  },
+  {
+    text: "全部",
+    value: "all",
+    startTime: 0,
+    endTime: 0
+  }
+]);
+function getTimeRange(value: string) {
+  const selectedOption = timeRangeOptions.value.find(
+    option => option.value === value
+  );
+  return selectedOption ?? { startTime: 0, endTime: 0 };
+}
 
+function getTimestamp(value: unknown) {
+  if (typeof value === "number") {
+    return value > 1_000_000_000_000
+      ? Math.floor(value / 1000)
+      : Math.floor(value);
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) return 0;
+
+    if (/^\d+$/.test(trimmedValue)) {
+      const numberValue = Number(trimmedValue);
+
+      return numberValue > 1_000_000_000_000
+        ? Math.floor(numberValue / 1000)
+        : Math.floor(numberValue);
+    }
+
+    const parsedTime = dayjs(trimmedValue);
+
+    return parsedTime.isValid() ? parsedTime.unix() : 0;
+  }
+
+  return 0;
+}
+
+function toPlainText(value: unknown) {
+  return String(value ?? "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .trim();
+}
+
+const filteredList = computed(() => {
+  const keyword = formInfo.keyword.trim().toLowerCase();
+  const { startTime, endTime } = getTimeRange(formInfo.timeRange);
+
+  return totalList.value.filter(item => {
+    if (formInfo.status === 1 && !item.isRead) return false;
+    if (formInfo.status === 2 && item.isRead) return false;
+
+    if (startTime && endTime) {
+      const currentTime = getTimestamp(item.createTime);
+
+      if (!currentTime || currentTime < startTime || currentTime > endTime) {
+        return false;
+      }
+    }
+
+    if (keyword) {
+      const titleText = toPlainText(item.title).toLowerCase();
+      if (!titleText.includes(keyword)) {
+        return false;
+      }
+    }
+    return true;
+  });
+});
+
+function init() {
+  service.v1.notice.announcementList({ limit: 9999 }).then(res => {
+    totalList.value = Array.isArray(res?.list) ? res.list : [];
+  });
+}
+
+function onTapItem(record: any) {
+  console.log(record);
+  router.push('/home/notice/detail')
+}
+
+onMounted(() => init());
 </script>
 
 <template>
   <div class="service-box">
     <div class="filter-container">
-      <RangePicker v-model="formInfo.timeRange" />
+      <RangePicker v-model="formInfo.timeRange" :options="timeRangeOptions" />
 
       <ui-radius-select
         v-model="formInfo.status"
@@ -54,25 +197,42 @@ const richText = `<div class=""><p>重要通知！</p></div>`
         </div>
       </div>
     </div>
-    <div class="list-box">
-      <div class="item-box" v-for="i in 10">
+    <div class="list-box" v-if="filteredList.length">
+      <div class="item-box" v-for="(item, index) in filteredList" :key="index" @click="onTapItem(item)">
         <div class="announcement">
           <div class="content-box">
             <div class="icon">
-              <img src="/siteadmin/skin/lobby_asset/icon_dt_1xx_wd.avif" alt="" srcset="">
+              <img
+                src="/siteadmin/skin/lobby_asset/icon_dt_1xx_wd.avif"
+                alt=""
+                srcset=""
+                v-if="!item.isRead"
+              />
+              <img
+                src="/siteadmin/skin/lobby_asset/icon_dt_1xx.avif"
+                alt=""
+                srcset=""
+                v-if="item.isRead"
+              />
             </div>
             <div class="title">
-              <div class="notice-content" v-html="richText"></div>
-              <p class="createTime">2025/06/04 00:00:00</p>
+              <div
+                class="notice-content"
+                :class="{ 'show-text': !item.isRead }"
+                v-html="item.title"
+              ></div>
+              <p class="createTime">{{ item.createTime }}</p>
             </div>
             <div class="list-right">
-              <span>已读</span>
+              <span v-if="item.isRead" :class="{ 'show-text': !item.isRead }">已读</span>
+              <span v-if="!item.isRead" class="show-text">未读</span>
               <svg-icon name="comm_icon_fh" class-name="rotate-[180deg] text-[12px] text-right-icon" />
             </div>
           </div>
         </div>
       </div>
     </div>
+    <empty text="暂无消息" v-if="!filteredList.length" />
   </div>
 </template>
 
@@ -185,7 +345,7 @@ const richText = `<div class=""><p>重要通知！</p></div>`
         background-color: var(--skin__bg_2);
         padding: 10px 10px 10px 13px;
         border-radius: 7px;
-        box-shadow: 0 1.5px 4.5px rgba(0, 0, 0, .06);
+        box-shadow: 0 1.5px 4.5px rgba(0, 0, 0, 0.06);
         .content-box {
           display: flex;
           align-items: center;
@@ -211,11 +371,14 @@ const richText = `<div class=""><p>重要通知！</p></div>`
               margin: 0;
               height: 20px;
               line-height: 20px;
-              color: var(--skin__lead);
+              color: var(--skin__neutral_2);
               font-size: 12px !important;
               overflow: hidden;
               white-space: nowrap;
               text-overflow: ellipsis;
+              :deep(span) {
+                font-size: 12px !important;
+              }
             }
             .createTime {
               margin-top: 4px;
@@ -247,6 +410,9 @@ const richText = `<div class=""><p>重要通知！</p></div>`
             }
           }
         }
+      }
+      .show-text {
+        color: var(--skin__lead) !important;
       }
     }
   }

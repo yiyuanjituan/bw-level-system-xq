@@ -11,6 +11,7 @@ import vueSetupExtend from "vite-plugin-vue-setup-extend";
 import viteCompression from "vite-plugin-compression";
 import { createHtmlPlugin } from "vite-plugin-html";
 import { enableCDN } from "./build/cdn";
+import { createEpsPlugin } from "./src/api/service/vite";
 
 // 当前工作目录路径
 const root: string = process.cwd();
@@ -19,9 +20,15 @@ const root: string = process.cwd();
 export default defineConfig(({ mode }) => {
   // 环境变量
   const env = loadEnv(mode, root, "");
+  const apiTarget = env.VITE_EPS_BASE_URL || "http://127.0.0.1:8001";
   return {
     base: env.VITE_PUBLIC_PATH || "/",
     plugins: [
+      createEpsPlugin({
+        baseUrl: apiTarget,
+        namespaceRoot: "app",
+        outDir: "src/api/service/generated"
+      }),
       vue(),
       vueJsx(),
       mockDevServerPlugin(),
@@ -63,7 +70,7 @@ export default defineConfig(({ mode }) => {
       // doc: https://github.com/pengzhanbo/vite-plugin-mock-dev-server
       proxy: {
         "^/api": {
-          target: "http://127.0.0.1:8001",
+          target: apiTarget,
           rewrite: (path: string) => path.replace(/^\/api/, ''),
         }
       }

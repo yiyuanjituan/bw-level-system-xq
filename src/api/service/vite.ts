@@ -66,11 +66,24 @@ interface SyncState {
 	service: Record<string, any>;
 }
 
+interface CachedListResult {
+	exists: boolean;
+	list: EpsDescribeItem[];
+}
+
 const virtualModuleId = "virtual:eps";
 const resolvedVirtualModuleId = "\0virtual:eps";
 
 function ensurePosix(value: string) {
 	return value.replace(/\\/g, "/");
+}
+
+function stringifyError(error: unknown) {
+	if (error instanceof Error) {
+		return error.message;
+	}
+
+	return String(error);
 }
 
 function stripSlash(value: string) {
@@ -159,6 +172,16 @@ function getTsType(propertyName: string, valueType: string, mapping: EpsTypeMapp
 
 function createRequestUrl(baseUrl: string, api: string) {
 	return `${baseUrl.replace(/\/+$/, "")}/${stripSlash(api)}`;
+}
+
+function resolveOutputPaths(root: string, options: CreateEpsPluginOptions) {
+	const outDir = path.resolve(root, options.outDir || "src/api/service/generated");
+
+	return {
+		outDir,
+		jsonPath: path.join(outDir, options.jsonFileName || "eps.json"),
+		dtsPath: path.join(outDir, options.dtsFileName || "eps.d.ts")
+	};
 }
 
 function requestJson(url: string, headers: IncomingHttpHeaders = {}, timeout = 5000): Promise<any> {
@@ -458,6 +481,29 @@ function createJsonContent(list: EpsDescribeItem[]) {
 `;
 }
 
+function readCachedList(filePath: string): CachedListResult {
+	if (!fs.existsSync(filePath)) {
+		return {
+			exists: false,
+			list: []
+		};
+	}
+
+	try {
+		const content = fs.readFileSync(filePath, "utf8");
+		const list = JSON.parse(content || "[]");
+		return {
+			exists: true,
+			list: Array.isArray(list) ? (list as EpsDescribeItem[]) : []
+		};
+	} catch {
+		return {
+			exists: true,
+			list: []
+		};
+	}
+}
+
 async function loadEpsList(options: CreateEpsPluginOptions) {
 	const url = createRequestUrl(options.baseUrl, options.api || "/app/base/comm/eps");
 	const response = await requestJson(url, options.headers, options.timeout);
@@ -508,29 +554,65 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 
 	let root = process.cwd();
 	let serverRef: ViteDevServer | undefined;
+	let command: "serve" | "build" = "serve";
+	let initialized = false;
 
-	async function sync() {
-		const list = await loadEpsList(options);
-		const mapping = createTypeMapping(options);
-		const service = createEpsService(list, {
+	function applyState(list: EpsDescribeItem[], isUpdate = false) {
+		state.isUpdate = isUpdate;
+		state.list = list;
+		state.service = createEpsService(list, {
 			namespaceRoot: options.namespaceRoot || "app"
 		});
-		const dictKeys = await loadDictKeys(options);
-		const outDir = path.resolve(root, options.outDir || "copyDir/generated");
-		const jsonPath = path.join(outDir, options.jsonFileName || "eps.json");
-		const dtsPath = path.join(outDir, options.dtsFileName || "eps.d.ts");
-		const jsonChanged = writeIfChanged(jsonPath, createJsonContent(list));
-		const dtsChanged = writeIfChanged(dtsPath, createDtsContent(list, service, dictKeys, mapping));
-
-		state.isUpdate = jsonChanged || dtsChanged;
-		state.list = list;
-		state.service = service;
 
 		if (serverRef) {
 			invalidateVirtualModule(serverRef);
 		}
 
+		initialized = true;
 		return state;
+	}
+
+	function loadCachedState(strict = false) {
+		const { jsonPath } = resolveOutputPaths(root, options);
+		const cached = readCachedList(jsonPath);
+
+		if (strict && !cached.exists) {
+			throw new Error(
+				`[eps-runtime] cached EPS schema not found: ${jsonPath}. Start the dev server once to pull the latest schema first.`
+			);
+		}
+
+		return applyState(cached.list, false);
+	}
+
+	async function syncRemote() {
+		const mapping = createTypeMapping(options);
+		const { jsonPath, dtsPath } = resolveOutputPaths(root, options);
+		let list: EpsDescribeItem[] = [];
+
+		try {
+			list = await loadEpsList(options);
+		} catch (error) {
+			const cached = readCachedList(jsonPath);
+			list = cached.list;
+
+			if (list.length) {
+				console.warn(
+					`[eps-runtime] ${stringifyError(error)}; using cached EPS schema from ${jsonPath}`
+				);
+			} else {
+				console.warn(`[eps-runtime] ${stringifyError(error)}; using empty EPS schema`);
+			}
+		}
+
+		const service = createEpsService(list, {
+			namespaceRoot: options.namespaceRoot || "app"
+		});
+		const dictKeys = list.length ? await loadDictKeys(options) : [];
+		const jsonChanged = writeIfChanged(jsonPath, createJsonContent(list));
+		const dtsChanged = writeIfChanged(dtsPath, createDtsContent(list, service, dictKeys, mapping));
+
+		return applyState(list, jsonChanged || dtsChanged);
 	}
 
 	return {
@@ -538,9 +620,15 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 		enforce: "pre",
 		configResolved(config) {
 			root = config.root;
+			command = config.command;
 		},
 		async buildStart() {
-			await sync();
+			if (command === "serve") {
+				await syncRemote();
+				return;
+			}
+
+			loadCachedState(true);
 		},
 		configureServer(server) {
 			serverRef = server;
@@ -548,7 +636,7 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 			server.middlewares.use(async (req, _res, next) => {
 				if (req.url === "/@vite/client") {
 					try {
-						await sync();
+						await syncRemote();
 					} catch (error) {
 						server.config.logger.error(String(error));
 					}
@@ -558,7 +646,7 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 			});
 		},
 		async handleHotUpdate(ctx) {
-			const outDir = ensurePosix(path.resolve(root, options.outDir || "copyDir/generated"));
+			const outDir = ensurePosix(resolveOutputPaths(root, options).outDir);
 			const changedFile = ensurePosix(ctx.file);
 
 			if (changedFile.startsWith(outDir)) {
@@ -566,7 +654,7 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 			}
 
 			try {
-				const nextState = await sync();
+				const nextState = await syncRemote();
 
 				if (nextState.isUpdate) {
 					invalidateVirtualModule(ctx.server);
@@ -590,8 +678,12 @@ export function createEpsPlugin(options: CreateEpsPluginOptions): Plugin {
 		},
 		async load(id) {
 			if (id === resolvedVirtualModuleId) {
-				if (!state.list.length) {
-					await sync();
+				if (!initialized) {
+					if (command === "serve") {
+						await syncRemote();
+					} else {
+						loadCachedState(true);
+					}
 				}
 
 				return `export const eps = ${JSON.stringify(state)};`;

@@ -1,0 +1,573 @@
+[
+  {
+    "prefix": "/open/activity/data",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/listData",
+        "summary": "活动列表"
+      },
+      {
+        "method": "post",
+        "path": "/infoData",
+        "summary": "活动信息"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/base/comm",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/uploadMode",
+        "summary": "文件上传模式"
+      },
+      {
+        "method": "post",
+        "path": "/upload",
+        "summary": "文件上传"
+      },
+      {
+        "method": "get",
+        "path": "/param",
+        "summary": "参数配置"
+      },
+      {
+        "method": "get",
+        "path": "/eps",
+        "summary": "实体信息与路径"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/base/recharge",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/createNoWalletUser",
+        "summary": "创建No钱包"
+      },
+      {
+        "method": "post",
+        "path": "/siteWalletInfo",
+        "summary": "绑定的站点钱包的数据"
+      },
+      {
+        "method": "post",
+        "path": "/channelList",
+        "summary": "所有的充值渠道"
+      },
+      {
+        "method": "post",
+        "path": "/createOrder",
+        "summary": "创建订单/非站内钱包"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/cache",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/set",
+        "summary": "设置缓存"
+      },
+      {
+        "method": "get",
+        "path": "/get",
+        "summary": "获得缓存"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/event",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/global",
+        "summary": "全局事件，多进程都有效"
+      },
+      {
+        "method": "post",
+        "path": "/comm",
+        "summary": "普通事件，本进程生效"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/goods",
+    "name": "DemoGoodsEntity",
+    "api": [
+      {
+        "method": "post",
+        "path": "/entityPage",
+        "summary": "entity分页查询"
+      },
+      {
+        "method": "post",
+        "path": "/sqlPage",
+        "summary": "sql分页查询"
+      },
+      {
+        "method": "post",
+        "path": "/delete",
+        "summary": "删除"
+      },
+      {
+        "method": "post",
+        "path": "/update",
+        "summary": "修改"
+      },
+      {
+        "method": "get",
+        "path": "/info",
+        "summary": "单个信息"
+      },
+      {
+        "method": "post",
+        "path": "/list",
+        "summary": "列表查询"
+      },
+      {
+        "method": "post",
+        "path": "/page",
+        "summary": "分页查询"
+      },
+      {
+        "method": "post",
+        "path": "/add",
+        "summary": "新增"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/i18n",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/auto",
+        "summary": "自动翻译"
+      },
+      {
+        "method": "post",
+        "path": "/en",
+        "summary": "翻译成英文"
+      },
+      {
+        "method": "post",
+        "path": "/tw",
+        "summary": "翻译成繁体"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/plugin",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/invoke",
+        "summary": "调用插件"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/queue",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/addGetter",
+        "summary": ""
+      },
+      {
+        "method": "get",
+        "path": "/getter",
+        "summary": ""
+      },
+      {
+        "method": "post",
+        "path": "/add",
+        "summary": "发送队列数据"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/rpc",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/transaction",
+        "summary": "分布式事务"
+      },
+      {
+        "method": "get",
+        "path": "/event",
+        "summary": "集群事件"
+      },
+      {
+        "method": "get",
+        "path": "/call",
+        "summary": "远程调用"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/sse",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/call",
+        "summary": "事件流 服务端主动推送"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/demo/tenant",
+    "name": "DemoGoodsEntity",
+    "api": []
+  },
+  {
+    "prefix": "/open/demo/transaction",
+    "name": "DemoGoodsEntity",
+    "api": [
+      {
+        "method": "post",
+        "path": "/delete",
+        "summary": "删除"
+      },
+      {
+        "method": "post",
+        "path": "/update",
+        "summary": "修改"
+      },
+      {
+        "method": "get",
+        "path": "/info",
+        "summary": "单个信息"
+      },
+      {
+        "method": "post",
+        "path": "/list",
+        "summary": "列表查询"
+      },
+      {
+        "method": "post",
+        "path": "/page",
+        "summary": "分页查询"
+      },
+      {
+        "method": "post",
+        "path": "/add",
+        "summary": "新增"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/dict/info",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/types",
+        "summary": "获得所有字典类型"
+      },
+      {
+        "method": "post",
+        "path": "/data",
+        "summary": "获得字典数据"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/service/info",
+    "name": "ServiceInfoEntity",
+    "api": [
+      {
+        "method": "post",
+        "path": "/list",
+        "summary": "列表查询"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/site/base",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/classifyData",
+        "summary": "获取所有的分类数据"
+      },
+      {
+        "method": "get",
+        "path": "/config",
+        "summary": "网站初始化获取配置"
+      },
+      {
+        "method": "get",
+        "path": "/findUs",
+        "summary": "找到我们的数据"
+      }
+    ]
+  },
+  {
+    "prefix": "/swagger",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/json",
+        "summary": "获得Swagger JSON数据"
+      },
+      {
+        "method": "get",
+        "path": "/",
+        "summary": "swagger界面"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/user/address",
+    "name": "UserAddressEntity",
+    "api": [
+      {
+        "method": "get",
+        "path": "/default",
+        "summary": "默认地址"
+      },
+      {
+        "method": "post",
+        "path": "/delete",
+        "summary": "删除"
+      },
+      {
+        "method": "post",
+        "path": "/update",
+        "summary": "修改"
+      },
+      {
+        "method": "get",
+        "path": "/info",
+        "summary": "单个信息"
+      },
+      {
+        "method": "post",
+        "path": "/list",
+        "summary": "列表查询"
+      },
+      {
+        "method": "post",
+        "path": "/page",
+        "summary": "分页查询"
+      },
+      {
+        "method": "post",
+        "path": "/add",
+        "summary": "新增"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/user/comm",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/wxMpConfig",
+        "summary": "获取微信公众号配置"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/user/info",
+    "name": "UserInfoEntity",
+    "api": [
+      {
+        "method": "post",
+        "path": "/updatePassword",
+        "summary": "更新用户密码"
+      },
+      {
+        "method": "post",
+        "path": "/setPayPassword",
+        "summary": "更新用户密码"
+      },
+      {
+        "method": "post",
+        "path": "/updatePerson",
+        "summary": "更新用户信息"
+      },
+      {
+        "method": "post",
+        "path": "/bindPhone",
+        "summary": "绑定手机号"
+      },
+      {
+        "method": "post",
+        "path": "/miniPhone",
+        "summary": "绑定小程序手机号"
+      },
+      {
+        "method": "get",
+        "path": "/person",
+        "summary": "获取用户信息"
+      },
+      {
+        "method": "post",
+        "path": "/logoff",
+        "summary": "注销"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/user/login",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/phoneVerifyCode",
+        "summary": "手机验证码登录"
+      },
+      {
+        "method": "post",
+        "path": "/refreshToken",
+        "summary": "刷新token"
+      },
+      {
+        "method": "post",
+        "path": "/register",
+        "summary": "注册账号"
+      },
+      {
+        "method": "post",
+        "path": "/password",
+        "summary": "密码登录"
+      },
+      {
+        "method": "get",
+        "path": "/captcha",
+        "summary": "图片验证码"
+      },
+      {
+        "method": "post",
+        "path": "/smsCode",
+        "summary": "验证码"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/v1/activity",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/records",
+        "summary": "领取记录"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/v1/finance",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/verifyWithdrawalPassword",
+        "summary": "校验支付密码是否正确"
+      },
+      {
+        "method": "post",
+        "path": "/withdrawInfo",
+        "summary": "我的提现卡列表"
+      },
+      {
+        "method": "post",
+        "path": "/setDefault",
+        "summary": "设置为默认钱包"
+      },
+      {
+        "method": "post",
+        "path": "/bindCard",
+        "summary": "绑定银行卡/绑地址"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/v1/game",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/userMoneyIn",
+        "summary": "用户余额回归"
+      },
+      {
+        "method": "post",
+        "path": "/getGameUrl",
+        "summary": "获取游戏的链接"
+      }
+    ]
+  },
+  {
+    "prefix": "/app/v1/notice",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/announcementList",
+        "summary": "公告列表"
+      },
+      {
+        "method": "post",
+        "path": "/announcementInfo",
+        "summary": "公告详情"
+      },
+      {
+        "method": "post",
+        "path": "/notifyList",
+        "summary": "通知列表"
+      },
+      {
+        "method": "post",
+        "path": "/notifyInfo",
+        "summary": "通知详情"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/v1/game",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/getGameById",
+        "summary": "根据场馆获取游戏的列表"
+      }
+    ]
+  },
+  {
+    "prefix": "/open/v1/home",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/pageData",
+        "summary": "首页的数据"
+      },
+      {
+        "method": "post",
+        "path": "/helpData",
+        "summary": "帮助中心的数据"
+      }
+    ]
+  }
+]
