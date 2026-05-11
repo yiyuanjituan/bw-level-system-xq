@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import NoticeService from "./components/NoticeService.vue";
 import NoticeInfo from "./components/NoticeInfo.vue";
+import NoticeNotify from "./components/NoticeNotify.vue";
+import NoticeMarquee from "./components/NoticeMarquee.vue";
+import RewardFeedback from "./components/RewardFeedback.vue";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -50,9 +53,9 @@ watch(activePath, (value) => {
       <van-tabs shrink v-model:active="activePath">
         <van-tab title="客服" name="4"><NoticeService /></van-tab>
         <van-tab title="公告" name="2"><NoticeInfo /></van-tab>
-        <van-tab title="通知" name="1">测试</van-tab>
-        <van-tab title="跑马灯" name="3">测试</van-tab>
-        <van-tab title="有奖反馈" name="5">测试</van-tab>
+        <van-tab title="通知" name="1"><NoticeNotify /></van-tab>
+        <van-tab title="跑马灯" name="3"><NoticeMarquee /></van-tab>
+        <van-tab title="有奖反馈" name="5"><RewardFeedback /></van-tab>
       </van-tabs>
     </div>
     <router-view></router-view>

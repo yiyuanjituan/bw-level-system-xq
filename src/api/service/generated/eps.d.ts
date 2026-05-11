@@ -1059,6 +1059,16 @@ declare namespace Eps {
 			announcementInfo(data?: any): Promise<any>;
 
 		/**
+			 * 跑马灯列表
+			 */
+			marqueeList(data?: any): Promise<any>;
+
+		/**
+			 * 跑马灯详情
+			 */
+			marqueeInfo(data?: any): Promise<any>;
+
+		/**
 			 * 通知列表
 			 */
 			notifyList(data?: any): Promise<any>;
@@ -1071,12 +1081,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { announcementList: string; announcementInfo: string; notifyList: string; notifyInfo: string; };
+		permission: { announcementList: string; announcementInfo: string; marqueeList: string; marqueeInfo: string; notifyList: string; notifyInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { announcementList: boolean; announcementInfo: boolean; notifyList: boolean; notifyInfo: boolean; };
+		_permission: { announcementList: boolean; announcementInfo: boolean; marqueeList: boolean; marqueeInfo: boolean; notifyList: boolean; notifyInfo: boolean; };
 
 		request: Service["request"];
 	}

@@ -533,6 +533,16 @@
       },
       {
         "method": "post",
+        "path": "/marqueeList",
+        "summary": "跑马灯列表"
+      },
+      {
+        "method": "post",
+        "path": "/marqueeInfo",
+        "summary": "跑马灯详情"
+      },
+      {
+        "method": "post",
         "path": "/notifyList",
         "summary": "通知列表"
       },

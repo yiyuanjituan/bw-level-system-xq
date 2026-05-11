@@ -170,13 +170,14 @@ watch(filteredList, list => {
 });
 
 function init() {
-  service.v1.notice.announcementList({ limit: 9999 }).then(res => {
+  service.v1.notice.notifyList({ limit: 9999 }).then(res => {
     totalList.value = Array.isArray(res?.list) ? res.list : [];
   });
 }
 
 function onTapItem(record: any) {
-  router.push(`/home/notice/detail?id=${record.id}&noticeType=${2}`);
+  console.log(record);
+  router.push(`/home/notice/detail?id=${record.id}&noticeType=${1}`);
 }
 
 onMounted(() => init());
@@ -227,31 +228,14 @@ onMounted(() => init());
         <div class="announcement">
           <div class="content-box">
             <div class="icon" :class="{ 'icon-unread': !item.isRead }">
-              <img
-                src="/siteadmin/skin/lobby_asset/icon_dt_1xx_wd.avif"
-                alt=""
-                srcset=""
-                v-if="!item.isRead"
-              />
-              <img
-                src="/siteadmin/skin/lobby_asset/icon_dt_1xx.avif"
-                alt=""
-                srcset=""
-                v-if="item.isRead"
-              />
+              <img src="@/assets/common/icon_dt_1tz.avif" alt="" srcset="" />
             </div>
             <div class="title">
-              <div
-                class="notice-content"
-                :class="{ 'show-text': !item.isRead }"
-                v-html="item.title"
-              ></div>
+              <div class="notice-content" :class="{ 'show-text': !item.isRead }" v-html="item.title"></div>
               <p class="createTime">{{ item.createTime }}</p>
             </div>
             <div class="list-right">
-              <span v-if="item.isRead" :class="{ 'show-text': !item.isRead }"
-              >已读</span
-              >
+              <span v-if="item.isRead" :class="{ 'show-text': !item.isRead }">已读</span>
               <span v-if="!item.isRead" class="show-text">未读</span>
               <svg-icon
                 name="comm_icon_fh"

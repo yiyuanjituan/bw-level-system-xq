@@ -10,7 +10,6 @@ import router from "@/router";
 dayjs.extend(isoWeek);
 
 type NoticeItem = {
-  isRead?: boolean;
   title?: string;
   createTime?: string | number;
   [key: string]: any;
@@ -124,14 +123,20 @@ function toPlainText(value: unknown) {
     .trim();
 }
 
+function formatInlineContent(value: unknown) {
+  return String(value ?? "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/?(p|div|li|h[1-6])[^>]*>/gi, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const filteredList = computed(() => {
   const keyword = formInfo.keyword.trim().toLowerCase();
   const { startTime, endTime } = getTimeRange(formInfo.timeRange);
 
   return totalList.value.filter(item => {
-    if (formInfo.status === 1 && !item.isRead) return false;
-    if (formInfo.status === 2 && item.isRead) return false;
-
     if (startTime && endTime) {
       const currentTime = getTimestamp(item.createTime);
 
@@ -170,13 +175,14 @@ watch(filteredList, list => {
 });
 
 function init() {
-  service.v1.notice.announcementList({ limit: 9999 }).then(res => {
+  service.v1.notice.marqueeList({ limit: 9999 }).then(res => {
     totalList.value = Array.isArray(res?.list) ? res.list : [];
   });
 }
 
 function onTapItem(record: any) {
-  router.push(`/home/notice/detail?id=${record.id}&noticeType=${2}`);
+  console.log(record);
+  router.push(`/home/notice/detail?id=${record.id}&noticeType=${3}`);
 }
 
 onMounted(() => init());
@@ -186,24 +192,6 @@ onMounted(() => init());
   <div class="service-box">
     <div class="filter-container">
       <RangePicker v-model="formInfo.timeRange" :options="timeRangeOptions" />
-
-      <ui-radius-select
-        v-model="formInfo.status"
-        pop-class="w-[80px] h-[25px]"
-        :options="dayOptions"
-      >
-        <template #default="{ isShow, options, value }">
-          <div class="select-box" :class="{ 'select-box-active': isShow }">
-            <div class="select-single">
-              <div class="flex-1">{{ options[value]?.label }}</div>
-              <div class="right-box" :class="{ '!rotate-[90deg]': isShow }">
-                <svg-icon name="arrow-back" class-name="text-[10px]" />
-              </div>
-            </div>
-          </div>
-        </template>
-      </ui-radius-select>
-
       <div class="bind-search-box">
         <div class="flex-1 min-w-0">
           <input
@@ -226,33 +214,14 @@ onMounted(() => init());
       >
         <div class="announcement">
           <div class="content-box">
-            <div class="icon" :class="{ 'icon-unread': !item.isRead }">
-              <img
-                src="/siteadmin/skin/lobby_asset/icon_dt_1xx_wd.avif"
-                alt=""
-                srcset=""
-                v-if="!item.isRead"
-              />
-              <img
-                src="/siteadmin/skin/lobby_asset/icon_dt_1xx.avif"
-                alt=""
-                srcset=""
-                v-if="item.isRead"
-              />
+            <div class="icon">
+              <img src="@/assets/common/icon_dt_1gg.avif" alt="" srcset="" />
             </div>
             <div class="title">
-              <div
-                class="notice-content"
-                :class="{ 'show-text': !item.isRead }"
-                v-html="item.title"
-              ></div>
+              <div class="notice-content" v-html="formatInlineContent(item.content)"></div>
               <p class="createTime">{{ item.createTime }}</p>
             </div>
             <div class="list-right">
-              <span v-if="item.isRead" :class="{ 'show-text': !item.isRead }"
-              >已读</span
-              >
-              <span v-if="!item.isRead" class="show-text">未读</span>
               <svg-icon
                 name="comm_icon_fh"
                 class-name="rotate-[180deg] text-[12px] text-right-icon"
@@ -399,6 +368,7 @@ onMounted(() => init());
           .icon {
             position: relative;
             margin-left: -2px;
+            margin-right: 10px;
             img {
               width: 22px;
               height: 19.25px;
@@ -424,11 +394,11 @@ onMounted(() => init());
             justify-content: space-between;
             .notice-content {
               display: inline-block;
-              width: 210px;
+              width: 250px;
               margin: 0;
               height: 20px;
               line-height: 20px;
-              color: var(--skin__neutral_2);
+              color: var(--skin__lead) !important;
               font-size: 12px !important;
               overflow: hidden;
               white-space: nowrap;
