@@ -60,7 +60,7 @@ async function saveToImg() {
         />
       </div>
       <div class="h-[35px] capture-ignore">
-        <ui-button class="mt-[10px] !w-[100%]" @click="saveToImg">保存图片</ui-button>
+        <x-button class="mt-[10px] !w-[100%]" @click="saveToImg">保存图片</x-button>
       </div>
     </div>
   </div>
