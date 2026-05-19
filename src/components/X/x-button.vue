@@ -77,15 +77,19 @@ function handleClick(event: MouseEvent) {
     @click="handleClick"
   >
     <span class="x-button__content">
-      <span v-if="loading" class="x-button__loading">
+      <span class="x-button__loading" :class="{ 'is-active': loading }">
         <slot name="loading">
           <svg-icon name="loading" />
         </slot>
       </span>
-      <span v-else-if="$slots.icon" class="x-button__icon">
+      <span v-if="!loading && $slots.icon" class="x-button__icon">
         <slot name="icon" />
       </span>
-      <span v-if="$slots.default" class="x-button__text">
+      <span
+        v-if="$slots.default"
+        class="x-button__text"
+        :class="{ 'x-button__text--loading': loading }"
+      >
         <slot />
       </span>
     </span>
@@ -257,11 +261,30 @@ function handleClick(event: MouseEvent) {
   &__loading {
     color: inherit;
     font-size: inherit;
-    margin-right: 2px;
+    width: 0;
+    height: 0;
+    margin-right: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.85);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     animation: x-button-rotating 1s linear infinite;
+    transition:
+      width 0.25s ease,
+      height 0.25s ease,
+      margin-right 0.25s ease,
+      opacity 0.2s ease,
+      transform 0.25s ease;
+
+    &.is-active {
+      width: 12px;
+      height: 12px;
+      margin-right: 2px;
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   &__icon {
@@ -281,6 +304,11 @@ function handleClick(event: MouseEvent) {
     vertical-align: middle;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    transition: transform 0.25s ease;
+
+    &--loading {
+      transform: translateX(1px);
+    }
   }
 
   &--hairline::after {
@@ -310,12 +338,20 @@ function handleClick(event: MouseEvent) {
 
 [dir="rtl"] .x-button__loading {
   margin-right: 0;
+  margin-left: 0;
+}
+
+[dir="rtl"] .x-button__loading.is-active {
   margin-left: 2px;
 }
 
 [dir="rtl"] .x-button__icon {
   margin-right: 0;
   margin-left: 2px;
+}
+
+[dir="rtl"] .x-button__text--loading {
+  transform: translateX(-1px);
 }
 
 [dir="rtl"] .x-button--mini + .x-button--mini {

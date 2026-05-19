@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import RewardSubmit from "@/views/notice/components/RewardSubmit.vue";
+import RewardSubmit from "./RewardSubmit.vue";
+import RewardList from "./RewardList.vue";
 
 const activePage = ref<1 | 2>(1)
 </script>
@@ -21,6 +22,7 @@ const activePage = ref<1 | 2>(1)
       </div>
     </div>
     <reward-submit v-if="activePage == 1" />
+    <reward-list v-if="activePage == 2" />
   </div>
 </template>
 

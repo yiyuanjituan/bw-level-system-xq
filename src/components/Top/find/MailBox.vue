@@ -1,35 +1,40 @@
 <script setup lang="ts">
 import useAppStore from "@/store/modules/app";
-import UiButton from "@/components/Common/Button.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import useClipboard from 'vue-clipboard3'
-import { toPng } from 'html-to-image'
+import useClipboard from "vue-clipboard3";
+import { toPng } from "html-to-image";
 import { ref } from "vue";
 
-const app = useAppStore()
-const { toClipboard } = useClipboard()
-const saveImageRef = ref()
-const showBtn = ref(true)
+const app = useAppStore();
+const { toClipboard } = useClipboard();
+const saveImageRef = ref<HTMLElement | null>(null);
+const captureIgnoreClassName = "capture-ignore";
 
 function copyFun(text: string) {
   toClipboard(text).then(() => {
     showCustomToast({ type: "success", message: "复制成功" });
-  })
+  });
 }
 
-function saveToImg() {
-  showBtn.value = false
-  toPng(saveImageRef.value).then((imageData) => {
-    showBtn.value = true
-    const num = Math.floor(100000 + Math.random() * 900000)
-    // 这里就按照chrome等新版浏览器来处理
-    const a = document.createElement('a')
-    a.href = imageData
-    a.setAttribute('download', `${num}.png`)
-    a.click()
-  })
-}
+async function saveToImg() {
+  if (!saveImageRef.value) {
+    showCustomToast({ type: "fail", message: "保存图片失败，请稍后重试" });
+    return;
+  }
 
+  try {
+    const imageData = await toPng(saveImageRef.value, {
+      filter: (domNode) => !domNode.classList?.contains(captureIgnoreClassName),
+    });
+    const num = Math.floor(100000 + Math.random() * 900000);
+    const a = document.createElement("a");
+    a.href = imageData;
+    a.setAttribute("download", `${num}.png`);
+    a.click();
+  } catch {
+    showCustomToast({ type: "fail", message: "保存图片失败，请稍后重试" });
+  }
+}
 </script>
 
 <template>
@@ -38,24 +43,24 @@ function saveToImg() {
       <div class="title-box">
         <img src="@/assets/common/comm_icon_zdwm_bcyx.avif" alt="" class="w-[20px] h-[20px]">
         <div class="text">保存邮箱</div>
-        <span class="flex items-center">
-          <template v-if="showBtn">
-            <svg-icon name="comm_icon_copy" class-name="text-[13px] text-[#DFBE5B] mb-[2px]" />
-            <span class="copy-text text-[#DFBE5B]" @click="copyFun(`官方邮箱: ${app.appInfo.email}`)">复制全部</span>
-          </template>
-      </span>
+        <span class="flex items-center capture-ignore">
+          <svg-icon name="comm_icon_copy" class-name="text-[13px] text-[#DFBE5B] mb-[2px]" />
+          <span class="copy-text text-[#DFBE5B]" @click="copyFun(`官方邮箱: ${app.appInfo.email}`)">复制全部</span>
+        </span>
       </div>
       <div class="body">
         <div class="editor-content" v-html="app.appInfo.email_website"></div>
       </div>
       <div class="link-box">
         <div class="label">官方邮箱</div>{{ app.appInfo.email }}
-        <template v-if="showBtn">
-          <svg-icon name="comm_icon_copy" class-name="text-[11px] text-[#DFBE5B] mx-[10px] mb-[2px]" @click="copyFun(app.appInfo.email)" />
-        </template>
+        <svg-icon
+          name="comm_icon_copy"
+          class-name="text-[11px] text-[#DFBE5B] mx-[10px] mb-[2px] capture-ignore"
+          @click="copyFun(app.appInfo.email)"
+        />
       </div>
-      <div class="h-[35px]">
-        <ui-button class="mt-[10px]" @click="saveToImg" v-show="showBtn">保存图片</ui-button>
+      <div class="h-[35px] capture-ignore">
+        <ui-button class="mt-[10px] !w-[100%]" @click="saveToImg">保存图片</ui-button>
       </div>
     </div>
   </div>
@@ -66,7 +71,7 @@ function saveToImg() {
   background-color: #191919;
   border-radius: 7px;
   padding: 0 10px 10px;
-  box-shadow: 0 1.5px 3.5px 0 #0000001F;
+  box-shadow: 0 1.5px 3.5px 0 #0000001f;
   height: 166px;
 
   .title-box {
@@ -77,11 +82,13 @@ function saveToImg() {
     margin-bottom: 10px;
     border-bottom: thin solid #242424;
     gap: 8px;
+
     .text {
       font-size: 13px;
       font-weight: 700;
       flex-grow: 1;
     }
+
     .copy-text {
       font-size: 11px;
       padding-left: 5px;
@@ -94,23 +101,26 @@ function saveToImg() {
       max-width: 125px;
     }
   }
+
   .body {
-    color: #1FE11F;
+    color: #1fe11f;
+
     .editor-content {
       font-size: 8px;
+
       * {
         word-break: break-word;
-
         box-sizing: inherit;
         padding: 0;
         margin: 0;
       }
     }
   }
+
   .link-box {
     font-size: 11px;
     line-height: 15px;
-    color: #DFBE5B;
+    color: #dfbe5b;
     word-break: break-all;
     cursor: pointer;
     display: block;

@@ -85,14 +85,14 @@ const list = ref([
     icon_1: "style_2_icon_list_cjwt",
     icon_2: "style_2_icon_list_cjwt2",
     name: "常见问题",
-    url: "账户明细"
+    url: "/home/notice?noticeType=4"
   },
   {
     key: "yjfk",
     icon_1: "style_2_icon_list_yjfk",
     icon_2: "style_2_icon_list_yjfk2",
     name: "有奖反馈",
-    url: "账户明细"
+    url: "/home/notice?noticeType=5"
   },
   {
     key: "dlsb",
@@ -135,6 +135,10 @@ function safeLogOut() {
 const onTapItem = (item: any) => {
   if (item.key === 'aqtc') return safeLogOut()
   if (item.key === 'zdwm') return bus.emit('findUs')
+
+  if (item.url) {
+    router.push(item.url)
+  }
 }
 </script>
 

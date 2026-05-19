@@ -533,6 +533,16 @@
       },
       {
         "method": "post",
+        "path": "/feedbackSubmit",
+        "summary": "提交反馈"
+      },
+      {
+        "method": "post",
+        "path": "/feedbackList",
+        "summary": "我的反馈列表"
+      },
+      {
+        "method": "post",
         "path": "/marqueeList",
         "summary": "跑马灯列表"
       },
