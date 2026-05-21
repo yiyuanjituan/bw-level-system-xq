@@ -564,6 +564,17 @@
     ]
   },
   {
+    "prefix": "/app/v1/user",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/accountPageList",
+        "summary": "钱包记录"
+      }
+    ]
+  },
+  {
     "prefix": "/open/v1/game",
     "name": "",
     "api": [

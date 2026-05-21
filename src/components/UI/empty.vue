@@ -14,7 +14,11 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <div class="empty-box">
     <img src="/siteadmin/skin/lobby_asset/img_none_sj.avif" alt="" class="ui-empty-box">
-    <span class="empty-text">{{ props.text }}</span>
+    <div class="empty-text">
+      <slot name="text" :text="props.text">
+        <span>{{ props.text }}</span>
+      </slot>
+    </div>
   </div>
 </template>
 

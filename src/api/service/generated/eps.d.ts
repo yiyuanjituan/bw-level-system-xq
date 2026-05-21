@@ -1106,6 +1106,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface V1User {
+		/**
+			 * 钱包记录
+			 */
+			accountPageList(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { accountPageList: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { accountPageList: boolean; };
+
+		request: Service["request"];
+	}
+
 	type Service = {
 		/**
 		 * 基础请求
@@ -1170,6 +1189,7 @@ declare namespace Eps {
 			finance: V1Finance;
 			game: V1Game;
 			notice: V1Notice;
+			user: V1User;
 		};
 	};
 

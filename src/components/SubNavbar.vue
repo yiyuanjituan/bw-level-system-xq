@@ -50,13 +50,15 @@ function handleBack() {
     position: absolute;
     min-width: 40px;
     flex-shrink: 0;
+    padding-left: 10px;
+    padding-right: 20px;
 
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
     color: var(--skin__neutral_1);
-    font-size: 15px;
+    font-size: 12px;
   }
   .title {
     flex-grow: 1;

@@ -243,6 +243,15 @@ const routes: Array<RouteRecordRaw> = [
           pageTransition: "page-slide-forward"
         },
       },
+      {
+        path: "account-detail",
+        name: "HomeAccountDetail",
+        component: () => import("@/views/home/report/AccountDetail.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        },
+      },
     ]
   }
 ];

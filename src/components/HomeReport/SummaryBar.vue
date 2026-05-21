@@ -19,7 +19,7 @@ function formatMoney(value: number) {
     <div v-for="item in items" :key="item.label" class="summary-bar__item">
       <div class="summary-bar__label">{{ item.label }}</div>
       <div class="summary-bar__value" :class="`summary-bar__value--${item.color}`">
-        {{ formatMoney(item.value) }}USDT
+        ￥{{ formatMoney(item.value) }}
       </div>
     </div>
   </footer>
@@ -27,33 +27,42 @@ function formatMoney(value: number) {
 
 <style scoped lang="less">
 .summary-bar {
-  height: 58px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: rgba(255, 255, 255, 0.97);
-  border-top: 1px solid #ececf1;
-  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.04);
+  background-color: var(--skin__bg_2);
+  border-top: thin solid var(--skin__border);
+  display: flex;
+  flex-wrap: wrap;
   flex-shrink: 0;
+  align-content: space-evenly;
+  width: var(--lobby__max-width);
+  height: 60px;
+  padding: 2.5px 10px 5px;
+  font-size: 11px;
+  color: var(--skin__neutral_2);
 
   .summary-bar__item {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
+    align-items: baseline;
+    width: 50%;
+    margin: 0;
   }
 
   .summary-bar__label {
-    color: #8d93a3;
-    font-size: 12px;
-    line-height: 1;
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    width: 50%;
+    margin: 0;
+    overflow-wrap: break-word;
+    &:last-child {
+      padding-left: 2.5px;
+      padding-right: 10px;
+    }
   }
 
   .summary-bar__value {
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-
     &.summary-bar__value--success {
       color: #1fb72b;
     }

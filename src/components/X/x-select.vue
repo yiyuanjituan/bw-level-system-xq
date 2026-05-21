@@ -33,6 +33,7 @@ interface Props {
   iconKey?: string;
   validateEvent?: boolean;
   placement?: "top" | "bottom" | "left" | "right";
+  fitOptionWidth?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,7 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
   labelKey: "label",
   iconKey: "icon",
   validateEvent: true,
-  placement: "bottom"
+  placement: "bottom",
+  fitOptionWidth: false
 });
 
 const modelValue = defineModel<SelectModelValue>({ default: "" });
@@ -131,6 +133,26 @@ const hasDisplayValue = computed(() => displayLabel.value !== "");
 const hasError = computed(() => {
   if (!prop.value) return false;
   return !!formContext?.errors.value?.[prop.value];
+});
+
+const dropdownStyle = computed(() => {
+  if (!dropdownWidth.value) {
+    return props.fitOptionWidth
+      ? { width: "max-content", maxWidth: "calc(100vw - 16px)" }
+      : { width: "100%" };
+  }
+
+  if (props.fitOptionWidth) {
+    return {
+      minWidth: `${dropdownWidth.value}px`,
+      width: "max-content",
+      maxWidth: "calc(100vw - 16px)"
+    };
+  }
+
+  return {
+    width: `${dropdownWidth.value}px`
+  };
 });
 
 function fieldHasRules() {
@@ -282,13 +304,20 @@ onBeforeUnmount(() => {
       </div>
     </template>
 
-    <div class="x-select-options" :style="{ width: dropdownWidth ? `${dropdownWidth}px` : '100%' }">
+    <div
+      class="x-select-options"
+      :class="{ 'x-select-options--fit-option-width': props.fitOptionWidth }"
+      :style="dropdownStyle"
+    >
       <div class="x-select-options__scroll">
         <div
           class="x-select-options__item"
           v-for="option in options"
           :key="String(getOptionValue(option))"
-          :class="{ 'is-disabled': option.disabled }"
+          :class="{
+            'is-active': selectedOption && isSameValue(getOptionValue(option), getOptionValue(selectedOption)),
+            'is-disabled': option.disabled
+          }"
           @click="handleSelect(option)"
         >
           <div class="x-select-options__content">
@@ -442,6 +471,10 @@ onBeforeUnmount(() => {
       background-color: var(--skin__bg_1);
     }
 
+    &.is-active {
+      color: var(--skin__primary);
+    }
+
     &.is-disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -459,12 +492,24 @@ onBeforeUnmount(() => {
     font-size: 11px;
   }
 
+  &__item.is-active &__content {
+    color: var(--skin__primary);
+  }
+
   &__icon {
     margin-right: 5px;
     width: 18px;
     height: 18px;
     border-radius: 9999px;
   }
+}
+
+.x-select-options--fit-option-width {
+  width: max-content;
+}
+
+.x-select-options--fit-option-width .x-select-options__item {
+  min-width: 100%;
 }
 
 [dir="rtl"] .x-select__prefix {
