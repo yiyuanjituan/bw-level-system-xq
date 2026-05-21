@@ -12,6 +12,10 @@ function open() {
   initData()
 }
 
+function close() {
+  show.value = false;
+}
+
 function initData() {
   getChannelList().then((res) => {
     listData.value = res;
@@ -20,7 +24,8 @@ function initData() {
 
 
 defineExpose({
-  open: open
+  open: open,
+  close
 })
 </script>
 

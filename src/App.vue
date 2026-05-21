@@ -43,6 +43,7 @@ const busListen = () => {
   // 退出登录
   bus.on("logout", () => {
     auth.logout();
+    refs['rechargeDrawer']?.close()
     router.replace({ path: "/home/login" });
   });
   // 点开找到我们

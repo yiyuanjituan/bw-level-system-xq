@@ -17,6 +17,8 @@ const router = createRouter({
 export interface toRouteType extends RouteLocationNormalized {
   meta: {
     isTabBar: any;
+    order?: number;
+    tabBarOrder?: number;
     title?: string;
     noCache?: boolean;
   };

@@ -10,6 +10,10 @@ import { bus } from "@/utils/mitt";
 const active = ref(0);
 const route = useRoute();
 
+function getTabBarOrder(meta?: { order?: number; tabBarOrder?: number }) {
+  return meta?.tabBarOrder ?? meta?.order ?? 0;
+}
+
 const tabBar = ref<any[]>([
   {
     name: "首页",
@@ -56,7 +60,7 @@ const tabBar = ref<any[]>([
 watch(() => route.path, path => {
     const newRoute = flattenRoutes(routes);
     const info = newRoute.find(v => v.path === path);
-    active.value = info.meta?.order;
+    active.value = getTabBarOrder(info.meta);
   },
   { immediate: true }
 );
@@ -75,7 +79,7 @@ function handleClick(item: any) {
   const newNow = newRoute.find(v => v.path === route.path);
   if (newNext?.meta?.isTabBar && newNow?.meta?.isTabBar) {
     animation = "page-slide-backward";
-    if (newNext.meta?.order > newNow.meta?.order)
+    if (getTabBarOrder(newNext.meta) > getTabBarOrder(newNow.meta))
       animation = "page-slide-forward";
   }
   // 路由排序

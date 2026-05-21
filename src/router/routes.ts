@@ -55,6 +55,7 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               title: "优惠",
               order: 1,
+              tabBarOrder: 1,
               headerOrder: 1,
               isTabBar: true,
               pageTransition: "page-slide-forward"
@@ -67,6 +68,7 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               title: "任务",
               order: 2,
+              tabBarOrder: 1,
               headerOrder: 2,
               isTabBar: true,
               pageTransition: "page-slide-forward"
@@ -79,6 +81,7 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               title: "详情",
               order: 5,
+              tabBarOrder: 1,
               headerOrder: 5,
               isTabBar: true,
               pageTransition: "page-slide-forward"
@@ -91,6 +94,7 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               title: "利息宝",
               order: 6,
+              tabBarOrder: 1,
               headerOrder: 6,
               isTabBar: true,
               pageTransition: "page-slide-forward"
@@ -103,6 +107,7 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               title: "VIP",
               order: 3,
+              tabBarOrder: 1,
               headerOrder: 3,
               isTabBar: true,
               pageTransition: "page-slide-forward"
@@ -228,7 +233,16 @@ const routes: Array<RouteRecordRaw> = [
           isSecondary: true,
           pageTransition: "page-slide-forward"
         },
-      }
+      },
+      {
+        path: "report",
+        name: "Report",
+        component: () => import("@/views/home/report.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        },
+      },
     ]
   }
 ];

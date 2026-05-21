@@ -22,7 +22,7 @@ const list = ref([
     icon_1: "style_2_icon_list_zhmx",
     icon_2: "style_2_icon_list_zhmx2",
     name: "账户明细",
-    url: "账户明细"
+    url: "/home/report"
   },
   {
     key: "tzjl",

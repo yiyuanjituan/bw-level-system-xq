@@ -269,6 +269,11 @@ declare namespace Eps {
 			showAccount?: number;
 
 		/**
+			 * 用户标签
+			 */
+			user_tag?: string;
+
+		/**
 			 * 创建时间
 			 */
 			createTime?: string;
