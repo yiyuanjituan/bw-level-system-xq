@@ -3,14 +3,14 @@ import { reactive, ref } from "vue";
 import { verifyWithdrawalPassword } from "@/api/common";
 import { showCustomDialog } from "@/hooks/useCommon";
 
-const emits = defineEmits(['input-true'])
+const emits = defineEmits(["input-true"]);
 const show = ref(false);
-const showKeyboard = ref(false)
+const showKeyboard = ref(false);
 const showEye = ref(false);
 const showError = ref(false);
 const form = reactive({
-  password: "",
-})
+  password: ""
+});
 
 function open() {
   show.value = true;
@@ -23,11 +23,11 @@ function close() {
 }
 
 const handleShowPassword = () => {
-  showKeyboard.value = true
-}
+  showKeyboard.value = true;
+};
 const hideKeyboard = () => {
-  showKeyboard.value = false
-}
+  showKeyboard.value = false;
+};
 
 const handleNext = () => {
   if (!form.password || form.password.length != 6) {
@@ -35,18 +35,26 @@ const handleNext = () => {
     return;
   }
   verifyWithdrawalPassword(form).then(res => {
-    emits('input-true')
-    close()
-  })
-}
+    emits("input-true");
+    close();
+  });
+};
 
 function handleForgetPassword() {
-  showCustomDialog({ title: '温馨提示', message: '请联系客服找回密码！\n', showClose: true, showCancelButton: true, confirmButtonText: '客服', width: 300, bgColor: '#191919' }).then((res) => {
+  showCustomDialog({
+    title: "温馨提示",
+    message: "请联系客服找回密码！\n",
+    showClose: true,
+    showCancelButton: true,
+    confirmButtonText: "客服",
+    width: 300,
+    bgColor: "#191919"
+  }).then(res => {
     if (res) {
       // @todo 实现跳转客服界面
       console.log(res);
     }
-  })
+  });
 }
 
 defineExpose({
@@ -71,11 +79,26 @@ defineExpose({
           <div class="content-box">
             <div class="tip-box">
               <span>提现密码</span>
-              <svg-icon name="comm_icon_hide" class-name="eye-icon text-[18px] text-[#242424]" v-if="!showEye" @click="showEye = !showEye" />
-              <svg-icon name="comm_icon_show" class-name="eye-icon text-[18px] main-text" v-if="showEye" @click="showEye = !showEye" />
+              <svg-icon
+                name="comm_icon_hide"
+                class-name="eye-icon text-[18px] text-[#242424]"
+                v-if="!showEye"
+                @click="showEye = !showEye"
+              />
+              <svg-icon
+                name="comm_icon_show"
+                class-name="eye-icon text-[18px] main-text"
+                v-if="showEye"
+                @click="showEye = !showEye"
+              />
             </div>
             <div class="form-withdraw-pass">
-              <van-password-input :mask="!showEye" :value="form.password" :focused="showKeyboard" @focus="handleShowPassword" />
+              <van-password-input
+                :mask="!showEye"
+                :value="form.password"
+                :focused="showKeyboard"
+                @focus="handleShowPassword"
+              />
             </div>
             <div class="explain" v-if="showError">
               <div class="error-icon">
@@ -100,7 +123,13 @@ defineExpose({
   </div>
   <teleport to="body">
     <div class="absolute z-[99999] input-keyboard">
-      <van-number-keyboard :maxlength="6" v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" @input="showError = false" />
+      <van-number-keyboard
+        :maxlength="6"
+        v-model="form.password"
+        :show="showKeyboard"
+        @blur="hideKeyboard"
+        @input="showError = false"
+      />
     </div>
   </teleport>
 </template>
@@ -216,7 +245,7 @@ defineExpose({
         min-height: 15px;
         margin-top: 4px;
         font-size: 11px;
-        transition: color .3s cubic-bezier(.215, .61, .355, 1);
+        transition: color 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
         color: var(--skin__accent_2);
 
         .error-icon {
@@ -249,7 +278,7 @@ defineExpose({
     --van-number-keyboard-key-font-size: 21px;
   }
   :deep(.van-key__wrapper) {
-    color: #BCBCBC;
+    color: #bcbcbc;
   }
   :deep(.van-key--active) {
     background: #191919 !important;
@@ -271,7 +300,6 @@ defineExpose({
     z-index: 9999;
   }
 }
-
 </style>
 
 <style>

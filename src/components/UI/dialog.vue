@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { bus } from "@/utils/mitt";
 import { closeDialog, DialogOptions } from "vant";
 import UiButton from "@/components/Common/Button.vue";
-import { useWindowSize } from '@vant/use';
+import { useWindowSize } from "@vant/use";
 
 defineOptions({
   name: "ui-dialog"
@@ -19,15 +19,15 @@ export interface IProps {
   bgColor?: string;
 }
 
-export type ICustomDialogOptions = DialogOptions & IProps
+export type ICustomDialogOptions = DialogOptions & IProps;
 
 const show = ref(false);
 const params = ref<ICustomDialogOptions>({});
 const { width: windowWidth } = useWindowSize();
 const dialogWidth = computed(() => {
-  if (typeof params.value != 'number' && isNaN(Number(params.value.width))) return params.value.width;
-  return (Number(params.value?.width) ?? 320) / 375 * windowWidth.value;
-})
+  if (typeof params.value != "number" && isNaN(Number(params.value.width))) return params.value.width;
+  return ((Number(params.value?.width) ?? 320) / 375) * windowWidth.value;
+});
 
 function showDialog(options: ICustomDialogOptions) {
   show.value = true;
@@ -59,11 +59,17 @@ onMounted(() => {
     <template #default>
       <div class="dialog-container" :style="{ '--bg-color': params.bgColor }">
         <div class="dialog-content">
-          <div class="title" v-if="params.title" :style="{ '--title-color': params.titleColor ?? 'white' }">{{ params.title }}</div>
+          <div class="title" v-if="params.title" :style="{ '--title-color': params.titleColor ?? 'white' }">
+            {{ params.title }}
+          </div>
           <div class="message" v-if="params.message">{{ params.message }}</div>
-          <div class="btn-list pt-[20px] pb-[5px] flex">
-            <ui-button @click="handleClose" v-if="params.showCancelButton" plain>{{ params?.cancelButtonText || '取消' }}</ui-button>
-            <ui-button class="!mr-[0px] !text-white" @click="handleConfirm">{{ params?.confirmButtonText }}</ui-button>
+          <div class="btn-list pt-[20px] pb-[5px] flex gap-[15px]">
+            <x-button @click="handleClose" v-if="params.showCancelButton" plain type="primary" class="flex-1">
+              {{ params?.cancelButtonText || "取消" }}
+            </x-button>
+            <x-button class="!mr-[0px] !text-white flex-1" @click="handleConfirm">
+              {{ params?.confirmButtonText }}
+            </x-button>
           </div>
         </div>
       </div>

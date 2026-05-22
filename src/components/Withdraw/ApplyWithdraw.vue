@@ -6,15 +6,15 @@ import { getWithdrawInfo } from "@/api/common";
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
-const userCardList = ref([])
+const userCardList = ref([]);
 const typeList = [
-  { id: 0, name: '钱包' },
+  { id: 0, name: "钱包" },
   { id: 1, name: "正常提现" },
   { id: 2, name: "转为数字货币" },
   { id: 3, name: "三方钱包" }
 ];
 const selectTypeId = ref(1);
-provide('userCardList', userCardList)
+provide("userCardList", userCardList);
 
 function handleChangeType(item) {
   selectTypeId.value = item.id;
@@ -32,7 +32,7 @@ const updateWallet = () => {
 function init() {
   getWithdrawInfo().then(data => {
     userCardList.value = data?.cardList ?? [];
-  })
+  });
 }
 
 onMounted(() => updateWallet());

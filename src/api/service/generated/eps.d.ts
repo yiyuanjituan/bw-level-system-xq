@@ -767,6 +767,30 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface BaseWithdraw {
+		/**
+			 * 发起提现申请
+			 */
+			applyWithdraw(data?: any): Promise<any>;
+
+		/**
+			 * 提现记录
+			 */
+			records(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { applyWithdraw: string; records: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { applyWithdraw: boolean; records: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface DictInfo {
 		/**
 			 * 获得所有字典类型
@@ -1173,6 +1197,7 @@ declare namespace Eps {
 		base: {
 			comm: BaseComm;
 			recharge: BaseRecharge;
+			withdraw: BaseWithdraw;
 		};
 		dict: {
 			info: DictInfo;

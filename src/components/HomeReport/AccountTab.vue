@@ -72,9 +72,9 @@ const detailOptions: AccountFilterOption[] = [
 ];
 
 const summaryItems: SummaryItem[] = [
-  { label: "累计充值", value: 0, color: "success" },
-  { label: "累计提现", value: 0, color: "danger" },
-  { label: "累计领取", value: 0, color: "warn" }
+  { label: "累计充值", value: '￥0.00', color: "success" },
+  { label: "累计提现", value: '￥0.00', color: "danger" },
+  { label: "累计领取", value: '￥0.00', color: "warn" }
 ];
 
 function createTodayRange(): AccountTimeRange {

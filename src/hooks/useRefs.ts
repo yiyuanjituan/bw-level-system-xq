@@ -1,14 +1,20 @@
-import { reactive } from "vue";
-
 export function useRefs() {
-  const refs = reactive<{ [key: string]: any }>({});
+  const refs: Record<string, any> = {};
+  const setters = new Map<string, (el: any) => void>();
 
-  // 设置 refs 的方法，返回一个函数用于更新特定 ref
   function setRefs(name: string) {
-    return (el: any) => {
-      refs[name] = el;
-      return () => refs[name]; // 返回一个函数用于获取当前 ref
-    };
+    if (!setters.has(name)) {
+      setters.set(name, (el: any) => {
+        if (el) {
+          refs[name] = el;
+          return;
+        }
+
+        delete refs[name];
+      });
+    }
+
+    return setters.get(name)!;
   }
 
   return { refs, setRefs };

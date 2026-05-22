@@ -1,25 +1,21 @@
 <script setup lang="ts">
-interface SummaryItem {
-  label: string;
-  value: number;
-  color: "success" | "danger" | "warn";
-}
+import type { SummaryItem } from "@/components/HomeReport/types";
 
 defineProps<{
   items: SummaryItem[];
 }>();
 
-function formatMoney(value: number) {
-  return value.toFixed(2);
-}
 </script>
 
 <template>
   <footer class="summary-bar">
     <div v-for="item in items" :key="item.label" class="summary-bar__item">
       <div class="summary-bar__label">{{ item.label }}</div>
-      <div class="summary-bar__value" :class="`summary-bar__value--${item.color}`">
-        ￥{{ formatMoney(item.value) }}
+      <div
+        class="summary-bar__value"
+        :class="`summary-bar__value--${item.color ?? 'default'}`"
+      >
+        {{ item.value }}
       </div>
     </div>
   </footer>
@@ -63,6 +59,10 @@ function formatMoney(value: number) {
   }
 
   .summary-bar__value {
+    &.summary-bar__value--default {
+      color: var(--skin__lead);
+    }
+
     &.summary-bar__value--success {
       color: #1fb72b;
     }

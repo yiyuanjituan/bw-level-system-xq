@@ -1,126 +1,91 @@
-<script setup lang="ts">
-import { computed, inject, onMounted, ref, Ref, watch } from "vue";
-import { desensitizeWithLodash } from "@/hooks/useCommon";
+﻿<script setup lang="ts">
+import { computed, inject, ref, Ref, watch } from "vue";
+import { desensitizeWithLodash, showCustomToast } from "@/hooks/useCommon";
 
-import UiForm from "@/components/UI/form.vue";
-import UiFormItem from "@/components/UI/form-item.vue";
-import UiCommonSelect from "@/components/UI/common-select.vue";
-import UiInput from "@/components/UI/input.vue";
-import UiButton from "@/components/Common/Button.vue";
 import useAuthStore from "@/store/modules/user";
+import { service } from "@/api/service";
 
-const auth = useAuthStore()
-const showEye = ref(false);
-const showKeyboard = ref(false)
-const handleShowPassword = () => showKeyboard.value = true;
-const hideKeyboard = () => showKeyboard.value = false;
-const formData = ref<any>({})
-const userCardList = inject<Ref<any[]>>("userCardList")
-const selectCardInfo = computed(() => {
-  const data = userCardList.value.find(v => v.id == formData.value.card_id)
-  return data ?? {}
-})
-
-const formRules = ref({
-  realname: [
-    { required: true, message: "真实姓名不能为空", trigger: "blur" },
-    {
-      validator: (rule, value, callback) => {
-        const validators = [
-          {
-            pattern: /^[a-zA-Z\u4e00-\u9fa5]+(?:[·\-][a-zA-Z\u4e00-\u9fa5]+)*$/,
-            message: "姓名格式错误"
-          }
-        ];
-        // 只要有一个验证通过就返回成功
-        for (const validator of validators) {
-          if (validator.pattern.test(value)) {
-            callback();
-            return;
-          }
-        }
-        // 如果都不通过，返回第一个错误信息
-        callback(new Error(validators[0].message));
-      },
-      trigger: "blur"
-    }
-  ],
-  bank_number: [
-    { required: true, message: "支付宝账号不能为空", trigger: "blur" },
-    {
-      validator: (rule, value, callback) => {
-        const validators = [
-          {
-            pattern: /^1[3-9]\d{9}$/,
-            message: "支付宝账号不合法,必须为手机或邮箱"
-          },
-          {
-            pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-            message: "支付宝账号不合法,必须为手机或邮箱"
-          }
-        ];
-        // 只要有一个验证通过就返回成功
-        for (const validator of validators) {
-          if (validator.pattern.test(value)) {
-            callback();
-            return;
-          }
-        }
-        // 如果都不通过，返回第一个错误信息
-        callback(new Error(validators[0].message));
-      },
-      trigger: "blur"
-    }
-  ]
+const auth = useAuthStore();
+const canWithdraw = computed(() => {
+  const { password, card_id, money } = formData.value;
+  return password && password.length == 6 && card_id && money && money > 0;
 });
+const showEye = ref(false);
+const showKeyboard = ref(false);
+const handleShowPassword = () => (showKeyboard.value = true);
+const hideKeyboard = () => (showKeyboard.value = false);
+const formData = ref<any>({});
+const userCardList = inject<Ref<any[]>>("userCardList");
+const withdrawCardList = computed(() => userCardList.value.filter(v => v.type == 0 || v.type == 3));
+const withdrawCardOptions = computed(() =>
+  withdrawCardList.value.map(option => ({
+    ...option,
+    label: `${option.bank_name} (${desensitizeWithLodash(option.bank_number)})`,
+    icon: option.bank_icon
+  }))
+);
+const selectCardInfo = computed(() => withdrawCardList.value.find(v => v.id == formData.value.card_id) ?? {});
+const isCardUnavailable = computed(() => selectCardInfo.value?.disabled || !selectCardInfo.value?.id);
+const withdrawLoading = ref(false);
 
 function init() {
-  const list = userCardList.value.filter(v => v.type == 0 || v.type == 3);
-  if (list && list.length) {
-    const defaultIndex = list.findIndex(v => v.is_default)
+  const list = withdrawCardList.value;
+  if (list.length) {
+    const defaultIndex = list.findIndex(v => v.is_default);
     formData.value.card_id = list[defaultIndex === -1 ? 0 : defaultIndex]?.id;
   }
 }
 
 function withdrawAll() {
-  formData.value.money = Number(auth.user.money) ?? 0
+  formData.value.money = Number(auth.user.money) ?? 0;
 }
 
-watch(() => userCardList.value, () => {
-  init()
-})
+watch(
+  () => userCardList.value,
+  () => {
+    init();
+  },
+  { immediate: true }
+);
 
-onMounted(() => init())
+function handleApplyWithdraw() {
+  withdrawLoading.value = true;
+  service.base.withdraw
+    .applyWithdraw(formData.value)
+    .finally(() => (withdrawLoading.value = false))
+    .then(() => {
+      formData.value = {};
+      init();
+      showCustomToast({ message: "申请成功", type: "success" });
+      auth.updateInfo();
+    });
+}
 </script>
 
 <template>
   <div class="apply-box">
-    <ui-form>
-      <ui-form-item style="padding-right: 35px; position: relative;" v-if="formData.card_id">
-        <ui-common-select selectedSlot="body" optionSlot="option-cell" :options="userCardList.filter(v => v.type == 0 || v.type == 3)" value-field="id" label-field="bank_name" icon-field="bank_icon" v-model="formData.card_id" placeholder="请选择发卡银行">
-          <template #body="{ option }">
-            <div class="flex items-center">
-              <img :src="option.bank_icon" alt="." class="w-[24px] h-[24px] mr-[10px] rounded-[5px]" />
-              <span class="name">{{ option.bank_name }}</span>
-              <span class="ltr">({{ desensitizeWithLodash(option.bank_number) }})</span>
-            </div>
-          </template>
-          <template #option-cell="{ option, isActive }">
-            <div class="flex items-center">
-              <img :src="option.bank_icon" alt="." class="w-[24px] h-[24px] mr-[10px] rounded-[5px]" />
-              <span class="name" :class="{ 'main-text': isActive }">{{ option.bank_name }}</span>
-              <span class="ltr" :class="{ 'main-text': isActive }">({{ desensitizeWithLodash(option.bank_number) }})</span>
-            </div>
-          </template>
-        </ui-common-select>
+    <x-form :model="formData">
+      <x-form-item class="apply-card-select" style="padding-right: 35px; position: relative" v-if="formData.card_id">
+        <x-select
+          v-model="formData.card_id"
+          :options="withdrawCardOptions"
+          value-key="id"
+          label-key="label"
+          icon-key="icon"
+          placeholder="请选择发卡银行"
+        />
         <div class="absolute right-0 flex items-center justify-end h-[40px]">
           <svg-icon name="icon_tx_txgl" class-name="text-[25px] main-text"></svg-icon>
         </div>
-      </ui-form-item>
-      <ui-form-item v-if="formData.card_id">
-        <ui-input
-          :disabled="(selectCardInfo?.disabled || !selectCardInfo.id)"
-          :placeholder="(selectCardInfo?.disabled || !selectCardInfo.id) ? '该渠道维护中，无法提现' : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`"
+      </x-form-item>
+      <x-form-item v-if="formData.card_id">
+        <x-input
+          :disabled="isCardUnavailable"
+          :placeholder="
+            isCardUnavailable
+              ? '该渠道维护中，无法提现'
+              : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`
+          "
           v-model="formData.money"
         >
           <template #prefix>
@@ -129,40 +94,58 @@ onMounted(() => init())
           <template #suffix>
             <div class="main-text text-[11px]" @click="withdrawAll">全部</div>
           </template>
-        </ui-input>
-      </ui-form-item>
-      <ui-form-item v-if="!formData.card_id">
-        <ui-input readonly placeholder="添加提现账户" v-model="formData.money">
+        </x-input>
+      </x-form-item>
+      <x-form-item v-if="!formData.card_id">
+        <x-input readonly placeholder="添加提现账户" v-model="formData.money">
           <template #prefix>
             <svg-icon name="img_tx_tjzh" class-name="text-[25px] text-[#F4F0EC]" />
           </template>
           <template #suffix>
             <svg-icon name="comm_icon_fh" class-name="rotate-[180deg] text-[10px] text-[#757575]" />
           </template>
-        </ui-input>
-      </ui-form-item>
-      <ui-form-item v-if="!formData.card_id">
-        <ui-input readonly placeholder="请先添加提现账户才能提现">
+        </x-input>
+      </x-form-item>
+      <x-form-item v-if="!formData.card_id">
+        <x-input readonly placeholder="请先添加提现账户才能提现">
           <template #prefix>
             <div class="text-white text-[11px]">￥</div>
           </template>
-        </ui-input>
-      </ui-form-item>
+        </x-input>
+      </x-form-item>
       <div class="line"></div>
       <div class="form-item-title">
         <span>验证提现密码</span>
-        <svg-icon name="comm_icon_hide" class-name="text-[18px] text-[#242424]" v-if="!showEye" @click="showEye = !showEye" />
+        <svg-icon
+          name="comm_icon_hide"
+          class-name="text-[18px] text-[#242424]"
+          v-if="!showEye"
+          @click="showEye = !showEye"
+        />
         <svg-icon name="comm_icon_show" class-name="text-[18px] main-text" v-if="showEye" @click="showEye = !showEye" />
       </div>
-      <ui-form-item class="form-withdraw-pass">
-        <van-password-input :mask="!showEye" :value="formData.password" :focused="showKeyboard" @focus="handleShowPassword" />
-      </ui-form-item>
+      <x-form-item class="form-withdraw-pass">
+        <van-password-input
+          :mask="!showEye"
+          :value="formData.password"
+          :focused="showKeyboard"
+          @focus="handleShowPassword"
+        />
+      </x-form-item>
       <div class="button-list">
-        <ui-button type="primary" class="button" plain>赚取利息</ui-button>
-        <van-badge content="年利率88%" position="top-left" :offset="['7%','2%']" class="absolute"></van-badge>
-        <ui-button type="info" class="button" disabled>确定提现</ui-button>
+        <x-button type="primary" class="button" plain>赚取利息</x-button>
+        <van-badge content="年利率88%" position="top-left" :offset="['7%', '1%']" class="absolute"></van-badge>
+        <x-button
+          type="primary"
+          class="button"
+          :disabled="!canWithdraw"
+          @click="handleApplyWithdraw"
+          :loading="withdrawLoading"
+        >
+          确定提现
+        </x-button>
       </div>
-    </ui-form>
+    </x-form>
     <teleport to="body">
       <div class="absolute z-[99999] input-keyboard">
         <van-number-keyboard :maxlength="6" v-model="formData.password" :show="showKeyboard" @blur="hideKeyboard" />
@@ -174,22 +157,6 @@ onMounted(() => init())
 <style scoped lang="less">
 .apply-box {
   padding: 10px;
-  .name {
-    max-width: 175px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 11px;
-    color: white;
-  }
-  .ltr {
-    line-height: normal;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 11px;
-    color: white;
-  }
   .line {
     height: 0.5px;
     background: var(--skin__border);
@@ -250,7 +217,7 @@ onMounted(() => init())
       }
     }
   }
-  :deep(.ui-input__field) {
+  :deep(.x-input__field) {
     font-weight: 700;
     font-size: 15px;
     &::placeholder {
@@ -260,6 +227,31 @@ onMounted(() => init())
   }
 }
 
+.apply-card-select {
+  :deep(.x-select) {
+    padding-right: 12 px;
+  }
+
+  :deep(.x-select__icon-wrap) {
+    padding-right: 10px;
+  }
+
+  :deep(.x-select__icon),
+  :deep(.x-select-options__icon) {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+  }
+
+  :deep(.x-select__label),
+  :deep(.x-select-options__content) {
+    color: white;
+  }
+
+  :deep(.x-select__label) {
+    max-width: 100%;
+  }
+}
 
 .form-withdraw-pass {
   --van-password-input-margin: 0.5px;
@@ -304,7 +296,7 @@ onMounted(() => init())
     --van-number-keyboard-key-font-size: 21px;
   }
   :deep(.van-key__wrapper) {
-    color: #BCBCBC;
+    color: #bcbcbc;
   }
   :deep(.van-key--active) {
     background: #191919 !important;

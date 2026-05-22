@@ -1,119 +1,131 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import UiRadiusSelect from "@/components/UI/radius-select.vue";
-import type { SelectOption } from "@/components/HomeReport/types";
+import type {
+  AccountTimeRange,
+  SelectOption,
+  SummaryItem
+} from "@/components/HomeReport/types";
+import HomeReportSummaryBar from "@/components/HomeReport/SummaryBar.vue";
+import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
+import UiEmpty from "@/components/UI/empty.vue";
+import dayjs from "dayjs";
 
-const dayOptions: SelectOption[] = [
-  { label: "今日" },
-  { label: "昨日" },
-  { label: "本周" },
-  { label: "本月" }
+type PersonalFilterOption = SelectOption & {
+  value: number;
+};
+
+const summaryItems: SummaryItem[] = [
+  { label: "累计注单数", value: 0 },
+  { label: "累计有效投注", value: '￥0.00' },
+  { label: "累计预扣税", value: '￥0.00' },
+  { label: "累计输赢", value: '￥0.00', color: "danger" }
 ];
 
-const typeOptions: SelectOption[] = [
-  { label: "全部类型" },
-  { label: "充值报表" },
-  { label: "提现报表" },
-  { label: "优惠报表" }
+const typeOptions: PersonalFilterOption[] = [
+  { label: "全部类型", value: 0 },
+  { label: "充值报表", value: 1 },
+  { label: "提现报表", value: 2 },
+  { label: "优惠报表", value: 3 }
 ];
 
-const platformOptions: SelectOption[] = [
-  { label: "全部平台" },
-  { label: "体育" },
-  { label: "真人" },
-  { label: "电子" }
+const platformOptions: PersonalFilterOption[] = [
+  { label: "全部平台", value: 0 },
+  { label: "体育", value: 1 },
+  { label: "真人", value: 2 },
+  { label: "电子", value: 3 }
 ];
 
-const dayFilterIndex = ref(0);
-const typeFilterIndex = ref(0);
-const platformFilterIndex = ref(0);
+const typeFilterValue = ref(typeOptions[0]?.value ?? 0);
+const platformFilterValue = ref(platformOptions[0]?.value ?? 0);
+const timeRange = ref<AccountTimeRange>(createTodayRange());
 
-const emptyStateText = computed(() => `${dayOptions[dayFilterIndex.value]?.label ?? "今日"}暂无记录`);
+function createTodayRange(): AccountTimeRange {
+  const today = dayjs().format("YYYY-MM-DD");
+
+  return {
+    mode: "today",
+    label: "今日",
+    startTime: dayjs(today).startOf("day").unix(),
+    endTime: dayjs(today).endOf("day").unix(),
+    startDate: today,
+    endDate: today
+  };
+}
+
+function handleSeeMore() {
+  const yesterday = dayjs().subtract(1, "day");
+
+  timeRange.value = {
+    mode: "yesterday",
+    label: "昨日",
+    startTime: yesterday.startOf("day").unix(),
+    endTime: yesterday.endOf("day").unix(),
+    startDate: yesterday.format("YYYY-MM-DD"),
+    endDate: yesterday.format("YYYY-MM-DD")
+  };
+}
+
+const emptyStateText = computed(() => {
+  if (timeRange.value.mode === "custom") {
+    return "所选时间暂无记录";
+  }
+
+  return `${timeRange.value.label}暂无记录`;
+});
 </script>
 
 <template>
   <div class="personal-tab">
     <section class="filter-row">
       <div class="filter-row__left">
-        <ui-radius-select :options="dayOptions" v-model="dayFilterIndex">
-          <template #default="{ isShow, options, value }">
-            <div class="pill-select pill-select--compact" :class="{ 'pill-select--active': isShow }">
-              <span class="pill-select__text">{{ options[value]?.label }}</span>
-              <svg-icon
-                name="arrow-back"
-                :class-name="isShow ? 'rotate-[90deg]' : 'rotate-[-90deg]'"
-                class="pill-select__arrow"
-              />
-            </div>
-          </template>
-        </ui-radius-select>
+        <AccountTimeFilter v-model="timeRange" />
+        <div class="filter-select">
+          <x-select
+            v-model="typeFilterValue"
+            :options="typeOptions"
+            value-key="value"
+            placement="bottom"
+            fit-option-width
+          />
+        </div>
 
-        <ui-radius-select :options="typeOptions" v-model="typeFilterIndex">
-          <template #default="{ isShow, options, value }">
-            <div class="pill-select" :class="{ 'pill-select--active': isShow }">
-              <span class="pill-select__text">{{ options[value]?.label }}</span>
-              <svg-icon
-                name="arrow-back"
-                :class-name="isShow ? 'rotate-[90deg]' : 'rotate-[-90deg]'"
-                class="pill-select__arrow"
-              />
-            </div>
-          </template>
-        </ui-radius-select>
-
-        <ui-radius-select :options="platformOptions" v-model="platformFilterIndex">
-          <template #default="{ isShow, options, value }">
-            <div class="pill-select" :class="{ 'pill-select--active': isShow }">
-              <span class="pill-select__text">{{ options[value]?.label }}</span>
-              <svg-icon
-                name="arrow-back"
-                :class-name="isShow ? 'rotate-[90deg]' : 'rotate-[-90deg]'"
-                class="pill-select__arrow"
-              />
-            </div>
-          </template>
-        </ui-radius-select>
+        <div class="filter-select">
+          <x-select
+            v-model="platformFilterValue"
+            :options="platformOptions"
+            value-key="value"
+            placement="bottom"
+            fit-option-width
+          />
+        </div>
       </div>
-      <div class="sort-entry">
+
+      <div class="sort-entry" v-if="false">
         <span>排序</span>
-        <svg-icon name="arrow-back" class-name="sort-entry__icon rotate-[90deg]" />
+        <svg-icon
+          name="arrow-back"
+          class-name="sort-entry__icon rotate-[90deg]"
+        />
       </div>
     </section>
 
     <section class="content-area">
-      <div class="empty-state">
-        <div class="empty-state__graphic">
-          <span class="empty-state__disc"></span>
-          <span class="empty-state__box empty-state__box--top"></span>
-          <span class="empty-state__box empty-state__box--left"></span>
-          <span class="empty-state__box empty-state__box--right"></span>
-        </div>
-        <div class="empty-state__text">
-          <span>{{ emptyStateText }}</span>
-          <span>，可</span>
-          <span class="empty-state__link">查看更多</span>
-        </div>
-      </div>
+      <ui-empty>
+        <template #text>
+          <div class="empty-state__text">
+            <span>{{ emptyStateText }}</span>
+            <template v-if="timeRange.mode === 'today'">
+              <span>，可</span>
+              <span class="empty-state__link" @click="handleSeeMore"
+                >查看更多</span
+              >
+            </template>
+          </div>
+        </template>
+      </ui-empty>
     </section>
 
-    <footer class="summary-grid">
-      <div class="summary-grid__item">
-        <span class="summary-grid__label">累计注单数</span>
-        <span class="summary-grid__value">0</span>
-      </div>
-      <div class="summary-grid__item">
-        <span class="summary-grid__label">累计有效投注</span>
-        <span class="summary-grid__value">0.00USDT</span>
-      </div>
-      <div class="summary-grid__item">
-        <span class="summary-grid__label">累计预扣税</span>
-        <span class="summary-grid__value">0.00USDT</span>
-      </div>
-      <div class="summary-grid__item">
-        <span class="summary-grid__label">累计输赢</span>
-        <span class="summary-grid__value summary-grid__value--danger">0.00USDT</span>
-      </div>
-    </footer>
+    <HomeReportSummaryBar :items="summaryItems" />
   </div>
 </template>
 
@@ -127,8 +139,8 @@ const emptyStateText = computed(() => `${dayOptions[dayFilterIndex.value]?.label
 .filter-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+  padding: 10px;
 }
 
 .filter-row__left {
@@ -136,158 +148,69 @@ const emptyStateText = computed(() => `${dayOptions[dayFilterIndex.value]?.label
   align-items: center;
   gap: 8px;
   min-width: 0;
-}
-
-.pill-select {
-  min-width: 84px;
-  height: 30px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e4e6ee;
-  border-radius: 15px;
-  color: #8a90a0;
-  box-sizing: border-box;
-}
-
-.pill-select--compact {
-  min-width: 66px;
-}
-
-.pill-select--active {
-  border-color: #6a6dff;
-}
-
-.pill-select__text {
   flex: 1;
-  min-width: 0;
-  font-size: 11px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.pill-select__arrow {
+.filter-select {
+  width: 81px;
+  flex-shrink: 0;
+}
+
+.filter-select :deep(.x-select) {
+  height: 25px;
+  padding: 0 10px;
+  border: 1px solid #363636;
+  border-radius: 14px;
+  background: #191919;
+  color: #8e8e8e;
+}
+
+.filter-select :deep(.x-select--focused) {
+  border-color: #dfbe5b;
+  color: #dfbe5b;
+}
+
+.filter-select :deep(.x-select__wrap) {
+  line-height: 25px;
+}
+
+.filter-select :deep(.x-select__label),
+.filter-select :deep(.x-select__placeholder) {
   font-size: 10px;
-  color: #9aa0b2;
+  color: inherit;
+}
+
+.filter-select :deep(.x-select__suffix) {
+  margin-left: 6px;
+  font-size: 10px;
 }
 
 .sort-entry {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: #8d93a3;
+  color: rgba(255, 255, 255, 0.48);
   font-size: 12px;
   white-space: nowrap;
-  padding-right: 2px;
+  flex-shrink: 0;
 }
 
 .content-area {
   flex: 1;
+  min-height: 0;
   display: flex;
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 64px;
-  color: #9aa0ad;
-}
-
-.empty-state__graphic {
-  position: relative;
-  width: 116px;
-  height: 116px;
-  margin-bottom: 18px;
-}
-
-.empty-state__disc {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(238, 240, 245, 0.82) 58%, rgba(226, 229, 236, 0.95));
-}
-
-.empty-state__box {
-  position: absolute;
-  width: 36px;
-  height: 24px;
-  background: linear-gradient(180deg, #fefefe 0%, #dde2eb 100%);
-  border-radius: 4px;
-  box-shadow: 0 8px 14px rgba(136, 145, 165, 0.16);
-}
-
-.empty-state__box::before {
-  content: "";
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  top: -7px;
-  height: 10px;
-  background: linear-gradient(180deg, #eef2f8 0%, #d6dce7 100%);
-  clip-path: polygon(0 100%, 50% 0, 100% 100%);
-}
-
-.empty-state__box--top {
-  left: 40px;
-  top: 30px;
-  transform: rotate(8deg);
-}
-
-.empty-state__box--left {
-  left: 22px;
-  top: 46px;
-  transform: rotate(-20deg);
-}
-
-.empty-state__box--right {
-  right: 20px;
-  top: 46px;
-  transform: rotate(22deg);
 }
 
 .empty-state__text {
+  color: #8e8e8e;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 .empty-state__link {
-  color: #6165ff;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  row-gap: 10px;
-  column-gap: 18px;
-  padding: 12px 10px 14px;
-  background: rgba(255, 255, 255, 0.97);
-  border-top: 1px solid #ececf1;
-}
-
-.summary-grid__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-width: 0;
-}
-
-.summary-grid__label {
-  color: #8d93a3;
-  font-size: 12px;
-}
-
-.summary-grid__value {
-  color: #252b36;
-  font-size: 13px;
-}
-
-.summary-grid__value--danger {
-  color: #ff4d6d;
+  color: #dfbe5b;
+  cursor: pointer;
 }
 </style>

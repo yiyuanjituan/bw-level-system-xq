@@ -17,8 +17,8 @@ export interface AccountTimeRange {
 
 export interface SummaryItem {
   label: string;
-  value: number;
-  color: "success" | "danger" | "warn";
+  value: string | number;
+  color?: "default" | "success" | "danger" | "warn";
 }
 
 export interface RecordItem {

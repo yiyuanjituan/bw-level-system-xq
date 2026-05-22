@@ -13,95 +13,100 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  listData: () => ([])
+  listData: () => []
 });
 
-const emits = defineEmits(['close'])
+const emits = defineEmits(["close"]);
 
-const showTotalWallet = ref(true)
-const showTotalChildren = ref(true)
-const isLoading = ref(false)
-const activeIds = ref<number[]>([0, 0]) // 大分类ID， 渠道ID
-const inputAmount = ref<number>()
-const isGetSiteWallet = ref(false)
-const siteWalletInfo = ref<any>({})
-const isRefreshWallet = ref(false)
+const showTotalWallet = ref(true);
+const showTotalChildren = ref(true);
+const isLoading = ref(false);
+const activeIds = ref<number[]>([0, 0]); // 大分类ID， 渠道ID
+const inputAmount = ref<number>();
+const isGetSiteWallet = ref(false);
+const siteWalletInfo = ref<any>({});
+const isRefreshWallet = ref(false);
 
 function refreshSiteWallet() {
-  isRefreshWallet.value = true
+  isRefreshWallet.value = true;
   getSiteWalletData().then(() => {
-    isRefreshWallet.value = false
-  })
+    isRefreshWallet.value = false;
+  });
 }
 
 function clickToBuyBalance() {
-  window.open(siteWalletInfo.value.buyUrl)
+  window.open(siteWalletInfo.value.buyUrl);
 }
 
 function handleChangeActiveId(record: Record<string, any>) {
   activeIds.value[0] = record.id;
   activeIds.value[1] = 0;
-  inputAmount.value = void 0
-  isGetSiteWallet.value = false
+  inputAmount.value = void 0;
+  isGetSiteWallet.value = false;
 }
 
 function handleChangeActiveChildrenId(record: Record<string, any>) {
   activeIds.value[1] = record.id;
-  inputAmount.value = void 0
-  isGetSiteWallet.value = false
+  inputAmount.value = void 0;
+  isGetSiteWallet.value = false;
 }
 
 // 点击创建订单
 function handleSubmit() {
-  if (activeIds.value.length != 2 || !activeIds.value[1]) return showCustomToast({ type: 'warning', message: '订单创建错误' })
+  if (activeIds.value.length != 2 || !activeIds.value[1])
+    return showCustomToast({ type: "warning", message: "订单创建错误" });
 
-  isLoading.value = true
-  const orderWindow = openUrlInNewWindow()
+  isLoading.value = true;
+  const orderWindow = openUrlInNewWindow();
 
   createOrder({ id: activeIds.value[1], money: inputAmount.value })
     .then(res => {
-      const url = res?.url
+      const url = res?.url;
       if (!url) {
-        orderWindow?.close()
-        return showCustomToast({ type: 'warning', message: '订单创建错误' })
+        orderWindow?.close();
+        return showCustomToast({ type: "warning", message: "订单创建错误" });
       }
 
-      openUrlInNewWindow(url, orderWindow)
-      emits('close')
-      bus.emit('showRechargeDetail', { id: res.orderId })
+      openUrlInNewWindow(url, orderWindow);
+      emits("close");
+      bus.emit("showRechargeDetail", { id: res.orderId });
     })
     .catch(() => orderWindow?.close())
-    .finally(() => isLoading.value = false)
+    .finally(() => (isLoading.value = false));
 }
 
-watch(() => props.listData, () => {
-  if (activeIds.value[0] == 0 && props.listData.length) {
-    activeIds.value[0] = props.listData[0].id
+watch(
+  () => props.listData,
+  () => {
+    if (activeIds.value[0] == 0 && props.listData.length) {
+      activeIds.value[0] = props.listData[0].id;
+    }
   }
-})
+);
 
 const activeGroup = computed(() => {
-  if (!props.listData.length) return {}
-  if (activeIds.value[0] == 0) activeIds.value[0] = props.listData[0].id
-  const info = props.listData.find(v => v.id == activeIds.value[0])
-  return info ?? {}
-})
+  if (!props.listData.length) return {};
+  if (activeIds.value[0] == 0) activeIds.value[0] = props.listData[0].id;
+  const info = props.listData.find(v => v.id == activeIds.value[0]);
+  return info ?? {};
+});
 
 const activeInfo = computed(() => {
-  const info = activeGroup.value
-  if (activeIds.value[1] == 0 && info?.children?.length > 0) activeIds.value[1] = info.children[0].id
-  const childrenData = info?.children?.find(v => v.id == activeIds.value[1])
-  return childrenData ?? {}
-})
-
+  const info = activeGroup.value;
+  if (activeIds.value[1] == 0 && info?.children?.length > 0) activeIds.value[1] = info.children[0].id;
+  const childrenData = info?.children?.find(v => v.id == activeIds.value[1]);
+  return childrenData ?? {};
+});
 
 async function getSiteWalletData() {
   isGetSiteWallet.value = true;
-  return new Promise((resolve) => {
-    getSiteWalletInfo({ id: activeInfo.value.id }).then(res => {
-      siteWalletInfo.value = res;
-    }).finally(() => resolve(void 0));
-  })
+  return new Promise(resolve => {
+    getSiteWalletInfo({ id: activeInfo.value.id })
+      .then(res => {
+        siteWalletInfo.value = res;
+      })
+      .finally(() => resolve(void 0));
+  });
 }
 
 function handleBindNoWallet() {
@@ -110,28 +115,39 @@ function handleBindNoWallet() {
 
 function createBindUserByNo() {
   createNoWalletUser({ id: activeInfo.value.id }).then(res => {
-    window.open(res.buyUrl)
-    getSiteWalletData()
+    window.open(res.buyUrl);
+    getSiteWalletData();
   });
 }
 
 function copyText(text: string) {
-  useClipboard().copy(text).then(() => showCustomToast({ type: "success", message: '复制成功' }))
+  useClipboard()
+    .copy(text)
+    .then(() => showCustomToast({ type: "success", message: "复制成功" }));
 }
 
-watch(() => activeIds.value, () => {
-  if (activeInfo.value?.id && !isGetSiteWallet.value && !!activeInfo.value.siteWallet) {
-    getSiteWalletData()
-  }
-}, { immediate: true, deep: true })
-
+watch(
+  () => activeIds.value,
+  () => {
+    if (activeInfo.value?.id && !isGetSiteWallet.value && !!activeInfo.value.siteWallet) {
+      getSiteWalletData();
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <template>
   <div class="body-content">
     <div class="grid-box">
       <template v-for="(item, index) in listData" :key="index">
-        <recharge-badge class="item" :class="{ 'active-item': activeIds[0] == item.id }" :content="item.tip" @click="handleChangeActiveId(item)" v-if="showTotalWallet || (!showTotalWallet && index < 6)">
+        <recharge-badge
+          class="item"
+          :class="{ 'active-item': activeIds[0] == item.id }"
+          :content="item.tip"
+          @click="handleChangeActiveId(item)"
+          v-if="showTotalWallet || (!showTotalWallet && index < 6)"
+        >
           <div class="app-icon">
             <van-image width="100%" height="100%" :src="item.image">
               <template v-slot:error>.</template>
@@ -143,7 +159,14 @@ watch(() => activeIds.value, () => {
         </recharge-badge>
       </template>
     </div>
-    <div class="download-app" v-if="(activeGroup?.download_tip && activeGroup?.wallet_url) && (!activeInfo?.id || !(activeInfo?.download_tip && activeInfo?.wallet_url))">
+    <div
+      class="download-app"
+      v-if="
+        activeGroup?.download_tip &&
+        activeGroup?.wallet_url &&
+        (!activeInfo?.id || !(activeInfo?.download_tip && activeInfo?.wallet_url))
+      "
+    >
       <span class="inline-flex items-center text-[11px]">
         <svg-icon name="comm_icon_xz" class-name="text-[9px] mr-[5px]" />
         {{ activeGroup.download_tip }}
@@ -151,22 +174,28 @@ watch(() => activeIds.value, () => {
     </div>
     <div class="fold" v-if="listData.length > 6">
       <span class="btn" @click="showTotalWallet = !showTotalWallet">
-        <span class="text">{{ showTotalWallet ? '展开' : '收起'}}</span>
+        <span class="text">{{ showTotalWallet ? "展开" : "收起" }}</span>
         <span class="arrow" :class="{ 'arrow-show': showTotalWallet }"></span>
       </span>
     </div>
-    <div class="line" style="border-width: var(--lobby__px);"></div>
+    <div class="line" style="border-width: var(--lobby__px)"></div>
     <template v-if="activeGroup?.children?.filter(v => v.frontShow).length > 0">
       <div class="grid-box">
         <template v-for="(item, index) in activeGroup?.children" :key="index">
-          <recharge-badge class="item" :class="{ 'active-item': activeIds[1] == item.id }" :content="item.tip" @click="handleChangeActiveChildrenId(item)" v-if="showTotalChildren || (!showTotalChildren && index < 6)">
+          <recharge-badge
+            class="item"
+            :class="{ 'active-item': activeIds[1] == item.id }"
+            :content="item.tip"
+            @click="handleChangeActiveChildrenId(item)"
+            v-if="showTotalChildren || (!showTotalChildren && index < 6)"
+          >
             <div class="label-container">
               <span class="label">{{ item.name }}</span>
             </div>
           </recharge-badge>
         </template>
       </div>
-      <div class="download-app" v-if="(activeInfo?.download_tip && activeInfo?.wallet_url)">
+      <div class="download-app" v-if="activeInfo?.download_tip && activeInfo?.wallet_url">
         <span class="inline-flex items-center text-[11px]">
           <svg-icon name="comm_icon_xz" class-name="text-[9px] mr-[5px]" />
           {{ activeInfo.download_tip }}
@@ -174,17 +203,24 @@ watch(() => activeIds.value, () => {
       </div>
       <div class="fold" v-if="activeGroup?.children?.length > 6">
         <span class="btn" @click="showTotalChildren = !showTotalChildren">
-          <span class="text">{{ showTotalChildren ? '展开' : '收起'}}</span>
+          <span class="text">{{ showTotalChildren ? "展开" : "收起" }}</span>
           <span class="arrow" :class="{ 'arrow-show': showTotalChildren }"></span>
         </span>
       </div>
-      <div class="line" style="border-width: var(--lobby__px);"></div>
+      <div class="line" style="border-width: var(--lobby__px)"></div>
     </template>
 
-    <template v-if="activeInfo.siteWallet == 1 && isGetSiteWallet && activeInfo.siteWalletKeyword == 'wallet-no' && siteWalletInfo.bind == 1">
+    <template
+      v-if="
+        activeInfo.siteWallet == 1 &&
+        isGetSiteWallet &&
+        activeInfo.siteWalletKeyword == 'wallet-no' &&
+        siteWalletInfo.bind == 1
+      "
+    >
       <div class="no-balance">
         <div class="noWallet-id">
-          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="mr-[5px] w-[25px]">
+          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="mr-[5px] w-[25px]" />
           <span>钱包账号：</span>
           <span class="id">{{ siteWalletInfo.qAccount }}</span>
           <span class="copy-id" @click="copyText(siteWalletInfo.qAccount)">
@@ -202,14 +238,18 @@ watch(() => activeIds.value, () => {
       </div>
     </template>
 
-    <template v-if="activeInfo.siteWallet == 0 || ([1].includes(siteWalletInfo?.bind))">
+    <template v-if="activeInfo.siteWallet == 0 || [1].includes(siteWalletInfo?.bind)">
       <div class="title-box">
         <span>存款金额</span>
         <div class="no-poster" v-html="activeGroup.tipRichText"></div>
       </div>
       <div class="grid-box quickly-list">
         <template v-for="(item, index) in activeInfo.quickList" :key="index">
-          <recharge-badge class="item bg-[#000]" :class="{ 'active-item': inputAmount == item }" @click="inputAmount = Number(item)">
+          <recharge-badge
+            class="item bg-[#000]"
+            :class="{ 'active-item': inputAmount == item }"
+            @click="inputAmount = Number(item)"
+          >
             <div class="label-container">
               <span class="label">{{ item }}</span>
             </div>
@@ -218,16 +258,29 @@ watch(() => activeIds.value, () => {
       </div>
       <div class="form-input-box">
         <div class="input-box">
-          <ui-input v-model="inputAmount" class="input-input" :placeholder="`最低${activeInfo.min ?? 0} ~ 最高${activeInfo.min ?? 0}`">
+          <ui-input
+            v-model="inputAmount"
+            class="input-input"
+            :placeholder="`最低${activeInfo.min ?? 0} ~ 最高${activeInfo.min ?? 0}`"
+          >
             <template #prefix><span class="text-[white]">￥</span></template>
           </ui-input>
         </div>
       </div>
       <ui-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</ui-button>
     </template>
-    <template v-if="activeInfo.siteWallet == 1 && activeInfo.siteWalletKeyword == 'wallet-no' && ([2,3].includes(siteWalletInfo?.bind))">
+    <template
+      v-if="
+        activeInfo.siteWallet == 1 &&
+        activeInfo.siteWalletKeyword == 'wallet-no' &&
+        [2, 3].includes(siteWalletInfo?.bind)
+      "
+    >
       <div class="bind-container">
-        <div class="bindTips"><p>已有账号，可登录绑定</p><p>首次使用？只需设置支付密码</p></div>
+        <div class="bindTips">
+          <p>已有账号，可登录绑定</p>
+          <p>首次使用？只需设置支付密码</p>
+        </div>
         <div class="content">
           <div class="bind">
             <ui-button type="info" plain @click="handleBindNoWallet">立即绑定</ui-button>
@@ -236,7 +289,11 @@ watch(() => activeIds.value, () => {
             <ui-button type="primary" @click="createBindUserByNo">立即设置</ui-button>
           </div>
         </div>
-        <div class="no-poster"><span class=""><p><span style="font-family: 'Segoe UI';">用NO钱包：赚积分，抽大奖，最高<span style="color: #e67e23;">88888.88</span></span></p></span></div>
+        <div class="no-poster">
+          <span class=""><p>
+              <span style="font-family: 'Segoe UI'">用NO钱包：赚积分，抽大奖，最高<span style="color: #e67e23">88888.88</span></span>
+            </p></span>
+        </div>
       </div>
     </template>
   </div>
@@ -431,7 +488,7 @@ watch(() => activeIds.value, () => {
     color: var(--skin__lead);
     font-size: 12px;
     padding-bottom: 5px;
-    >span {
+    > span {
       line-height: 12px;
       color: var(--skin__lead);
     }

@@ -5,11 +5,11 @@ import RechargeBody from "@/components/Recharge/RechargeBody.vue";
 import { getChannelList } from "@/api/common";
 
 const show = ref(false);
-const listData = ref<any>([])
+const listData = ref<any>([]);
 
 function open() {
   show.value = true;
-  initData()
+  initData();
 }
 
 function close() {
@@ -17,20 +17,20 @@ function close() {
 }
 
 function initData() {
-  getChannelList().then((res) => {
+  listData.value = [];
+  getChannelList().then(res => {
     listData.value = res;
-  })
+  });
 }
-
 
 defineExpose({
   open: open,
   close
-})
+});
 </script>
 
 <template>
-  <van-popup v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }">
+  <van-popup v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }" @close="close()">
     <div class="popup-container">
       <div class="popup-header">
         <div class="back-icon" @click="show = false">
@@ -39,7 +39,7 @@ defineExpose({
         <p class="title">存款</p>
         <div class="actions">
           <div class="kf-ico"><svg-icon name="comm_icon_cz_kf" /></div>
-          <ui-badge content="1" :size="[5,5]">
+          <ui-badge content="1" :size="[5, 5]">
             <div class="jl-ico"><svg-icon name="comm_icon_cz_jl" /></div>
           </ui-badge>
         </div>

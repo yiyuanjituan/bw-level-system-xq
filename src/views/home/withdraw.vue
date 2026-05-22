@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { handleBack } from "@/utils/common";
-import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
 </script>
 
 <template>
@@ -20,7 +19,7 @@ import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
       <van-tabs shrink swipeable>
         <van-tab title="申请提现"><apply-withdraw /></van-tab>
         <van-tab title="收款账户"><receipt-account /></van-tab>
-        <van-tab title="提现记录">内容 2</van-tab>
+        <van-tab title="提现记录"><withdraw-record /></van-tab>
       </van-tabs>
     </div>
   </div>
@@ -37,7 +36,7 @@ import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
 
   .sub-header {
     --skin__lead: white;
-    --skin__neutral_1: #BCBCBC;
+    --skin__neutral_1: #bcbcbc;
 
     position: relative;
     display: flex;
@@ -65,7 +64,7 @@ import ReceiptAccount from "@/components/Withdraw/ReceiptAccount.vue";
       align-items: center;
       height: 45px;
       padding: 0 10px;
-      color: #DFBE5B;
+      color: #dfbe5b;
       font-size: 25px;
       position: absolute;
       right: 0;

@@ -2,6 +2,8 @@
   "bracketSpacing": true,
   "singleQuote": false,
   "arrowParens": "avoid",
+  "printWidth": 120,
+  "singleAttributePerLine": false,
   "trailingComma": "none",
   "overrides": [
     {

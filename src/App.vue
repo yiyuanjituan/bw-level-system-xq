@@ -1,8 +1,6 @@
 <template>
   <SvgIcons />
-  <router-view
-    v-slot="{ Component, route }"
-  >
+  <router-view v-slot="{ Component, route }">
     <transition :name="systemTransitionName">
       <component :is="Component" :key="route.matched[0]?.path || route.path" class="page-content" />
     </transition>
@@ -13,8 +11,6 @@
   <FindUs :ref="setRefs('findUs')" />
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
-
-
 </template>
 
 <script setup lang="ts">
@@ -37,20 +33,20 @@ const appData = useDataStore();
 const busListen = () => {
   // 资金回归
   bus.on("moneyIn", () => {
-    if (auth.token) userMoneyIn(appData.enterGameInfo.venueId).then(() => auth.updateInfo())
-    appData.setEnterInfo(void 0, void 0)
+    if (auth.token) userMoneyIn(appData.enterGameInfo.venueId).then(() => auth.updateInfo());
+    appData.setEnterInfo(void 0, void 0);
   });
   // 退出登录
   bus.on("logout", () => {
     auth.logout();
-    refs['rechargeDrawer']?.close()
+    refs["rechargeDrawer"]?.close();
     router.replace({ path: "/home/login" });
   });
   // 点开找到我们
   bus.on("findUs", refs["findUs"]?.open);
   // 点击充值按钮
-  bus.on('showRecharge', refs["rechargeDrawer"]?.open);
-  bus.on('showRechargeDetail', refs["rechargeDetailDrawer"]?.open);
+  bus.on("showRecharge", refs["rechargeDrawer"]?.open);
+  bus.on("showRechargeDetail", refs["rechargeDetailDrawer"]?.open);
 };
 
 onMounted(() => {

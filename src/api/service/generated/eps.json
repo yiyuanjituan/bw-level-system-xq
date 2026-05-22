@@ -68,6 +68,22 @@
     ]
   },
   {
+    "prefix": "/app/base/withdraw",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/applyWithdraw",
+        "summary": "发起提现申请"
+      },
+      {
+        "method": "post",
+        "path": "/records",
+        "summary": "提现记录"
+      }
+    ]
+  },
+  {
     "prefix": "/open/demo/cache",
     "name": "",
     "api": [
