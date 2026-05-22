@@ -131,7 +131,7 @@ onMounted(() => init())
 
 .detail-card__value {
   min-width: 0;
-  color: #8e8e8e;
+  color: var(--skin__neutral_2, var(--skin__lead));
   font-size: 12px;
   line-height: 17px;
   text-align: right;

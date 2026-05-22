@@ -164,7 +164,7 @@ const emptyStateText = computed(() => {
   border: 1px solid #363636;
   border-radius: 14px;
   background: #191919;
-  color: #8e8e8e;
+  color: var(--skin__neutral_2, var(--skin__lead));
 }
 
 .filter-select :deep(.x-select--focused) {
@@ -204,7 +204,7 @@ const emptyStateText = computed(() => {
 }
 
 .empty-state__text {
-  color: #8e8e8e;
+  color: var(--skin__neutral_2, var(--skin__lead));
   font-size: 13px;
   line-height: 1.5;
 }

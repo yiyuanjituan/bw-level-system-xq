@@ -216,7 +216,7 @@ watch(
   border: 1px solid #363636;
   border-radius: 14px;
   background: #191919;
-  color: #8e8e8e;
+  color: var(--skin__neutral_2, var(--skin__lead));
   box-sizing: border-box;
 
   .time-trigger__text {
@@ -229,7 +229,7 @@ watch(
 
   .time-trigger__arrow {
     font-size: 10px;
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
   }
 }
 

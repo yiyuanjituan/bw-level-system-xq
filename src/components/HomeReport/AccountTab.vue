@@ -369,7 +369,7 @@ onMounted(() => {
   }
 
   .balance-card__label {
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
     font-size: 12px;
     white-space: nowrap;
   }
@@ -413,7 +413,7 @@ onMounted(() => {
   }
 
   .balance-card__action-arrow {
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
     font-size: 10px;
     transform: rotate(180deg);
   }
@@ -443,7 +443,7 @@ onMounted(() => {
     border: 1px solid #363636;
     border-radius: 14px;
     background: #191919;
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
   }
 
   .filter-select :deep(.x-select--focused) {
@@ -594,7 +594,7 @@ onMounted(() => {
 
   .record-card__time {
     margin-top: 6px;
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
     font-size: 10px;
     line-height: 1.4;
   }
@@ -623,7 +623,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     padding: 0 20px 72px;
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
   }
 
   .empty-state__graphic {
@@ -684,7 +684,7 @@ onMounted(() => {
   }
 
   .empty-state__text {
-    color: #8e8e8e;
+    color: var(--skin__neutral_2, var(--skin__lead));
     font-size: 13px;
     line-height: 1.5;
   }

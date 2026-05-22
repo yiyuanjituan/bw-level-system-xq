@@ -347,7 +347,7 @@ onMounted(() => {
   border: var(--lobby__px) solid var(--skin__border);
   border-radius: 14px;
   background: var(--skin__bg_2);
-  color: #8e8e8e;
+  color: var(--skin__neutral_2, var(--skin__lead));
 }
 
 .filter-select :deep(.x-select--focused) {
