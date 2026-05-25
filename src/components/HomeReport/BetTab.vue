@@ -25,6 +25,7 @@ interface GameRecordItem {
   playType?: string;
   betNumber?: string;
   odds?: string;
+  short_image?: string;
   betAmount?: number;
   validBetAmount?: number;
   netAmount?: number;
@@ -38,9 +39,6 @@ interface BetPageData {
   total: number;
   list: GameRecordItem[];
 }
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 20;
 
 const statusOptions: BetFilterOption[] = [
   { label: "全部状态", value: "all" },
@@ -68,6 +66,7 @@ const platformFilterValue = ref(platformOptions[0]?.value ?? "all");
 const timeRange = ref<AccountTimeRange>(createTodayRange());
 const pageData = ref<BetPageData>(createDefaultPageData());
 const isListLoading = ref(false);
+const isLoadingMore = ref(false);
 let latestRequestId = 0;
 
 function createTodayRange(): AccountTimeRange {
@@ -85,8 +84,8 @@ function createTodayRange(): AccountTimeRange {
 
 function createDefaultPageData(): BetPageData {
   return {
-    page: DEFAULT_PAGE,
-    limit: DEFAULT_LIMIT,
+    page: 1,
+    limit: 20,
     total: 0,
     list: []
   };
@@ -103,7 +102,7 @@ function handleSeeMore() {
   };
 }
 
-function formatRecordTime(value: any) {
+function formatRecordTime(value: string | Date | undefined) {
   return dayjs(value).format("YYYY/MM/DD HH:mm:ss");
 }
 
@@ -120,10 +119,10 @@ function getWinLossClass(value: number) {
   return "record-card__amount--win";
 }
 
-function createQueryParams() {
+function createQueryParamsByPage(page: number) {
   return {
-    page: DEFAULT_PAGE,
-    limit: DEFAULT_LIMIT,
+    page,
+    limit: 20,
     startTime: timeRange.value.startTime,
     endTime: timeRange.value.endTime,
     status: statusFilterValue.value === "all" ? "" : statusFilterValue.value,
@@ -132,27 +131,53 @@ function createQueryParams() {
 }
 
 async function init() {
+  await fetchPage(1, false);
+}
+
+function normalizePageData(response: any): BetPageData {
+  return {
+    page: Math.max(Number(response?.page) || 1, 1),
+    limit: Math.max(Number(response?.limit) || 20, 1),
+    total: Math.max(Number(response?.total) || 0, 0),
+    list: Array.isArray(response?.list) ? response.list : []
+  };
+}
+
+async function fetchPage(page: number, append: boolean) {
   const requestId = ++latestRequestId;
-  isListLoading.value = true;
+
+  if (append) {
+    isLoadingMore.value = true;
+  } else {
+    isListLoading.value = true;
+  }
 
   try {
-    const response = await service.v1.user.gamePageList(createQueryParams());
+    const response = await service.v1.user.gamePageList(createQueryParamsByPage(page));
     if (requestId === latestRequestId) {
+      const nextPageData = normalizePageData(response);
       pageData.value = {
-        page: Math.max(Number(response?.page) || DEFAULT_PAGE, 1),
-        limit: Math.max(Number(response?.limit) || DEFAULT_LIMIT, 1),
-        total: Math.max(Number(response?.total) || 0, 0),
-        list: Array.isArray(response?.list) ? response.list : []
+        page: nextPageData.page,
+        limit: nextPageData.limit,
+        total: nextPageData.total,
+        list: append ? pageData.value.list.concat(nextPageData.list) : nextPageData.list
       };
     }
   } finally {
     if (requestId === latestRequestId) {
-      isListLoading.value = false;
+      if (append) {
+        isLoadingMore.value = false;
+      } else {
+        isListLoading.value = false;
+      }
     }
   }
 }
 
 const hasListData = computed(() => pageData.value.list.length > 0);
+const hasMoreData = computed(() => {
+  return pageData.value.total > pageData.value.list.length;
+});
 const emptyStateText = computed(() => {
   if (timeRange.value.mode === "custom") {
     return "所选时间暂无记录";
@@ -160,6 +185,24 @@ const emptyStateText = computed(() => {
 
   return `${timeRange.value.label}暂无记录`;
 });
+
+function handleListScroll(event: Event) {
+  if (isListLoading.value || isLoadingMore.value || !hasMoreData.value) {
+    return;
+  }
+
+  const target = event.target as HTMLElement | null;
+  if (!target) {
+    return;
+  }
+
+  const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+  if (distanceToBottom > 48) {
+    return;
+  }
+
+  void fetchPage(pageData.value.page + 1, true);
+}
 
 watch([() => timeRange.value.startTime, () => timeRange.value.endTime, statusFilterValue, typeFilterValue], () => {
   void init();
@@ -225,11 +268,11 @@ onMounted(() => {
         </template>
       </ui-empty>
 
-      <div v-else class="record-list">
+      <div v-else class="record-list" @scroll.passive="handleListScroll">
         <article v-for="item in pageData.list" :key="item.id" class="record-card">
           <div class="record-card__row">
             <span class="ellipsis-box">
-              <img src="https://146.103.80.124:5001/cocos/icon/0/200_N_PG.avif" alt="" srcset="" />
+              <img :src="item.short_image" alt="" srcset="" />
               <span class="darken">{{ item.playType }}</span>
             </span>
             <span class="groupFlex">
@@ -274,6 +317,8 @@ onMounted(() => {
             </span>
           </div>
         </article>
+
+        <div v-if="isLoadingMore" class="list-footer">加载中...</div>
       </div>
     </section>
   </div>
@@ -355,6 +400,18 @@ onMounted(() => {
   min-height: 0;
   overflow: auto;
   padding: 0 10px 10px;
+}
+
+.list-footer {
+  padding: 12px 0 4px;
+  text-align: center;
+  color: var(--skin__neutral_2);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.list-footer--end {
+  color: var(--skin__neutral_1);
 }
 
 .record-card {
