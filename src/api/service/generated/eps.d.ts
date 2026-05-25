@@ -699,6 +699,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface OpenV1Task {
+		/**
+			 * 抓取星汇的游戏记录
+			 */
+			pullXhData(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { pullXhData: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { pullXhData: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface BaseComm {
 		/**
 			 * 文件上传模式
@@ -1192,6 +1211,7 @@ declare namespace Eps {
 			v1: {
 				game: OpenV1Game;
 				home: OpenV1Home;
+				task: OpenV1Task;
 			};
 		};
 		base: {

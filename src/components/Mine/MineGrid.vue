@@ -15,21 +15,21 @@ const list = ref([
     icon_1: "style_2_icon_list_zhye",
     icon_2: "style_2_icon_list_zhye2",
     name: "找回余额",
-    url: ""
+    url: "/home/report?reportCurrent=1"
   },
   {
     key: "zhmx",
     icon_1: "style_2_icon_list_zhmx",
     icon_2: "style_2_icon_list_zhmx2",
     name: "账户明细",
-    url: "/home/report"
+    url: "/home/report?reportCurrent=3"
   },
   {
     key: "tzjl",
     icon_1: "style_2_icon_list_tzjl",
     icon_2: "style_2_icon_list_tzjl2",
     name: "投注记录",
-    url: "账户明细"
+    url: "/home/report?reportCurrent=2"
   },
   {
     key: "txgl",
@@ -43,14 +43,14 @@ const list = ref([
     icon_1: "style_2_icon_list_grbb",
     icon_2: "style_2_icon_list_grbb2",
     name: "个人报表",
-    url: "账户明细"
+    url: "/home/report?reportCurrent=1"
   },
   {
     key: "vip",
     icon_1: "style_2_icon_list_vip",
     icon_2: "style_2_icon_list_vip2",
     name: "VIP中心",
-    url: "账户明细"
+    url: "/home/vip"
   },
   {
     key: "aqzx",

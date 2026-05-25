@@ -12,18 +12,17 @@ import { showCustomToast } from "@/hooks/useCommon";
 defineOptions({
   name: "login-popup"
 });
-const formRef = useTemplateRef('form')
-const app = useAppStore()
+const formRef = useTemplateRef("form");
+const app = useAppStore();
 let smsTimer = null;
-const smsTime = ref<number>(0)
-const smsLoading = ref<boolean>(false)
+const smsTime = ref<number>(0);
+const smsLoading = ref<boolean>(false);
 const modelValue = defineModel<loginProps>({
   type: Object,
   default: () => ({
-    type: 'password',
+    type: "password"
   })
 });
-
 
 const formRules = ref({
   account: [
@@ -68,26 +67,31 @@ const isPhone = computed(() => {
 });
 
 function getSmsCode() {
-  const pattern = /^1[3-9]\d{9}$/
+  const pattern = /^1[3-9]\d{9}$/;
   if (!pattern.test(modelValue.value.account)) {
     return false;
   }
   smsLoading.value = true;
-  sendSms({ phone: modelValue.value.account, captchaId: '', code: '' }).then((_res) => {
-    showCustomToast({ message: "验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。", type: "success" });
-    smsTime.value = 60
-    smsTimer = setInterval(() => {
-      smsTime.value = smsTime.value - 1
-      if (smsTime.value <= 0) {
-        clearInterval(smsTimer);
-      }
-    }, 1000)
-  }).finally(() => smsLoading.value = false);
+  sendSms({ phone: modelValue.value.account, captchaId: "", code: "" })
+    .then(_res => {
+      showCustomToast({
+        message: "验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。",
+        type: "success"
+      });
+      smsTime.value = 60;
+      smsTimer = setInterval(() => {
+        smsTime.value = smsTime.value - 1;
+        if (smsTime.value <= 0) {
+          clearInterval(smsTimer);
+        }
+      }, 1000);
+    })
+    .finally(() => (smsLoading.value = false));
 }
 
 defineExpose({
-  form: formRef,
-})
+  form: formRef
+});
 </script>
 
 <template>
@@ -95,51 +99,45 @@ defineExpose({
     <section class="login-register-tab-sub-title" v-if="app.appInfo.openSms">
       {{ $t("支持手机号码/账号登录") }}
     </section>
-    <ui-form :rule="formRules" :model="modelValue" ref="form">
-      <ui-form-item prop="account">
-        <ui-input prefix="user" required :placeholder="app.appInfo.openSms ? '请输入手机号码/账号' : '请输入账号'" :class="{ '!pl-[0px]': isPhone && modelValue.accountType == 'phone' && app.appInfo.openSms }" v-model="modelValue.account" >
+    <x-form :rule="formRules" :model="modelValue" ref="form">
+      <x-form-item prop="account">
+        <x-input
+          prefix="user"
+          required
+          :placeholder="app.appInfo.openSms ? '请输入手机号码/账号' : '请输入账号'"
+          :class="{ '!pl-[0px]': isPhone && modelValue.accountType == 'phone' && app.appInfo.openSms }"
+          v-model="modelValue.account"
+        >
           <template #prefix v-if="isPhone && modelValue.accountType == 'phone' && app.appInfo.openSms">
             <div class="country-icon">
               <img src="@/assets/common/ChineseMainland.png" alt="." class="w-[18px] h-auto" />
               <span class="ml-[10px]">+86</span>
             </div>
           </template>
-        </ui-input>
-      </ui-form-item>
+        </x-input>
+      </x-form-item>
       <template v-if="isPhone && app.appInfo.openSms">
         <login-type-select v-model="modelValue.accountType" v-if="modelValue.account?.length" />
         <login-mode v-model="modelValue.type" v-if="modelValue.accountType == 'phone'" />
       </template>
-      <ui-form-item prop="sms_code" v-if="modelValue.accountType == 'phone' && modelValue.type == 'sms'">
-        <ui-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
+      <x-form-item prop="sms_code" v-if="modelValue.accountType == 'phone' && modelValue.type == 'sms'">
+        <x-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
           <template #suffix>
             <span
               class="inline-flex items-center"
               @click="getSmsCode"
-              :class="[
-                smsTime > 0 && (isPhone && modelValue.accountType == 'phone') ? '' : 'text-[#F0C059]'
-              ]"
+              :class="[smsTime > 0 && isPhone && modelValue.accountType == 'phone' ? '' : 'text-[#F0C059]']"
             >
-              <svg-icon
-                name="loading"
-                class-name="mr-[4px] loading-icon"
-                v-if="smsLoading"
-              />
+              <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
               {{ smsTime > 0 ? `${smsTime}秒后重发` : "获取验证码" }}
             </span>
           </template>
-        </ui-input>
-      </ui-form-item>
-      <ui-form-item prop="password" v-if="!(modelValue.accountType == 'phone' && modelValue.type == 'sms')">
-        <ui-input
-          prefix="lock"
-          required
-          placeholder="请输入密码"
-          v-model="modelValue.password"
-          show-eye
-        />
-      </ui-form-item>
-    </ui-form>
+        </x-input>
+      </x-form-item>
+      <x-form-item prop="password" v-if="!(modelValue.accountType == 'phone' && modelValue.type == 'sms')">
+        <x-input prefix="lock" required placeholder="请输入密码" v-model="modelValue.password" show-eye />
+      </x-form-item>
+    </x-form>
   </div>
 </template>
 
@@ -151,6 +149,9 @@ defineExpose({
   font-size: 12px;
   max-height: calc(var(--max-height) - 420px);
   overflow: auto;
+  //:deep(.x-input) {
+  //  border-color: var(--skin__neutral_3) !important;
+  //}
 
   .login-register-tab-sub-title {
     font-size: 11px;

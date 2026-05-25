@@ -27,36 +27,45 @@ const localList = ref([
     img: "https://146.103.80.124:5001/siteadmin/skin/lobby_asset/2-1-common/common/_sprite/icon_dtfl_sc_1.avif",
     name: "收藏"
   }
-])
+]);
 
 const list = computed(() => {
-  return [
-    localList.value[0],
-    ...home.venueList,
-    localList.value[1],
-    localList.value[2],
-  ]
-})
+  return [localList.value[0], ...home.venueList, localList.value[1], localList.value[2]];
+});
 
 defineOptions({
   name: "HomeGameList"
 });
 
+function getPageShowNum(row: any) {
+  return row.pageShowNum ?? 6;
+}
+
+function getPageCount(row: any) {
+  return Math.ceil((row.children?.length ?? 0) / getPageShowNum(row));
+}
+
+function getPageItems(row: any, pageIndex: number) {
+  const pageShowNum = getPageShowNum(row);
+  const start = pageIndex * pageShowNum;
+  return row.children?.slice(start, start + pageShowNum) ?? [];
+}
+
 function getHomeData() {
   getHomeApiData().then(res => {
-    home.setSuggestData(res.suggestData)
-    home.setVenueList(res.venueList)
-    nextTick()
+    home.setSuggestData(res.suggestData);
+    home.setVenueList(res.venueList);
+    nextTick();
   });
 }
 
 function showDisabledTip() {
   // @ts-ignore
-  showCustomToast({ type: 'fail', message: $t('tips.maintenance') })
+  showCustomToast({ type: "fail", message: $t("tips.maintenance") });
 }
 
 function clickGameItem(record: any) {
-  if (record.gameMode == 'venue') {
+  if (record.gameMode == "venue") {
     // 点击的场馆
     router.push({ path: `/home/subGame`, query: { type: record.type, platformId: record.id } });
   } else {
@@ -76,21 +85,14 @@ onMounted(() => getHomeData());
           <section class="arrow-load-view">
             <div class="game-headline">
               <div class="title">
-                <img :src="row.img" alt="" class="mr-[2.5px] w-[26px] text-[26px]"/>
+                <img :src="row.img" alt="" class="mr-[2.5px] w-[26px] text-[26px]" />
                 <span class="text-[15px]">{{ row.name }}游戏</span>
               </div>
               <div class="switch-pagination-box">
                 <div class="switch-pagination">
                   <div class="arrow-btn">
-                    <i
-                      class="inline-flex justify-center items-center left-icon"
-                    >
-                      <svg
-                        width="1em"
-                        height="1em"
-                        fill="currentColor"
-                        class=""
-                      >
+                    <i class="inline-flex justify-center items-center left-icon">
+                      <svg width="1em" height="1em" fill="currentColor" class="">
                         <use xlink:href="#comm_icon_fy_jt"></use>
                       </svg>
                     </i>
@@ -98,12 +100,7 @@ onMounted(() => getHomeData());
                   <div class="btn-all-inside">全部</div>
                   <div class="arrow-btn">
                     <i class="inline-flex justify-center items-center">
-                      <svg
-                        width="1em"
-                        height="1em"
-                        fill="currentColor"
-                        class=""
-                      >
+                      <svg width="1em" height="1em" fill="currentColor" class="">
                         <use xlink:href="#comm_icon_fy_jt"></use>
                       </svg>
                     </i>
@@ -113,27 +110,34 @@ onMounted(() => getHomeData());
             </div>
             <div class="list-slide-layout">
               <swiper class="" :space-between="15">
-                <template v-for="(item, index) in Math.ceil(row.children.length / (row.pageShowNum ?? 6))" :key="item">
-                  <swiper-slide class="list-slide-layout-inner" :data-length="Math.min((row.pageShowNum ?? 6), row.children.length)" :class="(row.pageShowNum ?? 6) == 9 ? 'list-slide-layout-nine' : ''">
-                    <template v-for="(_, idx) in (row.pageShowNum ?? 6)">
-                      <div class="item" :style="{ '--bg-img': `url(${row.children[index * (row.pageShowNum ?? 6) + idx]?.image})` }" @click="clickGameItem(row.children[index * (row.pageShowNum ?? 6) + idx])">
-                        <section class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]">
-                          <span class="name-inner" v-if="row.children[index * (row.pageShowNum ?? 6) + idx]?.gameMode == 'game'">
-                            {{ row.children[index * (row.pageShowNum ?? 6) + idx]?.name }}
-                          </span>
-                        </section>
-                        <section class="disabled-box" v-if="row.children[index * (row.pageShowNum ?? 6) + idx]?.isOpen == 0" @click.stop="showDisabledTip">
-                          <div class="disabled-icon text-white"></div>
-                        </section>
-                      </div>
-                    </template>
-<!--                    <div class="item">-->
-<!--                      <section-->
-<!--                        class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]"-->
-<!--                      >-->
-<!--                        <span class="name-inner">麻将胡了2</span>-->
-<!--                      </section>-->
-<!--                    </div>-->
+                <template v-for="pageIndex in getPageCount(row)" :key="pageIndex">
+                  <swiper-slide
+                    class="list-slide-layout-inner"
+                    :data-length="getPageItems(row, pageIndex - 1).length"
+                  >
+                    <div
+                      v-for="(game, gameIndex) in getPageItems(row, pageIndex - 1)"
+                      :key="`${pageIndex}-${game.id ?? game.gameCode ?? gameIndex}`"
+                      class="item"
+                      :style="{ '--bg-img': `url(${game?.image})` }"
+                      @click="clickGameItem(game)"
+                    >
+                      <section class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]">
+                        <span class="name-inner" v-if="game?.gameMode == 'game'">
+                          {{ game?.name }}
+                        </span>
+                      </section>
+                      <section class="disabled-box" v-if="game?.isOpen == 0" @click.stop="showDisabledTip">
+                        <div class="disabled-icon text-white"></div>
+                      </section>
+                    </div>
+                    <!--                    <div class="item">-->
+                    <!--                      <section-->
+                    <!--                        class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]"-->
+                    <!--                      >-->
+                    <!--                        <span class="name-inner">麻将胡了2</span>-->
+                    <!--                      </section>-->
+                    <!--                    </div>-->
                   </swiper-slide>
                 </template>
               </swiper>
@@ -278,7 +282,7 @@ onMounted(() => getHomeData());
           &[data-length="1"],
           &[data-length="2"],
           &[data-length="3"] {
-            height: 159px;
+            height: calc((294.3px - 15px) / 2);
             grid-template-rows: repeat(1, 1fr);
           }
           &[data-length="4"],
@@ -287,10 +291,12 @@ onMounted(() => getHomeData());
             height: 294.3px;
             grid-template-rows: repeat(2, 1fr);
           }
-        }
-        .list-slide-layout-nine {
-          height: 449px;
-          grid-template-rows: repeat(3, 1fr);
+          &[data-length="7"],
+          &[data-length="8"],
+          &[data-length="9"] {
+            height: 449px;
+            grid-template-rows: repeat(3, 1fr);
+          }
         }
       }
     }

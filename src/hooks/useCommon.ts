@@ -1,12 +1,11 @@
-import { ToastOptions } from "vant";
 import { bus } from "@/utils/mitt";
-import { DialogPromiseHandlers, IToastOptions } from "@/typings/mitt";
+import { IToastOptions } from "@/typings/mitt";
 import { ICustomDialogOptions } from "@/components/UI/dialog.vue";
-import * as _ from 'lodash-es';
+import * as _ from "lodash-es";
 
-export const showCustomToast = (options: String | IToastOptions) => {
-  return bus.emit('showToast', options);
-}
+export const showCustomToast = (options: string | IToastOptions) => {
+  return bus.emit("showToast", options);
+};
 
 export const showCustomDialog = (options: ICustomDialogOptions): Promise<boolean> => {
   return new Promise((resolve, reject) => {
@@ -14,20 +13,19 @@ export const showCustomDialog = (options: ICustomDialogOptions): Promise<boolean
       ...options,
       onConfirm: () => resolve(true),
       onCancel: () => resolve(false),
-      onClose: () => reject(new Error('Dialog closed'))
+      onClose: () => reject(new Error("Dialog closed"))
     };
 
-    bus.emit('showDialog', enhancedOptions);
+    bus.emit("showDialog", enhancedOptions);
   });
 };
-
 
 export function desensitizeWithLodash(value: string): string {
   if (!value || !_.isString(value)) return value;
 
   // 邮箱处理：前3位 + ***@域名
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    const [localPart, domain] = value.split('@');
+    const [localPart, domain] = value.split("@");
     return `${localPart.substring(0, 3)}***@${domain}`;
   }
 

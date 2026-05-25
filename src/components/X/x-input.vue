@@ -247,7 +247,7 @@ watch(
         @change="handleChange"
         @focus="handleFocus"
         @blur="handleBlur"
-        @keydown="(e) => emit('keydown', e)"
+        @keydown="e => emit('keydown', e)"
       />
       <input
         v-else
@@ -270,11 +270,14 @@ watch(
         @change="handleChange"
         @focus="handleFocus"
         @blur="handleBlur"
-        @keydown="(e) => emit('keydown', e)"
+        @keydown="e => emit('keydown', e)"
       />
     </div>
 
-    <span class="x-input__suffix" v-if="$slots.suffix || suffix || suffixText || showClear || showEye || showPasswordToggle">
+    <span
+      class="x-input__suffix"
+      v-if="$slots.suffix || suffix || suffixText || showClear || showEye || showPasswordToggle"
+    >
       <span v-if="showClear" class="x-input__clear" @click.stop="handleClear">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1" />
@@ -299,7 +302,7 @@ watch(
 
 <style scoped lang="less">
 .x-input-wrapper {
-  border: var(--lobby__px) solid var(--skin__border);
+  border: var(--lobby__px) solid var(--skin__neutral_3);
   height: 35px;
   width: 100%;
   border-radius: 5px;

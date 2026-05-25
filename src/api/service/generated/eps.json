@@ -616,5 +616,16 @@
         "summary": "帮助中心的数据"
       }
     ]
+  },
+  {
+    "prefix": "/open/v1/task",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/pullXhData",
+        "summary": "抓取星汇的游戏记录"
+      }
+    ]
   }
 ]

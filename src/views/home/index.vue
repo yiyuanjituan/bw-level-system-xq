@@ -29,7 +29,7 @@ import HomeGameList from "@/components/Home/GameList.vue";
   width: 66px;
   height: 20px;
   border-radius: 10px;
-  border: solid 1px #DFBE5B;
+  border: solid 1px #dfbe5b;
   display: flex;
   align-items: center;
   justify-content: center;

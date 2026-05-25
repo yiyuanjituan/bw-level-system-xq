@@ -36,7 +36,7 @@ const reportComponentMap: Record<ReportCurrent, Component> = {
 function normalizeReportCurrent(reportCurrent: unknown): ReportCurrent {
   const value = String(Array.isArray(reportCurrent) ? reportCurrent[0] : reportCurrent ?? defaultReportCurrent);
 
-  return reportTabs.some(item => item.value === value) ? value as ReportCurrent : defaultReportCurrent;
+  return reportTabs.some(item => item.value === value) ? (value as ReportCurrent) : defaultReportCurrent;
 }
 
 function getCurrentReportCurrent() {

@@ -148,9 +148,9 @@ onMounted(() => {
             </ui-checkbox>
           </div>
         </div>
-        <ui-button class="mt-[10px] w-[100%]" @click="handleQuery" :loading="showLoading">
+        <x-button class="mt-[10px] !w-[100%]" @click="handleQuery" :loading="showLoading">
           {{ activeTabs == 0 ? '注册' : '登录' }}
-        </ui-button>
+        </x-button>
 
         <div class="mt-[10px] flex items-center justify-center">
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1">联系客服</div>

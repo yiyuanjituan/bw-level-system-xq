@@ -5,6 +5,7 @@ import { service } from "@/api/service";
 import Copy from "@/components/Common/Copy.vue";
 import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
 import type { AccountTimeRange, SelectOption as ReportSelectOption } from "@/components/HomeReport/types";
+import { desensitizeWithLodash } from "@/hooks/useCommon";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
 
@@ -13,6 +14,17 @@ type WithdrawStatusOption = ReportSelectOption & {
 };
 
 interface WithdrawRecordItem {
+  id?: number | string;
+  createTime?: string;
+  order_sn?: string;
+  type?: number;
+  real_name?: string;
+  bank_name?: string;
+  bank_number?: string;
+  money?: string | number;
+  fee?: string | number;
+  pay_status?: number;
+  remark?: string;
   [key: string]: any;
 }
 
@@ -21,7 +33,12 @@ interface WithdrawRecordState {
   totalAmount: number;
 }
 
-const FALLBACK_ICON = "/siteadmin/pay-icon/icon_wallet_normal.png";
+const withdrawTypeIconMap: Record<number, string> = {
+  0: "/siteadmin/pay-icon/icon_bank_nromal.png",
+  1: "/siteadmin/pay-icon/icon_normal_zfb.png",
+  2: "/siteadmin/pay-icon/icon_szhb_xnb.png",
+  3: "/siteadmin/pay-icon/icon_wallet_normal.png"
+};
 
 const statusOptions: WithdrawStatusOption[] = [
   { label: "全部状态", value: 0 },
@@ -63,16 +80,6 @@ function createTodayRange(): AccountTimeRange {
   };
 }
 
-function createQueryParams() {
-  return {
-    page: 1,
-    limit: 20,
-    startTime: timeRange.value.startTime,
-    endTime: timeRange.value.endTime,
-    status: statusFilterValue.value
-  };
-}
-
 function toNumber(value: unknown) {
   const amount = Number(value);
   return Number.isFinite(amount) ? amount : 0;
@@ -82,99 +89,52 @@ function formatAmount(value: unknown) {
   return `\uFFE5${toNumber(value).toFixed(2)}`;
 }
 
-function parseList(source: any) {
-  const list = source?.list ?? source?.records ?? source?.rows ?? source?.data?.list;
-  return Array.isArray(list) ? list : [];
+function getWithdrawIcon(item: WithdrawRecordItem) {
+  return withdrawTypeIconMap[Number(item?.type)] ?? "/siteadmin/pay-icon/icon_wallet_normal.png";
 }
 
-function parseTotalAmount(source: any) {
-  return toNumber(
-    source?.totalWithdraw ??
-      source?.totalAmount ??
-      source?.totalMoney ??
-      source?.withdrawMoney ??
-      source?.sumAmount ??
-      source?.amount
-  );
+function getWithdrawTitle(item: WithdrawRecordItem) {
+  const bankName = String(item?.bank_name ?? "").trim();
+  return bankName ? `提现到${bankName}` : "提现申请";
 }
 
-function normalizeResponse(response: any): WithdrawRecordState {
-  const source = response?.data ?? response ?? {};
-
-  return {
-    list: parseList(source),
-    totalAmount: parseTotalAmount(source)
-  };
+function getWithdrawAccount(item: WithdrawRecordItem) {
+  const bankNumber = String(item?.bank_number ?? "").trim();
+  return bankNumber ? desensitizeWithLodash(bankNumber) : "";
 }
 
-function formatRecordTime(value: unknown) {
-  if (value === null || value === undefined || value === "") {
-    return "--";
-  }
-
-  if (typeof value === "number") {
-    const parsed = String(value).length <= 10 ? dayjs.unix(value) : dayjs(value);
-    return parsed.isValid() ? parsed.format("YYYY/MM/DD HH:mm:ss") : "--";
-  }
-
-  if (typeof value === "string" || value instanceof Date) {
-    const parsed = dayjs(value);
-    return parsed.isValid() ? parsed.format("YYYY/MM/DD HH:mm:ss") : "--";
-  }
-
-  return "--";
+function getWithdrawAmount(item: WithdrawRecordItem) {
+  return `-${formatAmount(item?.money).replace("-", "")}`;
 }
 
-function getRecordKey(item: WithdrawRecordItem, index: number) {
-  return item?.id ?? item?.orderNo ?? item?.order_sn ?? item?.billNo ?? item?.trade_no ?? index;
-}
+function getWithdrawStatusText(item: WithdrawRecordItem) {
+  const payStatus = Number(item?.pay_status);
 
-function getRecordIcon(item: WithdrawRecordItem) {
-  return item?.bank_icon ?? item?.wallet_icon ?? item?.icon ?? FALLBACK_ICON;
-}
-
-function getRecordTitle(item: WithdrawRecordItem) {
-  return item?.title ?? item?.typeName ?? item?.type_name ?? item?.bank_name ?? "提现到三方钱包";
-}
-
-function getRecordOrderNo(item: WithdrawRecordItem) {
-  return String(item?.orderNo ?? item?.order_sn ?? item?.trade_no ?? item?.billNo ?? item?.sn ?? "");
-}
-
-function getRecordRemark(item: WithdrawRecordItem) {
-  return String(item?.remark ?? item?.memo ?? item?.desc ?? item?.description ?? "");
-}
-
-function getRecordAmount(item: WithdrawRecordItem) {
-  const amount = toNumber(item?.amount ?? item?.money ?? item?.withdraw_money ?? item?.apply_amount);
-  return `-${formatAmount(amount).replace("-", "")}`;
-}
-
-function getRecordTime(item: WithdrawRecordItem) {
-  return formatRecordTime(item?.createTime ?? item?.create_time ?? item?.created_at ?? item?.add_time);
-}
-
-function getStatusText(item: WithdrawRecordItem) {
-  if (item?.statusName || item?.status_name || item?.statusText) {
-    return String(item.statusName ?? item.status_name ?? item.statusText);
-  }
-
-  const status = Number(item?.status);
-  if (status === 1) return "审核中";
-  if (status === 2) return "出款中";
-  if (status === 3) return "提现成功";
-  if (status === 4) return "提现拒绝";
-  if (status === 5) return "提现取消";
+  if (payStatus === 1) return "审核中";
+  if (payStatus === 2) return "出款中";
+  if (payStatus === 3) return "提现成功";
+  if (payStatus === 4) return "提现拒绝";
   return "处理中";
 }
 
-function getStatusClass(item: WithdrawRecordItem) {
-  const text = getStatusText(item);
+function getWithdrawStatusClass(item: WithdrawRecordItem) {
+  const payStatus = Number(item?.pay_status);
 
-  if (text.includes("成功")) return "record-card__status--success";
-  if (text.includes("取消")) return "record-card__status--cancel";
-  if (text.includes("拒绝") || text.includes("失败")) return "record-card__status--danger";
-  return "record-card__status--pending";
+  if (payStatus === 3) return "success";
+  if (payStatus === 4) return "danger";
+  return "pending";
+}
+
+function getWithdrawRemark(item: WithdrawRecordItem) {
+  if (item?.remark) {
+    return String(item.remark);
+  }
+
+  if (item?.real_name) {
+    return `收款人: ${item.real_name}`;
+  }
+
+  return "";
 }
 
 function handleSeeMore() {
@@ -195,10 +155,16 @@ async function init() {
   isLoading.value = true;
 
   try {
-    const response = await service.base.withdraw.records(createQueryParams());
+    const res = await service.base.withdraw.records({
+      page: 1,
+      limit: 20,
+      startTime: timeRange.value.startTime,
+      endTime: timeRange.value.endTime,
+      status: statusFilterValue.value
+    });
 
     if (requestId === latestRequestId) {
-      recordState.value = normalizeResponse(response);
+      recordState.value = { list: res.list, totalAmount: res.total };
     }
   } catch (_error) {
     if (requestId === latestRequestId) {
@@ -259,38 +225,36 @@ onMounted(() => {
         <ui-loading />
       </div>
 
-      <div v-else-if="hasListData" class="record-list">
-        <div v-for="(item, index) in recordState.list" :key="getRecordKey(item, index)" class="record-card">
-          <div class="record-card__left">
-            <div class="record-card__icon-box">
-              <img :src="getRecordIcon(item)" alt="." class="record-card__icon" />
+      <div v-else-if="hasListData" class="withdraw-list">
+        <div v-for="item in recordState.list" :key="item.id" class="withdraw-item">
+          <div class="item-main">
+            <div class="flex items-center">
+              <img class="item-icon" :src="getWithdrawIcon(item)" alt="" />
+              <div class="item-title">
+                {{ getWithdrawTitle(item) }}
+                <span v-if="getWithdrawAccount(item)" class="item-account">({{ getWithdrawAccount(item) }})</span>
+              </div>
+            </div>
+            <div class="item-info">
+              <span>{{ item.createTime }}</span>
+              <span class="order-no">{{ item.order_sn }}</span>
+              <copy :text="item.order_sn" class="text-[14px]" />
             </div>
 
-            <div class="record-card__content">
-              <div class="record-card__top">
-                <div class="record-card__title">{{ getRecordTitle(item) }}</div>
-                <div class="record-card__amount">{{ getRecordAmount(item) }}</div>
-              </div>
-
-              <div class="record-card__meta">
-                <span>{{ getRecordTime(item) }}</span>
-                <template v-if="getRecordOrderNo(item)">
-                  <span>{{ getRecordOrderNo(item) }}</span>
-                  <Copy :text="getRecordOrderNo(item)" class-name="record-card__copy" />
-                </template>
-              </div>
-
-              <div v-if="getRecordRemark(item)" class="record-card__remark">
-                {{ getRecordRemark(item) }}
-              </div>
+            <div v-if="getWithdrawRemark(item)" class="item-remark">
+              {{ getWithdrawRemark(item) }}
             </div>
           </div>
 
-          <div class="record-card__right">
-            <div class="record-card__status" :class="getStatusClass(item)">
-              {{ getStatusText(item) }}
+          <div class="item-right">
+            <div class="item-money">{{ getWithdrawAmount(item) }}</div>
+            <div class="item-status" :class="getWithdrawStatusClass(item)">
+              {{ getWithdrawStatusText(item) }}
             </div>
-            <svg-icon name="comm_icon_fh" class-name="record-card__arrow rotate-[180deg]" />
+          </div>
+
+          <div class="item-arrow">
+            <svg-icon name="arrow-back" class="rotate-[180deg] text-[12px]" />
           </div>
         </div>
       </div>
@@ -316,275 +280,242 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--skin__bg_1);
-}
 
-.toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px;
-}
+  .toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
 
-.toolbar__filters {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
+    &__filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
 
-.filter-select {
-  width: 83px;
-  flex-shrink: 0;
-}
+    &__summary {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      padding-top: 1px;
+    }
 
-.filter-select :deep(.x-select) {
-  height: 25px;
-  padding: 0 10px;
-  border: var(--lobby__px) solid var(--skin__border);
-  border-radius: 14px;
-  background: var(--skin__bg_2);
-  color: var(--skin__neutral_2, var(--skin__lead));
-}
+    &__summary-label {
+      color: var(--skin__neutral_2);
+      font-size: 11px;
+      line-height: 1;
+    }
 
-.filter-select :deep(.x-select--focused) {
-  border-color: var(--skin__primary);
-  color: var(--skin__primary);
-}
+    &__summary-value {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--skin__lead);
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+    }
 
-.filter-select :deep(.x-select__wrap) {
-  line-height: 25px;
-}
+    &__summary-refresh {
+      color: var(--skin__primary);
+      font-size: 13px;
 
-.filter-select :deep(.x-select__label),
-.filter-select :deep(.x-select__placeholder) {
-  font-size: 10px;
-  color: var(--skin__neutral_2, var(--skin__lead));
-}
-
-.filter-select :deep(.x-select__suffix) {
-  margin-left: 6px;
-  font-size: 10px;
-}
-
-.toolbar__summary {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  padding-top: 1px;
-}
-
-.toolbar__summary-label {
-  color: var(--skin__neutral_2);
-  font-size: 11px;
-  line-height: 1;
-}
-
-.toolbar__summary-value {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--skin__lead);
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 700;
-}
-
-.toolbar__summary-refresh {
-  color: var(--skin__primary);
-  font-size: 13px;
-}
-
-.toolbar__summary-refresh--spin {
-  animation: withdraw-record-spin 0.7s linear infinite;
-}
-
-@keyframes withdraw-record-spin {
-  0% {
-    transform: rotate(0);
+      &--spin {
+        animation: withdraw-record-spin 0.7s linear infinite;
+      }
+    }
   }
 
-  100% {
-    transform: rotate(360deg);
+  .filter-select {
+    width: 83px;
+    flex-shrink: 0;
+
+    :deep(.x-select) {
+      height: 25px;
+      padding: 0 10px;
+      border: var(--lobby__px) solid var(--skin__border);
+      border-radius: 14px;
+      background: var(--skin__bg_2);
+      color: var(--skin__neutral_2, var(--skin__lead));
+    }
+
+    :deep(.x-select--focused) {
+      border-color: var(--skin__primary);
+      color: var(--skin__primary);
+    }
+
+    :deep(.x-select__wrap) {
+      line-height: 25px;
+    }
+
+    :deep(.x-select__label),
+    :deep(.x-select__placeholder) {
+      font-size: 10px;
+      color: var(--skin__neutral_2, var(--skin__lead));
+    }
+
+    :deep(.x-select__suffix) {
+      margin-left: 6px;
+      font-size: 10px;
+    }
   }
-}
 
-.content-area {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-}
+  .content-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
 
-.content-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .content-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.record-list {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 10px 12px;
-}
+  .withdraw-list {
+    width: 100%;
+    padding: 0 10px;
+    background: #060606;
+  }
 
-.record-card {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  background: var(--skin__bg_2);
-  border: var(--lobby__px) solid var(--skin__border);
-}
+  .withdraw-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    height: 64px;
+    padding: 9px 34px 8px 9px;
+    box-sizing: border-box;
+    color: var(--skin__lead);
 
-.record-card + .record-card {
-  margin-top: 10px;
-}
+    &:nth-child(odd) {
+      background: var(--skin__bg_2);
+      border-radius: 5px;
+    }
 
-.record-card__left {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
+    .item-icon {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
 
-.record-card__icon-box {
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
-  background: var(--skin__bg_1);
-  border: var(--lobby__px) solid var(--skin__border);
-  flex-shrink: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .item-main {
+      flex: 1;
+      min-width: 0;
+      padding-right: 8px;
+    }
 
-.record-card__icon {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
+    .item-title {
+      height: 20px;
+      line-height: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--skin__lead);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-.record-card__content {
-  min-width: 0;
-  flex: 1;
-}
+    .item-account {
+      color: var(--skin__neutral_2);
+    }
 
-.record-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
+    .item-info {
+      display: flex;
+      align-items: center;
+      height: 18px;
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--skin__neutral_2);
+      white-space: nowrap;
+      overflow: hidden;
 
-.record-card__title {
-  min-width: 0;
-  flex: 1;
-  color: var(--skin__lead);
-  font-size: 12px;
-  line-height: 1.35;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+      .order-no {
+        margin-left: 5px;
+      }
 
-.record-card__amount {
-  flex-shrink: 0;
-  color: var(--skin__lead);
-  font-size: 13px;
-  line-height: 1.2;
-  font-weight: 700;
-}
+      :deep(.copy-icon) {
+        flex: none;
+        margin-left: 4px;
+        font-size: 11px;
+        color: var(--skin__primary);
+      }
+    }
 
-.record-card__meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 7px;
-  color: var(--skin__neutral_2);
-  font-size: 10px;
-  line-height: 1.4;
-}
+    .item-remark {
+      margin-top: 3px;
+      font-size: 11.5px;
+      line-height: 16px;
+      color: var(--skin__neutral_1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-.record-card__meta :deep(.copy-icon) {
-  line-height: 1;
-}
+    .item-right {
+      flex: none;
+      width: 72px;
+      text-align: right;
+    }
 
-.record-card__copy {
-  color: var(--skin__primary);
-  font-size: 12px;
-}
+    .item-money {
+      height: 20px;
+      line-height: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--skin__lead);
+    }
 
-.record-card__remark {
-  margin-top: 4px;
-  color: var(--skin__neutral_1);
-  font-size: 10px;
-  line-height: 1.45;
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
+    .item-status {
+      margin-top: 4px;
+      line-height: 16px;
+      font-size: 12.5px;
 
-.record-card__right {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 2px;
-}
+      &.success {
+        color: var(--skin__accent_1);
+      }
 
-.record-card__status {
-  font-size: 11px;
-  line-height: 1.3;
-  white-space: nowrap;
-}
+      &.danger {
+        color: var(--skin__accent_2);
+      }
 
-.record-card__status--success {
-  color: var(--skin__accent_1);
-}
+      &.pending {
+        color: var(--skin__primary);
+      }
+    }
 
-.record-card__status--danger {
-  color: var(--skin__accent_2);
-}
+    .item-arrow {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 24px;
+      line-height: 22px;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--skin__neutral_2);
+    }
+  }
 
-.record-card__status--cancel {
-  color: var(--skin__neutral_1);
-}
+  .empty-state {
+    &__text {
+      color: var(--skin__neutral_2, var(--skin__lead));
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-.record-card__status--pending {
-  color: var(--skin__primary);
-}
-
-.record-card__arrow {
-  color: var(--skin__neutral_2);
-  font-size: 12px;
-}
-
-.empty-state__text {
-  color: var(--skin__neutral_2);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.empty-state__link {
-  color: var(--skin__primary);
-}
-
-.content-area :deep(.empty-box) {
-  padding-bottom: 70px;
+    &__link {
+      color: var(--skin__primary);
+    }
+  }
 }
 </style>
