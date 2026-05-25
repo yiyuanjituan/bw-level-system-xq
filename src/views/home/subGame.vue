@@ -18,33 +18,32 @@ const showNext = ref<boolean>(false);
 const route = useRoute();
 const app = useAppStore();
 const appData = useDataStore();
-const gameTypeVenueList = ref<any[]>([])
-const gameTypeVenueId = ref<string|number>(0)
-const
-// 使用枚举定义
-enum RightKeyEnum {
-  ALL = 'all',
-  HOT = 'hot',
-  LAST = 'last',
-  COLLECT = 'collect'
+const gameTypeVenueList = ref<any[]>([]);
+const gameTypeVenueId = ref<string | number>(0);
+const enum // 使用枚举定义
+RightKeyEnum {
+  ALL = "all",
+  HOT = "hot",
+  LAST = "last",
+  COLLECT = "collect"
 }
 interface RightItem {
-  key: RightKeyEnum
-  name: string
+  key: RightKeyEnum;
+  name: string;
 }
 const rightList = ref<RightItem[]>([
   { key: RightKeyEnum.ALL, name: "全部" },
   { key: RightKeyEnum.HOT, name: "热门" },
   { key: RightKeyEnum.LAST, name: "最近" },
-  { key: RightKeyEnum.COLLECT, name: "收藏" },
-])
-const rightKey: Ref<RightKeyEnum> = ref(RightKeyEnum.ALL)
-const isLoading = ref<boolean>(false)
+  { key: RightKeyEnum.COLLECT, name: "收藏" }
+]);
+const rightKey: Ref<RightKeyEnum> = ref(RightKeyEnum.ALL);
+const isLoading = ref<boolean>(false);
 const gameList = computed(() => {
-  const id = Number(gameTypeVenueId.value)
-  const info = app.gameList.find(v => v.id == id)
-  return info?.children ?? []
-})
+  const id = Number(gameTypeVenueId.value);
+  const info = app.gameList.find(v => v.id == id);
+  return info?.children ?? [];
+});
 
 function handleScroll(e) {
   const { scrollHeight, scrollTop, clientHeight } = e.target;
@@ -53,50 +52,50 @@ function handleScroll(e) {
 
 function showTip() {
   // @ts-ignore
-  showCustomToast({ type: 'fail', message: $t('tips.maintenance') })
+  showCustomToast({ type: "fail", message: $t("tips.maintenance") });
 }
 
 function updateActiveKey(key: any) {
   rightKey.value = key;
-  handleChangeTab({ id: 0 })
+  handleChangeTab({ id: 0 });
 }
 
 const typeData = computed(() => {
   const type = route.query?.type;
-  if (!type) return { name: '' };
-  if (type == '1') return { name: '真人', image: 'game-icon_dtfl_zr_0' };
-  if (type == '2') return { name: '捕鱼', image: 'game-icon_dtfl_by_0' };
-  if (type == '3') return { name: '电子', image: 'game-icon_dtfl_dz_0' };
-  if (type == '4') return { name: '彩票', image: 'game-icon_dtfl_cp_0' };
-  if (type == '5') return { name: '体育', image: 'game-icon_dtfl_ty_0' };
-  if (type == '6') return { name: '棋牌', image: 'game-icon_dtfl_qp_0' };
-  if (type == '7') return { name: '电竞', image: 'game-icon_dtfl_dianjing_0' };
-  if (type == '100') return { name: '最近' };
-  if (type == '101') return { name: '收藏' };
-  return
-})
+  if (!type) return { name: "" };
+  if (type == "1") return { name: "真人", image: "game-icon_dtfl_zr_0" };
+  if (type == "2") return { name: "捕鱼", image: "game-icon_dtfl_by_0" };
+  if (type == "3") return { name: "电子", image: "game-icon_dtfl_dz_0" };
+  if (type == "4") return { name: "彩票", image: "game-icon_dtfl_cp_0" };
+  if (type == "5") return { name: "体育", image: "game-icon_dtfl_ty_0" };
+  if (type == "6") return { name: "棋牌", image: "game-icon_dtfl_qp_0" };
+  if (type == "7") return { name: "电竞", image: "game-icon_dtfl_dianjing_0" };
+  if (type == "100") return { name: "最近" };
+  if (type == "101") return { name: "收藏" };
+  return;
+});
 
 function init() {
   const type = route.query?.type;
-  gameTypeVenueList.value = app.venueList.filter(v => v.type == type)
+  gameTypeVenueList.value = app.venueList.filter(v => v.type == type);
   // 设置激活的按钮
-  gameTypeVenueId.value = Number(route.query?.platformId)
+  gameTypeVenueId.value = Number(route.query?.platformId);
   // 设置rightList
   if (gameTypeVenueId.value === 0) {
     rightList.value = [
       { key: RightKeyEnum.HOT, name: "热门" },
       { key: RightKeyEnum.LAST, name: "最近" },
-      { key: RightKeyEnum.COLLECT, name: "收藏" },
-    ]
-    if (rightKey.value == 'all') rightKey.value = RightKeyEnum.HOT
+      { key: RightKeyEnum.COLLECT, name: "收藏" }
+    ];
+    if (rightKey.value == "all") rightKey.value = RightKeyEnum.HOT;
   } else {
     rightList.value = [
       { key: RightKeyEnum.ALL, name: "全部" },
       { key: RightKeyEnum.HOT, name: "热门" },
       { key: RightKeyEnum.LAST, name: "最近" },
-      { key: RightKeyEnum.COLLECT, name: "收藏" },
-    ]
-    if (rightKey.value != 'all') rightKey.value = RightKeyEnum.ALL
+      { key: RightKeyEnum.COLLECT, name: "收藏" }
+    ];
+    if (rightKey.value != "all") rightKey.value = RightKeyEnum.ALL;
   }
   loadGameListData();
 }
@@ -107,35 +106,40 @@ function loadGameListData() {
     id: gameTypeVenueId.value,
     type: route.query?.type,
     mode: rightKey.value
-  }
-  getGameListById(params).finally(() => isLoading.value = false).then((res) => {
-    app.setGameList(Number(gameTypeVenueId.value), res)
-  })
+  };
+  getGameListById(params)
+    .finally(() => (isLoading.value = false))
+    .then(res => {
+      app.setGameList(Number(gameTypeVenueId.value), res);
+    });
 }
 
 async function handleChangeTab(record: any) {
   await router.replace({ path: route.path, query: { ...route.query, platformId: record.id } });
   // 强制重新渲染
-  await nextTick()
+  await nextTick();
 }
 
-watch(() => route.fullPath, (newVal, oldVal) => init())
+watch(
+  () => route.fullPath,
+  (newVal, oldVal) => init()
+);
 
 function enterGame(record: any) {
   appData.setEnterInfo(record.venueId, record.id);
-  router.push({ path: '/home/embedded' })
+  router.push({ path: "/home/embedded" });
 }
 
 function checkHistory() {
   if (window.history.state.back == window.history.state.current) {
-    window.history.go(-2)
+    window.history.go(-2);
   }
 }
 
 onMounted(() => {
   init();
   checkHistory();
-})
+});
 </script>
 
 <template>
@@ -159,13 +163,21 @@ onMounted(() => {
                 <div class="tabs__wrap">
                   <div class="scroll-box" @scroll="handleScroll">
                     <div class="ui-tab" v-if="typeData.image">
-                      <div class="inner" :class="{ 'active-inner': gameTypeVenueId == 0 }" @click="handleChangeTab({ id: 0 })">
+                      <div
+                        class="inner"
+                        :class="{ 'active-inner': gameTypeVenueId == 0 }"
+                        @click="handleChangeTab({ id: 0 })"
+                      >
                         <svg-icon :name="typeData.image" class-name="text-[25px]" />
                         <p class="mt-[1px]">{{ typeData.name }}</p>
                       </div>
                     </div>
                     <div class="ui-tab" v-for="(item, index) in gameTypeVenueList" :key="index">
-                      <div class="inner" :class="{ 'active-inner': gameTypeVenueId == item.id }" @click="handleChangeTab(item)">
+                      <div
+                        class="inner"
+                        :class="{ 'active-inner': gameTypeVenueId == item.id }"
+                        @click="handleChangeTab(item)"
+                      >
                         <img :src="item.short_image" alt="" />
                         <p class="">{{ item.archiveCode }}</p>
                       </div>
@@ -189,14 +201,21 @@ onMounted(() => {
                 </template>
               </ui-tabs>
               <div class="grid-game-col flex-1">
-                <div class="w-[100%] h-[100%] flex items-center justify-center pb-[100px]" v-if="isLoading && gameList.length == 0">
+                <div
+                  class="w-[100%] h-[100%] flex items-center justify-center pb-[100px]"
+                  v-if="isLoading && gameList.length == 0"
+                >
                   <ui-loading />
                 </div>
                 <ui-empty v-if="!isLoading && gameList.length == 0" />
                 <div class="scroll-box" v-if="gameList.length > 0">
                   <div class="grid-box">
-                    <template v-for="(item) in gameList" :key="item.id">
-                      <div class="card-item w-[80px] h-[107px]" :style="{ '--bg-img': `url(${item.image})` }" @click="enterGame(item)">
+                    <template v-for="item in gameList" :key="item.id">
+                      <div
+                        class="card-item w-[80px] h-[107px]"
+                        :style="{ '--bg-img': `url(${item.image})` }"
+                        @click="enterGame(item)"
+                      >
                         <section class="card-title">
                           <h4 class="name-inner">{{ item.name }}</h4>
                         </section>
@@ -548,7 +567,7 @@ onMounted(() => {
                   border-radius: 0;
                   cursor: not-allowed;
                   opacity: 1;
-                  transition: opacity .6s;
+                  transition: opacity 0.6s;
                   .disabled-icon {
                     position: absolute;
                     top: 0;

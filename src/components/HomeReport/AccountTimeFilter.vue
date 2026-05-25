@@ -12,7 +12,7 @@ const emit = defineEmits<{
   (event: "change", value: AccountTimeRange): void;
 }>();
 
-const minDate = dayjs().subtract(3, 'month').toDate();
+const minDate = dayjs().subtract(3, "month").toDate();
 const maxDate = dayjs().toDate();
 const showPopover = ref(false);
 const draftMode = ref<AccountTimeFilterMode>("today");
@@ -213,7 +213,7 @@ watch(
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #363636;
+  border: 1px solid var(--skin__neutral_3);
   border-radius: 14px;
   background: #191919;
   color: var(--skin__neutral_2, var(--skin__lead));

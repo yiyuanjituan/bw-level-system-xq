@@ -1,316 +1,158 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import UiEmpty from "@/components/UI/empty.vue";
 import Copy from "@/components/Common/Copy.vue";
-import type { AccountTimeFilterMode, AccountTimeRange, SelectOption } from "@/components/HomeReport/types";
+import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
+import type { AccountTimeRange, SelectOption } from "@/components/HomeReport/types";
+import { service } from "@/api/service";
+import UiLoading from "@/components/UI/loading.vue";
+import { formatMoney } from "@/utils/common";
 
 type BetFilterOption = SelectOption & {
-  value: string;
+  value: number | string;
 };
 
-type BetStatus = "settled" | "pending" | "cancelled";
-type BetResult = "win" | "lose" | "draw";
+type BetStatus = 1 | 2 | 3 | 4;
 
-interface BetRecord {
-  id: string;
-  title: string;
-  stake: number;
-  validStake: number;
-  winLoss: number;
-  settledAt: string;
-  orderNo: string;
-  status: BetStatus;
-  betType: string;
-  platform: string;
-  result: BetResult;
+interface GameRecordItem {
+  id?: number | string;
+  type?: number;
+  betId?: string;
+  isThird?: number;
+  apiCode?: string;
+  isKill?: number;
+  playType?: string;
+  betNumber?: string;
+  odds?: string;
+  betAmount?: number;
+  validBetAmount?: number;
+  netAmount?: number;
+  status?: number;
+  betTime?: string | Date;
 }
 
-const minDate = dayjs().subtract(3, "month").toDate();
-const maxDate = dayjs().toDate();
-const showPopover = ref(false);
-const draftMode = ref<AccountTimeFilterMode>("custom");
-const draftStartDate = ref<string[]>([]);
-const draftEndDate = ref<string[]>([]);
+interface BetPageData {
+  page: number;
+  limit: number;
+  total: number;
+  list: GameRecordItem[];
+}
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
 
 const statusOptions: BetFilterOption[] = [
   { label: "全部状态", value: "all" },
-  { label: "已结算", value: "settled" },
-  { label: "未结算", value: "pending" },
-  { label: "已撤单", value: "cancelled" }
+  { label: "已结算", value: 1 },
+  { label: "未结算", value: 2 },
+  { label: "无效注单", value: 3 },
+  { label: "已退款", value: 4 }
 ];
 
-const typeOptions: BetFilterOption[] = [
+const typeOptions: (BetFilterOption & { image?: string })[] = [
   { label: "全部类型", value: "all" },
-  { label: "单注", value: "single" },
-  { label: "串关", value: "parlay" },
-  { label: "追号", value: "chase" }
+  { label: "真人", value: 1, image: "game-icon_dtfl_zr_0" },
+  { label: "捕鱼", value: 2, image: "game-icon_dtfl_by_0" },
+  { label: "电子", value: 3, image: "game-icon_dtfl_dz_0" },
+  { label: "彩票", value: 4, image: "game-icon_dtfl_cp_0" },
+  { label: "体育", value: 5, image: "game-icon_dtfl_ty_0" },
+  { label: "棋牌", value: 6, image: "game-icon_dtfl_qp_0" },
+  { label: "电竞", value: 7, image: "game-icon_dtfl_dianjing_0" }
 ];
 
-const platformOptions: BetFilterOption[] = [
-  { label: "全部平台", value: "all" },
-  { label: "体育", value: "sports" },
-  { label: "真人", value: "casino" },
-  { label: "电子", value: "slots" }
-];
-
-const resultOptions: BetFilterOption[] = [
-  { label: "全部结果", value: "all" },
-  { label: "输", value: "lose" },
-  { label: "赢", value: "win" },
-  { label: "和", value: "draw" }
-];
-
-const betRecords = ref<BetRecord[]>([
-  {
-    id: "1",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:57",
-    orderNo: "2057415341902137862",
-    status: "settled",
-    betType: "single",
-    platform: "sports",
-    result: "lose"
-  },
-  {
-    id: "2",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:56",
-    orderNo: "2057415338362143747",
-    status: "settled",
-    betType: "single",
-    platform: "sports",
-    result: "lose"
-  },
-  {
-    id: "3",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:55",
-    orderNo: "2057415334734070278",
-    status: "settled",
-    betType: "single",
-    platform: "sports",
-    result: "lose"
-  },
-  {
-    id: "4",
-    title: "梦娱探秘宝典",
-    stake: 0,
-    validStake: 0,
-    winLoss: 0,
-    settledAt: "2026-05-21 18:58:51",
-    orderNo: "2057415320083367936",
-    status: "settled",
-    betType: "chase",
-    platform: "casino",
-    result: "draw"
-  },
-  {
-    id: "5",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: 0.5,
-    settledAt: "2026-05-21 18:58:51",
-    orderNo: "2057415311434714633",
-    status: "settled",
-    betType: "parlay",
-    platform: "sports",
-    result: "win"
-  },
-  {
-    id: "6",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:48",
-    orderNo: "2057415303047880081",
-    status: "settled",
-    betType: "single",
-    platform: "slots",
-    result: "lose"
-  },
-  {
-    id: "7",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:48",
-    orderNo: "2057415307743723521",
-    status: "pending",
-    betType: "single",
-    platform: "sports",
-    result: "lose"
-  },
-  {
-    id: "8",
-    title: "梦娱探秘宝典",
-    stake: 0.4,
-    validStake: 0.4,
-    winLoss: -0.4,
-    settledAt: "2026-05-21 18:58:44",
-    orderNo: "2057415291033618970",
-    status: "cancelled",
-    betType: "single",
-    platform: "casino",
-    result: "lose"
-  }
-]);
-
-const statusFilterValue = ref(statusOptions[0]?.value ?? "all");
-const typeFilterValue = ref(typeOptions[0]?.value ?? "all");
+const platformOptions: BetFilterOption[] = [{ label: "全部平台", value: "all" }];
+const statusFilterValue = ref<number | string>(statusOptions[0]?.value ?? "all");
+const typeFilterValue = ref<number | string>(typeOptions[0]?.value ?? "all");
 const platformFilterValue = ref(platformOptions[0]?.value ?? "all");
-const resultFilterValue = ref(resultOptions[0]?.value ?? "all");
-const timeRange = ref<AccountTimeRange>(createDefaultRange());
+const timeRange = ref<AccountTimeRange>(createTodayRange());
+const pageData = ref<BetPageData>(createDefaultPageData());
+const isListLoading = ref(false);
+let latestRequestId = 0;
 
-function toPickerValue(dateText: string) {
-  const parsedDate = dayjs(dateText);
-
-  if (!parsedDate.isValid()) {
-    return dayjs().format("YYYY-MM-DD").split("-");
-  }
-
-  return parsedDate.format("YYYY-MM-DD").split("-");
-}
-
-function parsePickerValue(dateValue: string[]) {
-  return `${dateValue[0]}-${String(dateValue[1]).padStart(2, "0")}-${String(dateValue[2]).padStart(2, "0")}`;
-}
-
-function createRange(mode: AccountTimeFilterMode, startDate: string, endDate: string) {
-  const startDay = dayjs(startDate);
-  const endDay = dayjs(endDate);
-  const normalizedStartDay = startDay.isAfter(endDay) ? endDay : startDay;
-  const normalizedEndDay = startDay.isAfter(endDay) ? startDay : endDay;
-  const normalizedStartDate = normalizedStartDay.format("YYYY-MM-DD");
-  const normalizedEndDate = normalizedEndDay.format("YYYY-MM-DD");
+function createTodayRange(): AccountTimeRange {
+  const today = dayjs().format("YYYY-MM-DD");
 
   return {
-    mode,
-    label:
-      mode === "custom"
-        ? `${normalizedStartDay.format("MM/DD")}-${normalizedEndDay.format("MM/DD")}`
-        : mode === "yesterday"
-        ? "昨日"
-        : "今日",
-    startTime: normalizedStartDay.startOf("day").unix(),
-    endTime: normalizedEndDay.endOf("day").unix(),
-    startDate: normalizedStartDate,
-    endDate: normalizedEndDate
-  } satisfies AccountTimeRange;
+    mode: "today",
+    label: "今日",
+    startTime: dayjs(today).startOf("day").unix(),
+    endTime: dayjs(today).endOf("day").unix(),
+    startDate: today,
+    endDate: today
+  };
 }
 
-function createPresetRange(mode: Extract<AccountTimeFilterMode, "today" | "yesterday">) {
-  const targetDate = mode === "yesterday" ? dayjs().subtract(1, "day") : dayjs();
-  const dateText = targetDate.format("YYYY-MM-DD");
-
-  return createRange(mode, dateText, dateText);
-}
-
-function createDefaultRange() {
-  return createRange(
-    "custom",
-    dayjs().subtract(44, "day").format("YYYY-MM-DD"),
-    dayjs().subtract(1, "day").format("YYYY-MM-DD")
-  );
-}
-
-function syncDraft(rangeValue: AccountTimeRange) {
-  draftMode.value = rangeValue.mode;
-  draftStartDate.value = toPickerValue(rangeValue.startDate);
-  draftEndDate.value = toPickerValue(rangeValue.endDate);
-}
-
-function togglePopover() {
-  if (!showPopover.value) {
-    syncDraft(timeRange.value);
-  }
-
-  showPopover.value = !showPopover.value;
-}
-
-function selectQuickMode(mode: Extract<AccountTimeFilterMode, "today" | "yesterday">) {
-  draftMode.value = mode;
-  const quickRange = createPresetRange(mode);
-  draftStartDate.value = toPickerValue(quickRange.startDate);
-  draftEndDate.value = toPickerValue(quickRange.endDate);
-}
-
-function markCustomMode() {
-  draftMode.value = "custom";
-}
-
-function handleCancel() {
-  syncDraft(timeRange.value);
-  showPopover.value = false;
-}
-
-function handleConfirm() {
-  timeRange.value =
-    draftMode.value === "custom"
-      ? createRange("custom", parsePickerValue(draftStartDate.value), parsePickerValue(draftEndDate.value))
-      : createPresetRange(draftMode.value);
-
-  showPopover.value = false;
+function createDefaultPageData(): BetPageData {
+  return {
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    total: 0,
+    list: []
+  };
 }
 
 function handleSeeMore() {
-  timeRange.value = createDefaultRange();
+  timeRange.value = {
+    mode: "yesterday",
+    label: "昨日",
+    startTime: dayjs().subtract(1, "day").startOf("day").unix(),
+    endTime: dayjs().subtract(1, "day").endOf("day").unix(),
+    startDate: dayjs().subtract(1, "day").format("YYYY-MM-DD"),
+    endDate: dayjs().subtract(1, "day").format("YYYY-MM-DD")
+  };
 }
 
-function formatMoney(value: number) {
-  return Number(value || 0).toFixed(2);
-}
-
-function formatRecordTime(value: string) {
+function formatRecordTime(value: any) {
   return dayjs(value).format("YYYY/MM/DD HH:mm:ss");
 }
 
 function getStatusLabel(status: BetStatus) {
-  if (status === "pending") return "未结算";
-  if (status === "cancelled") return "已撤单";
+  if (status === 2) return "未结算";
+  if (status === 3) return "无效注单";
+  if (status === 4) return "已退款";
   return "已结算";
 }
 
 function getWinLossClass(value: number) {
-  if (value > 0) return "record-card__amount--win";
+  if (value >= 0) return "record-card__amount--win";
   if (value < 0) return "record-card__amount--lose";
-  return "record-card__amount--draw";
+  return "record-card__amount--win";
 }
 
-const triggerLabel = computed(() => {
-  if (timeRange.value.mode !== "custom") {
-    return timeRange.value.label;
+function createQueryParams() {
+  return {
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    startTime: timeRange.value.startTime,
+    endTime: timeRange.value.endTime,
+    status: statusFilterValue.value === "all" ? "" : statusFilterValue.value,
+    type: typeFilterValue.value === "all" ? "" : typeFilterValue.value
+  };
+}
+
+async function init() {
+  const requestId = ++latestRequestId;
+  isListLoading.value = true;
+
+  try {
+    const response = await service.v1.user.gamePageList(createQueryParams());
+    if (requestId === latestRequestId) {
+      pageData.value = {
+        page: Math.max(Number(response?.page) || DEFAULT_PAGE, 1),
+        limit: Math.max(Number(response?.limit) || DEFAULT_LIMIT, 1),
+        total: Math.max(Number(response?.total) || 0, 0),
+        list: Array.isArray(response?.list) ? response.list : []
+      };
+    }
+  } finally {
+    if (requestId === latestRequestId) {
+      isListLoading.value = false;
+    }
   }
+}
 
-  return `${timeRange.value.startDate.replaceAll("-", "/")} - ${timeRange.value.endDate.replaceAll("-", "/")}`;
-});
-
-const filteredRecords = computed(() => {
-  return betRecords.value.filter(item => {
-    const recordTime = dayjs(item.settledAt).unix();
-    const matchTime = recordTime >= timeRange.value.startTime && recordTime <= timeRange.value.endTime;
-    const matchStatus = statusFilterValue.value === "all" || item.status === statusFilterValue.value;
-    const matchType = typeFilterValue.value === "all" || item.betType === typeFilterValue.value;
-    const matchPlatform = platformFilterValue.value === "all" || item.platform === platformFilterValue.value;
-    const matchResult = resultFilterValue.value === "all" || item.result === resultFilterValue.value;
-
-    return matchTime && matchStatus && matchType && matchPlatform && matchResult;
-  });
-});
-
-const hasListData = computed(() => filteredRecords.value.length > 0);
+const hasListData = computed(() => pageData.value.list.length > 0);
 const emptyStateText = computed(() => {
   if (timeRange.value.mode === "custom") {
     return "所选时间暂无记录";
@@ -319,105 +161,20 @@ const emptyStateText = computed(() => {
   return `${timeRange.value.label}暂无记录`;
 });
 
-watch(
-  timeRange,
-  value => {
-    syncDraft(value);
-  },
-  { immediate: true, deep: true }
-);
+watch([() => timeRange.value.startTime, () => timeRange.value.endTime, statusFilterValue, typeFilterValue], () => {
+  void init();
+});
+
+onMounted(() => {
+  void init();
+});
 </script>
 
 <template>
   <div class="bet-tab">
     <section class="filter-row">
       <div class="filter-row__scroll">
-        <van-popover
-          v-model:show="showPopover"
-          trigger="manual"
-          placement="bottom-start"
-          :show-arrow="false"
-          :offset="[0, 8]"
-          teleport="body"
-        >
-          <template #reference>
-            <button
-              class="time-trigger"
-              :class="{ 'time-trigger--active': showPopover }"
-              type="button"
-              @click.stop="togglePopover"
-            >
-              <span class="time-trigger__text">{{ triggerLabel }}</span>
-              <svg-icon
-                name="arrow-back"
-                :class-name="showPopover ? 'rotate-[90deg]' : 'rotate-[-90deg]'"
-                class="time-trigger__arrow"
-              />
-            </button>
-          </template>
-
-          <div class="time-panel">
-            <div class="time-panel__quick">
-              <button
-                class="time-panel__quick-item"
-                :class="{ 'time-panel__quick-item--active': draftMode === 'today' }"
-                @click="selectQuickMode('today')"
-              >
-                今日
-              </button>
-              <button
-                class="time-panel__quick-item"
-                :class="{ 'time-panel__quick-item--active': draftMode === 'yesterday' }"
-                @click="selectQuickMode('yesterday')"
-              >
-                昨日
-              </button>
-              <button
-                class="time-panel__quick-item"
-                :class="{ 'time-panel__quick-item--active': draftMode === 'custom' }"
-                @click="markCustomMode"
-              >
-                自定义
-              </button>
-            </div>
-
-            <div class="time-panel__picker-header">
-              <span>开始日期</span>
-              <span>结束日期</span>
-            </div>
-
-            <div class="time-panel__picker-row">
-              <van-date-picker
-                v-model="draftStartDate"
-                class="time-panel__picker"
-                :columns-type="['year', 'month', 'day']"
-                :min-date="minDate"
-                :max-date="maxDate"
-                :show-toolbar="false"
-                :option-height="35"
-                :visible-option-num="5"
-                @change="markCustomMode"
-              />
-              <div class="time-panel__divider"></div>
-              <van-date-picker
-                v-model="draftEndDate"
-                class="time-panel__picker"
-                :columns-type="['year', 'month', 'day']"
-                :min-date="minDate"
-                :max-date="maxDate"
-                :show-toolbar="false"
-                :option-height="35"
-                :visible-option-num="5"
-                @change="markCustomMode"
-              />
-            </div>
-
-            <div class="time-panel__actions">
-              <x-button class="flex-1 !h-[40px]" plain type="primary" @click="handleCancel"> 取消 </x-button>
-              <x-button class="flex-1 !h-[40px]" @click="handleConfirm">确认</x-button>
-            </div>
-          </div>
-        </van-popover>
+        <AccountTimeFilter v-model="timeRange" />
 
         <div class="filter-select filter-select--sm">
           <x-select
@@ -448,21 +205,15 @@ watch(
             fit-option-width
           />
         </div>
-
-        <div class="filter-select filter-select--sm">
-          <x-select
-            v-model="resultFilterValue"
-            :options="resultOptions"
-            value-key="value"
-            placement="bottom"
-            fit-option-width
-          />
-        </div>
       </div>
     </section>
 
     <section class="content-area">
-      <ui-empty v-if="!hasListData">
+      <div v-if="isListLoading && !hasListData" class="content-state">
+        <ui-loading />
+      </div>
+
+      <ui-empty v-else-if="!hasListData">
         <template #text>
           <div class="empty-state__text">
             <span>{{ emptyStateText }}</span>
@@ -475,38 +226,52 @@ watch(
       </ui-empty>
 
       <div v-else class="record-list">
-        <article v-for="item in filteredRecords" :key="item.id" class="record-card">
-          <div class="record-card__row record-card__row--top">
-            <div class="record-card__title">{{ item.title }}</div>
-            <div class="record-card__metric">
-              <span class="record-card__metric-label">下注金额</span>
-              <span class="record-card__metric-value">{{ formatMoney(item.stake) }}</span>
-            </div>
-            <div class="record-card__result">
-              <span class="record-card__metric-label">输赢</span>
-              <span class="record-card__amount" :class="getWinLossClass(item.winLoss)">
-                {{ formatMoney(item.winLoss) }}
+        <article v-for="item in pageData.list" :key="item.id" class="record-card">
+          <div class="record-card__row">
+            <span class="ellipsis-box">
+              <img src="https://146.103.80.124:5001/cocos/icon/0/200_N_PG.avif" alt="" srcset="" />
+              <span class="darken">{{ item.playType }}</span>
+            </span>
+            <span class="groupFlex">
+              <span class="label">下注金额</span>
+              <span class="darken fw-[700]">&nbsp;{{ formatMoney(item.betAmount) }}</span>
+            </span>
+            <span class="groupFlex justify-end">
+              <span class="label">输赢</span>
+              <span class="darken fw-[700]" :class="getWinLossClass(item.netAmount)">
+                &nbsp;{{ formatMoney(item.netAmount) }}
               </span>
-            </div>
+            </span>
           </div>
 
-          <div class="record-card__row record-card__row--middle">
-            <div class="record-card__time">{{ formatRecordTime(item.settledAt) }}</div>
-            <div class="record-card__metric">
-              <span class="record-card__metric-label">有效投注</span>
-              <span class="record-card__sub-value">{{ formatMoney(item.validStake) }}</span>
-            </div>
+          <div class="record-card__row">
+            <span>
+              <span>{{ formatRecordTime(item.betTime) }}</span>
+            </span>
+            <span class="groupFlex">
+              <span class="label">有效投注</span>
+              <span class="fw-[700]">&nbsp;{{ formatMoney(item.validBetAmount) }}</span>
+            </span>
           </div>
 
-          <div class="record-card__row record-card__row--bottom">
-            <div class="record-card__order">
-              <span class="record-card__order-label">注单号</span>
-              <span class="record-card__order-value">{{ item.orderNo }}</span>
-              <Copy :text="item.orderNo" class-name="record-card__copy-icon" />
-            </div>
-            <div class="record-card__status" :class="`record-card__status--${item.status}`">
-              {{ getStatusLabel(item.status) }}
-            </div>
+          <div class="record-card__row space-box">
+            <span class="recordId">
+              <span class="leading-[13px] flex items-center">
+                <svg-icon
+                  :name="typeOptions?.find(v => v.value == item.type)?.image"
+                  class="text-[17px]"
+                />&nbsp;注单号&nbsp;
+              </span>
+              <span class="id">
+                <span dir="ltr">{{ item.betId }}</span>
+              </span>
+              <span class="copy-box ml-[8px] flex items-center">
+                <copy :text="item.betId" class-name="!text-[11px]" />
+              </span>
+            </span>
+            <span class="status-box" :class="`record-card__status--${item.status}`">
+              {{ getStatusLabel(item.status as any) }}
+            </span>
           </div>
         </article>
       </div>
@@ -522,7 +287,7 @@ watch(
 }
 
 .filter-row {
-  padding: 10px;
+  padding: 10px 0;
 }
 
 .filter-row__scroll {
@@ -531,42 +296,8 @@ watch(
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
-}
-
-.time-trigger {
-  min-width: 166px;
-  max-width: 166px;
-  height: 25px;
-  padding: 0 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--skin__neutral_3);
-  border-radius: 14px;
-  background: var(--skin__bg_2);
-  color: var(--skin__neutral_2, var(--skin__lead));
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.time-trigger__text {
-  flex: 1;
-  min-width: 0;
-  font-size: 10px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.time-trigger__arrow {
-  font-size: 10px;
-  color: inherit;
-}
-
-.time-trigger--active {
-  border-color: var(--skin__primary);
-  color: var(--skin__primary);
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .filter-select {
@@ -612,6 +343,13 @@ watch(
   display: flex;
 }
 
+.content-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .record-list {
   flex: 1;
   min-height: 0;
@@ -620,29 +358,82 @@ watch(
 }
 
 .record-card {
-  padding: 10px;
-  border-radius: 7px;
-  background: var(--skin__bg_2);
-  box-shadow: 0 1.5px 3.5px var(--skin__bg-shadow__custom);
+  display: flex;
+  flex-direction: column;
+  min-height: 55px;
+  padding: 10px 10px 5px;
+  font-size: 10px;
   color: var(--skin__neutral_2);
-}
-
-.record-card + .record-card {
-  margin-top: 8px;
+  &:nth-child(2n + 1) {
+    background-color: var(--skin__bg_2);
+    border-radius: 7px;
+  }
 }
 
 .record-card__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  font-size: 10px;
+  color: var(--skin__neutral_2);
+  margin-bottom: 5px;
+  > span {
+    width: 33%;
+  }
+  .ellipsis-box {
+    max-width: 225px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    img {
+      font-size: 17px;
+      height: 13px;
+      margin-right: 1px;
+      vertical-align: middle;
+    }
+  }
+  .groupFlex {
+    display: flex;
+    font-size: 10px;
+    .label {
+      max-width: 95px;
+      overflow-wrap: break-word;
+      white-space: nowrap;
+      text-align: left;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+  .darken {
+    color: var(--skin__lead);
+  }
 }
+.space-box {
+  justify-content: space-between;
+  .recordId {
+    display: flex;
+    align-items: center;
+    max-width: 220px;
+    width: auto;
+    .id {
+      flex: 1 1 0%;
+      direction: rtl;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: var(--skin__neutral_1);
+    }
+  }
 
-.record-card__row + .record-card__row {
-  margin-top: 6px;
-}
-
-.record-card__row--top {
-  align-items: flex-start;
+  .status-box {
+    width: 34%;
+    text-align: right;
+  }
 }
 
 .record-card__title {
@@ -705,15 +496,15 @@ watch(
 }
 
 .record-card__amount--win {
-  color: var(--skin__accent_2);
+  color: var(--skin__accent_2) !important;
 }
 
 .record-card__amount--lose {
-  color: var(--skin__accent_1);
+  color: var(--skin__accent_1) !important;
 }
 
 .record-card__amount--draw {
-  color: var(--skin__primary);
+  color: var(--skin__primary) !important;
 }
 
 .record-card__time {
@@ -753,7 +544,6 @@ watch(
 
 .record-card__order :deep(.record-card__copy-icon) {
   font-size: 12px;
-  color: var(--skin__primary);
 }
 
 .record-card__status {
@@ -762,15 +552,16 @@ watch(
   font-weight: 600;
 }
 
-.record-card__status--settled {
+.record-card__status--1 {
   color: var(--skin__accent_1);
 }
 
-.record-card__status--pending {
+.record-card__status--2 {
   color: var(--skin__primary);
 }
 
-.record-card__status--cancelled {
+.record-card__status--3,
+.record-card__status--4 {
   color: var(--skin__neutral_1);
 }
 
@@ -783,129 +574,5 @@ watch(
 .empty-state__link {
   color: var(--skin__primary);
   cursor: pointer;
-}
-
-.time-panel {
-  width: 355px;
-  border: var(--lobby__px) solid var(--skin__border);
-  box-shadow: 0 2px 6px var(--skin__bg-shadow__custom);
-  box-sizing: border-box;
-  color: var(--skin__neutral_2);
-}
-
-.time-panel__quick {
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-.time-panel__quick-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 35px;
-  font-size: 12px;
-  box-sizing: border-box;
-  border-radius: 7px;
-  border: var(--lobby__px) solid var(--skin__border);
-  color: var(--skin__lead);
-  line-height: 1;
-}
-
-.time-panel__quick-item--active {
-  border-color: var(--skin__primary);
-  color: var(--skin__primary);
-}
-
-.time-panel__picker-header {
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-}
-
-.time-panel__picker-header span {
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--skin__neutral_1);
-}
-
-.time-panel__picker-row {
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-}
-
-.time-panel__divider {
-  width: 0.5px;
-  height: 155px;
-  background-color: var(--skin__border);
-  margin: 0 5px;
-  z-index: 1;
-}
-
-.time-panel__picker {
-  flex: 1;
-  padding: 0 10px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.time-panel__actions {
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  gap: 10px;
-}
-
-.time-panel :deep(.van-picker) {
-  background: transparent;
-}
-
-.time-panel :deep(.van-picker-column),
-.time-panel :deep(.van-picker-column__item) {
-  font-size: 12px;
-  color: var(--skin__neutral_2);
-}
-
-.time-panel :deep(.van-picker-column__item--selected) {
-  color: var(--skin__lead);
-  font-weight: 600;
-}
-
-.time-panel :deep(.van-picker__columns) {
-  background: transparent;
-}
-
-.time-panel :deep(.van-picker__mask) {
-  background-image: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--skin__bg_2) 94%, transparent),
-      color-mix(in srgb, var(--skin__bg_2) 60%, transparent)
-    ),
-    linear-gradient(
-      0deg,
-      color-mix(in srgb, var(--skin__bg_2) 94%, transparent),
-      color-mix(in srgb, var(--skin__bg_2) 60%, transparent)
-    );
-}
-
-.time-panel :deep(.van-picker__frame) {
-  left: 0;
-  right: 0;
-  border-top: var(--lobby__px) solid var(--skin__border);
-  border-bottom: var(--lobby__px) solid var(--skin__border);
-  background: transparent;
-}
-
-.time-panel :deep(.van-picker__frame)::after {
-  display: none;
 }
 </style>

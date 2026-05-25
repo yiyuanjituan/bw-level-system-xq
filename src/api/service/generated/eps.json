@@ -587,6 +587,11 @@
         "method": "post",
         "path": "/accountPageList",
         "summary": "钱包记录"
+      },
+      {
+        "method": "post",
+        "path": "/gamePageList",
+        "summary": "游戏记录"
       }
     ]
   },

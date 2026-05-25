@@ -4,12 +4,7 @@ import dayjs from "dayjs";
 import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
 import HomeReportSummaryBar from "@/components/HomeReport/SummaryBar.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import type {
-  AccountTimeRange,
-  ReportCurrent,
-  SelectOption,
-  SummaryItem
-} from "@/components/HomeReport/types";
+import type { AccountTimeRange, ReportCurrent, SelectOption, SummaryItem } from "@/components/HomeReport/types";
 import useAuthStore from "@/store/modules/user";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
@@ -43,7 +38,7 @@ const isWalletLoading = ref(false);
 const isListLoading = ref(false);
 let latestRequestId = 0;
 
-const detailData = useStorage('money-detail-data', {})
+const detailData = useStorage("money-detail-data", {});
 const categoryOptions: AccountFilterOption[] = [
   { label: "账变大类", value: 0 },
   { label: "资金切换", value: 1 },
@@ -65,16 +60,16 @@ const categoryOptions: AccountFilterOption[] = [
 ];
 
 const detailOptions: AccountFilterOption[] = [
-  { label: "小类明细", value: "" },
+  { label: "小类明细", value: "" }
   // { label: "人工加款", value: "人工加款" },
   // { label: "活动派发", value: "活动派发" },
   // { label: "提现退回", value: "提现退回" }
 ];
 
 const summaryItems: SummaryItem[] = [
-  { label: "累计充值", value: '￥0.00', color: "success" },
-  { label: "累计提现", value: '￥0.00', color: "danger" },
-  { label: "累计领取", value: '￥0.00', color: "warn" }
+  { label: "累计充值", value: "￥0.00", color: "success" },
+  { label: "累计提现", value: "￥0.00", color: "danger" },
+  { label: "累计领取", value: "￥0.00", color: "warn" }
 ];
 
 function createTodayRange(): AccountTimeRange {
@@ -100,9 +95,7 @@ function createDefaultPageData(): AccountPageData {
 }
 
 const timeRange = ref<AccountTimeRange>(createTodayRange());
-const categoryFilterValue = ref<number | string>(
-  categoryOptions[0]?.value ?? 0
-);
+const categoryFilterValue = ref<number | string>(categoryOptions[0]?.value ?? 0);
 const detailFilterValue = ref<number | string>(detailOptions[0]?.value ?? "");
 const pageData = ref<AccountPageData>(createDefaultPageData());
 
@@ -118,7 +111,6 @@ const emptyStateText = computed(() => {
 function formatMoney(value: number) {
   return Number(value || 0).toFixed(2);
 }
-
 
 function normalizePageData(response: any): AccountPageData {
   const source = response?.data ?? response ?? {};
@@ -195,21 +187,13 @@ async function init() {
 }
 
 function handleToAccountDetail(record: any) {
-  detailData.value = record
-  router.push(`/home/account-detail?orderNo=${record.order_sn}&id=${record.id}`)
+  detailData.value = record;
+  router.push(`/home/account-detail?orderNo=${record.order_sn}&id=${record.id}`);
 }
 
-watch(
-  [
-    () => timeRange.value.startTime,
-    () => timeRange.value.endTime,
-    categoryFilterValue,
-    detailFilterValue
-  ],
-  () => {
-    void init();
-  }
-);
+watch([() => timeRange.value.startTime, () => timeRange.value.endTime, categoryFilterValue, detailFilterValue], () => {
+  void init();
+});
 
 onMounted(() => {
   void init();
@@ -222,9 +206,7 @@ onMounted(() => {
       <div class="balance-card__top">
         <div class="balance-card__info">
           <span class="balance-card__label">当前余额</span>
-          <span class="balance-card__amount">{{
-            formatMoney(Number(auth.user?.money))
-          }}</span>
+          <span class="balance-card__amount">{{ formatMoney(Number(auth.user?.money)) }}</span>
           <svg-icon
             name="comm_icon_sx"
             class-name="balance-card__refresh"
@@ -232,18 +214,12 @@ onMounted(() => {
             @click="handleRefreshBalance"
           />
         </div>
-        <button
-          class="balance-card__action"
-          type="button"
-          @click="handleRetrieveBalance"
-        >
+        <button class="balance-card__action" type="button" @click="handleRetrieveBalance">
           <span>找回余额</span>
           <svg-icon name="arrow-back" class-name="balance-card__action-arrow" />
         </button>
       </div>
-      <div class="balance-card__tip">
-        若进出游戏时余额丢失，可通过找回余额自助恢复。
-      </div>
+      <div class="balance-card__tip">若进出游戏时余额丢失，可通过找回余额自助恢复。</div>
     </section>
 
     <section class="filter-row">
@@ -260,12 +236,7 @@ onMounted(() => {
       </div>
 
       <div class="filter-select">
-        <x-select
-          v-model="detailFilterValue"
-          :options="detailOptions"
-          value-key="value"
-          placement="bottom"
-        />
+        <x-select v-model="detailFilterValue" :options="detailOptions" value-key="value" placement="bottom" />
       </div>
     </section>
 
@@ -280,9 +251,7 @@ onMounted(() => {
             <span>{{ emptyStateText }}</span>
             <template v-if="timeRange.mode === 'today'">
               <span>，可</span>
-              <span class="empty-state__link" @click="handleSeeMore"
-                >查看更多</span
-              >
+              <span class="empty-state__link" @click="handleSeeMore">查看更多</span>
             </template>
           </div>
         </template>
@@ -440,7 +409,7 @@ onMounted(() => {
   .filter-select :deep(.x-select) {
     height: 25px;
     padding: 0 10px;
-    border: 1px solid #363636;
+    border: 1px solid var(--skin__neutral_3);
     border-radius: 14px;
     background: #191919;
     color: var(--skin__neutral_2, var(--skin__lead));

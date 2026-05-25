@@ -161,7 +161,7 @@ const emptyStateText = computed(() => {
 .filter-select :deep(.x-select) {
   height: 25px;
   padding: 0 10px;
-  border: 1px solid #363636;
+  border: 1px solid var(--skin__neutral_3);
   border-radius: 14px;
   background: #191919;
   color: var(--skin__neutral_2, var(--skin__lead));
