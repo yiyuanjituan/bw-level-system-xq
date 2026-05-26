@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { showCustomToast } from "@/hooks/useCommon";
+import { ref } from "vue";
+import UiInput from "@/components/UI/input.vue";
 
-const props = defineProps<{
-  currentBalance: number;
-  walletIsLoading: boolean;
-}>();
-
-const emit = defineEmits<{
-  (event: "refresh-balance"): void;
-}>();
+const props = defineProps<{ currentBalance: number; walletIsLoading: boolean }>();
+const emit = defineEmits<{ (event: "refresh-balance"): void }>();
+const tabsActive = ref("all");
+const typeOptions: any[] = [
+  { label: "全部", value: "all", image: "event_zh" },
+  { label: "真人", value: 1, image: "game-icon_dtfl_zr_0" },
+  { label: "捕鱼", value: 2, image: "game-icon_dtfl_by_0" },
+  { label: "电子", value: 3, image: "game-icon_dtfl_dz_0" },
+  { label: "彩票", value: 4, image: "game-icon_dtfl_cp_0" },
+  { label: "体育", value: 5, image: "game-icon_dtfl_ty_0" },
+  { label: "棋牌", value: 6, image: "game-icon_dtfl_qp_0" },
+  { label: "电竞", value: 7, image: "game-icon_dtfl_dianjing_0" }
+];
 
 function formatMoney(value: number) {
   return value.toFixed(2);
-}
-
-function handleAction() {
-  showCustomToast({ type: "success", message: "一键找回功能待接入" });
 }
 </script>
 
@@ -40,38 +42,30 @@ function handleAction() {
         <span class="balance-card__link">联系客服</span>
       </div>
     </section>
-
-    <section class="toolbar">
-      <button class="toolbar__all" type="button">
-        <span class="toolbar__icon">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-        <span>全部</span>
-      </button>
-
-      <label class="toolbar__search">
-        <input type="text" placeholder="平台搜索" />
-        <svg-icon name="comm_icon_search" class-name="toolbar__search-icon" />
-      </label>
-    </section>
-
-    <section class="content-area">
-      <div class="empty-state">
-        <div class="empty-state__graphic">
-          <span class="empty-state__disc"></span>
-          <span class="empty-state__box empty-state__box--top"></span>
-          <span class="empty-state__box empty-state__box--left"></span>
-          <span class="empty-state__box empty-state__box--right"></span>
-        </div>
-        <div class="empty-state__text">
-          <span>暂无内容</span>
-          <svg-icon name="comm_icon_retry" class-name="empty-state__refresh" />
-        </div>
-      </div>
-    </section>
+    <div class="flex-context-tab flex-1 pt-[10px] pl-[10px] pb-[10px] flex flex-col">
+      <x-tabs shrink position="left" type="card" class="flex-1" v-model="tabsActive">
+        <x-tab :name="item.value" v-for="(item, index) in typeOptions" :key="index">
+          <template #title>
+            <div class="custom-row-tab" :class="{ 'custom-row-tab_active': tabsActive == item.value }">
+              <span class="slider-icon-box"><svg-icon :name="item.image" /></span>
+              <div class="sidebar-common-tab-name">{{ item.label.split("").join("&nbsp;") }}</div>
+            </div>
+          </template>
+          <div class="wallet-search" v-if="item.value == 'all'">
+            <x-input placeholder="平台搜索">
+              <template #suffix>
+                <svg-icon name="comm_icon_ss" color="var(--skin__primary)"></svg-icon>
+              </template>
+            </x-input>
+          </div>
+          <div class="main-layout">
+            <div class="grid" style="grid-template-columns: 1fr 1fr">
+              <div class="item" v-for="i in 10"></div>
+            </div>
+          </div>
+        </x-tab>
+      </x-tabs>
+    </div>
   </div>
 </template>
 
@@ -109,13 +103,13 @@ function handleAction() {
 
     &__amount {
       margin: 0 5px;
-      color: #dfbe5b;
+      color: var(--skin__primary);
       font-size: 12px;
       line-height: 1;
     }
 
     &__refresh {
-      color: #dfbe5b;
+      color: var(--skin__primary);
       font-size: 13px;
     }
 
@@ -126,13 +120,13 @@ function handleAction() {
       padding: 0;
       border: 0;
       background: transparent;
-      color: #dfbe5b;
+      color: var(--skin__primary);
       font-size: 12px;
       white-space: nowrap;
     }
 
     &__tip {
-      margin-top: 2px;
+      margin-top: 5px;
       color: #6f6f6f;
       font-size: 11px;
       line-height: 1.35;
@@ -143,68 +137,111 @@ function handleAction() {
     }
   }
 
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-top: 12px;
-
-    &__all {
-      height: 34px;
-      padding: 0 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 0;
-      border-radius: 7px;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      background: linear-gradient(135deg, #8d79ff 0%, #5764ff 100%);
-      box-shadow: 0 8px 18px rgba(97, 101, 255, 0.26);
+  .flex-context-tab {
+    :deep(.x-tabs__nav) {
+      border: none !important;
+      border-radius: 0 !important;
+      padding-right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
-    &__icon {
-      width: 12px;
-      height: 12px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2px;
-
-      span {
-        background: rgba(255, 255, 255, 0.92);
-        border-radius: 2px;
-      }
+    :deep(.x-tab) {
+      padding: 0 !important;
+      border: none !important;
+      background-color: transparent !important;
     }
-
-    &__search {
-      flex: 1;
-      height: 34px;
+    .custom-row-tab {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 0 12px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid #d7daea;
-      border-radius: 18px;
-
-      input {
-        flex: 1;
-        min-width: 0;
-        border: 0;
-        background: transparent;
-        color: #4f5668;
-        font-size: 12px;
-        outline: none;
-
-        &::placeholder {
-          color: #b0b5c4;
-        }
+      border-radius: 7px;
+      overflow: hidden;
+      width: 75px;
+      height: 35px;
+      padding: 0 3px 0 1.5px;
+      background-size: 100% 100%;
+      color: var(--skin__left_nav_def);
+      box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
+      word-break: break-all;
+      background-image: url("@/assets/common/btn_zc1_2.avif");
+      .slider-icon-box {
+        width: 24px;
+        height: 18px;
+        display: flex;
+        flex-shrink: 0;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        z-index: 6;
       }
+      .sidebar-common-tab-name {
+        width: 100%;
+        margin: 0 auto;
+        align-items: center;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 16px;
+        font-size: 12px;
+        text-align: center;
+        //color: var(--skin__left_nav_active);
+      }
+    }
+    .custom-row-tab_active {
+      background-image: url("@/assets/common/btn_zc1_1.avif");
+      color: var(--skin__left_nav_active);
+      .slider-icon-box {
+        color: var(--skin__left_nav_active);
+      }
+    }
 
-      &-icon {
-        color: #6165ff;
-        font-size: 14px;
+    :deep(.x-tabs__content) {
+      display: flex;
+      flex-direction: column;
+    }
+    :deep(.x-tab__panel) {
+      overflow: hidden;
+      flex: 1;
+      height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .wallet-search {
+      margin-bottom: 10px;
+      padding-right: 10px;
+      :deep(.x-input-wrapper) {
+        height: 25px;
+        color: var(--skin__neutral_2);
+        border-radius: 9999px;
+        cursor: pointer;
+      }
+    }
+    .main-layout {
+      scrollbar-color: var(--skin__border) transparent;
+      scrollbar-width: thin;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      flex: 1;
+      height: 0;
+
+      .item {
+        flex: none;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        margin: 0 10px 10px 0;
+        background-color: var(--skin__bg_2);
+        width: 130px;
+        height: 55px;
+        font-size: 10px;
+        border-radius: 7px;
+        box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.06);
       }
     }
   }
@@ -235,7 +272,12 @@ function handleAction() {
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(238, 240, 245, 0.82) 58%, rgba(226, 229, 236, 0.95));
+      background: radial-gradient(
+        circle at 30% 30%,
+        rgba(255, 255, 255, 0.95),
+        rgba(238, 240, 245, 0.82) 58%,
+        rgba(226, 229, 236, 0.95)
+      );
     }
 
     &__box {

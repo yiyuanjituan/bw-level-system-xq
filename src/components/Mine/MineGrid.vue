@@ -15,7 +15,7 @@ const list = ref([
     icon_1: "style_2_icon_list_zhye",
     icon_2: "style_2_icon_list_zhye2",
     name: "找回余额",
-    url: "/home/report?reportCurrent=1"
+    url: "/home/report?reportCurrent=4"
   },
   {
     key: "zhmx",
