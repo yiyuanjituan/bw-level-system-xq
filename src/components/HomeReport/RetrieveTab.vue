@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import UiInput from "@/components/UI/input.vue";
+import { onMounted, ref } from "vue";
+import { service } from "@/api/service";
 
 const props = defineProps<{ currentBalance: number; walletIsLoading: boolean }>();
 const emit = defineEmits<{ (event: "refresh-balance"): void }>();
@@ -15,10 +15,17 @@ const typeOptions: any[] = [
   { label: "棋牌", value: 6, image: "game-icon_dtfl_qp_0" },
   { label: "电竞", value: 7, image: "game-icon_dtfl_dianjing_0" }
 ];
+const totalList = ref<any[]>([]);
 
 function formatMoney(value: number) {
   return value.toFixed(2);
 }
+
+onMounted(() => {
+  service.v1.user.thirdWallet({}).then(res => {
+    totalList.value = res;
+  });
+});
 </script>
 
 <template>
@@ -59,8 +66,12 @@ function formatMoney(value: number) {
             </x-input>
           </div>
           <div class="main-layout">
-            <div class="grid" style="grid-template-columns: 1fr 1fr">
-              <div class="item" v-for="i in 10"></div>
+            <div class="item" v-for="item in totalList" :key="item.id">
+              <div class="item-wrap">
+                <img :src="item.short_image" alt="" class="w-[20px] h-[20px] mr-[10px]" />
+                <div class="up">{{ item.apiCode }}</div>
+              </div>
+              <div class="down"><span class="notranslate">0.00</span></div>
             </div>
           </div>
         </x-tab>
@@ -138,6 +149,10 @@ function formatMoney(value: number) {
   }
 
   .flex-context-tab {
+    min-height: 0;
+    :deep(.x-tabs) {
+      min-height: 0;
+    }
     :deep(.x-tabs__nav) {
       border: none !important;
       border-radius: 0 !important;
@@ -201,11 +216,14 @@ function formatMoney(value: number) {
     :deep(.x-tabs__content) {
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
     :deep(.x-tab__panel) {
       overflow: hidden;
       flex: 1;
       height: 0;
+      min-height: 0;
       display: flex;
       flex-direction: column;
     }
@@ -220,28 +238,50 @@ function formatMoney(value: number) {
       }
     }
     .main-layout {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-content: start;
       scrollbar-color: var(--skin__border) transparent;
       scrollbar-width: thin;
       overflow-x: hidden;
       overflow-y: auto;
-      padding-bottom: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      flex: 1;
-      height: 0;
+      padding: 0 10px 10px 0;
 
       .item {
-        flex: none;
         position: relative;
         display: flex;
         flex-direction: column;
-        margin: 0 10px 10px 0;
-        background-color: var(--skin__bg_2);
-        width: 130px;
+        min-width: 0;
         height: 55px;
+        background-color: var(--skin__bg_2);
         font-size: 10px;
         border-radius: 7px;
         box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.06);
+        .item-wrap {
+          display: flex;
+          align-items: center;
+          height: 30px;
+          padding: 5px 6.5px;
+          border-bottom: var(--lobby__px) solid var(--skin__border);
+          .up {
+            overflow: hidden;
+            color: var(--skin__lead);
+            font-size: 12px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+        }
+        .down {
+          height: 25px;
+          padding: 5px 10px;
+          color: var(--skin__neutral_2);
+        }
+        .hasMoney {
+          color: var(--skin__accent_3);
+        }
       }
     }
   }

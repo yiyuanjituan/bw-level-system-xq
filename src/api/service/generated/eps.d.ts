@@ -1166,14 +1166,19 @@ declare namespace Eps {
 			gamePageList(data?: any): Promise<any>;
 
 		/**
+			 * 三方钱包余额
+			 */
+			thirdWallet(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; personalReport: string; gamePageList: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; thirdWallet: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; thirdWallet: boolean; };
 
 		request: Service["request"];
 	}

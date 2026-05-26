@@ -597,6 +597,11 @@
         "method": "post",
         "path": "/gamePageList",
         "summary": "游戏记录"
+      },
+      {
+        "method": "post",
+        "path": "/thirdWallet",
+        "summary": "三方钱包余额"
       }
     ]
   },
