@@ -590,6 +590,11 @@
       },
       {
         "method": "post",
+        "path": "/personalReport",
+        "summary": "个人报表"
+      },
+      {
+        "method": "post",
         "path": "/gamePageList",
         "summary": "游戏记录"
       }

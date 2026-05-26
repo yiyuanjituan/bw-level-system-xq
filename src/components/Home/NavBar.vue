@@ -64,13 +64,7 @@ const updateWallet = () => {
       <div class="left">
         <div class="icon-wrap">
           <i class="inline-flex items-center justify-center" @click="changeShowNav">
-            <svg
-              width="1em"
-              height="1em"
-              fill="#adb6c3"
-              class="left-icon"
-              :class="{ 'left-icon-transX': isShowNav }"
-            >
+            <svg width="1em" height="1em" fill="#adb6c3" class="left-icon" :class="{ 'left-icon-transX': isShowNav }">
               <use xlink:href="#btn_zcl_arrow" />
             </svg>
           </i>
@@ -139,11 +133,7 @@ const updateWallet = () => {
       </div>
     </div>
 
-    <home-drawer
-      ref="drawerRef"
-      @close="isShowNav = false"
-      :show-down-load="app.isShowDownload"
-    />
+    <home-drawer ref="drawerRef" @close="isShowNav = false" :show-down-load="app.isShowDownload" />
   </header>
 </template>
 

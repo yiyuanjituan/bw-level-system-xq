@@ -60,12 +60,6 @@ const detailRows = computed(() => [
   }
 ]);
 
-function init() {
-
-}
-
-onMounted(() => init())
-
 </script>
 
 <template>
@@ -74,11 +68,7 @@ onMounted(() => init())
 
     <div class="detail-scroll">
       <section class="detail-card">
-        <div
-          v-for="row in detailRows"
-          :key="row.label"
-          class="detail-card__row"
-        >
+        <div v-for="row in detailRows" :key="row.label" class="detail-card__row">
           <span class="detail-card__label">{{ row.label }}</span>
           <span class="detail-card__value" :class="row.valueClass">
             {{ row.value }}
@@ -118,7 +108,7 @@ onMounted(() => init())
   gap: 16px;
 }
 
-.detail-card__row + .detail-card__row {
+.detail-card__row+.detail-card__row {
   margin-top: 8px;
 }
 
@@ -137,9 +127,9 @@ onMounted(() => init())
   text-align: right;
   word-break: break-all;
 }
+
 .active-text {
   color: var(--skin__lead);
   font-weight: 700;
 }
-
 </style>

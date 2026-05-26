@@ -1156,6 +1156,11 @@ declare namespace Eps {
 			accountPageList(data?: any): Promise<any>;
 
 		/**
+			 * 个人报表
+			 */
+			personalReport(data?: any): Promise<any>;
+
+		/**
 			 * 游戏记录
 			 */
 			gamePageList(data?: any): Promise<any>;
@@ -1163,12 +1168,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; gamePageList: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; gamePageList: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; };
 
 		request: Service["request"];
 	}
