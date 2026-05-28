@@ -3,13 +3,15 @@ import UiBadge from "@/components/UI/badge.vue";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import { onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { formatMoney, getYuEBaoRichText } from "@/utils/common";
 import { service } from "@/api/service";
 
 dayjs.extend(isoWeek);
+
+const LOAD_MORE_OFFSET = 48;
 
 function refreshInfo() {
   service.v1.activity.interestInfo().then(res => {
@@ -68,23 +70,139 @@ const statusOptions = ref([
 const daySelectIndex = ref(0);
 const statusSelectIndex = ref(0);
 const interestRecordList = ref<any[]>([]);
+const page = ref(1);
+const interestRecordTotal = ref(0);
 const interestRecordsLoading = ref(false);
+const interestRecordsLoadingMore = ref(false);
+const interestRecordsFinished = ref(false);
+const interestRecordListRef = ref<HTMLElement | null>(null);
+let latestInterestRecordsRequestId = 0;
 
-function getInterestRecords() {
-  const dayInfo = dayOptions.value.find(item => item.value === daySelectIndex.value) as any;
-  interestRecordsLoading.value = true;
-  service.v1.activity
-    .interestRecords({
-      startTime: dayInfo.start_time,
-      endTime: dayInfo.end_time,
-      type: statusSelectIndex.value
-    })
-    .then(res => {
-      interestRecordList.value = res.list;
-    })
-    .finally(() => {
-      interestRecordsLoading.value = false;
-    });
+function getCurrentDayInfo() {
+  return dayOptions.value.find(item => item.value === daySelectIndex.value) ?? dayOptions.value[0];
+}
+
+function createInterestRecordsParams(currentPage: number) {
+  const dayInfo = getCurrentDayInfo();
+
+  return {
+    page: currentPage,
+    limit: 30,
+    startTime: dayInfo.start_time,
+    endTime: dayInfo.end_time,
+    type: statusSelectIndex.value
+  };
+}
+
+function updateInterestRecordsFinishedState(list: any[], total: number, append: boolean) {
+  const currentPageLength = list.length;
+  const loadedLength = append ? interestRecordList.value.length + currentPageLength : currentPageLength;
+
+  if (currentPageLength === 0) {
+    interestRecordsFinished.value = true;
+    return;
+  }
+
+  if (total > 0) {
+    interestRecordsFinished.value = loadedLength >= total;
+    return;
+  }
+
+  interestRecordsFinished.value = currentPageLength < 30;
+}
+
+async function ensureInterestRecordsScrollable() {
+  const container = interestRecordListRef.value;
+
+  if (
+    !container ||
+    interestRecordsLoading.value ||
+    interestRecordsLoadingMore.value ||
+    interestRecordsFinished.value ||
+    interestRecordList.value.length === 0
+  ) {
+    return;
+  }
+
+  if (container.scrollHeight <= container.clientHeight + 2) {
+    await loadMoreInterestRecords();
+  }
+}
+
+async function getInterestRecords(currentPage = 1, append = false) {
+  const requestId = ++latestInterestRecordsRequestId;
+
+  if (append) {
+    interestRecordsLoadingMore.value = true;
+  } else {
+    interestRecordsLoading.value = true;
+  }
+
+  try {
+    const response = await service.v1.activity.interestRecords(createInterestRecordsParams(currentPage));
+
+    if (requestId !== latestInterestRecordsRequestId) {
+      return;
+    }
+
+    updateInterestRecordsFinishedState(response.list, response.total, append);
+
+    page.value = response.page;
+    interestRecordTotal.value = response.total;
+    interestRecordList.value = append ? interestRecordList.value.concat(response.list) : response.list;
+
+    await nextTick();
+    await ensureInterestRecordsScrollable();
+  } finally {
+    if (requestId === latestInterestRecordsRequestId) {
+      if (append) {
+        interestRecordsLoadingMore.value = false;
+      } else {
+        interestRecordsLoading.value = false;
+      }
+    }
+  }
+}
+
+async function refreshInterestRecords() {
+  interestRecordList.value = [];
+  page.value = 1;
+  interestRecordTotal.value = 0;
+  interestRecordsFinished.value = false;
+
+  await getInterestRecords(1);
+}
+
+async function loadMoreInterestRecords() {
+  if (interestRecordsLoading.value || interestRecordsLoadingMore.value || interestRecordsFinished.value) {
+    return;
+  }
+
+  await getInterestRecords(page.value + 1, true);
+}
+
+function handleInterestRecordScroll(event: Event) {
+  if (interestRecordsLoading.value || interestRecordsLoadingMore.value || interestRecordsFinished.value) {
+    return;
+  }
+
+  const target = event.target as HTMLElement | null;
+  if (!target) {
+    return;
+  }
+
+  const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+  if (distanceToBottom <= LOAD_MORE_OFFSET) {
+    void loadMoreInterestRecords();
+  }
+}
+
+function handleGetMoney() {
+  service.v1.activity.interestClaim().then(() => {
+    showCustomToast({ message: "领取成功", type: "success" });
+    service.v1.activity.interestInfo().then(res => (interestInfo.value = res));
+    refreshInterestRecords();
+  });
 }
 
 function showTip() {
@@ -92,14 +210,14 @@ function showTip() {
 }
 
 watch([daySelectIndex, statusSelectIndex], () => {
-  getInterestRecords();
+  void refreshInterestRecords();
 });
 
 onMounted(() => {
   service.v1.activity.interestInfo().then(res => {
     interestInfo.value = res;
   });
-  getInterestRecords();
+  void refreshInterestRecords();
 });
 </script>
 
@@ -127,15 +245,22 @@ onMounted(() => {
           </div>
           <div class="curIncomeItem !mb-[0px]">
             <div class="mg">
-              待领取<span class="strong">{{ interestInfo.deposit?.await_get }}</span>
+              待领取<span class="strong">{{ formatMoney(Math.max(interestInfo.deposit?.await_get, 0)) }}</span>
               （已领取
               {{ formatMoney(Number(interestInfo.deposit?.total_get) - Number(interestInfo.deposit?.await_get)) }}）
               <svg-icon name="refresh" class-name="text-[#DFBE5B]" @click="refreshInfo" />
             </div>
           </div>
         </div>
-        <div class="receive-btn my-auto">
-          <x-button class="info-btn" size="small">领 取</x-button>
+        <div class="receive-btn">
+          <x-button
+            type="primary"
+            :disabled="!(Number(interestInfo.deposit?.await_get) > 0.01)"
+            size="small"
+            @click="handleGetMoney"
+          >
+            领 取
+          </x-button>
         </div>
       </div>
     </div>
@@ -173,15 +298,24 @@ onMounted(() => {
                 <div>类型</div>
                 <div>金额</div>
               </div>
-              <div v-if="interestRecordsLoading" class="listLoading">
+              <div v-if="interestRecordsLoading && !interestRecordList.length" class="listLoading">
                 <ui-loading />
               </div>
-              <div v-else-if="interestRecordList.length" class="scroll-box">
+              <div
+                v-else-if="interestRecordList.length"
+                ref="interestRecordListRef"
+                class="scroll-box"
+                @scroll.passive="handleInterestRecordScroll"
+              >
                 <div class="listItem" v-for="item in interestRecordList" :key="item.id">
                   <div>{{ dayjs(item.createTime).format("YYYY/MM/DD HH:mm:ss") }}</div>
                   <div>{{ statusOptions.find(v => item.type == v.value)?.label }}</div>
                   <div class="amount">{{ formatMoney(item.money) }}</div>
                 </div>
+                <div v-if="interestRecordsLoadingMore" class="listStatus">
+                  <ui-loading />
+                </div>
+                <div v-else-if="interestRecordsFinished" class="listStatus">没有更多了</div>
               </div>
               <ui-empty v-else text="暂无记录" />
             </div>
@@ -267,6 +401,7 @@ onMounted(() => {
       }
 
       .receive-btn {
+        color: white;
         :deep(.van-button) {
           width: 60px;
           height: 25px;
@@ -415,6 +550,15 @@ onMounted(() => {
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+      }
+
+      .listStatus {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #656565;
+        font-size: 11px;
       }
 
       .listItem {
