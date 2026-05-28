@@ -1,52 +1,57 @@
 <script setup lang="ts">
 import UiBadge from "@/components/UI/badge.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import useAppStore from "@/store/modules/app";
-import UiRadiusSelect from "@/components/UI/radius-select.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import dayjs from "dayjs";
-import UiEmpty from "@/components/UI/empty.vue";
+import { formatMoney, getYuEBaoRichText } from "@/utils/common";
+import { service } from "@/api/service";
 
-const app = useAppStore();
-
-function showSuccess() {
-  setTimeout(() => {
+function refreshInfo() {
+  service.v1.activity.interestInfo().then(res => {
+    interestInfo.value = res;
     showCustomToast({ message: "刷新成功", type: "success" });
-  }, 1000);
+  });
 }
 
 const dayOptions = ref([
   {
     label: "今日",
+    value: 0,
     start_time: dayjs().startOf("day").unix(),
     end_time: dayjs().endOf("day").unix()
   },
   {
     label: "昨日",
+    value: 1,
     start_time: dayjs().startOf("day").subtract(1, "day").unix(),
     end_time: dayjs().endOf("day").subtract(1, "day").unix()
   },
   {
     label: "本周",
+    value: 2,
     start_time: dayjs().startOf("isoWeek").unix(),
     end_time: dayjs().endOf("isoWeek").unix()
   },
   {
     label: "上周",
+    value: 3,
     start_time: dayjs().startOf("isoWeek").subtract(7, "day").unix(),
     end_time: dayjs().endOf("isoWeek").subtract(7, "day").unix()
   },
   {
     label: "本月",
+    value: 4,
     start_time: dayjs().startOf("month").unix(),
     end_time: dayjs().endOf("month").unix()
   },
   {
     label: "上月",
+    value: 5,
     start_time: dayjs().startOf("month").subtract(1, "month").unix(),
     end_time: dayjs().endOf("month").subtract(1, "month").unix()
   }
 ]);
+const interestInfo = ref<any>({});
 // 状态提醒
 const statusOptions = ref([
   { label: "全部", value: 0 },
@@ -59,9 +64,14 @@ const daySelectIndex = ref(0);
 const statusSelectIndex = ref(0);
 
 function showTip() {
-  showCustomToast({ message: '利息宝暂未开放', type: 'fail' })
+  showCustomToast({ message: "利息宝暂未开放", type: "fail" });
 }
 
+onMounted(() => {
+  service.v1.activity.interestInfo().then(res => {
+    interestInfo.value = res;
+  });
+});
 </script>
 
 <template>
@@ -70,34 +80,33 @@ function showTip() {
       <div class="info-item">
         <div class="principalWrapper">
           <span class="label">已存入</span>
-          <ui-badge content="年利率88%" :size="[-6, -10]">0.00</ui-badge>
+          <ui-badge :content="`年利率${interestInfo?.config?.year_scale}%`" :size="[-6, -10]">
+            {{ formatMoney(interestInfo?.deposit?.money) }}
+          </ui-badge>
         </div>
         <div class="mobileButtonLine">
-          <van-button type="warning" @click="showTip">转 入</van-button>
-          <van-button class="info-btn">转 出</van-button>
+          <x-button type="warning" @click="showTip" size="small">转 入</x-button>
+          <x-button class="info-btn" size="small">转 出</x-button>
         </div>
       </div>
       <div class="info-item mt-[5px]">
         <div class="curIncomeWrapper">
           <div class="curIncomeItem">
             <div>
-              结算周期 <span class="text-white">1小时</span> (封顶
-              <span class="text-white">不限制</span>)
+              结算周期 <span class="text-white">{{ interestInfo?.display?.cycle_text }}</span>
             </div>
           </div>
           <div class="curIncomeItem !mb-[0px]">
             <div class="mg">
-              待领取<span class="strong">0.000000</span>（已领取0.00）
-              <svg-icon
-                name="refresh"
-                class-name="text-[#DFBE5B]"
-                @click="showSuccess"
-              />
+              待领取<span class="strong">{{ interestInfo.deposit?.await_get }}</span>
+              （已领取
+              {{ formatMoney(Number(interestInfo.deposit?.total_get) - Number(interestInfo.deposit?.await_get)) }}）
+              <svg-icon name="refresh" class-name="text-[#DFBE5B]" @click="refreshInfo" />
             </div>
           </div>
         </div>
         <div class="receive-btn my-auto">
-          <van-button class="info-btn">领 取</van-button>
+          <x-button class="info-btn" size="small">领 取</x-button>
         </div>
       </div>
     </div>
@@ -107,10 +116,7 @@ function showTip() {
           <div class="radius-box">
             <div class="inner-box">
               <div class="absolute top-0">
-                <div
-                  class="rule"
-                  v-html="app.appInfo.yuebao || '后台暂未配置文案'"
-                ></div>
+                <div class="rule" v-html="getYuEBaoRichText(interestInfo) || '后台暂未配置文案'"></div>
               </div>
             </div>
           </div>
@@ -119,60 +125,16 @@ function showTip() {
           <div class="radius-box">
             <div class="header-row-box">
               <div class="flex gap-[10px]">
-                <ui-radius-select
-                  pop-class="w-[80px]"
-                  :options="dayOptions"
-                  v-model="daySelectIndex"
-                >
-                  <template #default="{ isShow, options, value }">
-                    <div
-                      class="select-box"
-                      :class="{ 'select-box-active': isShow }"
-                    >
-                      <div class="select-single">
-                        <div class="flex-1">{{ options[value]?.label }}</div>
-                        <div
-                          class="right-box"
-                          :class="{ '!rotate-[90deg]': isShow }"
-                        >
-                          <svg-icon
-                            name="arrow-back"
-                            class-name="text-[10px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </template>
-                </ui-radius-select>
-                <ui-radius-select
-                  pop-class="w-[80px]"
-                  :options="statusOptions"
-                  v-model="statusSelectIndex"
-                >
-                  <template #default="{ isShow, options, value }">
-                    <div
-                      class="select-box"
-                      :class="{ 'select-box-active': isShow }"
-                    >
-                      <div class="select-single">
-                        <div class="flex-1">{{ options[value]?.label }}</div>
-                        <div
-                          class="right-box"
-                          :class="{ '!rotate-[90deg]': isShow }"
-                        >
-                          <svg-icon
-                            name="arrow-back"
-                            class-name="text-[10px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </template>
-                </ui-radius-select>
+                <div class="filter-select">
+                  <x-select v-model="daySelectIndex" :options="dayOptions" value-key="value" placement="bottom" />
+                </div>
+                <div class="filter-select">
+                  <x-select v-model="statusSelectIndex" :options="statusOptions" value-key="value" placement="bottom" />
+                </div>
               </div>
               <div class="flex items-center text-[11px] lh-[13px]">
                 <span class="text-[#656565]">累计收益</span>
-                <span class="text-[#FFAA09]">0.00</span>
+                <span class="text-[#FFAA09]">{{ interestInfo.deposit?.total_get }}</span>
               </div>
             </div>
 
@@ -183,12 +145,12 @@ function showTip() {
                 <div>金额</div>
               </div>
               <div class="scroll-box">
-                <div class="listItem" v-for="i in 10">
+                <div class="listItem" v-for="i in 10" :key="i">
                   <div>时间</div>
                   <div>类型</div>
                   <div>金额</div>
                 </div>
-<!--                <ui-empty />-->
+                <!--                <ui-empty />-->
               </div>
             </div>
           </div>
@@ -366,39 +328,37 @@ function showTip() {
       justify-content: space-between;
       margin-bottom: 10px;
 
-      .select-box {
-        height: 25px;
+      .filter-select {
         width: 80px;
-        font-size: 10px;
-        max-width: 100%;
-        border: solid 1px #242424;
-        color: #656565;
+      }
+
+      .filter-select :deep(.x-select) {
+        height: 25px;
+        padding: 0 10px;
+        border: 1px solid #242424;
         border-radius: 9999rem;
-        overflow: hidden;
-        transition: all 0.3s;
+        background: #191919;
+        color: #656565;
+      }
 
-        &-active {
-          border-color: #dfbe5b;
-        }
+      .filter-select :deep(.x-select--focused) {
+        border-color: #dfbe5b;
+        color: #dfbe5b;
+      }
 
-        .select-single {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          position: relative;
-          background-color: #191919;
-          padding: 0 10px;
-          box-sizing: border-box;
-          border-radius: 5px;
-        }
+      .filter-select :deep(.x-select__wrap) {
+        line-height: 25px;
+      }
 
-        .right-box {
-          transition: transform 0.3s linear;
-          transform: rotate(-90deg);
-          margin-right: 3px;
-          font-size: 10px;
-        }
+      .filter-select :deep(.x-select__label),
+      .filter-select :deep(.x-select__placeholder) {
+        font-size: 10px;
+        color: inherit;
+      }
+
+      .filter-select :deep(.x-select__suffix) {
+        margin-left: 6px;
+        font-size: 10px;
       }
     }
 
