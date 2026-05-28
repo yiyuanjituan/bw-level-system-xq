@@ -2,6 +2,7 @@
 import UiBadge from "@/components/UI/badge.vue";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
+import InterestEnterPop from "./components/InterestEnterPop.vue";
 import { showCustomToast } from "@/hooks/useCommon";
 import { nextTick, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
@@ -12,10 +13,15 @@ import { service } from "@/api/service";
 dayjs.extend(isoWeek);
 
 const LOAD_MORE_OFFSET = 48;
+const interestEnterPopRef = ref<InstanceType<typeof InterestEnterPop> | null>(null);
+
+async function loadInterestInfo() {
+  const res = await service.v1.activity.interestInfo();
+  interestInfo.value = res;
+}
 
 function refreshInfo() {
-  service.v1.activity.interestInfo().then(res => {
-    interestInfo.value = res;
+  loadInterestInfo().then(() => {
     showCustomToast({ message: "刷新成功", type: "success" });
   });
 }
@@ -200,13 +206,18 @@ function handleInterestRecordScroll(event: Event) {
 function handleGetMoney() {
   service.v1.activity.interestClaim().then(() => {
     showCustomToast({ message: "领取成功", type: "success" });
-    service.v1.activity.interestInfo().then(res => (interestInfo.value = res));
+    loadInterestInfo();
     refreshInterestRecords();
   });
 }
 
-function showTip() {
-  showCustomToast({ message: "利息宝暂未开放", type: "fail" });
+function openInterestEnterPopup() {
+  interestEnterPopRef.value?.open();
+}
+
+function handleInterestEnterSuccess() {
+  loadInterestInfo();
+  void refreshInterestRecords();
 }
 
 watch([daySelectIndex, statusSelectIndex], () => {
@@ -214,9 +225,7 @@ watch([daySelectIndex, statusSelectIndex], () => {
 });
 
 onMounted(() => {
-  service.v1.activity.interestInfo().then(res => {
-    interestInfo.value = res;
-  });
+  loadInterestInfo();
   void refreshInterestRecords();
 });
 </script>
@@ -232,7 +241,7 @@ onMounted(() => {
           </ui-badge>
         </div>
         <div class="mobileButtonLine">
-          <x-button type="warning" @click="showTip" size="small">转 入</x-button>
+          <x-button type="warning" @click="openInterestEnterPopup" size="small">转 入</x-button>
           <x-button class="info-btn" size="small">转 出</x-button>
         </div>
       </div>
@@ -323,6 +332,7 @@ onMounted(() => {
         </van-tab>
       </van-tabs>
     </div>
+    <InterestEnterPop ref="interestEnterPopRef" :params="interestInfo" @success="handleInterestEnterSuccess" />
   </div>
 </template>
 
@@ -591,7 +601,7 @@ onMounted(() => {
         font-size: 12px;
         color: #fff;
         border: 1px solid #242424;
-        background-color: #191919;
+        background-color: var(--skin__bg_2);
       }
     }
   }

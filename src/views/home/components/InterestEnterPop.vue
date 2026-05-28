@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
+import { useWindowSize } from "@vant/use";
+import dayjs from "dayjs";
+import { service } from "@/api/service";
+import { showCustomToast } from "@/hooks/useCommon";
+import useAuthStore from "@/store/modules/user";
 import { formatMoney, toNumber } from "@/utils/common";
 
 defineOptions({
@@ -7,101 +12,139 @@ defineOptions({
 });
 
 interface Props {
-  show?: boolean;
-  amount?: string | number;
-  balance?: string | number;
-  settleCycleText?: string;
-  currentTime?: string;
-  nextInterestTime?: string;
-  minAmount?: number;
-  confirmLoading?: boolean;
-  closeOnClickOverlay?: boolean;
+  params?: {
+    display?: {
+      cycle_text?: string;
+    };
+    config?: {
+      calc_cycle_text?: string;
+      minNum?: number | string;
+    };
+  };
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  show: false,
-  amount: "",
-  balance: 0,
-  settleCycleText: "1小时",
-  currentTime: "--",
-  nextInterestTime: "--",
-  minAmount: 100,
-  confirmLoading: false,
-  closeOnClickOverlay: true
+  params: () => ({})
 });
 
 const emit = defineEmits<{
-  (e: "update:show", value: boolean): void;
-  (e: "update:amount", value: string): void;
-  (e: "confirm", value: number): void;
-  (e: "all", value: string): void;
+  (e: "success"): void;
   (e: "close"): void;
 }>();
 
-const innerAmount = ref("");
+const INTEREST_POPUP_TIME_FORMAT = "MM/DD HH:mm:ss";
+const DESIGN_WIDTH = 332;
+const DESIGN_VIEWPORT = 375;
 
-const numericBalance = computed(() => toNumber(props.balance));
+const auth = useAuthStore();
+const { width: windowWidth } = useWindowSize();
+const show = ref(false);
+const amount = ref("");
+const loading = ref(false);
+const currentTime = ref(dayjs().format(INTEREST_POPUP_TIME_FORMAT));
+let timeTimer: ReturnType<typeof setInterval> | null = null;
+
+const dialogWidth = computed(() => (DESIGN_WIDTH / DESIGN_VIEWPORT) * windowWidth.value);
+const numericBalance = computed(() => toNumber(auth.user?.money));
 const integerBalance = computed(() => Math.max(Math.floor(numericBalance.value), 0));
 const balanceText = computed(() => formatMoney(numericBalance.value));
-const helperText = computed(() => `单笔最少转入￥${props.minAmount}，仅限整数`);
-const numericAmount = computed(() => Number(innerAmount.value || 0));
-
-const isValidAmount = computed(() => {
-  if (!innerAmount.value) return false;
-  return numericAmount.value >= props.minAmount && numericAmount.value <= numericBalance.value;
-});
-
-const confirmDisabled = computed(() => !isValidAmount.value || props.confirmLoading);
-
-watch(
-  () => props.amount,
-  value => {
-    innerAmount.value = sanitizeAmount(value);
-  },
-  { immediate: true }
+const settleCycleText = computed(
+  () => props.params?.display?.cycle_text || props.params?.config?.calc_cycle_text || "--"
 );
+const minAmount = computed(() => Number(props.params?.config?.minNum) || 100);
+const helperText = computed(() => `单笔最少转入￥${minAmount.value}，仅限整数`);
+const numericAmount = computed(() => Number(amount.value || 0));
+const nextInterestTime = computed(() => {
+  const match = String(settleCycleText.value).match(/(\d+)\s*(分钟|小时|天)/);
+
+  if (!match) return "--";
+
+  const value = Number(match[1]);
+  const unit = match[2] === "分钟" ? "minute" : match[2] === "天" ? "day" : "hour";
+
+  return dayjs().add(value, unit).format(INTEREST_POPUP_TIME_FORMAT);
+});
+const confirmDisabled = computed(() => {
+  if (!amount.value) return true;
+
+  return numericAmount.value < minAmount.value || numericAmount.value > numericBalance.value || loading.value;
+});
 
 function sanitizeAmount(value: string | number | undefined) {
   return String(value ?? "").replace(/[^\d]/g, "");
 }
 
-function syncAmount(value: string) {
-  innerAmount.value = sanitizeAmount(value);
-  emit("update:amount", innerAmount.value);
+function syncCurrentTime() {
+  currentTime.value = dayjs().format(INTEREST_POPUP_TIME_FORMAT);
+}
+
+function startTimer() {
+  syncCurrentTime();
+  stopTimer();
+  timeTimer = setInterval(syncCurrentTime, 1000);
+}
+
+function stopTimer() {
+  if (!timeTimer) return;
+
+  clearInterval(timeTimer);
+  timeTimer = null;
+}
+
+function open() {
+  amount.value = "";
+  show.value = true;
+  startTimer();
+}
+
+function close() {
+  show.value = false;
+  amount.value = "";
+  stopTimer();
+  emit("close");
 }
 
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement | null;
-  syncAmount(target?.value ?? "");
+  amount.value = sanitizeAmount(target?.value ?? "");
 }
 
 function handleAll() {
-  const value = integerBalance.value > 0 ? String(integerBalance.value) : "";
-  syncAmount(value);
-  emit("all", value);
+  amount.value = integerBalance.value > 0 ? String(integerBalance.value) : "";
 }
 
-function handleConfirm() {
+async function handleConfirm() {
   if (confirmDisabled.value) return;
-  emit("confirm", numericAmount.value);
+
+  loading.value = true;
+
+  try {
+    await service.v1.activity.interestTransferIn({ money: numericAmount.value });
+    await auth.updateInfo();
+    showCustomToast({ message: "转入成功", type: "success" });
+    show.value = false;
+    amount.value = "";
+    stopTimer();
+    emit("success");
+  } finally {
+    loading.value = false;
+  }
 }
 
-function handleClose() {
-  emit("update:show", false);
-  emit("close");
-}
+defineExpose({
+  open,
+  close
+});
+
+onBeforeUnmount(() => {
+  stopTimer();
+});
 </script>
 
 <template>
-  <x-popup
-    :show="show"
-    position="center"
-    :close-on-click-overlay="closeOnClickOverlay"
-    @update:show="value => emit('update:show', value)"
-    @close="emit('close')"
-  >
-    <div class="interest-enter-pop">
-      <div class="interest-enter-pop__panel">
+  <van-dialog v-model:show="show" :show-cancel-button="false" :show-confirm-button="false" :width="dialogWidth">
+    <template #default>
+      <div class="interest-enter-pop">
         <div class="interest-enter-pop__title">转入</div>
 
         <div class="interest-enter-pop__summary">
@@ -125,7 +168,7 @@ function handleClose() {
         <div class="interest-enter-pop__field">
           <div class="interest-enter-pop__field-prefix">￥</div>
           <input
-            :value="innerAmount"
+            :value="amount"
             class="interest-enter-pop__input"
             type="text"
             inputmode="numeric"
@@ -143,28 +186,26 @@ function handleClose() {
           type="button"
           @click="handleConfirm"
         >
-          {{ confirmLoading ? "确认中..." : "确认转入" }}
+          {{ loading ? "确认中..." : "确认转入" }}
         </button>
 
         <div class="interest-enter-pop__tip">本次转入后首次产生利息的时间：{{ nextInterestTime }}</div>
       </div>
+    </template>
 
-      <button class="interest-enter-pop__close" type="button" @click="handleClose">
-        <svg-icon name="close" color="white" />
-      </button>
-    </div>
-  </x-popup>
+    <template #footer>
+      <div class="interest-enter-pop__footer">
+        <button class="interest-enter-pop__close" type="button" @click="close">
+          <svg-icon name="close" color="white" />
+        </button>
+      </div>
+    </template>
+  </van-dialog>
 </template>
 
 <style scoped lang="less">
-.interest-enter-pop {
-  display: flex;
-  width: min(332px, calc(100vw - 32px));
-  flex-direction: column;
-  align-items: center;
-
-  &__panel {
-    width: 100%;
+div[role="dialog"] {
+  .interest-enter-pop {
     border: 1px solid #303030;
     border-radius: 12px;
     background: #1b1b1d;
@@ -172,165 +213,170 @@ function handleClose() {
     padding: 16px 16px 14px;
     color: #fff;
     box-sizing: border-box;
+
+    &__title {
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 600;
+    }
+
+    &__summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    &__section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      line-height: 18px;
+      font-weight: 600;
+    }
+
+    &__time {
+      color: #8d8d8d;
+      font-size: 11px;
+      line-height: 16px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    &__field {
+      display: flex;
+      align-items: center;
+      height: 36px;
+      margin-bottom: 18px;
+      padding: 0 0 0 12px;
+      border: 1px solid #8c7135;
+      border-radius: 6px;
+      background: #0d0d0e;
+    }
+
+    &__field-prefix {
+      flex-shrink: 0;
+      margin-right: 8px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    &__input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: #fff;
+      font-size: 13px;
+      line-height: 20px;
+
+      &::placeholder {
+        color: #707070;
+      }
+    }
+
+    &__all {
+      flex-shrink: 0;
+      height: 100%;
+      padding: 0 12px;
+      border: 0;
+      background: transparent;
+      color: #dfbe5b;
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 600;
+    }
+
+    &__confirm {
+      width: 100%;
+      height: 34px;
+      border: 0;
+      border-radius: 8px;
+      background: #6f6f6f;
+      color: #dadada;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 600;
+      transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+
+      &:disabled {
+        opacity: 1;
+      }
+    }
+
+    &__confirm--active {
+      background: linear-gradient(180deg, #f0c059 0%, #dca538 100%);
+      color: #5f3503;
+    }
+
+    &__tip {
+      margin-top: 12px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 17px;
+      font-weight: 600;
+    }
+
+    &__footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 16px;
+    }
+
+    &__close {
+      width: 34px;
+      height: 34px;
+      border: 2px solid rgb(255 255 255 / 92%);
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    :deep(svg) {
+      fill: currentcolor;
+    }
   }
 
-  &__title {
-    text-align: center;
-    font-size: 20px;
-    line-height: 28px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-
-  &__summary {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  &__section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    line-height: 18px;
-    font-weight: 600;
-  }
-
-  &__time {
-    color: #8d8d8d;
-    font-size: 11px;
-    line-height: 16px;
-    font-weight: 400;
-    text-align: right;
-  }
-
-  &__field {
-    display: flex;
-    align-items: center;
-    height: 36px;
-    border: 1px solid #8c7135;
-    border-radius: 6px;
-    background: #0d0d0e;
-    padding: 0 0 0 12px;
-    margin-bottom: 18px;
-  }
-
-  &__field-prefix {
-    flex-shrink: 0;
-    color: #fff;
-    font-size: 14px;
-    line-height: 20px;
-    margin-right: 8px;
-  }
-
-  &__input {
+  .summary-item {
     flex: 1;
     min-width: 0;
-    border: 0;
-    outline: none;
-    background: transparent;
-    color: #fff;
-    font-size: 13px;
-    line-height: 20px;
 
-    &::placeholder {
-      color: #707070;
+    &--right {
+      text-align: right;
     }
-  }
 
-  &__all {
-    flex-shrink: 0;
-    height: 100%;
-    padding: 0 12px;
-    border: 0;
-    background: transparent;
-    color: #dfbe5b;
-    font-size: 13px;
-    line-height: 20px;
-    font-weight: 600;
-  }
-
-  &__confirm {
-    width: 100%;
-    height: 34px;
-    border: 0;
-    border-radius: 8px;
-    background: #6f6f6f;
-    color: #dadada;
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 600;
-    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
-
-    &:disabled {
-      opacity: 1;
+    &__label {
+      margin-bottom: 4px;
+      color: #8d8d8d;
+      font-size: 12px;
+      line-height: 17px;
     }
-  }
 
-  &__confirm--active {
-    background: linear-gradient(180deg, #f0c059 0%, #dca538 100%);
-    color: #5f3503;
-  }
+    &__value {
+      color: #fff;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 600;
+    }
 
-  &__tip {
-    margin-top: 12px;
-    color: #fff;
-    font-size: 12px;
-    line-height: 17px;
-    font-weight: 600;
-  }
+    &__value--accent {
+      color: #f0c059;
+    }
 
-  &__close {
-    width: 34px;
-    height: 34px;
-    margin-top: 16px;
-    border: 2px solid rgb(255 255 255 / 92%);
-    border-radius: 50%;
-    background: transparent;
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-  }
-
-  :deep(svg) {
-    fill: currentcolor;
-  }
-}
-
-.summary-item {
-  flex: 1;
-  min-width: 0;
-
-  &--right {
-    text-align: right;
-  }
-
-  &__label {
-    color: #8d8d8d;
-    font-size: 12px;
-    line-height: 17px;
-    margin-bottom: 4px;
-  }
-
-  &__value {
-    color: #fff;
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 600;
-  }
-
-  &__value--accent {
-    color: #f0c059;
-  }
-
-  &__unit {
-    font-size: 12px;
+    &__unit {
+      font-size: 12px;
+    }
   }
 }
 </style>

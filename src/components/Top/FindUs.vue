@@ -5,8 +5,8 @@ import { getFindUsData } from "@/api/common";
 import MailBox from "@/components/Top/find/MailBox.vue";
 
 const show = ref(false);
-const params = ref<any>({})
-const remoteData = ref<any>({})
+const params = ref<any>({});
+const remoteData = ref<any>({});
 const { width: windowWidth } = useWindowSize();
 
 function openDialog() {
@@ -17,20 +17,20 @@ function handleClose() {
   show.value = false;
 }
 const dialogWidth = computed(() => {
-  if (typeof params.value != 'number' && isNaN(Number(params.value.width))) return params.value.width;
-  return (Number(params.value?.width) ?? 343) / 375 * windowWidth.value;
-})
+  if (typeof params.value != "number" && isNaN(Number(params.value.width))) return params.value.width;
+  return ((Number(params.value?.width) ?? 343) / 375) * windowWidth.value;
+});
 defineExpose({
   open: openDialog
-})
+});
 
 function init() {
-  getFindUsData({}).then((data) => {
+  getFindUsData({}).then(data => {
     remoteData.value = data;
-  })
+  });
 }
 
-onMounted(() => init())
+onMounted(() => init());
 </script>
 
 <template>
@@ -40,14 +40,25 @@ onMounted(() => init())
         <div class="dialog-content">
           <div class="py-[10px]">
             <div class="title">
-              <img src="@/assets/common/comm_icon_zdwm_title.avif" alt="" srcset="" class="w-[19px] h-[19px] mr-[9px]">
+              <img
+                src="@/assets/common/comm_icon_zdwm_title.avif"
+                alt=""
+                srcset=""
+                class="w-[19px] h-[19px] mr-[9px]"
+              />
               <div>找到我们</div>
             </div>
             <div class="main-scroll-box">
               <div class="rich-text">
                 <div class="flex items-start leading-[16px]">
-                  <img src="@/assets/common/icon_rtf_gou.avif" class="w-[13px] h-[13px] mt-[1.5px] mr-[2px] flex-shrink-0" alt="">
-                  <span class="text-[12px] font-bold">为了防止网站打不开，请保存我们的网址或邮箱，以免找不到回家路！</span>
+                  <img
+                    src="@/assets/common/icon_rtf_gou.avif"
+                    class="w-[13px] h-[13px] mt-[1.5px] mr-[2px] flex-shrink-0"
+                    alt=""
+                  />
+                  <span class="text-[12px] font-bold">
+                    为了防止网站打不开，请保存我们的网址或邮箱，以免找不到回家路！
+                  </span>
                 </div>
               </div>
               <div class="item-box-wrap">
@@ -109,7 +120,7 @@ div[role="dialog"] {
           display: flex;
           align-items: first baseline;
           border-radius: 7px;
-          box-shadow: 0 1.5px 3.5px 0 #0000001F;
+          box-shadow: 0 1.5px 3.5px 0 #0000001f;
           color: white;
           margin-bottom: 10px;
         }
@@ -119,13 +130,12 @@ div[role="dialog"] {
             border-radius: 7px;
             padding: 0 10px 10px;
             margin-bottom: 10px;
-            box-shadow: 0 1.5px 3.5px 0 #0000001F;
+            box-shadow: 0 1.5px 3.5px 0 #0000001f;
           }
         }
       }
     }
   }
-
 
   .footer-box {
     position: relative;
