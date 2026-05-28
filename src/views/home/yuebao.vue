@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import UiBadge from "@/components/UI/badge.vue";
+import UiEmpty from "@/components/UI/empty.vue";
+import UiLoading from "@/components/UI/loading.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
 import { formatMoney, getYuEBaoRichText } from "@/utils/common";
 import { service } from "@/api/service";
+
+dayjs.extend(isoWeek);
 
 function refreshInfo() {
   service.v1.activity.interestInfo().then(res => {
@@ -62,15 +67,39 @@ const statusOptions = ref([
 ]);
 const daySelectIndex = ref(0);
 const statusSelectIndex = ref(0);
+const interestRecordList = ref<any[]>([]);
+const interestRecordsLoading = ref(false);
+
+function getInterestRecords() {
+  const dayInfo = dayOptions.value.find(item => item.value === daySelectIndex.value) as any;
+  interestRecordsLoading.value = true;
+  service.v1.activity
+    .interestRecords({
+      startTime: dayInfo.start_time,
+      endTime: dayInfo.end_time,
+      type: statusSelectIndex.value
+    })
+    .then(res => {
+      interestRecordList.value = res.list;
+    })
+    .finally(() => {
+      interestRecordsLoading.value = false;
+    });
+}
 
 function showTip() {
   showCustomToast({ message: "利息宝暂未开放", type: "fail" });
 }
 
+watch([daySelectIndex, statusSelectIndex], () => {
+  getInterestRecords();
+});
+
 onMounted(() => {
   service.v1.activity.interestInfo().then(res => {
     interestInfo.value = res;
   });
+  getInterestRecords();
 });
 </script>
 
@@ -144,14 +173,17 @@ onMounted(() => {
                 <div>类型</div>
                 <div>金额</div>
               </div>
-              <div class="scroll-box">
-                <div class="listItem" v-for="i in 10" :key="i">
-                  <div>时间</div>
-                  <div>类型</div>
-                  <div>金额</div>
-                </div>
-                <!--                <ui-empty />-->
+              <div v-if="interestRecordsLoading" class="listLoading">
+                <ui-loading />
               </div>
+              <div v-else-if="interestRecordList.length" class="scroll-box">
+                <div class="listItem" v-for="item in interestRecordList" :key="item.id">
+                  <div>{{ dayjs(item.createTime).format("YYYY/MM/DD HH:mm:ss") }}</div>
+                  <div>{{ statusOptions.find(v => item.type == v.value)?.label }}</div>
+                  <div class="amount">{{ formatMoney(item.money) }}</div>
+                </div>
+              </div>
+              <ui-empty v-else text="暂无记录" />
             </div>
           </div>
         </van-tab>
@@ -368,6 +400,13 @@ onMounted(() => {
       display: flex;
       flex-direction: column;
 
+      .listLoading {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .scroll-box {
         flex: 1;
         min-height: 0;
@@ -384,13 +423,22 @@ onMounted(() => {
         border-radius: 4px;
         font-size: 10px;
         color: #656565;
+        &:nth-child(2n) {
+          background: var(--skin__bg_2);
+        }
 
         div {
           flex: 1;
           display: flex;
           align-items: center;
           justify-content: center;
+          word-break: break-all;
+          text-align: center;
         }
+      }
+
+      .amount {
+        color: #ffaa09;
       }
 
       .head {
