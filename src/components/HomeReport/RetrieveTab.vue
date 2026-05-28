@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { service } from "@/api/service";
+import UiEmpty from "@/components/UI/empty.vue";
+import { showCustomToast } from "@/hooks/useCommon";
+import router from "@/router";
 
 const props = defineProps<{ currentBalance: number; walletIsLoading: boolean }>();
 const emit = defineEmits<{ (event: "refresh-balance"): void }>();
 const tabsActive = ref("all");
+const keyword = ref("");
 const typeOptions: any[] = [
   { label: "全部", value: "all", image: "event_zh" },
   { label: "真人", value: 1, image: "game-icon_dtfl_zr_0" },
@@ -17,8 +21,51 @@ const typeOptions: any[] = [
 ];
 const totalList = ref<any[]>([]);
 
+function normalizeValue(value: unknown) {
+  return String(value ?? "");
+}
+
+function normalizeSearchText(value: unknown) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+const filteredList = computed(() => {
+  const activeType = normalizeValue(tabsActive.value);
+  const searchKeyword = normalizeSearchText(keyword.value);
+
+  return totalList.value.filter(item => {
+    if (activeType !== "all" && normalizeValue(item?.type) !== activeType) {
+      return false;
+    }
+
+    if (!searchKeyword) {
+      return true;
+    }
+
+    const searchSource = [item?.apiCode, item?.name, item?.title].map(normalizeSearchText).join(" ");
+
+    return searchSource.includes(searchKeyword);
+  });
+});
+
+watch(tabsActive, value => {
+  if (normalizeValue(value) !== "all") {
+    keyword.value = "";
+  }
+});
+
 function formatMoney(value: number) {
   return value.toFixed(2);
+}
+
+function jumpToService() {
+  router.push("/home/notice");
+}
+
+function totalMoneyBack() {
+  service.v1.user.totalMoneyIn({}).then(() => showCustomToast({ type: "success", message: "已回归余额" }));
 }
 
 onMounted(() => {
@@ -42,11 +89,11 @@ onMounted(() => {
             @click="emit('refresh-balance')"
           />
         </div>
-        <x-button size="small">一键找回</x-button>
+        <x-button size="small" @click="totalMoneyBack">一键找回</x-button>
       </div>
       <div class="balance-card__tip">
         <span>只能找回余额的整数部分(即不含小数点)，若仍无法自助找回，请</span>
-        <span class="balance-card__link">联系客服</span>
+        <span class="balance-card__link" @click="jumpToService">联系客服</span>
       </div>
     </section>
     <div class="flex-context-tab flex-1 pt-[10px] pl-[10px] pb-[10px] flex flex-col">
@@ -59,21 +106,25 @@ onMounted(() => {
             </div>
           </template>
           <div class="wallet-search" v-if="item.value == 'all'">
-            <x-input placeholder="平台搜索">
+            <x-input v-model="keyword" placeholder="平台搜索">
               <template #suffix>
                 <svg-icon name="comm_icon_ss" color="var(--skin__primary)"></svg-icon>
               </template>
             </x-input>
           </div>
-          <div class="main-layout">
-            <div class="item" v-for="item in totalList" :key="item.id">
+          <div class="main-layout" v-if="filteredList.length > 0">
+            <div class="item" v-for="item in filteredList" :key="item.id">
               <div class="item-wrap">
                 <img :src="item.short_image" alt="" class="w-[20px] h-[20px] mr-[10px]" />
                 <div class="up">{{ item.apiCode }}</div>
               </div>
-              <div class="down"><span class="notranslate">0.00</span></div>
+              <div class="down">
+                <span class="notranslate" v-if="item.balance <= 0">{{ formatMoney(item.balance) }}</span>
+                <span class="hasMoney" v-if="item.balance > 0">{{ formatMoney(item.balance) }}</span>
+              </div>
             </div>
           </div>
+          <ui-empty v-if="filteredList.length == 0" text="暂无数据" />
         </x-tab>
       </x-tabs>
     </div>

@@ -183,7 +183,12 @@ function showTip() {
                 <div>金额</div>
               </div>
               <div class="scroll-box">
-                <ui-empty />
+                <div class="listItem" v-for="i in 10">
+                  <div>时间</div>
+                  <div>类型</div>
+                  <div>金额</div>
+                </div>
+<!--                <ui-empty />-->
               </div>
             </div>
           </div>
@@ -199,7 +204,7 @@ function showTip() {
   flex-direction: column;
   align-items: center;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
 
   .info-box {
     background-color: #191919;
@@ -284,6 +289,8 @@ function showTip() {
   }
 
   .container-tab-page {
+    flex: 1;
+    min-height: 0;
     width: 100%;
     height: 100%;
     --van-tabs-line-height: 35px;
@@ -306,13 +313,23 @@ function showTip() {
       height: 100%;
       display: flex;
       flex-direction: column;
+      min-height: 0;
 
       :deep(.van-tabs__content) {
+        flex: 1;
+        height: 100%;
+        min-height: 0;
+      }
+
+      :deep(.van-tab__panel) {
         height: 100%;
       }
 
       .radius-box {
         height: calc(100% - 0px);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
         padding: 10px;
         background-color: #000000;
 
@@ -386,10 +403,19 @@ function showTip() {
     }
 
     .listWrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
       .scroll-box {
-        height: calc(var(--lobby__screen-height) - 340px);
+        flex: 1;
+        min-height: 0;
         width: calc(100% + 10px);
         padding-right: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
       }
 
       .listItem {
@@ -409,6 +435,7 @@ function showTip() {
 
       .head {
         height: 40px;
+        flex-shrink: 0;
         font-size: 12px;
         color: #fff;
         border: 1px solid #242424;

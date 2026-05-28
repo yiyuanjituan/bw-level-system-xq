@@ -13,9 +13,9 @@ import i18n from "./locales";
 
 import App from "./App.vue";
 import router from "./router";
-import { Dialog } from 'vant';
-import {Geetest} from 'vue3-geetest'
-import 'vant/lib/index.css';
+import { Dialog } from "vant";
+import { Geetest } from "vue3-geetest";
+import "vant/lib/index.css";
 import { initApp } from "@/utils/site";
 
 const app = createApp(App);
@@ -26,7 +26,7 @@ app.use(Dialog);
 app.use(Geetest, {
   // captchaId: '54088bb07d2df3c46b79f80300b0abbe11'
   // captchaId: '54088bb07d2df3c46b79f80300b0abbe'
-  captchaId: 'c7f7181c75483c121ad718b7a636f0d0'
-})
+  captchaId: "c7f7181c75483c121ad718b7a636f0d0"
+});
 
-initApp().finally(() => app.mount("#app"))
+initApp().finally(() => app.mount("#app"));

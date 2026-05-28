@@ -486,6 +486,31 @@
     "api": [
       {
         "method": "post",
+        "path": "/interestTransferOut",
+        "summary": "利息宝转出"
+      },
+      {
+        "method": "post",
+        "path": "/interestTransferIn",
+        "summary": "利息宝转入"
+      },
+      {
+        "method": "post",
+        "path": "/interestRecords",
+        "summary": "利息宝记录"
+      },
+      {
+        "method": "post",
+        "path": "/interestClaim",
+        "summary": "利息宝领取收益"
+      },
+      {
+        "method": "post",
+        "path": "/interestInfo",
+        "summary": "利息宝信息"
+      },
+      {
+        "method": "post",
         "path": "/records",
         "summary": "领取记录"
       }
@@ -597,6 +622,11 @@
         "method": "post",
         "path": "/gamePageList",
         "summary": "游戏记录"
+      },
+      {
+        "method": "post",
+        "path": "/totalMoneyIn",
+        "summary": "回归所有场馆余额"
       },
       {
         "method": "post",

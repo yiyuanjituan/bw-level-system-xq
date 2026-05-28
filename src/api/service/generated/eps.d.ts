@@ -1020,6 +1020,31 @@ declare namespace Eps {
 
 	interface V1Activity {
 		/**
+			 * 利息宝转出
+			 */
+			interestTransferOut(data?: any): Promise<any>;
+
+		/**
+			 * 利息宝转入
+			 */
+			interestTransferIn(data?: any): Promise<any>;
+
+		/**
+			 * 利息宝记录
+			 */
+			interestRecords(data?: any): Promise<any>;
+
+		/**
+			 * 利息宝领取收益
+			 */
+			interestClaim(data?: any): Promise<any>;
+
+		/**
+			 * 利息宝信息
+			 */
+			interestInfo(data?: any): Promise<any>;
+
+		/**
 			 * 领取记录
 			 */
 			records(data?: any): Promise<any>;
@@ -1027,12 +1052,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { records: string; };
+		permission: { interestTransferOut: string; interestTransferIn: string; interestRecords: string; interestClaim: string; interestInfo: string; records: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { records: boolean; };
+		_permission: { interestTransferOut: boolean; interestTransferIn: boolean; interestRecords: boolean; interestClaim: boolean; interestInfo: boolean; records: boolean; };
 
 		request: Service["request"];
 	}
@@ -1166,6 +1191,11 @@ declare namespace Eps {
 			gamePageList(data?: any): Promise<any>;
 
 		/**
+			 * 回归所有场馆余额
+			 */
+			totalMoneyIn(data?: any): Promise<any>;
+
+		/**
 			 * 三方钱包余额
 			 */
 			thirdWallet(data?: any): Promise<any>;
@@ -1173,12 +1203,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; personalReport: string; gamePageList: string; thirdWallet: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; thirdWallet: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; thirdWallet: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; thirdWallet: boolean; };
 
 		request: Service["request"];
 	}
