@@ -8,32 +8,34 @@ import { handleBack } from "@/utils/common";
 
 const appData = useDataStore();
 const showLoading = ref<boolean>(true);
-const url = ref<any>('')
-const offset = ref({ x: 1.5, y: 1.5 })
+const url = ref<any>("");
+const offset = ref({ x: 1.5, y: 1.5 });
 
 const replaceToHome = () => {
   if (isFullscreen()) {
-    toggleFullScreen()
+    toggleFullScreen();
   }
-  router.replace(window.history.state.back)
-}
+  router.replace(window.history.state.back);
+};
 
 onMounted(() => {
   if (!appData.enterGameInfo.gameId && !appData.enterGameInfo.venueId) {
-    return router.replace('/index')
+    return router.replace("/index");
   }
   // 选择
-  getGameUrl(appData.enterGameInfo).then((res) => {
-    url.value = res.url
-    showLoading.value = false
-    toggleFullScreen()
-  }).catch((e) => {
-    if (e.status === 401) return false;
-    setTimeout(() => {
-      return router.back()
-    }, 1000)
-  })
-})
+  getGameUrl(appData.enterGameInfo)
+    .then(res => {
+      url.value = res.url;
+      showLoading.value = false;
+      toggleFullScreen();
+    })
+    .catch(e => {
+      if (e.status === 401) return false;
+      setTimeout(() => {
+        return router.back();
+      }, 1000);
+    });
+});
 </script>
 
 <template>
@@ -43,7 +45,11 @@ onMounted(() => {
     </div>
     <div v-if="!showLoading && url" class="embed-box">
       <div class="iframe-box">
-        <iframe class="iframe-box" allow="clipboard-write; clipboard-read; web-share; autoplay; encrypted-media" :src="url"></iframe>
+        <iframe
+          class="iframe-box"
+          allow="clipboard-write; clipboard-read; web-share; autoplay; encrypted-media"
+          :src="url"
+        ></iframe>
       </div>
       <van-floating-bubble axis="xy" :gap="0" @click="replaceToHome" v-model:offset="offset">
         <template #default>
@@ -59,7 +65,6 @@ onMounted(() => {
 
 <style scoped lang="less">
 .embedded-container {
-
   width: 100%;
   height: 100%;
   background: black;
@@ -71,7 +76,6 @@ onMounted(() => {
   flex-direction: column;
 
   .show-loading-box {
-
   }
   .embed-box {
     overflow-x: hidden;
@@ -94,6 +98,5 @@ onMounted(() => {
       background-color: #000;
     }
   }
-
 }
 </style>

@@ -9,9 +9,10 @@ import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
 import router from "@/router";
 import useHomeDataStore from "@/store/modules/home";
+import useDataStore from "@/store/modules/data";
+import useAuthStore from "@/store/modules/user";
 
 const home = useHomeDataStore();
-
 const localList = ref([
   {
     img: "./siteadmin/skin/lobby_asset/icon_dtfl_rm_1.avif",
@@ -32,6 +33,8 @@ const localList = ref([
 const list = computed(() => {
   return [localList.value[0], ...home.venueList, localList.value[1], localList.value[2]];
 });
+const appData = useDataStore();
+const auth = useAuthStore();
 
 defineOptions({
   name: "HomeGameList"
@@ -69,9 +72,11 @@ function clickGameItem(record: any) {
     // 点击的场馆
     router.push({ path: `/home/subGame`, query: { type: record.type, platformId: record.id } });
   } else {
-    // 点击的游戏，处理点击游戏的方法
+    // 点击的游戏
+    appData.setEnterInfo(record.venueId, record.id);
+    auth.updateInfo();
+    router.push({ path: "/home/embedded" });
   }
-  console.log(record);
 }
 
 onMounted(() => getHomeData());

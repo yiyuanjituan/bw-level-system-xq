@@ -1,24 +1,15 @@
 <script setup lang="ts">
-import router from "@/router";
-import { useRoute } from "vue-router";
+import { handleBack } from "@/utils/common";
 
-const route = useRoute();
 interface Props {
-  title?: string
-  backClassName?: string
+  title?: string;
+  backClassName?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '',
-  backClassName: '',
+  title: "",
+  backClassName: ""
 });
-
-function handleBack() {
-  let nowUrl = route.path
-  console.log(nowUrl);
-  router.back()
-}
-
 </script>
 
 <template>
@@ -28,7 +19,9 @@ function handleBack() {
     </div>
     <div class="title">
       <slot name="title"></slot>
-      <template v-if="!$slots.title"><div class="title-inner">{{ props.title }}</div></template>
+      <template v-if="!$slots.title">
+        <div class="title-inner">{{ props.title }}</div>
+      </template>
     </div>
   </header>
 </template>
@@ -36,7 +29,7 @@ function handleBack() {
 <style scoped lang="less">
 .sub-header {
   --skin__lead: white;
-  --skin__neutral_1: #BCBCBC;
+  --skin__neutral_1: #bcbcbc;
 
   position: relative;
   display: flex;

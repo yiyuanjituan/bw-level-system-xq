@@ -12,14 +12,13 @@ function handleLoading() {
   isLoading.value = true;
   setTimeout(() => {
     isLoading.value = false;
-    showCustomToast({ message: '刷新成功', type: 'success' })
-  }, 500)
+    showCustomToast({ message: "刷新成功", type: "success" });
+  }, 500);
 }
 
 function jumpToRecord() {
-  router.push('/home/records')
+  router.push("/home/records");
 }
-
 </script>
 
 <template>
@@ -28,9 +27,9 @@ function jumpToRecord() {
       <div class="inner-box">
         <span class="tips">当前等级</span>
         <div class="level-image">
-          <img src="/siteadmin/active/color1.avif" alt="." class="icon-img">
-          <img src="/siteadmin/active/img_dj1.avif" alt="." class="icon-img">
-          <div class="level-text" style="--vip-level-scale: 1;">
+          <img src="/siteadmin/active/color1.avif" alt="." class="icon-img" />
+          <img src="/siteadmin/active/img_dj1.avif" alt="." class="icon-img" />
+          <div class="level-text" style="--vip-level-scale: 1">
             <span data-text="2">2</span>
           </div>
         </div>
@@ -46,8 +45,8 @@ function jumpToRecord() {
             </div>
           </div>
           <div class="receive-all">
-            <ui-button class="receive-btn mb-[10px] !bg-[#999]">一键领取</ui-button>
-            <ui-button class="receive-btn !bg-[#DFBE5B]" @click="jumpToRecord">领取记录</ui-button>
+            <x-button class="receive-btn mb-[10px] !bg-[#999]">一键领取</x-button>
+            <x-button class="receive-btn !bg-[#DFBE5B]" @click="jumpToRecord">领取记录</x-button>
           </div>
         </div>
       </div>
@@ -103,7 +102,7 @@ function jumpToRecord() {
         padding: 0 5px;
         color: #fff;
         font-size: 9px;
-        background-color: #F84673;
+        background-color: #f84673;
         border-radius: 8px 0;
       }
       .level-image {
@@ -174,7 +173,7 @@ function jumpToRecord() {
         margin-bottom: 5px;
         .vip {
           margin: 0 2.5px;
-          color: #F84673;
+          color: #f84673;
           font-weight: 700;
         }
       }
@@ -223,7 +222,7 @@ function jumpToRecord() {
 
   .sub-title {
     margin: 25px 10px 0;
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 15px;
     text-align: center;
     line-height: 1.6;

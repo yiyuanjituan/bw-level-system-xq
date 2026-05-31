@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { formatMoney, getYuEBaoRichText } from "@/utils/common";
 import { service } from "@/api/service";
+import useAuthStore from "@/store/modules/user";
 
 dayjs.extend(isoWeek);
 
@@ -77,6 +78,8 @@ const daySelectIndex = ref(0);
 const statusSelectIndex = ref(0);
 const interestRecordList = ref<any[]>([]);
 const page = ref(1);
+const auth = useAuthStore();
+const transOutLoading = ref(false);
 const interestRecordTotal = ref(0);
 const interestRecordsLoading = ref(false);
 const interestRecordsLoadingMore = ref(false);
@@ -220,6 +223,21 @@ function handleInterestEnterSuccess() {
   void refreshInterestRecords();
 }
 
+function handleTransOut() {
+  transOutLoading.value = true;
+  service.v1.activity
+    .interestTransferOut()
+    .finally(() => (transOutLoading.value = false))
+    .then(() => {
+      showCustomToast({ message: "取出成功", type: "success" });
+      setTimeout(() => {
+        loadInterestInfo();
+        void refreshInterestRecords();
+      }, 1000);
+      auth.updateInfo();
+    });
+}
+
 watch([daySelectIndex, statusSelectIndex], () => {
   void refreshInterestRecords();
 });
@@ -242,7 +260,15 @@ onMounted(() => {
         </div>
         <div class="mobileButtonLine">
           <x-button type="warning" @click="openInterestEnterPopup" size="small">转 入</x-button>
-          <x-button class="info-btn" size="small">转 出</x-button>
+          <x-button
+            type="success"
+            size="small"
+            :disabled="Number(interestInfo?.deposit?.money) <= 0"
+            @click="handleTransOut"
+            :loading="transOutLoading"
+          >
+            转 出
+          </x-button>
         </div>
       </div>
       <div class="info-item mt-[5px]">
@@ -297,7 +323,7 @@ onMounted(() => {
               </div>
               <div class="flex items-center text-[11px] lh-[13px]">
                 <span class="text-[#656565]">累计收益</span>
-                <span class="text-[#FFAA09]">{{ interestInfo.deposit?.total_get }}</span>
+                <span class="text-[#FFAA09]">{{ formatMoney(interestInfo.deposit?.total_get) }}</span>
               </div>
             </div>
 
@@ -377,12 +403,6 @@ onMounted(() => {
           height: 25px;
           font-size: 10px;
         }
-
-        :deep(.info-btn) {
-          background-color: #999;
-          border-color: #999;
-          color: white;
-        }
       }
 
       .curIncomeWrapper {
@@ -416,12 +436,6 @@ onMounted(() => {
           width: 60px;
           height: 25px;
           font-size: 10px;
-        }
-
-        :deep(.info-btn) {
-          background-color: #999;
-          border-color: #999;
-          color: white;
         }
       }
     }

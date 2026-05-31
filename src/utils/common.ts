@@ -30,11 +30,18 @@ export function flattenRoutes(routes, basePath = "") {
 }
 
 export function handleBack() {
+  const currentPath = history.state.current;
   if (window.history.state.back) {
     router.back();
   } else {
     router.replace("/index");
   }
+  setTimeout(() => {
+    const newPath = history.state.current;
+    if (currentPath == newPath) {
+      handleBack();
+    }
+  }, 100);
 }
 
 export function openUrlInNewWindow(url = "", openedWindow?: Window | null) {

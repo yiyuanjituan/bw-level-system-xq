@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import SubNavbar from "@/components/SubNavbar.vue";
 import UiInput from "@/components/UI/input.vue";
-import { computed, nextTick, onMounted, Ref, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onMounted, Ref, ref, watch } from "vue";
 import UiTabs from "@/components/UI/tabs.vue";
 import UiPagination from "@/components/UI/pagination.vue";
 import UiLoading from "@/components/UI/loading.vue";
@@ -13,6 +13,7 @@ import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
 import UiEmpty from "@/components/UI/empty.vue";
 import useDataStore from "@/store/modules/data";
+import useAuthStore from "@/store/modules/user";
 
 const showNext = ref<boolean>(false);
 const route = useRoute();
@@ -38,6 +39,7 @@ const rightList = ref<RightItem[]>([
   { key: RightKeyEnum.COLLECT, name: "收藏" }
 ]);
 const rightKey: Ref<RightKeyEnum> = ref(RightKeyEnum.ALL);
+const auth = useAuthStore();
 const isLoading = ref<boolean>(false);
 const gameList = computed(() => {
   const id = Number(gameTypeVenueId.value);
@@ -72,7 +74,7 @@ const typeData = computed(() => {
   if (type == "7") return { name: "电竞", image: "game-icon_dtfl_dianjing_0" };
   if (type == "100") return { name: "最近" };
   if (type == "101") return { name: "收藏" };
-  return;
+  return {};
 });
 
 function init() {
@@ -120,19 +122,18 @@ async function handleChangeTab(record: any) {
   await nextTick();
 }
 
-watch(
-  () => route.fullPath,
-  (newVal, oldVal) => init()
-);
+watch(() => route.fullPath,(newVal, oldVal) => init());
 
 function enterGame(record: any) {
   appData.setEnterInfo(record.venueId, record.id);
+  auth.updateInfo();
   router.push({ path: "/home/embedded" });
 }
 
 function checkHistory() {
   if (window.history.state.back == window.history.state.current) {
-    window.history.go(-2);
+    window.history.back();
+    setTimeout(() => checkHistory(), 100);
   }
 }
 
