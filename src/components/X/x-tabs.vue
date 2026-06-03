@@ -224,9 +224,15 @@ function updateLine() {
     return;
   }
 
+  const computedStyle = window.getComputedStyle(tab);
+  const paddingLeft = Number.parseFloat(computedStyle.paddingLeft) || 0;
+  const paddingRight = Number.parseFloat(computedStyle.paddingRight) || 0;
+  const paddingTop = Number.parseFloat(computedStyle.paddingTop) || 0;
+  const paddingBottom = Number.parseFloat(computedStyle.paddingBottom) || 0;
+
   if (isVertical.value) {
-    const height = tab.offsetHeight;
-    const top = tab.offsetTop;
+    const height = Math.max(tab.offsetHeight - paddingTop - paddingBottom, 0);
+    const top = tab.offsetTop + paddingTop;
 
     lineStyle.value = {
       height: `${height}px`,
@@ -236,8 +242,8 @@ function updateLine() {
     return;
   }
 
-  const width = tab.offsetWidth;
-  const left = tab.offsetLeft;
+  const width = Math.max(tab.offsetWidth - paddingLeft - paddingRight, 0);
+  const left = tab.offsetLeft + paddingLeft;
 
   lineStyle.value = {
     width: `${width}px`,
