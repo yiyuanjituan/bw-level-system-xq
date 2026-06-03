@@ -7,14 +7,15 @@ import router from "@/router";
 import { bus } from "@/utils/mitt";
 import dayjs from "dayjs";
 import useAuthStore from "@/store/modules/user";
+import TaskRecord from "./components/TaskRecord.vue";
 
-const showPopover = ref(false);
 const isLoading = ref(false);
 const totalConfig = ref<any>({});
 const timeCountDown = ref(60 * 1000);
 const activeTabName = ref<"101" | "102" | "103">();
 const taskList = ref<any>([]);
 const auth = useAuthStore();
+const taskRecordRef = ref();
 
 function handleLoading() {
   if (isLoading.value) return;
@@ -23,6 +24,10 @@ function handleLoading() {
     isLoading.value = false;
     showCustomToast({ message: "刷新成功", type: "success" });
   });
+}
+
+function tapDetailDialog() {
+  taskRecordRef.value?.open();
 }
 
 async function init() {
@@ -107,6 +112,10 @@ function handleChangeTaskData(type: any) {
   });
 }
 
+function jumpToRecord() {
+  router.push("/home/records");
+}
+
 function handleGetBox(record: any) {
   showCustomDialog({
     width: 300,
@@ -145,7 +154,7 @@ onMounted(() => init());
             <svg-icon name="comm_icon_shy" class-name="text-[14px]"></svg-icon>
             <span class="ml-[1px]">{{ totalConfig?.vitalityBalance ?? 0 }}</span>
           </span>
-          <span class="detail">详情</span>
+          <span class="detail" @click="tapDetailDialog">详情</span>
         </div>
         <div class="active-list-wrap relative">
           <div class="active-list">
@@ -162,34 +171,10 @@ onMounted(() => init());
                         <img src="@/assets/common/img_rwbx_0.avif" alt="" />
                       </template>
                       <template v-if="totalConfig?.vitalityBalance >= item.vitality">
-                        <img
-                          v-if="index == 0"
-                          src="@/assets/common/img_rwbx_1c.avif"
-                          alt=""
-                          class="!w-[50px]"
-                          @click.stop="handleGetBox(item)"
-                        />
-                        <img
-                          src="@/assets/common/img_rwbx_2c.avif"
-                          alt=""
-                          v-if="index == 1"
-                          class="!w-[50px]"
-                          @click.stop="handleGetBox(item)"
-                        />
-                        <img
-                          src="@/assets/common/img_rwbx_3c.avif"
-                          alt=""
-                          v-if="index == 2"
-                          class="!w-[50px]"
-                          @click.stop="handleGetBox(item)"
-                        />
-                        <img
-                          src="@/assets/common/img_rwbx_4c.avif"
-                          alt=""
-                          v-if="index == 3"
-                          class="!w-[50px]"
-                          @click.stop="handleGetBox(item)"
-                        />
+                        <img v-if="index == 0" src="@/assets/common/img_rwbx_1c.avif" alt="" class="!w-[50px]" @click.stop="handleGetBox(item)" />
+                        <img src="@/assets/common/img_rwbx_2c.avif" alt="" v-if="index == 1" class="!w-[50px]" @click.stop="handleGetBox(item)" />
+                        <img src="@/assets/common/img_rwbx_3c.avif" alt="" v-if="index == 2" class="!w-[50px]" @click.stop="handleGetBox(item)" />
+                        <img src="@/assets/common/img_rwbx_4c.avif" alt="" v-if="index == 3" class="!w-[50px]" @click.stop="handleGetBox(item)" />
                       </template>
                       <span class="progressIndex">{{ index + 1 }}</span>
                     </div>
@@ -241,16 +226,8 @@ onMounted(() => init());
     <div class="active-receive-box">
       <div class="active-receive-left">
         <img v-if="activeTabName == '101'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_xr.avif" class="icon-box" />
-        <img
-          v-if="activeTabName == '102'"
-          src="/siteadmin/skin/lobby_asset/web/task/img_rw_mrrw.avif"
-          class="icon-box"
-        />
-        <img
-          v-if="activeTabName == '103'"
-          src="/siteadmin/skin/lobby_asset/web/task/img_rw_mzrw.avif"
-          class="icon-box"
-        />
+        <img v-if="activeTabName == '102'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_mrrw.avif" class="icon-box" />
+        <img v-if="activeTabName == '103'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_mzrw.avif" class="icon-box" />
         <template v-if="activeTabName != '101'">
           <van-count-down :time="timeCountDown">
             <template #default="timeData">
@@ -264,7 +241,7 @@ onMounted(() => init());
           <span>后重置</span>
         </template>
       </div>
-      <div class="active-receive-right">
+      <div class="active-receive-right" @click="jumpToRecord">
         <svg-icon name="task-comm_icon_order" class-name="text-[18px] main-text" />
       </div>
     </div>
@@ -315,11 +292,7 @@ onMounted(() => init());
                 <div class="card-right-box-inner">
                   <x-button
                     class="!w-[75px] !h-[30px] text-[11px]"
-                    v-if="
-                      getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) &&
-                      !item.isOver &&
-                      !item.isOverGet
-                    "
+                    v-if="getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) && !item.isOver && !item.isOverGet"
                     @click="handleTapGo(item.taskDetailType)"
                   >
                     前&nbsp;往
@@ -333,14 +306,7 @@ onMounted(() => init());
                   >
                     领&nbsp;取
                   </x-button>
-                  <x-button
-                    disabled
-                    type="warning"
-                    class="!w-[75px] !h-[30px] text-[11px]"
-                    v-if="item.isOver && item.isOverGet"
-                  >
-                    已领取
-                  </x-button>
+                  <x-button disabled type="warning" class="!w-[75px] !h-[30px] text-[11px]" v-if="item.isOver && item.isOverGet"> 已领取 </x-button>
                 </div>
               </div>
             </div>
@@ -348,6 +314,7 @@ onMounted(() => init());
         </div>
       </div>
     </div>
+    <task-record ref="taskRecordRef" />
   </div>
 </template>
 

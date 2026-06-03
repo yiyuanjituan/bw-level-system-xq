@@ -11,6 +11,12 @@
       "options": {
         "parser": "html"
       }
+    },
+    {
+      "files": "*.vue",
+      "options": {
+        "printWidth": 148
+      }
     }
   ]
 }
