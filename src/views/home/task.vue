@@ -162,13 +162,13 @@ onMounted(() => init());
                         <img src="@/assets/common/img_rwbx_0.avif" alt="" />
                       </template>
                       <template v-if="totalConfig?.vitalityBalance >= item.vitality">
-                          <img
-                            v-if="index == 0"
-                            src="@/assets/common/img_rwbx_1c.avif"
-                            alt=""
-                            class="!w-[50px]"
-                            @click.stop="handleGetBox(item)"
-                          />
+                        <img
+                          v-if="index == 0"
+                          src="@/assets/common/img_rwbx_1c.avif"
+                          alt=""
+                          class="!w-[50px]"
+                          @click.stop="handleGetBox(item)"
+                        />
                         <img
                           src="@/assets/common/img_rwbx_2c.avif"
                           alt=""
