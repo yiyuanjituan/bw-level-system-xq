@@ -1,5 +1,31 @@
 [
   {
+    "prefix": "/app/activity/data",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/taskConfigData",
+        "summary": "任务的配置信息"
+      },
+      {
+        "method": "post",
+        "path": "/getTaskReward",
+        "summary": "获取任务奖励"
+      },
+      {
+        "method": "post",
+        "path": "/taskListData",
+        "summary": "任务信息列表"
+      },
+      {
+        "method": "post",
+        "path": "/getBoxReward",
+        "summary": "兑换宝箱"
+      }
+    ]
+  },
+  {
     "prefix": "/open/activity/data",
     "name": "",
     "api": [

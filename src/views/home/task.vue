@@ -1,20 +1,139 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { padStart } from "lodash-es";
-import { showCustomToast } from "@/hooks/useCommon";
+import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
+import { service } from "@/api/service";
+import router from "@/router";
+import { bus } from "@/utils/mitt";
+import dayjs from "dayjs";
+import useAuthStore from "@/store/modules/user";
 
 const showPopover = ref(false);
 const isLoading = ref(false);
+const totalConfig = ref<any>({});
 const timeCountDown = ref(60 * 1000);
+const activeTabName = ref<"101" | "102" | "103">();
+const taskList = ref<any>([]);
+const auth = useAuthStore();
 
 function handleLoading() {
   if (isLoading.value) return;
   isLoading.value = true;
-  setTimeout(() => {
+  init().then(() => {
     isLoading.value = false;
     showCustomToast({ message: "刷新成功", type: "success" });
-  }, 500);
+  });
 }
+
+async function init() {
+  return new Promise((resolve, reject) => {
+    service.activity.data
+      .taskConfigData()
+      .then(res => {
+        totalConfig.value = res;
+        if (res.taskConfig?.["101"] && !activeTabName.value) {
+          activeTabName.value = "101";
+        } else if (res.taskConfig?.["102"] && !activeTabName.value) {
+          activeTabName.value = "102";
+        } else if (res.taskConfig?.["103"] && !activeTabName.value) {
+          activeTabName.value = "103";
+        }
+        getTaskData();
+        resolve(void 0);
+      })
+      .catch(reject);
+  });
+}
+
+function getTaskData() {
+  service.activity.data.taskListData({ typeId: Number(activeTabName.value) }).then(res => {
+    taskList.value = res;
+  });
+}
+
+function getIsShow(type: any, allowType: any[]) {
+  return allowType.includes(type);
+}
+
+function handleTapGo(type: any) {
+  if (type == 0) {
+    router.push("/home/register");
+  } else if (type == 1) {
+    showCustomToast({ type: "success", message: "下载APP的操作" });
+  } else if (type == 2) {
+    bus.emit("showRecharge");
+  } else if (type == 3) {
+    router.push("/home/security");
+  } else if (type == 4) {
+    router.push("/home/yuebao");
+  } else if (type == 5) {
+    router.push("/home/withdraw");
+  } else if (type == 6) {
+    router.push("/home/withdraw");
+  } else if (type == 7) {
+    showCustomToast({ type: "success", message: "修改社交信息" });
+  } else if (type == 8) {
+    router.replace("/");
+  } else if (type == 9) {
+    bus.emit("showRecharge");
+  } else if (type == 10) {
+    router.replace("/");
+  }
+}
+
+function handleGetReward(record: any) {
+  record.isLoading = true;
+  service.activity.data
+    .getTaskReward({ taskId: record.id })
+    .finally(() => (record.isLoading = false))
+    .then(() => {
+      showCustomToast({ message: "领取成功", type: "success" });
+      init();
+      auth.updateInfo();
+    });
+}
+
+function handleChangeTaskData(type: any) {
+  service.activity.data.taskListData({ typeId: Number(type) }).then(res => {
+    taskList.value = res;
+    activeTabName.value = type;
+    if (type == "101") {
+      timeCountDown.value = 0;
+    } else if (type == "102") {
+      timeCountDown.value = dayjs().endOf("day").valueOf() - dayjs().valueOf();
+    } else if (type == "103") {
+      timeCountDown.value = dayjs().endOf("isoWeek").valueOf() - dayjs().valueOf();
+    }
+  });
+}
+
+function handleGetBox(record: any) {
+  showCustomDialog({
+    width: 300,
+    title: "活跃度兑换",
+    message: `将使用${record?.vitality}活跃度兑换宝箱`,
+    confirmButtonText: "立即兑换",
+    showCancelButton: true,
+    cancelButtonText: "取消"
+  }).then(isValid => {
+    if (isValid) {
+      service.activity.data.getBoxReward({ taskId: record.id }).then(res => {
+        auth.updateInfo();
+        init();
+        showCustomDialog({
+          width: 300,
+          title: "兑换成功",
+          message: `您已获得${res.val}彩金`,
+          confirmButtonText: "去游戏",
+          showCancelButton: true,
+          cancelButtonText: "稍后游戏"
+        }).then(isGame => isGame && router.replace("/"));
+      });
+    }
+  });
+}
+
+onMounted(() => init());
 </script>
 
 <template>
@@ -24,31 +143,72 @@ function handleLoading() {
         <div class="caption">
           <span class="captionItem">
             <svg-icon name="comm_icon_shy" class-name="text-[14px]"></svg-icon>
-            <span class="ml-[1px]">0</span>
+            <span class="ml-[1px]">{{ totalConfig?.vitalityBalance ?? 0 }}</span>
           </span>
           <span class="detail">详情</span>
         </div>
         <div class="active-list-wrap relative">
           <div class="active-list">
-            <div class="active-list-item" v-for="i in 4" :key="i">
+            <div class="active-list-item" v-for="(item, index) in totalConfig?.rewardConfig ?? []" :key="item.id">
               <div class="item">
-                <x-popover placement="top" v-model:show="showPopover">
+                <x-popover
+                  placement="top"
+                  v-model:show="item.showPopover"
+                  :trigger="totalConfig?.vitalityBalance < item.vitality ? 'click' : 'manual'"
+                >
                   <template #reference>
                     <div class="image">
-                      <img src="@/assets/common/img_rwbx_0.avif" alt="" srcset="" />
-                      <span class="progressIndex">1</span>
+                      <template v-if="totalConfig?.vitalityBalance < item.vitality">
+                        <img src="@/assets/common/img_rwbx_0.avif" alt="" />
+                      </template>
+                      <template v-if="totalConfig?.vitalityBalance >= item.vitality">
+                          <img
+                            v-if="index == 0"
+                            src="@/assets/common/img_rwbx_1c.avif"
+                            alt=""
+                            class="!w-[50px]"
+                            @click.stop="handleGetBox(item)"
+                          />
+                        <img
+                          src="@/assets/common/img_rwbx_2c.avif"
+                          alt=""
+                          v-if="index == 1"
+                          class="!w-[50px]"
+                          @click.stop="handleGetBox(item)"
+                        />
+                        <img
+                          src="@/assets/common/img_rwbx_3c.avif"
+                          alt=""
+                          v-if="index == 2"
+                          class="!w-[50px]"
+                          @click.stop="handleGetBox(item)"
+                        />
+                        <img
+                          src="@/assets/common/img_rwbx_4c.avif"
+                          alt=""
+                          v-if="index == 3"
+                          class="!w-[50px]"
+                          @click.stop="handleGetBox(item)"
+                        />
+                      </template>
+                      <span class="progressIndex">{{ index + 1 }}</span>
                     </div>
                   </template>
                   <div class="activityBoxTip">
                     <span class="tip-text">
-                      打开后获得<span>58.00</span>-<span>188.00</span>奖金需要<span>1</span>倍流水可提现
+                      打开后获得
+                      <span>{{ item.minNum }}</span>
+                      -
+                      <span>{{ item.showMaxNum }}</span>
+                      奖金需要<span>{{ Number(item.scale) }}</span>
+                      倍流水可提现
                     </span>
                   </div>
                 </x-popover>
                 <div class="value">
                   <svg-icon name="comm_icon_shy" />
                   <span class="line">-</span>
-                  <span>100</span>
+                  <span>{{ item.vitality }}</span>
                 </div>
               </div>
               <div class="process-line">
@@ -61,9 +221,15 @@ function handleLoading() {
     </div>
     <div class="task-tabs-title">
       <div class="left-main">
-        <div class="item-tab"><div class="task-tab-name active-name">新手任务</div></div>
-        <div class="item-tab"><div class="task-tab-name">每日任务</div></div>
-        <div class="item-tab"><div class="task-tab-name">每周任务</div></div>
+        <div class="item-tab" v-if="totalConfig?.taskConfig?.['101']" @click="handleChangeTaskData(101)">
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '101' }">新手任务</div>
+        </div>
+        <div class="item-tab" v-if="totalConfig?.taskConfig?.['102']" @click="handleChangeTaskData(102)">
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '102' }">每日任务</div>
+        </div>
+        <div class="item-tab" v-if="totalConfig?.taskConfig?.['103']" @click="handleChangeTaskData(103)">
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '103' }">每周任务</div>
+        </div>
       </div>
       <div class="task-extra-button">
         <div class="refresh-box" @click="handleLoading">
@@ -74,32 +240,44 @@ function handleLoading() {
     </div>
     <div class="active-receive-box">
       <div class="active-receive-left">
-        <img src="/siteadmin/skin/lobby_asset/web/task/img_rw_mrrw.avif" alt="" srcset="" class="icon-box" />
-        <van-count-down :time="timeCountDown">
-          <template #default="timeData">
-            <span class="block">{{ padStart(String(timeData.hours), 2, "0") }}</span>
-            <span class="colon">:</span>
-            <span class="block">{{ padStart(String(timeData.minutes), 2, "0") }}</span>
-            <span class="colon">:</span>
-            <span class="block">{{ padStart(String(timeData.seconds), 2, "0") }}</span>
-          </template>
-        </van-count-down>
-        <span>后重置</span>
+        <img v-if="activeTabName == '101'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_xr.avif" class="icon-box" />
+        <img
+          v-if="activeTabName == '102'"
+          src="/siteadmin/skin/lobby_asset/web/task/img_rw_mrrw.avif"
+          class="icon-box"
+        />
+        <img
+          v-if="activeTabName == '103'"
+          src="/siteadmin/skin/lobby_asset/web/task/img_rw_mzrw.avif"
+          class="icon-box"
+        />
+        <template v-if="activeTabName != '101'">
+          <van-count-down :time="timeCountDown">
+            <template #default="timeData">
+              <span class="block">{{ padStart(String(timeData.hours), 2, "0") }}</span>
+              <span class="colon">:</span>
+              <span class="block">{{ padStart(String(timeData.minutes), 2, "0") }}</span>
+              <span class="colon">:</span>
+              <span class="block">{{ padStart(String(timeData.seconds), 2, "0") }}</span>
+            </template>
+          </van-count-down>
+          <span>后重置</span>
+        </template>
       </div>
       <div class="active-receive-right">
         <svg-icon name="task-comm_icon_order" class-name="text-[18px] main-text" />
       </div>
     </div>
     <div class="task-content-box">
-      <div class="card-layout">
+      <div class="card-layout" v-for="(item, index) in taskList" :key="index">
         <div class="card-layout-inner">
           <div class="flex card-top">
             <div class="instruction-info">
               <div class="instruction-base-info">
-                <div class="description-primary">淡淡的</div>
-                <div class="more-limit">
+                <div class="description-primary">{{ item.name }}</div>
+                <div class="more-limit" v-if="item.desc">
                   <span class="text">
-                    <span class="text-inner">就会顺顺的</span>
+                    <span class="text-inner">{{ item.desc }}</span>
                   </span>
                   <span class="btn-more">详情</span>
                 </div>
@@ -111,24 +289,58 @@ function handleLoading() {
               <div class="card-left-box">
                 <div class="card-left-inner">
                   <div class="bottom-slot">
-                    <div class="icon-wrap">
+                    <div class="icon-wrap" v-if="item.money > 0">
                       <span class="category-icon-text">
                         <img src="/siteadmin/active/rmb.svg" alt="" srcset="" />
-                        <span class="category-text">8.88</span>
+                        <span class="category-text">{{ item.money }}</span>
                       </span>
                     </div>
-                    <div class="icon-wrap">
+                    <div class="icon-wrap" v-if="item.vitality > 0">
                       <span class="category-icon-text tili">
                         <svg-icon name="comm_icon_shy" class-name="text-[18px]"></svg-icon>
-                        <span class="category-text">8.88</span>
+                        <span class="category-text">{{ item.vitality }}</span>
                       </span>
                     </div>
+                  </div>
+                  <div class="progress-wrapper" v-if="getIsShow(item.taskDetailType, [8, 9, 10])">
+                    <van-progress
+                      class="green-bar"
+                      :pivot-text="`${item.currentProgress}/${item.maxProgress}`"
+                      :percentage="(item.currentProgress / item.maxProgress) * 100"
+                    />
                   </div>
                 </div>
               </div>
               <div class="card-right-box">
                 <div class="card-right-box-inner">
-                  <x-button class="!w-[75px] !h-[30px] text-[11px]">邀&nbsp;请</x-button>
+                  <x-button
+                    class="!w-[75px] !h-[30px] text-[11px]"
+                    v-if="
+                      getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) &&
+                      !item.isOver &&
+                      !item.isOverGet
+                    "
+                    @click="handleTapGo(item.taskDetailType)"
+                  >
+                    前&nbsp;往
+                  </x-button>
+                  <x-button
+                    :loading="item.isLoading"
+                    type="success"
+                    class="!w-[75px] !h-[30px] text-[11px]"
+                    v-if="item.isOver && !item.isOverGet"
+                    @click="handleGetReward(item)"
+                  >
+                    领&nbsp;取
+                  </x-button>
+                  <x-button
+                    disabled
+                    type="warning"
+                    class="!w-[75px] !h-[30px] text-[11px]"
+                    v-if="item.isOver && item.isOverGet"
+                  >
+                    已领取
+                  </x-button>
                 </div>
               </div>
             </div>
@@ -145,6 +357,8 @@ function handleLoading() {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: var(--skin__bg_1);
+
   .active-level-box {
     padding: 10px 10px 0;
     z-index: 3;
@@ -193,6 +407,7 @@ function handleLoading() {
             .item {
               flex-shrink: 0;
               width: 50px;
+              height: 76px;
               .image {
                 position: relative;
                 display: flex;
@@ -226,7 +441,7 @@ function handleLoading() {
                 background-color: var(--skin__bg_2);
                 border: var(--lobby__px) solid var(--skin__border);
                 border-radius: 5.5px;
-                margin: 7.5px auto;
+                margin: 4px auto;
                 .line {
                   margin: 0 1.5px;
                 }
@@ -249,26 +464,6 @@ function handleLoading() {
               }
             }
           }
-        }
-      }
-    }
-    .activityBoxTip {
-      padding: 3.75px 8px;
-      color: var(--skin__neutral_2);
-      font-size: 10px;
-      text-align: center;
-      background-color: var(--skin__bg_2);
-      border: var(--lobby__px) solid var(--skin__border);
-      border-radius: 2.5px;
-      box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
-      background: var(--skin__bg_2);
-      max-width: 200px;
-      .tip-text {
-        color: var(--skin__neutral_1);
-        font-size: 10px;
-        line-height: 15px;
-        span {
-          color: var(--skin__accent_3);
         }
       }
     }
@@ -521,6 +716,7 @@ function handleLoading() {
                     }
                     .category-text {
                       font-size: 11px;
+                      line-height: 1;
                       max-width: 75px;
                       word-break: break-all;
                       white-space: normal;
@@ -536,6 +732,38 @@ function handleLoading() {
                     }
                   }
                 }
+
+                .progress-wrapper {
+                  min-width: 80px;
+                  margin-left: 7.5px;
+                  :deep(.van-progress) {
+                    position: relative;
+                    height: 11px;
+                    background: var(--skin__neutral_3);
+                    border-radius: 10px;
+                    overflow: hidden;
+                  }
+                  .green-bar {
+                    :deep(.ui-progress__portion) {
+                      background-color: var(--skin__accent_1);
+                    }
+                  }
+                  :deep(.van-progress__pivot) {
+                    position: absolute !important;
+                    top: 0 !important;
+                    box-sizing: border-box;
+                    color: #fff;
+                    height: 11px;
+                    line-height: 11px;
+                    font-size: 10px;
+                    text-align: center;
+                    word-break: keep-all;
+                    white-space: nowrap;
+                    left: 50% !important;
+                    transform: translate(-50%, 0px) !important;
+                    background: transparent !important;
+                  }
+                }
               }
             }
             .card-right-box {
@@ -546,6 +774,29 @@ function handleLoading() {
           }
         }
       }
+    }
+  }
+}
+</style>
+
+<style lang="less">
+.activityBoxTip {
+  padding: 3.75px 8px;
+  color: var(--skin__neutral_2);
+  font-size: 10px;
+  text-align: center;
+  background-color: var(--skin__bg_2);
+  border: var(--lobby__px) solid var(--skin__border);
+  border-radius: 2.5px;
+  box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
+  background: var(--skin__bg_2);
+  max-width: 200px;
+  .tip-text {
+    color: var(--skin__neutral_1);
+    font-size: 10px;
+    line-height: 15px;
+    span {
+      color: var(--skin__accent_3);
     }
   }
 }

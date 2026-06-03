@@ -13,7 +13,6 @@ const isLoading = ref(false);
 const appData = useAppStore();
 
 function handleJump(record: any) {
-  console.log(record);
   if (record.jumpMode == 1) {
     router.push(`/home/event/detail?eventId=${record.id}`);
   }
@@ -23,15 +22,15 @@ function handleLoading() {
   init();
   setTimeout(() => {
     isLoading.value = false;
-    showCustomToast({ message: '刷新成功', type: 'success' })
-  }, 500)
+    showCustomToast({ message: "刷新成功", type: "success" });
+  }, 500);
 }
 
 function init() {
-  if (appData.activityList?.type) totalTypes.value = appData.activityList?.type
-  if (appData.activityList?.list) totalList.value = appData.activityList?.list
+  if (appData.activityList?.type) totalTypes.value = appData.activityList?.type;
+  if (appData.activityList?.list) totalList.value = appData.activityList?.list;
   getEventData({}).then(data => {
-    localStorage.setItem(`${APP_PREFIX_KEY}_site_activity`, JSON.stringify(data))
+    localStorage.setItem(`${APP_PREFIX_KEY}_site_activity`, JSON.stringify(data));
     appData.updateActivity(data);
     totalTypes.value = data.type;
     totalList.value = data.list;
@@ -39,7 +38,7 @@ function init() {
 }
 
 onMounted(() => {
-  init()
+  init();
 });
 </script>
 
@@ -48,35 +47,17 @@ onMounted(() => {
     <div class="ui-tab-left">
       <div class="scroll-col">
         <div class="ui-tab-item">
-          <ui-badge
-            class="w-[75px] h-[35px] mt-[10px]"
-            :content="0"
-            :size="[2, 0]"
-          >
+          <ui-badge class="w-[75px] h-[35px] mt-[10px]" :content="0" :size="[2, 0]">
             <div class="item-box flex items-center justify-center">
-              <svg-icon
-                name="event_zh"
-                color="#adb6c3"
-                class="!w-[24px] !h-[24px]"
-              />
+              <svg-icon name="event_zh" color="#adb6c3" class="!w-[24px] !h-[24px]" />
               <div class="w-[46.5px] text-[12.5px] text-center">综 合</div>
             </div>
           </ui-badge>
         </div>
         <div class="ui-tab-item" v-for="item in totalTypes">
-          <ui-badge
-            class="w-[75px] h-[35px] mt-[10px]"
-            :content="0"
-            :size="[2, 0]"
-          >
+          <ui-badge class="w-[75px] h-[35px] mt-[10px]" :content="0" :size="[2, 0]">
             <div class="item-box flex items-center justify-center">
-              <img
-                :src="item.logo"
-                v-if="item.logo"
-                alt=""
-                srcset=""
-                class="w-auto h-[24px]"
-              />
+              <img :src="item.logo" v-if="item.logo" alt="" srcset="" class="w-auto h-[24px]" />
               <div class="w-[46.5px] text-[12.5px] text-center">
                 {{ item.name }}
               </div>
@@ -101,7 +82,7 @@ onMounted(() => {
     <div class="ui-tab-right">
       <div class="panel">
         <div class="panel-item-box" v-for="item in totalList">
-          <img :src="item.image" alt="" srcset="" class="w-[100%] h-[100%]" @click="handleJump(item)">
+          <img :src="item.image" alt="" srcset="" class="w-[100%] h-[100%]" @click="handleJump(item)" />
         </div>
       </div>
     </div>

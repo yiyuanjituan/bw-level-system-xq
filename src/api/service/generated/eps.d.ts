@@ -289,6 +289,40 @@ declare namespace Eps {
 		[key: string]: any;
 	}
 
+	interface ActivityData {
+		/**
+			 * 任务的配置信息
+			 */
+			taskConfigData(data?: any): Promise<any>;
+
+		/**
+			 * 获取任务奖励
+			 */
+			getTaskReward(data?: any): Promise<any>;
+
+		/**
+			 * 任务信息列表
+			 */
+			taskListData(data?: any): Promise<any>;
+
+		/**
+			 * 兑换宝箱
+			 */
+			getBoxReward(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface OpenActivityData {
 		/**
 			 * 活动列表
@@ -1231,6 +1265,9 @@ declare namespace Eps {
 			[key: string]: any;
 		}): Promise<any>;
 
+		activity: {
+			data: ActivityData;
+		};
 		open: {
 			activity: {
 				data: OpenActivityData;
