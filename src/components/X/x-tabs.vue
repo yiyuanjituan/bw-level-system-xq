@@ -42,19 +42,21 @@ const emit = defineEmits<{
 }>();
 
 const panes = shallowRef<XTabPane[]>([]);
-const wrapRef = ref<HTMLElement>();
+const navRef = ref<HTMLElement>();
 const contentRef = ref<HTMLElement>();
-const lineStyle = ref<Record<string, string>>({});
-const wrapScrollLeft = ref(0);
-const wrapScrollMaxWidth = ref(0);
+
+const navScrollLeft = ref(0);
+const navScrollMax = ref(0);
+const indicatorStyle = ref<Record<string, string>>({});
+const contentWidth = ref(0);
+const contentHeight = ref<number | null>(null);
+const contentMotionEnabled = ref(false);
+
 const tabRefs = new Map<number, HTMLElement>();
 const panelRefs = new Map<number, HTMLElement>();
-const contentHeight = ref<number | null>(null);
-const contentWidth = ref(0);
-const contentHeightTransitionEnabled = ref(false);
-const contentTrackTransitionEnabled = ref(false);
-let activePanelResizeObserver: ResizeObserver | null = null;
-let contentResizeObserver: ResizeObserver | null = null;
+
+let contentObserver: ResizeObserver | null = null;
+let activePanelObserver: ResizeObserver | null = null;
 
 const SlotRenderer = defineComponent({
   name: "XTabsSlotRenderer",
@@ -75,23 +77,10 @@ const SlotRenderer = defineComponent({
 
 const activeIndex = computed(() => panes.value.findIndex(pane => pane.name.value === modelValue.value));
 const activePane = computed(() => panes.value[activeIndex.value] ?? null);
-const contentTrackStyle = computed(() => ({
-  transform: `translateX(-${Math.max(activeIndex.value, 0) * contentWidth.value}px)`
-}));
-const contentStyle = computed(() => {
-  if (!props.animated || contentHeight.value === null) return {};
-
-  return {
-    height: `${contentHeight.value}px`
-  };
-});
-const contentClass = computed(() => ({
-  "x-tabs__content--animated": props.animated,
-  "x-tabs__content--height-transition": props.animated && contentHeightTransitionEnabled.value
-}));
-const contentTrackClass = computed(() => ({
-  "x-tabs__track--transition": props.animated && contentTrackTransitionEnabled.value
-}));
+const panesSignature = computed(() => panes.value.map(pane => `${pane.uid}:${pane.name.value}:${pane.disabled.value}`).join("|"));
+const isVertical = computed(() => props.position === "left" || props.position === "right");
+const showPrevArrow = computed(() => !isVertical.value && navScrollLeft.value > 0);
+const showNextArrow = computed(() => !isVertical.value && navScrollMax.value > navScrollLeft.value);
 
 const navClass = computed(() => [
   "x-tabs__nav",
@@ -102,7 +91,28 @@ const navClass = computed(() => [
   }
 ]);
 
-const isVertical = computed(() => props.position === "left" || props.position === "right");
+const rootClass = computed(() => [`x-tabs--${props.type}`, "x-tabs__position", `x-tabs__position--${props.position}`]);
+
+const contentClass = computed(() => ({
+  "x-tabs__content--animated": props.animated,
+  "x-tabs__content--motion": props.animated && contentMotionEnabled.value
+}));
+
+const trackClass = computed(() => ({
+  "x-tabs__track--motion": props.animated && contentMotionEnabled.value
+}));
+
+const contentStyle = computed(() => {
+  if (!props.animated || contentHeight.value === null) return {};
+
+  return {
+    height: `${contentHeight.value}px`
+  };
+});
+
+const trackStyle = computed(() => ({
+  transform: `translateX(-${Math.max(activeIndex.value, 0) * contentWidth.value}px)`
+}));
 
 function registerPane(pane: XTabPane) {
   if (panes.value.some(item => item.uid === pane.uid)) return;
@@ -120,174 +130,36 @@ provide(X_TABS_CONTEXT_KEY, {
   unregisterPane
 });
 
-function setTabRef(uid: number, element: Element | ComponentPublicInstance | null) {
+function bindElement(map: Map<number, HTMLElement>, uid: number, element: Element | ComponentPublicInstance | null) {
   if (!(element instanceof HTMLElement)) {
-    tabRefs.delete(uid);
+    map.delete(uid);
     return;
   }
-  tabRefs.set(uid, element);
+
+  map.set(uid, element);
+}
+
+function setTabRef(uid: number, element: Element | ComponentPublicInstance | null) {
+  bindElement(tabRefs, uid, element);
 }
 
 function setPanelRef(uid: number, element: Element | ComponentPublicInstance | null) {
-  if (!(element instanceof HTMLElement)) {
-    panelRefs.delete(uid);
-    return;
-  }
-  panelRefs.set(uid, element);
+  bindElement(panelRefs, uid, element);
 }
 
-function stopObservingActivePanel() {
-  activePanelResizeObserver?.disconnect();
-  activePanelResizeObserver = null;
+function stopContentObserver() {
+  contentObserver?.disconnect();
+  contentObserver = null;
 }
 
-function stopObservingContent() {
-  contentResizeObserver?.disconnect();
-  contentResizeObserver = null;
+function stopActivePanelObserver() {
+  activePanelObserver?.disconnect();
+  activePanelObserver = null;
 }
 
-function updateContentWidth() {
-  contentWidth.value = contentRef.value?.clientWidth ?? 0;
-}
-
-function updateContentHeight() {
-  if (!props.animated) {
-    contentHeight.value = null;
-    contentHeightTransitionEnabled.value = false;
-    contentTrackTransitionEnabled.value = false;
-    return;
-  }
-
-  const pane = activePane.value;
-  if (!pane) {
-    contentHeight.value = null;
-    contentHeightTransitionEnabled.value = false;
-    contentTrackTransitionEnabled.value = false;
-    return;
-  }
-
-  const panel = panelRefs.get(pane.uid);
-  if (!panel) return;
-
-  const nextHeight = Math.ceil(panel.getBoundingClientRect().height);
-  contentHeight.value = nextHeight;
-}
-
-function observeActivePanel() {
-  stopObservingActivePanel();
-
-  if (!props.animated || typeof ResizeObserver === "undefined") return;
-
-  const pane = activePane.value;
-  if (!pane) return;
-
-  const panel = panelRefs.get(pane.uid);
-  if (!panel) return;
-
-  activePanelResizeObserver = new ResizeObserver(() => {
-    updateContentHeight();
-  });
-  activePanelResizeObserver.observe(panel);
-}
-
-function observeContent() {
-  stopObservingContent();
-  updateContentWidth();
-
-  if (typeof ResizeObserver === "undefined" || !contentRef.value) return;
-
-  contentResizeObserver = new ResizeObserver(() => {
-    updateContentWidth();
-    updateContentHeight();
-  });
-  contentResizeObserver.observe(contentRef.value);
-}
-
-function updateScrollState() {
-  const wrap = wrapRef.value;
-  if (!wrap) {
-    wrapScrollLeft.value = 0;
-    wrapScrollMaxWidth.value = 0;
-    return;
-  }
-
-  wrapScrollLeft.value = wrap.scrollLeft;
-  wrapScrollMaxWidth.value = Math.max(wrap.scrollWidth - wrap.clientWidth, 0);
-}
-
-function scrollToLeft() {
-  wrapRef.value?.scrollTo({ left: 0, behavior: "smooth" });
-}
-
-function scrollToRight() {
-  wrapRef.value?.scrollTo({ left: wrapScrollMaxWidth.value, behavior: "smooth" });
-}
-
-function scrollActiveIntoView() {
-  const wrap = wrapRef.value;
-  const pane = activePane.value;
-  if (!wrap || !pane) return;
-
-  const tab = tabRefs.get(pane.uid);
-  if (!tab) return;
-
-  if (isVertical.value) {
-    const targetTop = tab.offsetTop - (wrap.clientHeight - tab.offsetHeight) / 2;
-    wrap.scrollTo({
-      top: Math.max(targetTop, 0),
-      behavior: "smooth"
-    });
-    return;
-  }
-
-  const targetLeft = tab.offsetLeft - (wrap.clientWidth - tab.offsetWidth) / 2;
-  wrap.scrollTo({
-    left: Math.max(targetLeft, 0),
-    behavior: "smooth"
-  });
-}
-
-function updateLine() {
-  const pane = activePane.value;
-  const wrap = wrapRef.value;
-
-  if (props.type !== "line" || !pane || !wrap) {
-    lineStyle.value = {};
-    return;
-  }
-
-  const tab = tabRefs.get(pane.uid);
-  if (!tab) {
-    lineStyle.value = {};
-    return;
-  }
-
-  const computedStyle = window.getComputedStyle(tab);
-  const paddingLeft = Number.parseFloat(computedStyle.paddingLeft) || 0;
-  const paddingRight = Number.parseFloat(computedStyle.paddingRight) || 0;
-  const paddingTop = Number.parseFloat(computedStyle.paddingTop) || 0;
-  const paddingBottom = Number.parseFloat(computedStyle.paddingBottom) || 0;
-
-  if (isVertical.value) {
-    const height = Math.max(tab.offsetHeight - paddingTop - paddingBottom, 0);
-    const top = tab.offsetTop + paddingTop;
-
-    lineStyle.value = {
-      height: `${height}px`,
-      width: "2px",
-      transform: `translate3d(0, ${top}px, 0)`
-    };
-    return;
-  }
-
-  const width = Math.max(tab.offsetWidth - paddingLeft - paddingRight, 0);
-  const left = tab.offsetLeft + paddingLeft;
-
-  lineStyle.value = {
-    width: `${width}px`,
-    height: "2px",
-    transform: `translate3d(${left}px, 0, 0)`
-  };
+function resetAnimatedContent() {
+  contentHeight.value = null;
+  contentMotionEnabled.value = false;
 }
 
 function ensureActivePane() {
@@ -302,7 +174,132 @@ function ensureActivePane() {
   modelValue.value = firstAvailablePane.name.value;
 }
 
-function setActivePane(pane: XTabPane) {
+function updateNavScrollState() {
+  const nav = navRef.value;
+  if (!nav) {
+    navScrollLeft.value = 0;
+    navScrollMax.value = 0;
+    return;
+  }
+
+  navScrollLeft.value = nav.scrollLeft;
+  navScrollMax.value = Math.max(nav.scrollWidth - nav.clientWidth, 0);
+}
+
+function scrollToEdge(direction: "start" | "end") {
+  if (isVertical.value) return;
+
+  navRef.value?.scrollTo({
+    left: direction === "start" ? 0 : navScrollMax.value,
+    behavior: "smooth"
+  });
+}
+
+function scrollActiveIntoView() {
+  const nav = navRef.value;
+  const pane = activePane.value;
+  if (!nav || !pane) return;
+
+  const tab = tabRefs.get(pane.uid);
+  if (!tab) return;
+
+  if (isVertical.value) {
+    const targetTop = tab.offsetTop - (nav.clientHeight - tab.offsetHeight) / 2;
+    nav.scrollTo({
+      top: Math.max(targetTop, 0),
+      behavior: "smooth"
+    });
+    return;
+  }
+
+  const targetLeft = tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2;
+  nav.scrollTo({
+    left: Math.max(targetLeft, 0),
+    behavior: "smooth"
+  });
+}
+
+function updateIndicator() {
+  const pane = activePane.value;
+  if (props.type !== "line" || !pane) {
+    indicatorStyle.value = {};
+    return;
+  }
+
+  const tab = tabRefs.get(pane.uid);
+  if (!tab) {
+    indicatorStyle.value = {};
+    return;
+  }
+
+  const style = window.getComputedStyle(tab);
+  const paddingStart = Number.parseFloat(isVertical.value ? style.paddingTop : style.paddingLeft) || 0;
+  const paddingEnd = Number.parseFloat(isVertical.value ? style.paddingBottom : style.paddingRight) || 0;
+  const size = Math.max((isVertical.value ? tab.offsetHeight : tab.offsetWidth) - paddingStart - paddingEnd, 0);
+  const offset = (isVertical.value ? tab.offsetTop : tab.offsetLeft) + paddingStart;
+
+  indicatorStyle.value = isVertical.value
+    ? {
+        width: "2px",
+        height: `${size}px`,
+        transform: `translate3d(0, ${offset}px, 0)`
+      }
+    : {
+        width: `${size}px`,
+        height: "2px",
+        transform: `translate3d(${offset}px, 0, 0)`
+      };
+}
+
+function updateContentMetrics() {
+  contentWidth.value = contentRef.value?.clientWidth ?? 0;
+
+  if (!props.animated) {
+    resetAnimatedContent();
+    return;
+  }
+
+  const pane = activePane.value;
+  if (!pane) {
+    resetAnimatedContent();
+    return;
+  }
+
+  const panel = panelRefs.get(pane.uid);
+  if (!panel) return;
+
+  contentHeight.value = Math.ceil(panel.getBoundingClientRect().height);
+}
+
+function observeActivePanel() {
+  stopActivePanelObserver();
+
+  if (!props.animated || typeof ResizeObserver === "undefined") return;
+
+  const pane = activePane.value;
+  if (!pane) return;
+
+  const panel = panelRefs.get(pane.uid);
+  if (!panel) return;
+
+  activePanelObserver = new ResizeObserver(() => {
+    updateContentMetrics();
+  });
+  activePanelObserver.observe(panel);
+}
+
+function observeContent() {
+  stopContentObserver();
+
+  if (typeof ResizeObserver === "undefined" || !contentRef.value) return;
+
+  contentObserver = new ResizeObserver(() => {
+    updateContentMetrics();
+  });
+  contentObserver.observe(contentRef.value);
+}
+
+function activatePane(pane: XTabPane) {
   if (pane.disabled.value) return;
 
   emit("tab-click", pane.name.value, pane);
@@ -324,19 +321,18 @@ function getPaneTitle(pane: XTabPane) {
 async function syncTabs() {
   ensureActivePane();
   await nextTick();
-  updateScrollState();
-  updateLine();
+  updateNavScrollState();
+  updateIndicator();
   scrollActiveIntoView();
-  updateContentWidth();
-  updateContentHeight();
-  observeActivePanel();
+  updateContentMetrics();
   observeContent();
+  observeActivePanel();
 }
 
 watch(
-  () => panes.value.map(pane => `${pane.uid}:${pane.name.value}:${pane.disabled.value}`).join("|"),
+  panesSignature,
   () => {
-    syncTabs();
+    void syncTabs();
   },
   { flush: "post" }
 );
@@ -344,9 +340,8 @@ watch(
 watch(
   () => modelValue.value,
   (value, previousValue) => {
-    contentHeightTransitionEnabled.value = previousValue !== undefined && previousValue !== value;
-    contentTrackTransitionEnabled.value = previousValue !== undefined && previousValue !== value;
-    syncTabs();
+    contentMotionEnabled.value = previousValue !== undefined && previousValue !== value;
+    void syncTabs();
   },
   { flush: "post" }
 );
@@ -355,34 +350,29 @@ watch(
   () => props.animated,
   animated => {
     if (!animated) {
-      contentHeightTransitionEnabled.value = false;
-      contentTrackTransitionEnabled.value = false;
+      resetAnimatedContent();
     }
-    syncTabs();
+    void syncTabs();
   },
   { flush: "post" }
 );
 
 onMounted(() => {
-  syncTabs();
+  void syncTabs();
   window.addEventListener("resize", syncTabs);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", syncTabs);
-  stopObservingActivePanel();
-  stopObservingContent();
+  stopContentObserver();
+  stopActivePanelObserver();
 });
 </script>
 
 <template>
-  <div class="x-tabs" :class="[`x-tabs--${type}`, 'x-tabs__position', `x-tabs__position--${position}`]">
+  <div class="x-tabs" :class="rootClass">
     <div class="x-tabs__wrap">
-      <div
-        v-if="wrapScrollLeft > 0 && !isVertical"
-        class="x-tabs__navigation-prev x-tabs__navigation-prev--left"
-        @click="scrollToLeft"
-      >
+      <div v-if="showPrevArrow" class="x-tabs__navigation-prev x-tabs__navigation-prev--left" @click="scrollToEdge('start')">
         <i class="inline-flex items-center justify-center x-arrow x-arrow--left">
           <svg width="1em" height="1em" fill="currentColor">
             <use xlink:href="#comm_icon_fh"></use>
@@ -390,7 +380,7 @@ onBeforeUnmount(() => {
         </i>
       </div>
 
-      <div ref="wrapRef" :class="navClass" @scroll="updateScrollState">
+      <div ref="navRef" :class="navClass" @scroll="updateNavScrollState">
         <div
           v-for="pane in panes"
           :key="pane.uid"
@@ -403,25 +393,16 @@ onBeforeUnmount(() => {
             'x-tab--shrink': shrink,
             'x-tab--card': type === 'card'
           }"
-          @click="setActivePane(pane)"
+          @click="activatePane(pane)"
         >
           <slot-renderer v-if="pane.slots.title" :pane="pane" slot-name="title" />
           <span v-else>{{ getPaneTitle(pane) }}</span>
         </div>
 
-        <div
-          v-if="type === 'line'"
-          class="x-tabs__line"
-          :class="{ 'x-tabs__line--vertical': isVertical }"
-          :style="lineStyle"
-        ></div>
+        <div v-if="type === 'line'" class="x-tabs__line" :class="{ 'x-tabs__line--vertical': isVertical }" :style="indicatorStyle"></div>
       </div>
 
-      <div
-        v-if="wrapScrollMaxWidth - wrapScrollLeft > 0 && !isVertical"
-        class="x-tabs__navigation-next x-tabs__navigation-next--right"
-        @click="scrollToRight"
-      >
+      <div v-if="showNextArrow" class="x-tabs__navigation-next x-tabs__navigation-next--right" @click="scrollToEdge('end')">
         <i class="inline-flex items-center justify-center x-arrow x-arrow--right">
           <svg width="1em" height="1em" fill="currentColor">
             <use xlink:href="#comm_icon_fh"></use>
@@ -431,7 +412,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div ref="contentRef" class="x-tabs__content" :class="contentClass" :style="contentStyle">
-      <div v-if="animated" class="x-tabs__track" :class="contentTrackClass" :style="contentTrackStyle">
+      <div v-if="animated" class="x-tabs__track" :class="trackClass" :style="trackStyle">
         <div v-for="pane in panes" :key="pane.uid" :ref="element => setPanelRef(pane.uid, element)" class="x-tab__panel">
           <div class="x-tab__panel-inner">
             <slot-renderer :pane="pane" />
@@ -512,15 +493,9 @@ onBeforeUnmount(() => {
       display: none;
     }
 
-    &--line {
-      padding-bottom: 0;
-    }
-
     &--top,
     &--bottom {
       flex-direction: row;
-      overflow-x: auto;
-      overflow-y: hidden;
     }
 
     &--left,
@@ -550,6 +525,7 @@ onBeforeUnmount(() => {
     bottom: 0;
     left: 0;
     z-index: 1;
+    width: 0;
     height: 2px;
     background: var(--skin__primary);
     border-radius: 2px;
@@ -558,9 +534,9 @@ onBeforeUnmount(() => {
 
   &__line--vertical {
     top: 0;
+    right: 0;
     bottom: auto;
     left: auto;
-    right: 0;
     transition: transform 0.3s ease, height 0.3s ease;
   }
 
@@ -601,7 +577,7 @@ onBeforeUnmount(() => {
     overflow: hidden;
   }
 
-  &__content--height-transition {
+  &__content--motion {
     transition: height 0.3s ease;
     will-change: height;
   }
@@ -613,7 +589,7 @@ onBeforeUnmount(() => {
     align-items: flex-start;
   }
 
-  &__track--transition {
+  &__track--motion {
     transition: transform 0.3s ease;
   }
 
@@ -699,23 +675,19 @@ onBeforeUnmount(() => {
   font-size: 7px;
   line-height: 1;
 
-  &--left {
-    transform: rotate(0);
-  }
-
   &--right {
     transform: rotate(180deg);
   }
 }
 
 [dir="rtl"] .x-tabs__line {
-  left: auto;
   right: 0;
+  left: auto;
 }
 
 [dir="rtl"] .x-tabs__navigation-prev--left {
-  left: auto;
   right: 2px;
+  left: auto;
 }
 
 [dir="rtl"] .x-tabs__navigation-next--right {
