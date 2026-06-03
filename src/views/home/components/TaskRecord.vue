@@ -28,11 +28,11 @@ const dialogWidth = computed(() => (348 / 375) * windowWidth.value);
       </div>
       <div class="content-box">
         <x-tabs shrink animated>
-          <x-tab title="测试">
+          <x-tab title="已获得">
             <div class="h-[200px]">测试委屈</div>
           </x-tab>
-          <x-tab title="测试">测121</x-tab>
-          <x-tab title="测试">测12445</x-tab>
+          <x-tab title="已使用">测121</x-tab>
+          <x-tab title="已过期">测12445</x-tab>
         </x-tabs>
       </div>
     </div>

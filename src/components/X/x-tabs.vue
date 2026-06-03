@@ -47,6 +47,9 @@ const lineStyle = ref<Record<string, string>>({});
 const wrapScrollLeft = ref(0);
 const wrapScrollMaxWidth = ref(0);
 const tabRefs = new Map<number, HTMLElement>();
+const panelRefs = new Map<number, HTMLElement>();
+const contentHeight = ref<number | null>(null);
+let activePanelResizeObserver: ResizeObserver | null = null;
 
 const SlotRenderer = defineComponent({
   name: "XTabsSlotRenderer",
@@ -70,6 +73,13 @@ const activePane = computed(() => panes.value[activeIndex.value] ?? null);
 const contentTrackStyle = computed(() => ({
   transform: `translate3d(-${Math.max(activeIndex.value, 0) * 100}%, 0, 0)`
 }));
+const contentStyle = computed(() => {
+  if (!props.animated || contentHeight.value === null) return {};
+
+  return {
+    height: `${contentHeight.value}px`
+  };
+});
 
 const navClass = computed(() => [
   "x-tabs__nav",
@@ -90,6 +100,7 @@ function registerPane(pane: XTabPane) {
 function unregisterPane(uid: number) {
   panes.value = panes.value.filter(pane => pane.uid !== uid);
   tabRefs.delete(uid);
+  panelRefs.delete(uid);
 }
 
 provide(X_TABS_CONTEXT_KEY, {
@@ -103,6 +114,55 @@ function setTabRef(uid: number, element: Element | ComponentPublicInstance | nul
     return;
   }
   tabRefs.set(uid, element);
+}
+
+function setPanelRef(uid: number, element: Element | ComponentPublicInstance | null) {
+  if (!(element instanceof HTMLElement)) {
+    panelRefs.delete(uid);
+    return;
+  }
+  panelRefs.set(uid, element);
+}
+
+function stopObservingActivePanel() {
+  activePanelResizeObserver?.disconnect();
+  activePanelResizeObserver = null;
+}
+
+function updateContentHeight() {
+  if (!props.animated) {
+    contentHeight.value = null;
+    return;
+  }
+
+  const pane = activePane.value;
+  if (!pane) {
+    contentHeight.value = null;
+    return;
+  }
+
+  const panel = panelRefs.get(pane.uid);
+  if (!panel) return;
+
+  const nextHeight = Math.ceil(panel.getBoundingClientRect().height);
+  contentHeight.value = nextHeight;
+}
+
+function observeActivePanel() {
+  stopObservingActivePanel();
+
+  if (!props.animated || typeof ResizeObserver === "undefined") return;
+
+  const pane = activePane.value;
+  if (!pane) return;
+
+  const panel = panelRefs.get(pane.uid);
+  if (!panel) return;
+
+  activePanelResizeObserver = new ResizeObserver(() => {
+    updateContentHeight();
+  });
+  activePanelResizeObserver.observe(panel);
 }
 
 function updateScrollState() {
@@ -223,6 +283,8 @@ async function syncTabs() {
   updateScrollState();
   updateLine();
   scrollActiveIntoView();
+  updateContentHeight();
+  observeActivePanel();
 }
 
 watch(
@@ -241,6 +303,14 @@ watch(
   { flush: "post" }
 );
 
+watch(
+  () => props.animated,
+  () => {
+    syncTabs();
+  },
+  { flush: "post" }
+);
+
 onMounted(() => {
   syncTabs();
   window.addEventListener("resize", syncTabs);
@@ -248,6 +318,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", syncTabs);
+  stopObservingActivePanel();
 });
 </script>
 
@@ -306,16 +377,26 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="x-tabs__content" :class="{ 'x-tabs__content--animated': animated }">
+    <div class="x-tabs__content" :class="{ 'x-tabs__content--animated': animated }" :style="contentStyle">
       <div v-if="animated" class="x-tabs__track" :style="contentTrackStyle">
-        <div v-for="pane in panes" :key="pane.uid" class="x-tab__panel">
-          <slot-renderer :pane="pane" />
+        <div v-for="pane in panes" :key="pane.uid" :ref="element => setPanelRef(pane.uid, element)" class="x-tab__panel">
+          <div class="x-tab__panel-inner">
+            <slot-renderer :pane="pane" />
+          </div>
         </div>
       </div>
 
       <template v-else>
-        <div v-for="pane in panes" :key="pane.uid" v-show="isPaneActive(pane)" class="x-tab__panel">
-          <slot-renderer :pane="pane" />
+        <div
+          v-for="pane in panes"
+          :key="pane.uid"
+          :ref="element => setPanelRef(pane.uid, element)"
+          v-show="isPaneActive(pane)"
+          class="x-tab__panel"
+        >
+          <div class="x-tab__panel-inner">
+            <slot-renderer :pane="pane" />
+          </div>
         </div>
       </template>
     </div>
@@ -458,19 +539,22 @@ onBeforeUnmount(() => {
 
   &__content {
     position: relative;
-    flex: 1 1 0;
+    flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
   }
 
   &__content--animated {
     overflow: hidden;
+    transition: height 0.3s ease;
+    will-change: height;
   }
 
   &__track {
     position: relative;
     display: flex;
     width: 100%;
+    align-items: flex-start;
     transition: transform 0.3s ease;
     will-change: transform;
   }
@@ -545,6 +629,11 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   width: 100%;
   flex: 0 0 100%;
+  min-height: 0;
+}
+
+.x-tab__panel-inner {
+  width: 100%;
   min-height: 0;
 }
 
