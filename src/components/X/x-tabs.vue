@@ -43,13 +43,18 @@ const emit = defineEmits<{
 
 const panes = shallowRef<XTabPane[]>([]);
 const wrapRef = ref<HTMLElement>();
+const contentRef = ref<HTMLElement>();
 const lineStyle = ref<Record<string, string>>({});
 const wrapScrollLeft = ref(0);
 const wrapScrollMaxWidth = ref(0);
 const tabRefs = new Map<number, HTMLElement>();
 const panelRefs = new Map<number, HTMLElement>();
 const contentHeight = ref<number | null>(null);
+const contentWidth = ref(0);
+const contentHeightTransitionEnabled = ref(false);
+const contentTrackTransitionEnabled = ref(false);
 let activePanelResizeObserver: ResizeObserver | null = null;
+let contentResizeObserver: ResizeObserver | null = null;
 
 const SlotRenderer = defineComponent({
   name: "XTabsSlotRenderer",
@@ -71,7 +76,7 @@ const SlotRenderer = defineComponent({
 const activeIndex = computed(() => panes.value.findIndex(pane => pane.name.value === modelValue.value));
 const activePane = computed(() => panes.value[activeIndex.value] ?? null);
 const contentTrackStyle = computed(() => ({
-  transform: `translate3d(-${Math.max(activeIndex.value, 0) * 100}%, 0, 0)`
+  transform: `translateX(-${Math.max(activeIndex.value, 0) * contentWidth.value}px)`
 }));
 const contentStyle = computed(() => {
   if (!props.animated || contentHeight.value === null) return {};
@@ -80,6 +85,13 @@ const contentStyle = computed(() => {
     height: `${contentHeight.value}px`
   };
 });
+const contentClass = computed(() => ({
+  "x-tabs__content--animated": props.animated,
+  "x-tabs__content--height-transition": props.animated && contentHeightTransitionEnabled.value
+}));
+const contentTrackClass = computed(() => ({
+  "x-tabs__track--transition": props.animated && contentTrackTransitionEnabled.value
+}));
 
 const navClass = computed(() => [
   "x-tabs__nav",
@@ -129,15 +141,28 @@ function stopObservingActivePanel() {
   activePanelResizeObserver = null;
 }
 
+function stopObservingContent() {
+  contentResizeObserver?.disconnect();
+  contentResizeObserver = null;
+}
+
+function updateContentWidth() {
+  contentWidth.value = contentRef.value?.clientWidth ?? 0;
+}
+
 function updateContentHeight() {
   if (!props.animated) {
     contentHeight.value = null;
+    contentHeightTransitionEnabled.value = false;
+    contentTrackTransitionEnabled.value = false;
     return;
   }
 
   const pane = activePane.value;
   if (!pane) {
     contentHeight.value = null;
+    contentHeightTransitionEnabled.value = false;
+    contentTrackTransitionEnabled.value = false;
     return;
   }
 
@@ -163,6 +188,19 @@ function observeActivePanel() {
     updateContentHeight();
   });
   activePanelResizeObserver.observe(panel);
+}
+
+function observeContent() {
+  stopObservingContent();
+  updateContentWidth();
+
+  if (typeof ResizeObserver === "undefined" || !contentRef.value) return;
+
+  contentResizeObserver = new ResizeObserver(() => {
+    updateContentWidth();
+    updateContentHeight();
+  });
+  contentResizeObserver.observe(contentRef.value);
 }
 
 function updateScrollState() {
@@ -289,8 +327,10 @@ async function syncTabs() {
   updateScrollState();
   updateLine();
   scrollActiveIntoView();
+  updateContentWidth();
   updateContentHeight();
   observeActivePanel();
+  observeContent();
 }
 
 watch(
@@ -303,7 +343,9 @@ watch(
 
 watch(
   () => modelValue.value,
-  () => {
+  (value, previousValue) => {
+    contentHeightTransitionEnabled.value = previousValue !== undefined && previousValue !== value;
+    contentTrackTransitionEnabled.value = previousValue !== undefined && previousValue !== value;
     syncTabs();
   },
   { flush: "post" }
@@ -311,7 +353,11 @@ watch(
 
 watch(
   () => props.animated,
-  () => {
+  animated => {
+    if (!animated) {
+      contentHeightTransitionEnabled.value = false;
+      contentTrackTransitionEnabled.value = false;
+    }
     syncTabs();
   },
   { flush: "post" }
@@ -325,6 +371,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", syncTabs);
   stopObservingActivePanel();
+  stopObservingContent();
 });
 </script>
 
@@ -383,8 +430,8 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="x-tabs__content" :class="{ 'x-tabs__content--animated': animated }" :style="contentStyle">
-      <div v-if="animated" class="x-tabs__track" :style="contentTrackStyle">
+    <div ref="contentRef" class="x-tabs__content" :class="contentClass" :style="contentStyle">
+      <div v-if="animated" class="x-tabs__track" :class="contentTrackClass" :style="contentTrackStyle">
         <div v-for="pane in panes" :key="pane.uid" :ref="element => setPanelRef(pane.uid, element)" class="x-tab__panel">
           <div class="x-tab__panel-inner">
             <slot-renderer :pane="pane" />
@@ -552,6 +599,9 @@ onBeforeUnmount(() => {
 
   &__content--animated {
     overflow: hidden;
+  }
+
+  &__content--height-transition {
     transition: height 0.3s ease;
     will-change: height;
   }
@@ -561,8 +611,10 @@ onBeforeUnmount(() => {
     display: flex;
     width: 100%;
     align-items: flex-start;
+  }
+
+  &__track--transition {
     transition: transform 0.3s ease;
-    will-change: transform;
   }
 
   &__registry {
