@@ -5,18 +5,23 @@
     "api": [
       {
         "method": "post",
+        "path": "/vitalityRecordList",
+        "summary": "活跃度记录列表"
+      },
+      {
+        "method": "post",
         "path": "/taskConfigData",
-        "summary": "任务的配置信息"
+        "summary": "任务配置信息"
       },
       {
         "method": "post",
         "path": "/getTaskReward",
-        "summary": "获取任务奖励"
+        "summary": "领取任务奖励"
       },
       {
         "method": "post",
         "path": "/taskListData",
-        "summary": "任务信息列表"
+        "summary": "任务列表"
       },
       {
         "method": "post",

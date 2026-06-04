@@ -291,17 +291,22 @@ declare namespace Eps {
 
 	interface ActivityData {
 		/**
-			 * 任务的配置信息
+			 * 活跃度记录列表
+			 */
+			vitalityRecordList(data?: any): Promise<any>;
+
+		/**
+			 * 任务配置信息
 			 */
 			taskConfigData(data?: any): Promise<any>;
 
 		/**
-			 * 获取任务奖励
+			 * 领取任务奖励
 			 */
 			getTaskReward(data?: any): Promise<any>;
 
 		/**
-			 * 任务信息列表
+			 * 任务列表
 			 */
 			taskListData(data?: any): Promise<any>;
 
@@ -313,12 +318,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
+		permission: { vitalityRecordList: string; taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
+		_permission: { vitalityRecordList: boolean; taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
 
 		request: Service["request"];
 	}

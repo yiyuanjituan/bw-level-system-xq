@@ -1,19 +1,18 @@
 <script setup lang="ts">
 defineOptions({
   name: "ui-empty"
-})
+});
 interface Props {
-  text?: string
+  text?: string;
 }
 const props = withDefaults(defineProps<Props>(), {
-  text: '暂无游戏',
+  text: "暂无游戏"
 });
-
 </script>
 
 <template>
   <div class="empty-box">
-    <img src="/siteadmin/skin/lobby_asset/img_none_sj.avif" alt="" class="ui-empty-box">
+    <img src="/siteadmin/skin/lobby_asset/img_none_sj.avif" alt="" class="ui-empty-box" />
     <div class="empty-text">
       <slot name="text" :text="props.text">
         <span>{{ props.text }}</span>

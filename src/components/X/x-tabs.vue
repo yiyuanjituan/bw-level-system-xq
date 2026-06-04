@@ -25,13 +25,15 @@ interface Props {
   shrink?: boolean;
   animated?: boolean;
   position?: TabPosition;
+  autoHeight?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: "line",
   shrink: false,
   animated: false,
-  position: "top"
+  position: "top",
+  autoHeight: false
 });
 
 const modelValue = defineModel<XTabName>();
@@ -50,7 +52,8 @@ const navScrollMax = ref(0);
 const indicatorStyle = ref<Record<string, string>>({});
 const contentWidth = ref(0);
 const contentHeight = ref<number | null>(null);
-const contentMotionEnabled = ref(false);
+const trackMotionEnabled = ref(false);
+const heightMotionEnabled = ref(false);
 
 const tabRefs = new Map<number, HTMLElement>();
 const panelRefs = new Map<number, HTMLElement>();
@@ -95,15 +98,15 @@ const rootClass = computed(() => [`x-tabs--${props.type}`, "x-tabs__position", `
 
 const contentClass = computed(() => ({
   "x-tabs__content--animated": props.animated,
-  "x-tabs__content--motion": props.animated && contentMotionEnabled.value
+  "x-tabs__content--motion": props.animated && props.autoHeight && heightMotionEnabled.value
 }));
 
 const trackClass = computed(() => ({
-  "x-tabs__track--motion": props.animated && contentMotionEnabled.value
+  "x-tabs__track--motion": props.animated && trackMotionEnabled.value
 }));
 
 const contentStyle = computed(() => {
-  if (!props.animated || contentHeight.value === null) return {};
+  if (!props.animated || !props.autoHeight || contentHeight.value === null) return {};
 
   return {
     height: `${contentHeight.value}px`
@@ -159,7 +162,8 @@ function stopActivePanelObserver() {
 
 function resetAnimatedContent() {
   contentHeight.value = null;
-  contentMotionEnabled.value = false;
+  trackMotionEnabled.value = false;
+  heightMotionEnabled.value = false;
 }
 
 function ensureActivePane() {
@@ -254,27 +258,36 @@ function updateIndicator() {
 function updateContentMetrics() {
   contentWidth.value = contentRef.value?.clientWidth ?? 0;
 
+  if (!props.autoHeight) {
+    contentHeight.value = null;
+    heightMotionEnabled.value = false;
+    return;
+  }
+
   if (!props.animated) {
-    resetAnimatedContent();
+    contentHeight.value = null;
+    heightMotionEnabled.value = false;
     return;
   }
 
   const pane = activePane.value;
   if (!pane) {
-    resetAnimatedContent();
+    contentHeight.value = null;
+    heightMotionEnabled.value = false;
     return;
   }
 
   const panel = panelRefs.get(pane.uid);
   if (!panel) return;
 
-  contentHeight.value = Math.ceil(panel.getBoundingClientRect().height);
+  const panelContent = panel.firstElementChild instanceof HTMLElement ? panel.firstElementChild : panel;
+  contentHeight.value = Math.ceil(panelContent.offsetHeight);
 }
 
 function observeActivePanel() {
   stopActivePanelObserver();
 
-  if (!props.animated || typeof ResizeObserver === "undefined") return;
+  if (!props.animated || !props.autoHeight || typeof ResizeObserver === "undefined") return;
 
   const pane = activePane.value;
   if (!pane) return;
@@ -340,7 +353,9 @@ watch(
 watch(
   () => modelValue.value,
   (value, previousValue) => {
-    contentMotionEnabled.value = previousValue !== undefined && previousValue !== value;
+    const changed = previousValue !== undefined && previousValue !== value;
+    trackMotionEnabled.value = changed;
+    heightMotionEnabled.value = props.autoHeight && changed;
     void syncTabs();
   },
   { flush: "post" }
@@ -351,6 +366,18 @@ watch(
   animated => {
     if (!animated) {
       resetAnimatedContent();
+    }
+    void syncTabs();
+  },
+  { flush: "post" }
+);
+
+watch(
+  () => props.autoHeight,
+  autoHeight => {
+    if (!autoHeight) {
+      contentHeight.value = null;
+      heightMotionEnabled.value = false;
     }
     void syncTabs();
   },
