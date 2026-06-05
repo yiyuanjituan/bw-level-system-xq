@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import UiButton from "@/components/Common/Button.vue";
 </script>
 
@@ -20,9 +19,9 @@ import UiButton from "@/components/Common/Button.vue";
           <div class="cell-box" v-for="i in 20">
             <div class="cell-item">
               <div class="level-image">
-                <img src="/siteadmin/active/color1.avif" alt="." class="icon-img">
-                <img src="/siteadmin/active/img_dj1.avif" alt="." class="icon-img">
-                <div class="level-text" style="--vip-level-scale: 1;">
+                <img src="/siteadmin/active/color1.avif" alt="." class="icon-img" />
+                <img src="/siteadmin/active/img_dj1.avif" alt="." class="icon-img" />
+                <div class="level-text" style="--vip-level-scale: 1">
                   <span data-text="2">2</span>
                 </div>
               </div>
@@ -38,7 +37,7 @@ import UiButton from "@/components/Common/Button.vue";
               </div>
             </div>
             <div class="cell-item !w-[103px]">
-              <ui-button>一键领取</ui-button>
+              <x-button size="small">一键领取</x-button>
             </div>
           </div>
         </div>
@@ -82,7 +81,7 @@ import UiButton from "@/components/Common/Button.vue";
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background-color: #DFBE5B;
+        background-color: #dfbe5b;
         color: white;
       }
     }
@@ -162,7 +161,7 @@ import UiButton from "@/components/Common/Button.vue";
           width: 100%;
           .currency-amount {
             font-size: 11px;
-            color: #BCBCBC;
+            color: #bcbcbc;
             text-align: center;
           }
         }

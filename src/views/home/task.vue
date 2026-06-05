@@ -8,6 +8,7 @@ import { bus } from "@/utils/mitt";
 import dayjs from "dayjs";
 import useAuthStore from "@/store/modules/user";
 import TaskRecord from "./components/TaskRecord.vue";
+import TaskLimitTip from "@/views/home/components/TaskLimitTip.vue";
 
 const isLoading = ref(false);
 const totalConfig = ref<any>({});
@@ -16,14 +17,17 @@ const activeTabName = ref<"101" | "102" | "103">();
 const taskList = ref<any>([]);
 const auth = useAuthStore();
 const taskRecordRef = ref();
+const taskLimitTipRef = ref();
 
 function handleLoading() {
   if (isLoading.value) return;
   isLoading.value = true;
-  init().then(() => {
-    isLoading.value = false;
-    showCustomToast({ message: "刷新成功", type: "success" });
-  });
+  init()
+    .finally(() => (isLoading.value = false))
+    .then(() => {
+      isLoading.value = false;
+      showCustomToast({ message: "刷新成功", type: "success" });
+    });
 }
 
 function tapDetailDialog() {
@@ -61,6 +65,9 @@ function getIsShow(type: any, allowType: any[]) {
 }
 
 function handleTapGo(type: any) {
+  if (!auth.token) {
+    return router.push("/home/login");
+  }
   if (type == 0) {
     router.push("/home/register");
   } else if (type == 1) {
@@ -96,6 +103,20 @@ function handleGetReward(record: any) {
       init();
       auth.updateInfo();
     });
+}
+
+function seeMore(record) {
+  let titleText = "";
+  if (record.taskDetailType == 8 || record.taskDetailType == 10) {
+    titleText = "仅限游戏";
+  }
+  if (record.taskDetailType == 9) {
+    titleText = "仅限充值";
+  }
+  taskLimitTipRef.value.open({
+    title: titleText,
+    content: record.desc
+  });
 }
 
 function handleChangeTaskData(type: any) {
@@ -218,7 +239,7 @@ onMounted(() => init());
       </div>
       <div class="task-extra-button">
         <div class="refresh-box" @click="handleLoading">
-          <svg-icon name="comm_icon_retry" class-name="" :class="{ loading: isLoading }" />
+          <svg-icon name="comm_icon_retry" :class-name="{ loading: isLoading }" />
           <span class="event-refresh-btn-text">刷新</span>
         </div>
       </div>
@@ -254,9 +275,15 @@ onMounted(() => init());
                 <div class="description-primary">{{ item.name }}</div>
                 <div class="more-limit" v-if="item.desc">
                   <span class="text">
-                    <span class="text-inner">{{ item.desc }}</span>
+                    <span class="text-inner">仅限：{{ item.desc }}</span>
                   </span>
-                  <span class="btn-more">详情</span>
+                  <span
+                    class="btn-more"
+                    v-if="(item.limit_ids && item.limit_ids.length > 3) || (item.desc && item.desc.length > 16)"
+                    @click="seeMore(item)"
+                  >
+                    更多
+                  </span>
                 </div>
               </div>
             </div>
@@ -315,6 +342,7 @@ onMounted(() => init());
       </div>
     </div>
     <task-record ref="taskRecordRef" />
+    <task-limit-tip ref="taskLimitTipRef" />
   </div>
 </template>
 
@@ -617,6 +645,8 @@ onMounted(() => init());
               display: flex;
               align-items: center;
               font-size: 12px;
+              flex: 1;
+              overflow: hidden;
               .text {
                 color: var(--skin__neutral_2);
                 overflow: hidden;

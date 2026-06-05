@@ -699,6 +699,11 @@
     "api": [
       {
         "method": "get",
+        "path": "/clearVitalityByNow",
+        "summary": "定时清理过期的活跃度"
+      },
+      {
+        "method": "get",
         "path": "/pullXhData",
         "summary": "抓取星汇的游戏记录"
       }

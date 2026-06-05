@@ -45,8 +45,8 @@ function jumpToRecord() {
             </div>
           </div>
           <div class="receive-all">
-            <x-button class="receive-btn mb-[10px] !bg-[#999]">一键领取</x-button>
-            <x-button class="receive-btn !bg-[#DFBE5B]" @click="jumpToRecord">领取记录</x-button>
+            <x-button size="small" type="success">一键领取</x-button>
+            <x-button size="small" type="primary" class="ml-[8px]" @click="jumpToRecord">领取记录</x-button>
           </div>
         </div>
       </div>

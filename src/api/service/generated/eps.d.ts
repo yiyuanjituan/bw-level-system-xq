@@ -740,6 +740,11 @@ declare namespace Eps {
 
 	interface OpenV1Task {
 		/**
+			 * 定时清理过期的活跃度
+			 */
+			clearVitalityByNow(data?: any): Promise<any>;
+
+		/**
 			 * 抓取星汇的游戏记录
 			 */
 			pullXhData(data?: any): Promise<any>;
@@ -747,12 +752,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { pullXhData: string; };
+		permission: { clearVitalityByNow: string; pullXhData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { pullXhData: boolean; };
+		_permission: { clearVitalityByNow: boolean; pullXhData: boolean; };
 
 		request: Service["request"];
 	}
