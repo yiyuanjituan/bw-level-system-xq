@@ -202,6 +202,9 @@ const isExpanded = ref(false);
       display: flex;
       position: relative;
       border-bottom: var(--lobby__px) solid var(--skin__border);
+      &:last-child {
+        border-bottom: none !important;
+      }
       .item-current {
         position: absolute;
         top: 0;
