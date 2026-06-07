@@ -21,7 +21,6 @@ function handleLoading() {
 function jumpToRecord() {
   router.push("/home/records");
 }
-
 </script>
 
 <template>
@@ -68,10 +67,10 @@ function jumpToRecord() {
         <div class="tab-list flex-1 overflow-auto">
           <x-tabs line-width="50px" line-height="3px">
             <x-tab title="VIP奖励">
-              <level-list />
+              <!--              <level-list />-->
             </x-tab>
             <x-tab title="规则说明">
-              <vip-level-rule />
+              <!--              <vip-level-rule />-->
             </x-tab>
           </x-tabs>
         </div>
@@ -83,6 +82,19 @@ function jumpToRecord() {
 <style scoped lang="less">
 .bg2 {
   background: var(--skin__bg_2);
+  .tab-list {
+    display: flex;
+    flex-direction: column;
+    :deep(.x-tabs) {
+      flex: 1;
+    }
+    :deep(.x-tabs__content) {
+      height: 100%;
+    }
+    :deep(.x-tab__panel) {
+      height: 100%;
+    }
+  }
 }
 .vip-container {
   background: var(--skin__bg_1);
