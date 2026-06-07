@@ -57,7 +57,9 @@ const tabBar = ref<any[]>([
   }
 ]);
 
-watch(() => route.path, path => {
+watch(
+  () => route.path,
+  path => {
     const newRoute = flattenRoutes(routes);
     const info = newRoute.find(v => v.path === path);
     active.value = getTabBarOrder(info.meta);
@@ -66,8 +68,8 @@ watch(() => route.path, path => {
 );
 
 function handleClick(item: any) {
-  if (item.path === '/recharge') {
-    return bus.emit('showRecharge')
+  if (item.path === "/recharge") {
+    return bus.emit("showRecharge");
   }
   const nextIndex = tabBar.value.findIndex(v => v.path === item.path);
   const nowIndex = tabBar.value.findIndex(v => v.path === route.path);
@@ -79,8 +81,7 @@ function handleClick(item: any) {
   const newNow = newRoute.find(v => v.path === route.path);
   if (newNext?.meta?.isTabBar && newNow?.meta?.isTabBar) {
     animation = "page-slide-backward";
-    if (getTabBarOrder(newNext.meta) > getTabBarOrder(newNow.meta))
-      animation = "page-slide-forward";
+    if (getTabBarOrder(newNext.meta) > getTabBarOrder(newNow.meta)) animation = "page-slide-forward";
   }
   // 路由排序
   setTabBarName(animation);
@@ -94,60 +95,28 @@ function handleClick(item: any) {
 
 <template>
   <div class="tab-list">
-    <div
-      v-for="(item, index) in tabBar"
-      :key="index"
-      class="ui-tab-bar-item"
-      @click="handleClick(item)"
-    >
+    <div v-for="(item, index) in tabBar" :key="index" class="ui-tab-bar-item" @click="handleClick(item)">
       <div class="item">
         <div class="inline-block relative">
           <i v-show="active !== index">
-            <i
-              class="text-[24px] text-[#68707B] inline-flex h-[25px] w-auto items-center justify-center absolute"
-            >
-              <svg
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                class=""
-                style="width: inherit; height: inherit"
-              >
+            <i class="text-[24px] text-[#68707B] inline-flex h-[25px] w-auto items-center justify-center absolute">
+              <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
                 <use :xlink:href="`#${item.light_prefix}`" />
               </svg>
             </i>
-            <i
-              class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center"
-            >
-              <svg
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                class=""
-                style="width: inherit; height: inherit"
-              >
+            <i class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center">
+              <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
                 <use :xlink:href="`#${item.default_icon}`" />
               </svg>
             </i>
           </i>
-          <i
-            v-show="active === index"
-            class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center"
-          >
-            <svg
-              width="1em"
-              height="1em"
-              fill="currentColor"
-              class=""
-              style="width: inherit; height: inherit"
-            >
+          <i v-show="active === index" class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center">
+            <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
               <use :xlink:href="`#${item.active_icon}`" />
             </svg>
           </i>
         </div>
-        <span class="text" :class="{ '!text-[#F0C059]': active === index }">{{
-          item.name
-        }}</span>
+        <span class="text" :class="{ '!text-[#F0C059]': active === index }">{{ item.name }}</span>
       </div>
     </div>
   </div>

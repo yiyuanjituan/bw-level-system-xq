@@ -1245,14 +1245,19 @@ declare namespace Eps {
 			thirdWallet(data?: any): Promise<any>;
 
 		/**
+			 * VIP 配置列表
+			 */
+			vipList(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; thirdWallet: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; thirdWallet: string; vipList: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; thirdWallet: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; thirdWallet: boolean; vipList: boolean; };
 
 		request: Service["request"];
 	}

@@ -663,6 +663,11 @@
         "method": "post",
         "path": "/thirdWallet",
         "summary": "三方钱包余额"
+      },
+      {
+        "method": "post",
+        "path": "/vipList",
+        "summary": "VIP 配置列表"
       }
     ]
   },

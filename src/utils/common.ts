@@ -163,8 +163,11 @@ export function toNumber(value: unknown) {
   return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
-export function formatMoney(value: number | string) {
-  return toNumber(value).toFixed(2);
+export function formatMoney(value: number | string, keepDecimals = true) {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: keepDecimals ? 2 : 0,
+    maximumFractionDigits: keepDecimals ? 2 : 0
+  }).format(toNumber(value));
 }
 
 export const getYuEBaoRichText = (params: any = {}) => {

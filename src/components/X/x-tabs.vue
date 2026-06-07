@@ -26,6 +26,8 @@ interface Props {
   animated?: boolean;
   position?: TabPosition;
   autoHeight?: boolean;
+  lineWidth?: number | string;
+  lineHeight?: number | string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -223,6 +225,27 @@ function scrollActiveIntoView() {
   });
 }
 
+const VIEWPORT_BASE_WIDTH = 375;
+const SIZE_PATTERN = /^(\d+(?:\.\d+)?)(px|rem|vw)?$/;
+
+function resolveSize(value?: number | string) {
+  const normalizedValue = typeof value === "number" ? `${value}px` : value?.trim();
+  const match = normalizedValue?.match(SIZE_PATTERN);
+  if (!match) return null;
+
+  const size = Number(match[1]);
+  if (!Number.isFinite(size) || size < 0) return null;
+
+  switch (match[2]) {
+    case "rem":
+      return size * Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+    case "vw":
+      return (size / 100) * window.innerWidth;
+    default:
+      return (size / VIEWPORT_BASE_WIDTH) * window.innerWidth;
+  }
+}
+
 function updateIndicator() {
   const pane = activePane.value;
   if (props.type !== "line" || !pane) {
@@ -239,18 +262,24 @@ function updateIndicator() {
   const style = window.getComputedStyle(tab);
   const paddingStart = Number.parseFloat(isVertical.value ? style.paddingTop : style.paddingLeft) || 0;
   const paddingEnd = Number.parseFloat(isVertical.value ? style.paddingBottom : style.paddingRight) || 0;
-  const size = Math.max((isVertical.value ? tab.offsetHeight : tab.offsetWidth) - paddingStart - paddingEnd, 0);
-  const offset = (isVertical.value ? tab.offsetTop : tab.offsetLeft) + paddingStart;
+  const availableSize = Math.max((isVertical.value ? tab.offsetHeight : tab.offsetWidth) - paddingStart - paddingEnd, 0);
+  const configuredLineWidth = resolveSize(props.lineWidth);
+  const configuredLineHeight = resolveSize(props.lineHeight) ?? 2;
+  const hasFixedLineWidth = configuredLineWidth !== null;
+  const size = hasFixedLineWidth ? configuredLineWidth : availableSize;
+  const offset = (isVertical.value ? tab.offsetTop : tab.offsetLeft)
+    + paddingStart
+    + (hasFixedLineWidth ? (availableSize - size) / 2 : 0);
 
   indicatorStyle.value = isVertical.value
     ? {
-        width: "2px",
+        width: `${configuredLineHeight}px`,
         height: `${size}px`,
         transform: `translate3d(0, ${offset}px, 0)`
       }
     : {
         width: `${size}px`,
-        height: "2px",
+        height: `${configuredLineHeight}px`,
         transform: `translate3d(${offset}px, 0, 0)`
       };
 }
