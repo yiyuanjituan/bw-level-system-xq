@@ -172,7 +172,6 @@ const isExpanded = ref(false);
     border-radius: 7px;
     border: var(--lobby__px) solid var(--skin__border);
     overflow: auto;
-    height: 0;
     .level-header {
       position: sticky;
       top: 0;
