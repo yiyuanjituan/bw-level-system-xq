@@ -18,6 +18,9 @@
 
 <style scoped lang="less">
 .vip-rule {
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   .title {
     height: 45px;
     line-height: 45px;

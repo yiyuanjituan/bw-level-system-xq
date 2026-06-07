@@ -1,27 +1,4 @@
-<script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { showCustomToast } from "@/hooks/useCommon";
-import UiButton from "@/components/Common/Button.vue";
-import UpLevelGift from "@/components/Vip/UpLevelGift.vue";
-import UpLevelWeek from "@/components/Vip/UpLevelWeek.vue";
-import router from "@/router";
-import LevelList from "@/components/Vip/LevelList.vue";
-import { service } from "@/api/service";
-
-const isLoading = ref(false);
-
-function handleLoading() {
-  isLoading.value = true;
-  setTimeout(() => {
-    isLoading.value = false;
-    showCustomToast({ message: "刷新成功", type: "success" });
-  }, 500);
-}
-
-function jumpToRecord() {
-  router.push("/home/records");
-}
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="vip-container">
