@@ -67,10 +67,14 @@ function jumpToRecord() {
         <div class="tab-list flex-1 overflow-auto">
           <x-tabs line-width="50px" line-height="3px">
             <x-tab title="VIP奖励">
-              <!--              <level-list />-->
+              <div class="absolute top-0 bottom-0 overflow-auto w-full">
+                <level-list />
+              </div>
             </x-tab>
             <x-tab title="规则说明">
-              <!--              <vip-level-rule />-->
+              <div class="absolute top-0 bottom-0 overflow-auto left-0 w-full">
+                <vip-level-rule />
+              </div>
             </x-tab>
           </x-tabs>
         </div>
@@ -91,8 +95,10 @@ function jumpToRecord() {
     :deep(.x-tabs__content) {
       height: 100%;
     }
-    :deep(.x-tab__panel) {
+    :deep(.x-tab__panel),
+    :deep(.x-tab__panel-inner) {
       height: 100%;
+      position: relative;
     }
   }
 }

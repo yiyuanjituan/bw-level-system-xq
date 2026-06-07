@@ -38,7 +38,7 @@ const isExpanded = ref(false);
         class="list-item"
         :class="{ expanded: item.isExpanded }"
         @click="item.isExpanded = !item.isExpanded"
-        v-for="(item, index) in vipListData"
+        v-for="(item, index) in [...vipListData, ...vipListData, ...vipListData]"
         :key="index"
       >
         <span class="item-current" v-if="index == 0">当前</span>
@@ -137,6 +137,10 @@ const isExpanded = ref(false);
 
 <style scoped lang="less">
 .level-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
   .receive-reward {
     flex-shrink: 0;
     padding: 10px 10px 0;
