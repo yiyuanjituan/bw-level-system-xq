@@ -35,7 +35,11 @@ onMounted(() => {
         <span class="amount">{{ formatMoney(props.info.awaitGetNum) }}</span>
         <div class="refresh">
           <div class="loadingIcon" @click="onRefresh">
-            <svg-icon name="comm_icon_retry" class-name="main-text text-[10px]" />
+            <svg-icon
+              name="comm_icon_retry"
+              class-name="main-text text-[10px]"
+              :class="{ 'loading-icon-spin': isLoading }"
+            />
           </div>
         </div>
       </div>
@@ -184,15 +188,20 @@ onMounted(() => {
       align-items: center;
       .text {
         color: var(--skin__lead);
+        line-height: 1;
       }
       .amount {
         color: var(--skin__accent_3);
         font-weight: 600;
         margin-inline: 4px;
+        line-height: 1;
       }
       &:last-of-type .amount {
         border-bottom: var(--lobby__px) solid currentColor;
       }
+    }
+    .loading-icon-spin {
+      animation: loading-icon-spin 0.8s linear infinite;
     }
   }
   .main-box {
@@ -451,6 +460,15 @@ onMounted(() => {
         transform: rotate(90deg) !important;
       }
     }
+  }
+}
+
+@keyframes loading-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

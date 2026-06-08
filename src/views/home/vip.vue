@@ -3,6 +3,7 @@ import { bus } from "@/utils/mitt";
 import { onMounted, ref } from "vue";
 import { service } from "@/api/service";
 import { formatMoney } from "@/utils/common";
+import { showCustomToast } from "@/hooks/useCommon";
 
 const vipInfo = ref<any>({});
 
@@ -10,11 +11,20 @@ function handleToUpLevel() {
   bus.emit("switchTab", "/index");
 }
 
-onMounted(() => {
+function handleRefreshInfo() {
+  init();
+  setTimeout(() => {
+    showCustomToast({ type: "success", message: "刷新成功" });
+  }, 1000);
+}
+
+function init() {
   service.v1.user.getVipInfo().then(res => {
     vipInfo.value = res;
   });
-});
+}
+
+onMounted(() => init());
 </script>
 
 <template>
@@ -66,7 +76,7 @@ onMounted(() => {
           <x-tabs line-width="50px" line-height="3px">
             <x-tab title="VIP奖励">
               <div class="absolute top-0 bottom-0 overflow-auto w-full">
-                <level-list :info="vipInfo" />
+                <level-list :info="vipInfo" @refresh="handleRefreshInfo" />
               </div>
             </x-tab>
             <x-tab title="规则说明">
