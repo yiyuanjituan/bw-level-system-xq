@@ -15,33 +15,13 @@ module.exports = {
     sourceType: "module"
   },
   rules: {
+    "@typescript-eslint/no-explicit-any": "off",
     "no-console": process.env.NODE_ENV === "production" ? "error" : "warn",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "warn",
-    "vue/max-attributes-per-line": [
-      "error",
-      {
-        singleline: {
-          max: 10
-        },
-        multiline: {
-          max: 1
-        }
-      }
-    ],
-    "vue/first-attribute-linebreak": [
-      "error",
-      {
-        singleline: "beside",
-        multiline: "below"
-      }
-    ],
-    "vue/html-closing-bracket-newline": [
-      "error",
-      {
-        singleline: "never",
-        multiline: "always"
-      }
-    ]
+    "prettier/prettier": "off",
+    "vue/max-attributes-per-line": "off",
+    "vue/first-attribute-linebreak": "off",
+    "vue/html-closing-bracket-newline": "off"
   },
   ignorePatterns: [".github/**"]
 };

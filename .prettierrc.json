@@ -1,9 +1,10 @@
 {
   "bracketSpacing": true,
-  "singleQuote": false,
+  "singleQuote": true,
   "arrowParens": "avoid",
   "printWidth": 120,
   "singleAttributePerLine": false,
+  "endOfLine": "auto",
   "trailingComma": "none",
   "overrides": [
     {

@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { service } from "@/api/service";
-import { useRefs } from "@/hooks/useRefs";
-import { formatMoney } from "@/utils/common";
-import { scrollToTarget } from "@/utils/scrollToTarget";
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { service } from '@/api/service';
+import { useRefs } from '@/hooks/useRefs';
+import { formatMoney } from '@/utils/common';
+import { scrollToTarget } from '@/utils/scrollToTarget';
+import { bus } from '@/utils/mitt';
 
 const vipListData = ref<any[]>([]);
 const userLevel = ref<any>(0);
 const mainBoxRef = ref<HTMLElement | null>(null);
 const { refs, setRefs } = useRefs();
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 let cancelAutoScroll = () => {};
 
 interface Props {
@@ -18,11 +22,11 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   info: () => ({})
 });
-const emits = defineEmits(["refresh"]);
+const emits = defineEmits(['refresh']);
 const isLoading = ref(false);
 
 function onRefresh() {
-  emits("refresh");
+  emits('refresh');
   isLoading.value = true;
   setTimeout(() => (isLoading.value = false), 1200);
 }
@@ -37,16 +41,31 @@ function scrollToCurrentLevel() {
     duration: 1000,
     delay: 0,
     offset: container => {
-      const header = container.querySelector(".level-header") as HTMLElement | null;
+      const header = container.querySelector('.level-header') as HTMLElement | null;
       return header?.offsetHeight ?? 0;
     }
   });
+}
+
+function jumpToGame() {
+  bus.emit('switchTab', '/index');
+}
+
+function handleGetUpLevelReward(record: any) {
+  record.isLoading = true;
 }
 
 onMounted(() => {
   service.v1.user.vipList().then(res => {
     vipListData.value = res.list;
     userLevel.value = res.level;
+    vipListData.value = vipListData.value.map(v => {
+      if (v.level == userLevel.value) {
+        v.isExpanded = true;
+      }
+      return v;
+    });
+
     scrollToCurrentLevel();
   });
 });
@@ -81,7 +100,6 @@ onBeforeUnmount(() => {
       <div
         class="list-item"
         :class="{ expanded: item.isExpanded }"
-        @click="item.isExpanded = !item.isExpanded"
         v-for="(item, index) in vipListData"
         :key="index"
         :ref="setRefs(getLevelRefName(item.level))"
@@ -109,9 +127,9 @@ onBeforeUnmount(() => {
           <span class="vip-name">VIP {{ item.level }}</span>
         </div>
         <div class="item-content">
-          <div class="summary">
+          <div class="summary" @click="item.isExpanded = !item.isExpanded">
             <div class="bonus-info">
-              {{ item.isExpanded ? "最低可获得奖金" : "总奖金" }}
+              {{ item.isExpanded ? '最低可获得奖金' : '总奖金' }}
               <span class="bonus-amount">
                 {{ formatMoney(Number(item.upAmount) + Number(item.weekAmount) + Number(item.monthAmount) + Number(item.dayAmount)) }}
               </span>
@@ -130,7 +148,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
               <x-button size="small" class="btn" type="success" v-if="item.isCanDayAmount">领取</x-button>
-              <x-button size="small" class="btn" v-if="!item.isCanDayAmount">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanDayAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.weekAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_zfl_1.avif" class="reward-icon" />
@@ -143,7 +161,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
               <x-button size="small" class="btn" type="success" v-if="item.isCanWeekAmount">领取</x-button>
-              <x-button size="small" class="btn" v-if="!item.isCanWeekAmount">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanWeekAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.monthAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_yfl_1.avif" class="reward-icon" />
@@ -156,7 +174,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
               <x-button size="small" class="btn" type="success" v-if="item.isCanMonthAmount">领取</x-button>
-              <x-button size="small" class="btn" v-if="!item.isCanMonthAmount">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanMonthAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.upAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_jjjj_1.avif" class="reward-icon" />
@@ -172,8 +190,17 @@ onBeforeUnmount(() => {
                 <x-button size="small" class="btn" :disabled="true">已领取</x-button>
               </template>
               <template v-if="!item.isReceivedUpLevelAmount">
-                <x-button size="small" class="btn" type="success" v-if="item.isCanGetUpLevelAmount">领取</x-button>
-                <x-button size="small" class="btn" v-if="!item.isCanGetUpLevelAmount">去游戏</x-button>
+                <x-button
+                  size="small"
+                  class="btn"
+                  type="success"
+                  :loading="item.isLoading"
+                  v-if="item.isCanGetUpLevelAmount"
+                  @click="handleGetUpLevelReward(item)"
+                >
+                  领取
+                </x-button>
+                <x-button size="small" class="btn" v-if="!item.isCanGetUpLevelAmount" @click="jumpToGame">去游戏</x-button>
               </template>
             </div>
             <div class="reward-item items-start">
@@ -182,13 +209,13 @@ onBeforeUnmount(() => {
                 <div class="label"><span>VIP特权</span></div>
                 <div class="progress texts">
                   <div class="">
-                    日提现总额<b>{{ Number(item.dayWithdrawTotal) == -1 ? "不限制" : formatMoney(item.dayWithdrawTotal) }}</b>
+                    日提现总额<b>{{ Number(item.dayWithdrawTotal) == -1 ? '不限制' : formatMoney(item.dayWithdrawTotal) }}</b>
                   </div>
                   <div class="">
-                    日提现次数<b>{{ Number(item.dayWithdrawNum) == -1 ? "不限制" : formatMoney(item.dayWithdrawNum, false) }}</b>
+                    日提现次数<b>{{ Number(item.dayWithdrawNum) == -1 ? '不限制' : formatMoney(item.dayWithdrawNum, false) }}</b>
                   </div>
                   <div class="">
-                    日免手续费笔数<b>{{ Number(item.dayNoFeeNum) == -1 ? "不限制" : `${formatMoney(item.dayNoFeeNum, false)}笔` }}</b>
+                    日免手续费笔数<b>{{ Number(item.dayNoFeeNum) == -1 ? '不限制' : `${formatMoney(item.dayNoFeeNum, false)}笔` }}</b>
                   </div>
                 </div>
               </div>
