@@ -2,7 +2,9 @@
 import { onMounted, ref } from "vue";
 import { service } from "@/api/service";
 import { formatMoney } from "@/utils/common";
+
 const vipListData = ref<any[]>([]);
+const userLevel = ref<any>(0);
 
 interface Props {
   info?: any;
@@ -23,6 +25,7 @@ function onRefresh() {
 onMounted(() => {
   service.v1.user.vipList().then(res => {
     vipListData.value = res.list;
+    userLevel.value = res.level;
   });
 });
 </script>
@@ -56,7 +59,7 @@ onMounted(() => {
         v-for="(item, index) in vipListData"
         :key="index"
       >
-        <span class="item-current" v-if="index == 0">当前</span>
+        <span class="item-current" v-if="userLevel == item.level">当前</span>
         <div class="vip-info">
           <div class="level-image">
             <img
@@ -99,7 +102,8 @@ onMounted(() => {
                   每日投注<span class="text">{{ formatMoney(item.dayFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn">已领取</x-button>
+              <x-button size="small" class="btn" type="success" v-if="item.isCanDayAmount">领取</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanDayAmount">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.weekAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_zfl_1.avif" class="reward-icon" />
@@ -111,7 +115,8 @@ onMounted(() => {
                   每周投注<span class="text">{{ formatMoney(item.weekFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn">已领取</x-button>
+              <x-button size="small" class="btn" type="success" v-if="item.isCanWeekAmount">领取</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanWeekAmount">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.monthAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_yfl_1.avif" class="reward-icon" />
@@ -123,7 +128,8 @@ onMounted(() => {
                   每月投注<span class="text">{{ formatMoney(item.monthFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn">已领取</x-button>
+              <x-button size="small" class="btn" type="success" v-if="item.isCanMonthAmount">领取</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanMonthAmount">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.upAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_jjjj_1.avif" class="reward-icon" />
@@ -135,7 +141,13 @@ onMounted(() => {
                   晋级再投注<span class="text">{{ formatMoney(item.upFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn">已领取</x-button>
+              <template v-if="item.isReceivedUpLevelAmount">
+                <x-button size="small" class="btn" :disabled="true">已领取</x-button>
+              </template>
+              <template v-if="!item.isReceivedUpLevelAmount">
+                <x-button size="small" class="btn" type="success" v-if="item.isCanGetUpLevelAmount">领取</x-button>
+                <x-button size="small" class="btn" v-if="!item.isCanGetUpLevelAmount">去游戏</x-button>
+              </template>
             </div>
             <div class="reward-item items-start">
               <img alt="" src="@/assets/common/icon_vip_tq_1.avif" class="reward-icon" />
