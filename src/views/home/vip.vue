@@ -1,4 +1,21 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { bus } from "@/utils/mitt";
+import { onMounted, ref } from "vue";
+import { service } from "@/api/service";
+import { formatMoney } from "@/utils/common";
+
+const vipInfo = ref<any>({});
+
+function handleToUpLevel() {
+  bus.emit("switchTab", "/index");
+}
+
+onMounted(() => {
+  service.v1.user.getVipInfo().then(res => {
+    vipInfo.value = res;
+  });
+});
+</script>
 
 <template>
   <div class="vip-container">
@@ -9,19 +26,23 @@
         <div class="vip-info-wrapper">
           <div class="vip-info">
             <div class="vip-level">
-              <span class="vip-level-x">VIP 1</span>
-              <span class="vip-level-up"> 去升级<svg-icon name="arrow-back" class-name="ml-[1px] text-[7px] rotate-[180deg]" /> </span>
+              <span class="vip-level-x">VIP {{ vipInfo.level }}</span>
+              <span class="vip-level-up" @click="handleToUpLevel">
+                去升级<svg-icon name="arrow-back" class-name="ml-[1px] text-[7px] rotate-[180deg]" />
+              </span>
             </div>
             <div class="item-progress">
               <div class="line">
-                <div class="fill-box" style="width: 45%">
-                  <span class="percent">45%</span>
+                <div class="fill-box" :style="{ width: `${vipInfo.progress}%` }">
+                  <span class="percent">{{ vipInfo.progress }}%</span>
                 </div>
               </div>
-              <div class="next">VIP 2</div>
+              <div class="next">VIP {{ vipInfo.nextLevel }}</div>
             </div>
             <div class="item-text">
-              <div class="text">还需投注<b>5,403.94</b></div>
+              <div class="text">
+                还需投注<b>{{ formatMoney(vipInfo.upNeedFlow) }}</b>
+              </div>
             </div>
           </div>
           <div class="level-box">
@@ -45,7 +66,7 @@
           <x-tabs line-width="50px" line-height="3px">
             <x-tab title="VIP奖励">
               <div class="absolute top-0 bottom-0 overflow-auto w-full">
-                <level-list />
+                <level-list :info="vipInfo" />
               </div>
             </x-tab>
             <x-tab title="规则说明">

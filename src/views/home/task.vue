@@ -85,11 +85,11 @@ function handleTapGo(type: any) {
   } else if (type == 7) {
     showCustomToast({ type: "success", message: "修改社交信息" });
   } else if (type == 8) {
-    router.replace("/");
+    bus.emit("switchTab", "/index");
   } else if (type == 9) {
     bus.emit("showRecharge");
   } else if (type == 10) {
-    router.replace("/");
+    bus.emit("switchTab", "/index");
   }
 }
 

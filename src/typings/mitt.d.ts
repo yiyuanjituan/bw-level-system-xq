@@ -1,21 +1,22 @@
 import { DialogOptions, ToastOptions } from "vant";
 
-export type ToastType = 'text' | 'loading' | 'success' | 'fail' | 'html' | 'warning';
+export type ToastType = "text" | "loading" | "success" | "fail" | "html" | "warning";
 
-export interface IToastOptions extends Omit<ToastOptions, 'type'> {
+export interface IToastOptions extends Omit<ToastOptions, "type"> {
   type?: ToastType;
 }
 
 export type MittEvent = {
-  showDialog: DialogOptions
-  showToast: String | IToastOptions
-  showRecharge: null
-  showRechargeDetail: any
-  'error': Error
-  'logout': null
-  'findUs': null
-  'moneyIn': null
-}
+  showDialog: DialogOptions;
+  showToast: string | IToastOptions;
+  showRecharge: null;
+  showRechargeDetail: any;
+  error: Error;
+  logout: null;
+  findUs: null;
+  moneyIn: null;
+  switchTab: string;
+};
 
 export interface DialogPromiseHandlers {
   then: (onFulfilled?: (value: boolean) => void, onRejected?: (reason: any) => void) => DialogPromiseHandlers;

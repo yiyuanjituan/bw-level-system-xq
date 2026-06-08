@@ -745,6 +745,11 @@ declare namespace Eps {
 			clearVitalityByNow(data?: any): Promise<any>;
 
 		/**
+			 * 创建VIP天/周/月信息
+			 */
+			generateVipGift(data?: any): Promise<any>;
+
+		/**
 			 * 抓取星汇的游戏记录
 			 */
 			pullXhData(data?: any): Promise<any>;
@@ -752,12 +757,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { clearVitalityByNow: string; pullXhData: string; };
+		permission: { clearVitalityByNow: string; generateVipGift: string; pullXhData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { clearVitalityByNow: boolean; pullXhData: boolean; };
+		_permission: { clearVitalityByNow: boolean; generateVipGift: boolean; pullXhData: boolean; };
 
 		request: Service["request"];
 	}
@@ -1245,6 +1250,11 @@ declare namespace Eps {
 			thirdWallet(data?: any): Promise<any>;
 
 		/**
+			 * 获取用户的VIP信息
+			 */
+			getVipInfo(data?: any): Promise<any>;
+
+		/**
 			 * VIP 配置列表
 			 */
 			vipList(data?: any): Promise<any>;
@@ -1252,12 +1262,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; thirdWallet: string; vipList: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; thirdWallet: string; getVipInfo: string; vipList: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; thirdWallet: boolean; vipList: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; thirdWallet: boolean; getVipInfo: boolean; vipList: boolean; };
 
 		request: Service["request"];
 	}

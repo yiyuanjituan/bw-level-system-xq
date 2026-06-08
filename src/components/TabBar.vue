@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import router from "@/router";
-import { ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { setSystemName, setTabBarName } from "@/hooks/useTransition";
 import routes from "@/router/routes";
@@ -91,6 +91,18 @@ function handleClick(item: any) {
     router.push({ path: item.path });
   }
 }
+
+function handleJump(path: string) {
+  const record = tabBar.value.find(v => v.path == path);
+  handleClick(record);
+}
+
+onMounted(() => {
+  bus.on("switchTab", handleJump);
+});
+onUnmounted(() => {
+  bus.off("switchTab");
+});
 </script>
 
 <template>

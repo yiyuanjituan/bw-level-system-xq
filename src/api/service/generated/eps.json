@@ -666,6 +666,11 @@
       },
       {
         "method": "post",
+        "path": "/getVipInfo",
+        "summary": "获取用户的VIP信息"
+      },
+      {
+        "method": "post",
         "path": "/vipList",
         "summary": "VIP 配置列表"
       }
@@ -706,6 +711,11 @@
         "method": "get",
         "path": "/clearVitalityByNow",
         "summary": "定时清理过期的活跃度"
+      },
+      {
+        "method": "get",
+        "path": "/generateVipGift",
+        "summary": "创建VIP天/周/月信息"
       },
       {
         "method": "get",

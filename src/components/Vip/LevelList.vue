@@ -4,12 +4,27 @@ import { service } from "@/api/service";
 import { formatMoney } from "@/utils/common";
 const vipListData = ref<any[]>([]);
 
+interface Props {
+  info?: any;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  info: () => ({})
+});
+const emits = defineEmits(["refresh"]);
+const isLoading = ref(false);
+
+function onRefresh() {
+  emits("refresh");
+  isLoading.value = true;
+  setTimeout(() => (isLoading.value = false), 1200);
+}
+
 onMounted(() => {
   service.v1.user.vipList().then(res => {
     vipListData.value = res.list;
   });
 });
-const isExpanded = ref(false);
 </script>
 
 <template>
@@ -17,16 +32,16 @@ const isExpanded = ref(false);
     <div class="receive-reward">
       <div class="item">
         <span class="text">待领取</span>
-        <span class="amount">0.00</span>
+        <span class="amount">{{ formatMoney(props.info.awaitGetNum) }}</span>
         <div class="refresh">
-          <div class="loadingIcon">
+          <div class="loadingIcon" @click="onRefresh">
             <svg-icon name="comm_icon_retry" class-name="main-text text-[10px]" />
           </div>
         </div>
       </div>
       <div class="item">
         <span class="text">累计奖金</span>
-        <span class="amount">3.00</span>
+        <span class="amount">{{ formatMoney(props.info.userGetNum) }}</span>
       </div>
     </div>
     <div class="main-box">
@@ -38,14 +53,25 @@ const isExpanded = ref(false);
         class="list-item"
         :class="{ expanded: item.isExpanded }"
         @click="item.isExpanded = !item.isExpanded"
-        v-for="(item, index) in [...vipListData, ...vipListData, ...vipListData]"
+        v-for="(item, index) in vipListData"
         :key="index"
       >
         <span class="item-current" v-if="index == 0">当前</span>
         <div class="vip-info">
           <div class="level-image">
-            <img src="/siteadmin/active/color1.avif" alt="" srcset="" class="icon-img" />
-            <img src="/siteadmin/active/img_dj1.avif" alt="" srcset="" class="icon-img" />
+            <img
+              :src="`/siteadmin/active/color${(parseInt(String(Number(item.level) / 10)) + 1).toString()}.avif`"
+              alt=""
+              srcset=""
+              class="icon-img"
+            />
+            <img
+              :src="`/siteadmin/active/img_dj${Number(item.level) % 10}.avif`"
+              alt=""
+              srcset=""
+              class="icon-img"
+              v-if="Number(item.level) % 10 != 0"
+            />
             <div class="level-text level-style-1">
               <span :data-text="item.level">{{ item.level }}</span>
             </div>
