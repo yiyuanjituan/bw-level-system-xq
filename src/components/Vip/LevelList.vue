@@ -35,11 +35,7 @@ onMounted(() => {
         <span class="amount">{{ formatMoney(props.info.awaitGetNum) }}</span>
         <div class="refresh">
           <div class="loadingIcon" @click="onRefresh">
-            <svg-icon
-              name="comm_icon_retry"
-              class-name="main-text text-[10px]"
-              :class="{ 'loading-icon-spin': isLoading }"
-            />
+            <svg-icon name="comm_icon_retry" class-name="main-text text-[10px]" :class="{ 'loading-icon-spin': isLoading }" />
           </div>
         </div>
       </div>
