@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { service } from "@/api/service";
+import { useRefs } from "@/hooks/useRefs";
 import { formatMoney } from "@/utils/common";
+import { scrollToTarget } from "@/utils/scrollToTarget";
 
 const vipListData = ref<any[]>([]);
 const userLevel = ref<any>(0);
+const mainBoxRef = ref<HTMLElement | null>(null);
+const { refs, setRefs } = useRefs();
+let cancelAutoScroll = () => {};
 
 interface Props {
   info?: any;
@@ -22,11 +27,32 @@ function onRefresh() {
   setTimeout(() => (isLoading.value = false), 1200);
 }
 
+function getLevelRefName(level: number | string) {
+  return `level-${Number(level)}`;
+}
+
+function scrollToCurrentLevel() {
+  cancelAutoScroll();
+  cancelAutoScroll = scrollToTarget(mainBoxRef, () => refs[getLevelRefName(userLevel.value)] as HTMLElement | null, {
+    duration: 1000,
+    delay: 0,
+    offset: container => {
+      const header = container.querySelector(".level-header") as HTMLElement | null;
+      return header?.offsetHeight ?? 0;
+    }
+  });
+}
+
 onMounted(() => {
   service.v1.user.vipList().then(res => {
     vipListData.value = res.list;
     userLevel.value = res.level;
+    scrollToCurrentLevel();
   });
+});
+
+onBeforeUnmount(() => {
+  cancelAutoScroll();
 });
 </script>
 
@@ -47,7 +73,7 @@ onMounted(() => {
         <span class="amount">{{ formatMoney(props.info.userGetNum) }}</span>
       </div>
     </div>
-    <div class="main-box">
+    <div class="main-box" ref="mainBoxRef">
       <div class="level-header">
         <span class="level">等级</span>
         <span class="power">奖励/特权</span>
@@ -58,6 +84,7 @@ onMounted(() => {
         @click="item.isExpanded = !item.isExpanded"
         v-for="(item, index) in vipListData"
         :key="index"
+        :ref="setRefs(getLevelRefName(item.level))"
       >
         <span class="item-current" v-if="userLevel == item.level">当前</span>
         <div class="vip-info">
