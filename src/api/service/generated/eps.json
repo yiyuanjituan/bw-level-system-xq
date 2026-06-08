@@ -661,6 +661,11 @@
       },
       {
         "method": "post",
+        "path": "/getVipReward",
+        "summary": "领取VIP的对应的奖励"
+      },
+      {
+        "method": "post",
         "path": "/thirdWallet",
         "summary": "三方钱包余额"
       },

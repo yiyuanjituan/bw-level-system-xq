@@ -47,7 +47,7 @@ const list = ref([
   { name: "活动", path: "/home/event" },
   { name: "任务", path: "/home/task" },
   { name: "VIP", path: "/home/vip" },
-  { name: "返水", path: "/home/task" },
+  { name: "返水", path: "/home/cashback" },
   { name: "待领取", path: "/home/task" },
   { name: "利息宝", path: "/home/yuebao" },
   { name: "领取记录", path: "/home/records" }

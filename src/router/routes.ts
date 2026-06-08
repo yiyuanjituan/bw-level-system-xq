@@ -75,6 +75,19 @@ const routes: Array<RouteRecordRaw> = [
             }
           },
           {
+            path: "cashback",
+            name: "CashBack",
+            component: () => import("@/views/home/cashBack.vue"),
+            meta: {
+              title: "返水",
+              order: 2,
+              tabBarOrder: 1,
+              headerOrder: 3,
+              isTabBar: true,
+              pageTransition: "page-slide-forward"
+            }
+          },
+          {
             path: "records",
             name: "HomeRecords",
             component: () => import("@/views/home/records/index.vue"),

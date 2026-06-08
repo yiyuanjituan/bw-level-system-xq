@@ -5,6 +5,7 @@ import { useRefs } from '@/hooks/useRefs';
 import { formatMoney } from '@/utils/common';
 import { scrollToTarget } from '@/utils/scrollToTarget';
 import { bus } from '@/utils/mitt';
+import { showCustomToast } from '@/hooks/useCommon';
 
 const vipListData = ref<any[]>([]);
 const userLevel = ref<any>(0);
@@ -28,7 +29,10 @@ const isLoading = ref(false);
 function onRefresh() {
   emits('refresh');
   isLoading.value = true;
-  setTimeout(() => (isLoading.value = false), 1200);
+  setTimeout(() => {
+    isLoading.value = false;
+    showCustomToast({ type: 'success', message: '刷新成功' });
+  }, 1200);
 }
 
 function getLevelRefName(level: number | string) {
@@ -51,8 +55,19 @@ function jumpToGame() {
   bus.emit('switchTab', '/index');
 }
 
-function handleGetUpLevelReward(record: any) {
-  record.isLoading = true;
+function handleGetUpLevelReward(record: any, type = 0) {
+  record[`isLoading_${type}`] = true;
+  service.v1.user
+    .getVipReward({ type: type, level: record.level })
+    .then(res => {
+      showCustomToast({ type: 'success', message: '领取成功' });
+      service.v1.user.vipList().then(res => {
+        vipListData.value = res.list;
+        userLevel.value = res.level;
+        emits('refresh');
+      });
+    })
+    .finally(() => (record[`isLoading_${type}`] = false));
 }
 
 onMounted(() => {
@@ -147,7 +162,15 @@ onBeforeUnmount(() => {
                   每日投注<span class="text">{{ formatMoney(item.dayFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn" type="success" v-if="item.isCanDayAmount">领取</x-button>
+              <x-button
+                size="small"
+                class="btn"
+                type="success"
+                v-if="item.isCanDayAmount"
+                @click="handleGetUpLevelReward(item, 1)"
+                :loading="item.isLoading_1"
+                >领取</x-button
+              >
               <x-button size="small" class="btn" v-if="!item.isCanDayAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.weekAmount) > 0">
@@ -160,7 +183,15 @@ onBeforeUnmount(() => {
                   每周投注<span class="text">{{ formatMoney(item.weekFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn" type="success" v-if="item.isCanWeekAmount">领取</x-button>
+              <x-button
+                size="small"
+                class="btn"
+                type="success"
+                v-if="item.isCanWeekAmount"
+                @click="handleGetUpLevelReward(item, 2)"
+                :loading="item.isLoading_2"
+                >领取</x-button
+              >
               <x-button size="small" class="btn" v-if="!item.isCanWeekAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.monthAmount) > 0">
@@ -173,7 +204,15 @@ onBeforeUnmount(() => {
                   每月投注<span class="text">{{ formatMoney(item.monthFlow, false) }}</span>
                 </div>
               </div>
-              <x-button size="small" class="btn" type="success" v-if="item.isCanMonthAmount">领取</x-button>
+              <x-button
+                size="small"
+                class="btn"
+                type="success"
+                v-if="item.isCanMonthAmount"
+                @click="handleGetUpLevelReward(item, 3)"
+                :loading="item.isLoading_3"
+                >领取</x-button
+              >
               <x-button size="small" class="btn" v-if="!item.isCanMonthAmount" @click="jumpToGame">去游戏</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.upAmount) > 0">
@@ -194,7 +233,7 @@ onBeforeUnmount(() => {
                   size="small"
                   class="btn"
                   type="success"
-                  :loading="item.isLoading"
+                  :loading="item.isLoading_0"
                   v-if="item.isCanGetUpLevelAmount"
                   @click="handleGetUpLevelReward(item)"
                 >

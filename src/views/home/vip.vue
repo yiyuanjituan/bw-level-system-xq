@@ -3,8 +3,6 @@ import { bus } from "@/utils/mitt";
 import { onMounted, ref } from "vue";
 import { service } from "@/api/service";
 import { formatMoney } from "@/utils/common";
-import { showCustomToast } from "@/hooks/useCommon";
-
 const vipInfo = ref<any>({});
 
 function handleToUpLevel() {
@@ -13,9 +11,6 @@ function handleToUpLevel() {
 
 function handleRefreshInfo() {
   init();
-  setTimeout(() => {
-    showCustomToast({ type: "success", message: "刷新成功" });
-  }, 1000);
 }
 
 function init() {
