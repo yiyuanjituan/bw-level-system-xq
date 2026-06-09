@@ -25,16 +25,19 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
         <div class="cashback-left">
           <div class="category-list">
             <div class="item" v-for="i in typeOptions" :key="i.value">
-              <x-badge :content="i.value">
-                <div class="item-inner-box">
-                  <div class="sidebar-tab-icon">
-                    <img src="https://146.103.80.124:5001/siteadmin/layoutDesign/2007366585621889025.png" alt="" srcset="" v-if="false" />
-                    <svg-icon :name="i.image" />
-                  </div>
-                  <div class="sidebar-common-tab-name">{{ i.label.split('').join('&nbsp;') }}</div>
+              <div class="item-inner-box">
+                <div class="sidebar-tab-icon">
+                  <img src="https://146.103.80.124:5001/siteadmin/layoutDesign/2007366585621889025.png" alt="" srcset="" v-if="false" />
+                  <svg-icon :name="i.image" />
                 </div>
-              </x-badge>
+                <div class="sidebar-common-tab-name">{{ i.label.split('').join('&nbsp;') }}</div>
+              </div>
             </div>
+          </div>
+          <div class="extra-btn">
+            <x-button class="mt-[10px]" size="small" type="success">一键领取</x-button>
+            <x-button class="mt-[10px]" size="small" plain type="primary">领取记录</x-button>
+            <x-button class="mt-[10px]" size="small" plain type="primary">刷新奖励</x-button>
           </div>
         </div>
         <div class="cashback-right">
@@ -120,9 +123,11 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
         padding-top: 0;
         flex: none;
         display: flex;
+        flex-direction: column;
         .category-list {
-          flex: none;
+          flex: none !important;
           max-height: calc(var(--window-height) - 262px);
+          height: auto;
           padding-bottom: 0;
           overflow: auto;
           width: 85px;
@@ -173,7 +178,20 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
                 z-index: 6;
               }
             }
+            &:last-child {
+              height: 35px;
+              .item-inner-box {
+                margin-bottom: 0;
+              }
+            }
           }
+        }
+        .extra-btn {
+          width: 75px;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          flex-direction: column;
         }
       }
       .cashback-right {
@@ -231,6 +249,7 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
                     margin-right: 2px;
                     color: var(--skin__neutral_2);
                     word-break: break-word;
+                    white-space: nowrap;
                   }
                   .lead {
                     color: var(--skin__lead);
