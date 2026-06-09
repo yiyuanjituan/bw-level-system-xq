@@ -80,7 +80,7 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: rgb(28, 30, 35);
+  background: var(--skin__bg_1);
   color: white;
 
   .base-header {
@@ -89,8 +89,8 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     height: 45px;
-    background-color: #1c1e23;
-    border-bottom: 1px solid #313843;
+    background-color: var(--skin__bg_2);
+    border-bottom: 1px solid var(--skin__border);
     width: 100%;
     box-sizing: border-box;
 
