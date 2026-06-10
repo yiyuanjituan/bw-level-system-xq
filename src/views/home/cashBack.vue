@@ -24,7 +24,11 @@ function refreshListData() {
   getData();
   isRefreshLoading.value = true;
   setTimeout(() => (isRefreshLoading.value = false), 2000);
-  refs['receiveSuccess']?.open();
+  refs['receiveSuccess']?.open({
+    messageText: '恭喜您，获得奖励！',
+    iconType: 'coin',
+    award: '+100',
+  });
 }
 
 function getData() {

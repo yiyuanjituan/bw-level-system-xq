@@ -26,35 +26,39 @@ import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 
 type IconType = 'coin';
 
-interface Props {
+interface OpenParams {
   messageText: string;
   skinBg?: 0 | 1;
   iconType: IconType;
   award: string | number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  skinBg: 1
-});
-
 const rewardIconMap: Record<IconType, string> = {
   coin: '/siteadmin/active/rmb.svg'
 };
 
-const SCALE_DURATION_MS = 300;
-const AUTO_CLOSE_MS = 300000;
+const SCALE_DURATION_MS = 150;
+const AUTO_CLOSE_MS = 2800;
 
 const isRendered = ref(false);
 const isActive = ref(false);
 const contentKey = ref(0);
+const messageText = ref('');
+const skinBg = ref<0 | 1>(1);
+const iconType = ref<IconType>('coin');
+const award = ref<string | number>('');
 
 let autoCloseTimer: ReturnType<typeof setTimeout> | undefined;
 let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
-const rewardIconSrc = computed(() => rewardIconMap[props.iconType]);
+const rewardIconSrc = computed(() => rewardIconMap[iconType.value]);
 
-async function open() {
+async function open(params: OpenParams) {
   clearTimers();
+  messageText.value = params.messageText;
+  skinBg.value = params.skinBg ?? 1;
+  iconType.value = params.iconType;
+  award.value = params.award;
   contentKey.value += 1;
   isRendered.value = true;
   isActive.value = false;
@@ -106,7 +110,7 @@ onBeforeUnmount(() => {
   padding-top: 55px;
   transform: scale(0.1);
   transform-origin: top center;
-  transition: transform 0.6s ease;
+  transition: transform 0.5s ease;
   pointer-events: none;
 
   &--active {
@@ -124,6 +128,7 @@ onBeforeUnmount(() => {
   align-items: center;
   font-size: 14px;
   pointer-events: auto;
+  line-height: 1;
 
   &[data-skin-bg='1'] {
     background: #fff;
@@ -160,6 +165,7 @@ onBeforeUnmount(() => {
     min-height: 32.5px;
     line-height: 16px;
     text-align: left;
+    align-items: center;
   }
 
   &__reward {
@@ -169,7 +175,6 @@ onBeforeUnmount(() => {
     gap: 2.5px;
     color: #ffaa09;
     font-weight: 700;
-    line-height: 1.67;
     text-align: left;
   }
 
@@ -177,16 +182,18 @@ onBeforeUnmount(() => {
     width: 15px;
     height: 15px;
     flex: 0 0 auto;
-    animation: receive-reward-icon-spin 0.9s linear 1;
+    animation: receive-reward-icon-spin 2s linear 1;
     transform-origin: center;
   }
 
   &__award {
     max-width: 122px;
     font-size: 12px;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 2px;
   }
 
   &__anime {
@@ -203,11 +210,19 @@ onBeforeUnmount(() => {
 
 @keyframes receive-reward-icon-spin {
   0% {
-    transform: rotate(0deg);
+    transform: rotateY(0deg);
+  }
+
+  25% {
+    transform: rotateY(180deg);
+  }
+
+  50% {
+    transform: rotateY(360deg);
   }
 
   100% {
-    transform: rotate(360deg);
+    transform: rotateY(540deg);
   }
 }
 
