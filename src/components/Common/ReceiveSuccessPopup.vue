@@ -1,5 +1,5 @@
 ﻿<template>
-  <div v-if="isRendered" class="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50">
+  <div v-if="isRendered" class="fixed top-0 left-0 right-0 flex justify-center items-center z-50">
     <div
       :key="contentKey"
       class="receive-success-popup"
@@ -27,19 +27,21 @@ type IconType = 'coin';
 
 interface Props {
   messageText: string;
-  skinBg: 0 | 1;
+  skinBg?: 0 | 1;
   iconType: IconType;
   award: string | number;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  skinBg: 1
+});
 
 const rewardIconMap: Record<IconType, string> = {
   coin: '/siteadmin/active/rmb.svg'
 };
 
 const SCALE_DURATION_MS = 300;
-const AUTO_CLOSE_MS = 5000;
+const AUTO_CLOSE_MS = 300000;
 
 const isRendered = ref(false);
 const isActive = ref(false);
