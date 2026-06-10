@@ -11,44 +11,54 @@
   <FindUs :ref="setRefs('findUs')" />
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
-  <download-tip />
+  <download-tip :ref="setRefs('downloadTip')" />
 </template>
 
 <script setup lang="ts">
-import { systemTransitionName } from "./hooks/useTransition";
-import UiToast from "@/components/UI/toast.vue";
-import UiDialog from "@/components/UI/dialog.vue";
-import { onMounted } from "vue";
-import useAppStore from "@/store/modules/app";
-import useAuthStore from "@/store/modules/user";
-import { bus, userMoneyIn } from "@/utils/mitt";
-import router from "@/router";
-import useDataStore from "@/store/modules/data";
-import { useRefs } from "@/hooks/useRefs";
+import { systemTransitionName } from './hooks/useTransition';
+import UiToast from '@/components/UI/toast.vue';
+import UiDialog from '@/components/UI/dialog.vue';
+import { onMounted } from 'vue';
+import useAppStore from '@/store/modules/app';
+import useAuthStore from '@/store/modules/user';
+import { bus, userMoneyIn } from '@/utils/mitt';
+import router from '@/router';
+import useDataStore from '@/store/modules/data';
+import { useRefs } from '@/hooks/useRefs';
+import { useRoute } from 'vue-router';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
 const auth = useAuthStore();
 const appData = useDataStore();
+const route = useRoute();
 
 const busListen = () => {
   // 资金回归
-  bus.on("moneyIn", () => {
+  bus.on('moneyIn', () => {
     if (auth.token) userMoneyIn(appData.enterGameInfo.venueId).then(() => auth.updateInfo());
     appData.setEnterInfo(void 0, void 0);
   });
   // 退出登录
-  bus.on("logout", () => {
+  bus.on('logout', () => {
     auth.logout();
-    refs["rechargeDrawer"]?.close();
-    router.replace({ path: "/home/login" });
+    refs['rechargeDrawer']?.close();
+    router.replace({ path: '/home/login' });
   });
   // 点开找到我们
-  bus.on("findUs", refs["findUs"]?.open);
+  bus.on('findUs', refs['findUs']?.open);
   // 点击充值按钮
-  bus.on("showRecharge", refs["rechargeDrawer"]?.open);
-  bus.on("showRechargeDetail", refs["rechargeDetailDrawer"]?.open);
+  bus.on('showRecharge', refs['rechargeDrawer']?.open);
+  bus.on('showRechargeDetail', refs['rechargeDetailDrawer']?.open);
 };
+
+function checkPopupTip() {
+  setTimeout(() => {
+    if (route.name == 'Index') {
+      refs['downloadTip']?.open();
+    }
+  }, 1500);
+}
 
 onMounted(() => {
   busListen();
@@ -57,6 +67,8 @@ onMounted(() => {
   if (auth.token) {
     auth.updateInfo();
   }
+  // 检测弹层
+  checkPopupTip();
 });
 </script>
 <style lang="less">

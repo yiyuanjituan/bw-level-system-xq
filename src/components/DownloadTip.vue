@@ -1,31 +1,53 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
+import { ref } from 'vue';
+import { showCustomToast } from '@/hooks/useCommon';
+import { bus } from '@/utils/mitt';
+import useAppStore from '@/store/modules/app';
 
-const handleShow = ref(false)
+const handleShow = ref(false);
+const app = useAppStore();
 
-onMounted(() => {
-  nextTick(() => {
-    setTimeout(() => {
-      handleShow.value = true
-    }, 2000)
-  })
-})
+function handleAddTask() {
+  showCustomToast({ type: 'success', message: '敬请期待' });
+}
+
+function open() {
+  handleShow.value = true;
+}
+
+function close() {
+  handleShow.value = false;
+  onClosed();
+}
+
+function onClosed() {
+  setTimeout(() => {
+    bus.emit('findUs');
+  }, 400);
+}
+
+defineExpose({
+  open,
+  close
+});
 </script>
 
 <template>
-  <x-popup position="bottom" v-model:show="handleShow" :z-index="100">
+  <x-popup position="bottom" v-model:show="handleShow" :z-index="100" @close="onClosed">
     <div class="down-box">
-      <div class="close-icon">
+      <div class="close-icon" @click="close">
         <svg-icon name="comm_icon_x" />
       </div>
       <div class="info">
-        <img src="https://rvmgnk882.xq60924187.com:28907/siteadmin/upload/img/1917095768168603650.avif" alt="" />
+        <img :src="app.appInfo.logo" alt="" />
         <div class="title">
-          <div class=""><p><strong>下载APP，可参与领取更多优惠！</strong></p></div>
+          <div class="">
+            <p><strong>下载APP，可参与领取更多优惠！</strong></p>
+          </div>
         </div>
       </div>
       <div class="btn-list">
-        <x-button type="primary" plain class="!w-[100%]">添加桌面快捷方式</x-button>
+        <x-button type="primary" plain class="!w-[100%]" @click="handleAddTask">添加桌面快捷方式</x-button>
       </div>
     </div>
   </x-popup>
@@ -57,6 +79,7 @@ onMounted(() => {
     img {
       width: 60px;
       height: 60px;
+      border-radius: 6px;
     }
     .title {
       flex: 1;
