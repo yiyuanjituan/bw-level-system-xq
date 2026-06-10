@@ -35,9 +35,10 @@ const emit = defineEmits<{
 }>();
 
 const popupClasses = computed(() => ["x-popup", `x-popup--${props.position}`]);
+const popupStyle = computed(() => ({ zIndex: String(props.zIndex) }));
 
 const transitionName = computed(() => {
-  if (props.position === "center") return "x-popup-zoom";
+  if (props.position === "center") return "x-popup-fade";
   if (props.position === "top") return "x-popup-slide-top";
   if (props.position === "bottom") return "x-popup-slide-bottom";
   if (props.position === "left") return "x-popup-slide-left";
@@ -63,26 +64,32 @@ function onOverlayClick() {
     :safe-area="safeArea"
     @click="onOverlayClick"
     frosted
-  >
-    <transition :name="transitionName">
-      <div v-if="show" :class="popupClasses" @click.stop>
-        <div v-if="showClose" class="x-popup__close-icon" @click="close">
-          <svg-icon name="close" />
-        </div>
-        <slot />
+  />
+  <transition :name="transitionName">
+    <div
+      v-if="show"
+      :class="popupClasses"
+      :style="popupStyle"
+      role="dialog"
+      aria-modal="true"
+      @click.stop
+    >
+      <div v-if="showClose" class="x-popup__close-icon" @click="close">
+        <svg-icon name="close" />
       </div>
-    </transition>
-  </x-overlay>
+      <slot />
+    </div>
+  </transition>
 </template>
 
 <style scoped lang="less">
 .x-popup {
-  position: absolute;
+  position: fixed;
   max-height: 100%;
   box-sizing: border-box;
-  transform-origin: center center;
   -webkit-overflow-scrolling: touch;
   overflow-y: auto;
+  transform-origin: center center;
 
   &__close-icon {
     position: absolute;
@@ -97,12 +104,13 @@ function onOverlayClick() {
   }
 
   &--center {
-    position: relative;
+    top: 50%;
     left: 0;
     right: 0;
     width: fit-content;
     max-width: calc(100vw - 16px);
     margin: 0 auto;
+    transform: translate3d(0, -50%, 0);
   }
 
   &--top {
@@ -112,9 +120,9 @@ function onOverlayClick() {
   }
 
   &--right {
+    top: 50%;
     right: 0;
-    top: 0;
-    bottom: 0;
+    transform: translate3d(0, -50%, 0);
   }
 
   &--bottom {
@@ -124,9 +132,9 @@ function onOverlayClick() {
   }
 
   &--left {
+    top: 50%;
     left: 0;
-    top: 0;
-    bottom: 0;
+    transform: translate3d(0, -50%, 0);
   }
 }
 
@@ -139,46 +147,47 @@ function onOverlayClick() {
   left: 8px;
 }
 
-.x-popup-zoom-enter-active,
-.x-popup-zoom-leave-active {
-  transition: all 0.2s ease;
+.x-popup-fade-enter-active,
+.x-popup-fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.x-popup-zoom-enter-from,
-.x-popup-zoom-leave-to {
+.x-popup-fade-enter-from,
+.x-popup-fade-leave-to {
   opacity: 0;
-  transform: scale(0.92);
 }
 
 .x-popup-slide-top-enter-active,
-.x-popup-slide-top-leave-active,
-.x-popup-slide-bottom-enter-active,
-.x-popup-slide-bottom-leave-active,
 .x-popup-slide-left-enter-active,
-.x-popup-slide-left-leave-active,
 .x-popup-slide-right-enter-active,
-.x-popup-slide-right-leave-active {
-  transition: all 0.22s ease;
+.x-popup-slide-bottom-enter-active {
+  transition: transform 0.3s ease-out;
+}
+
+.x-popup-slide-top-leave-active,
+.x-popup-slide-left-leave-active,
+.x-popup-slide-right-leave-active,
+.x-popup-slide-bottom-leave-active {
+  transition: transform 0.3s ease-in;
 }
 
 .x-popup-slide-top-enter-from,
 .x-popup-slide-top-leave-to {
-  transform: translateY(-100%);
+  transform: translate3d(0, -100%, 0);
 }
 
 .x-popup-slide-bottom-enter-from,
 .x-popup-slide-bottom-leave-to {
-  transform: translateY(100%);
+  transform: translate3d(0, 100%, 0);
 }
 
 .x-popup-slide-left-enter-from,
 .x-popup-slide-left-leave-to {
-  transform: translateX(-100%);
+  transform: translate3d(-100%, -50%, 0);
 }
 
 .x-popup-slide-right-enter-from,
 .x-popup-slide-right-leave-to {
-  transform: translateX(100%);
+  transform: translate3d(100%, -50%, 0);
 }
 </style>
-

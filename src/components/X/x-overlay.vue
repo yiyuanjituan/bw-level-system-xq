@@ -56,6 +56,7 @@ function onClick(event: MouseEvent) {
   width: 100%;
   height: 100%;
   background-color: var(--x-overlay-background);
+  opacity: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -91,21 +92,17 @@ function onClick(event: MouseEvent) {
   backdrop-filter: blur(5px);
 }
 
-@keyframes x-overlay-fade-in {
-  0% {
-    background-color: rgba(0, 0, 0, 0);
-  }
-  to {
-    background-color: var(--x-overlay-background);
-  }
-}
-
 .x-overlay__animate-fade-enter-active {
-  animation: var(--animate-duration, 0.2s) x-overlay-fade-in both;
+  transition: opacity 0.3s ease-out;
 }
 
 .x-overlay__animate-fade-leave-active {
-  animation: var(--animate-duration, 0.2s) x-overlay-fade-in both reverse;
+  transition: opacity 0.3s ease-in;
+}
+
+.x-overlay__animate-fade-enter-from,
+.x-overlay__animate-fade-leave-to {
+  opacity: 0;
 }
 </style>
 
