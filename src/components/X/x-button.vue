@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useSlots } from "vue";
 
 defineOptions({
   name: "x-button"
@@ -41,7 +41,11 @@ const emit = defineEmits<{
   (e: "click", event: MouseEvent): void;
 }>();
 
+const slots = useSlots();
+
 const isDisabled = computed(() => props.disabled || props.loading);
+const hasIconSlot = computed(() => Boolean(slots.icon));
+const showLoadingIndicator = computed(() => props.loading && !hasIconSlot.value);
 
 const classes = computed(() => [
   "x-button",
@@ -77,18 +81,28 @@ function handleClick(event: MouseEvent) {
     @click="handleClick"
   >
     <span class="x-button__content">
-      <span class="x-button__loading" :class="{ 'is-active': loading }">
+      <span
+        v-if="showLoadingIndicator"
+        class="x-button__loading"
+        :class="{ 'is-active': showLoadingIndicator }"
+      >
         <slot name="loading">
-          <svg-icon name="loading" />
+          <slot name="icon">
+            <svg-icon name="loading" />
+          </slot>
         </slot>
       </span>
-      <span v-if="!loading && $slots.icon" class="x-button__icon">
+      <span
+        v-if="hasIconSlot"
+        class="x-button__icon"
+        :class="{ 'is-loading': loading }"
+      >
         <slot name="icon" />
       </span>
       <span
         v-if="$slots.default"
         class="x-button__text"
-        :class="{ 'x-button__text--loading': loading }"
+        :class="{ 'x-button__text--loading': showLoadingIndicator }"
       >
         <slot />
       </span>
@@ -294,6 +308,10 @@ function handleClick(event: MouseEvent) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    &.is-loading {
+      animation: x-button-rotating 1s linear infinite;
+    }
   }
 
   &__text {

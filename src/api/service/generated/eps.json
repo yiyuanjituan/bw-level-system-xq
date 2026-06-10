@@ -671,6 +671,11 @@
       },
       {
         "method": "post",
+        "path": "/getCashBack",
+        "summary": "获取系统返水信息"
+      },
+      {
+        "method": "post",
         "path": "/getVipInfo",
         "summary": "获取用户的VIP信息"
       },

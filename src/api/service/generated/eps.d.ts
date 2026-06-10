@@ -1255,6 +1255,11 @@ declare namespace Eps {
 			thirdWallet(data?: any): Promise<any>;
 
 		/**
+			 * 获取系统返水信息
+			 */
+			getCashBack(data?: any): Promise<any>;
+
+		/**
 			 * 获取用户的VIP信息
 			 */
 			getVipInfo(data?: any): Promise<any>;
@@ -1267,12 +1272,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; getVipReward: string; thirdWallet: string; getVipInfo: string; vipList: string; };
+		permission: { accountPageList: string; personalReport: string; gamePageList: string; totalMoneyIn: string; getVipReward: string; thirdWallet: string; getCashBack: string; getVipInfo: string; vipList: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; getVipReward: boolean; thirdWallet: boolean; getVipInfo: boolean; vipList: boolean; };
+		_permission: { accountPageList: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; getVipReward: boolean; thirdWallet: boolean; getCashBack: boolean; getVipInfo: boolean; vipList: boolean; };
 
 		request: Service["request"];
 	}

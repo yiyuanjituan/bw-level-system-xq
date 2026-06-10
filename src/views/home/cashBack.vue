@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { service } from '@/api/service';
+import { formatMoney } from '@/utils/common';
+import UiEmpty from '@/components/UI/empty.vue';
+
+const isRefreshLoading = ref(false);
 const typeOptions: { label: string; value: string | number; image?: string }[] = [
   { label: '电子', value: 3, image: 'game-icon_dtfl_dz_0' },
   { label: '真人', value: 1, image: 'game-icon_dtfl_zr_0' },
@@ -8,6 +14,29 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
   { label: '棋牌', value: 6, image: 'game-icon_dtfl_qp_0' },
   { label: '电竞', value: 7, image: 'game-icon_dtfl_dianjing_0' }
 ];
+const activeTypeData = ref<number>(3);
+const listData = ref<any[]>([]);
+const awaitNum = ref<number>(0);
+
+function refreshListData() {
+  getData();
+  isRefreshLoading.value = true;
+  setTimeout(() => (isRefreshLoading.value = false), 2000);
+}
+
+function getData() {
+  service.v1.user.getCashBack({ type: activeTypeData.value }).then(res => {
+    listData.value = res.list;
+    awaitNum.value = res.awaitNum;
+  });
+}
+
+function handleChangeType(record: any) {
+  activeTypeData.value = record.value;
+  getData();
+}
+
+onMounted(() => getData());
 </script>
 
 <template>
@@ -16,7 +45,7 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
       <div class="data">
         <div>今日可领取</div>
         <div class="amount">
-          <span class="value">0.00</span>
+          <span class="value">{{ formatMoney(awaitNum) }}</span>
         </div>
       </div>
     </div>
@@ -24,8 +53,8 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
       <div class="cashback-box">
         <div class="cashback-left">
           <div class="category-list">
-            <div class="item" v-for="i in typeOptions" :key="i.value">
-              <div class="item-inner-box">
+            <div class="item" v-for="i in typeOptions" :key="i.value" @click="handleChangeType(i)">
+              <div class="item-inner-box" :class="{ 'item-active-box': i.value == activeTypeData }">
                 <div class="sidebar-tab-icon">
                   <img src="https://146.103.80.124:5001/siteadmin/layoutDesign/2007366585621889025.png" alt="" srcset="" v-if="false" />
                   <svg-icon :name="i.image" />
@@ -35,34 +64,47 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
             </div>
           </div>
           <div class="extra-btn">
-            <x-button class="mt-[10px]" size="small" type="success">一键领取</x-button>
+            <x-button class="mt-[10px]" size="small" type="success" :disabled="awaitNum <= 0">一键领取</x-button>
             <x-button class="mt-[10px]" size="small" plain type="primary">领取记录</x-button>
-            <x-button class="mt-[10px]" size="small" plain type="primary">刷新奖励</x-button>
+            <x-button
+              class="mt-[10px]"
+              style="white-space: nowrap"
+              size="small"
+              plain
+              type="primary"
+              @click="refreshListData"
+              :loading="isRefreshLoading"
+            >
+              <template #icon><svg-icon name="comm_icon_retry" /></template>
+              刷新奖励
+            </x-button>
           </div>
         </div>
         <div class="cashback-right">
-          <div class="ui-scroll-list">
-            <div class="list-item" v-for="item in 10" :key="item">
+          <div class="ui-scroll-list" v-if="listData.length > 0">
+            <div class="list-item" v-for="item in listData" :key="item.id">
               <div class="center">
                 <div>
                   <div class="centerLeft">
-                    <img src="https://146.103.80.124:5001/cocos/icon/0/200_N_PG.avif" alt="." class="icon" />
+                    <img :src="item.short_image" alt="." class="icon" />
                     <div class="item">
                       <label>有效投注</label>
-                      <span class="lead">0.00</span>
+                      <span class="lead">{{ formatMoney(item.betAmount) }}</span>
                     </div>
                   </div>
-
                   <div class="centerRight">
                     <div class="item">
                       <label>返水比例</label>
-                      <span class="lead">0.60%</span>
+                      <span class="lead">{{ item.scale }}%</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <span class="upgradeVip">升级到VIP2可0.60%</span>
-                  <p><label>可领取</label><span class="receiveAmt">0.00</span></p>
+                  <span class="upgradeVip" v-if="item.nextLevel == item.level">当前反水比例{{ item.nextScale }}%</span>
+                  <span class="upgradeVip" v-if="item.nextLevel != item.level">升级到VIP{{ item.nextLevel }}可{{ item.nextScale }}%</span>
+                  <p>
+                    <label>可领取</label><span class="receiveAmt">{{ formatMoney(item.amount) }}</span>
+                  </p>
                 </div>
               </div>
               <div class="arrow">
@@ -70,8 +112,12 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
               </div>
             </div>
           </div>
+          <ui-empty v-if="listData.length == 0" />
         </div>
       </div>
+    </div>
+    <div class="fixed top-0 left-0 right-0 flex justify-center items-center z-50">
+      <receive-success-popup award="20.00" />
     </div>
   </div>
 </template>
@@ -184,6 +230,11 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
                 margin-bottom: 0;
               }
             }
+            .item-active-box {
+              background: url('@/assets/common/btn_zc1_1.avif') no-repeat;
+              background-size: 100% 100%;
+              color: var(--skin__left_nav_active);
+            }
           }
         }
         .extra-btn {
@@ -192,6 +243,9 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
           justify-content: flex-start;
           align-items: center;
           flex-direction: column;
+          :deep(.x-button__text) {
+            text-overflow: unset !important;
+          }
         }
       }
       .cashback-right {
