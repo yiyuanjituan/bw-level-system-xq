@@ -257,6 +257,15 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "cashback-rates",
+        name: "CashBackRates",
+        component: () => import("@/views/home/cashback-rates.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        },
+      },
+      {
         path: "account-detail",
         name: "HomeAccountDetail",
         component: () => import("@/views/home/report/AccountDetail.vue"),

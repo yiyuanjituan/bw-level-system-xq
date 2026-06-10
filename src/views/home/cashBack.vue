@@ -4,6 +4,7 @@ import { service } from '@/api/service';
 import { formatMoney } from '@/utils/common';
 import UiEmpty from '@/components/UI/empty.vue';
 import { useRefs } from '@/hooks/useRefs';
+import router from '@/router';
 
 const isRefreshLoading = ref(false);
 const typeOptions: { label: string; value: string | number; image?: string }[] = [
@@ -39,19 +40,28 @@ function handleChangeType(record: any) {
   getData();
 }
 
+function getDetailFromItem(record: any) {
+  router.push({
+    path: '/home/cashback-rates',
+    query: {
+      gameCategory: record.type,
+      gameSecondCateId: record.id
+    }
+  })
+}
+
 function handleGetCashBack() {
   isLoadingGetReward.value = true;
-  service.v1.user.receiveCashBack().then(res => {
-
-  })
-  setTimeout(() => {
-    isLoadingGetReward.value = false;
-    refs['receiveSuccess']?.open({
-      messageText: '恭喜您，获得奖励！',
-      iconType: 'coin',
-      award: '+1.46'
-    });
-  }, 1000);
+  service.v1.user
+    .receiveCashBack()
+    .then(res => {
+      refs['receiveSuccess']?.open({
+        messageText: '恭喜您，获得奖励！',
+        iconType: 'coin',
+        award: `+${res.amount}`
+      });
+    })
+    .finally(() => (isLoadingGetReward.value = false));
 }
 
 onMounted(() => getData());
@@ -108,7 +118,7 @@ onMounted(() => getData());
         </div>
         <div class="cashback-right">
           <div class="ui-scroll-list" v-if="listData.length > 0">
-            <div class="list-item" v-for="item in listData" :key="item.id">
+            <div class="list-item" v-for="item in listData" :key="item.id" @click="getDetailFromItem(item)">
               <div class="center">
                 <div>
                   <div class="centerLeft">
