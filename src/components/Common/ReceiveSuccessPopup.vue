@@ -38,7 +38,7 @@ const rewardIconMap: Record<IconType, string> = {
   coin: '/siteadmin/active/rmb.svg'
 };
 
-const SCALE_DURATION_MS = 150;
+const SCALE_DURATION_MS = 170;
 const AUTO_CLOSE_MS = 2800;
 
 const isRendered = ref(false);
@@ -67,9 +67,15 @@ async function open(params: OpenParams) {
 
   await nextTick();
 
-  requestAnimationFrame(() => {
+  if (typeof window !== 'undefined') {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        isActive.value = true;
+      });
+    });
+  } else {
     isActive.value = true;
-  });
+  }
 
   receiveAudio.currentTime = 0;
   void receiveAudio.play();
@@ -114,9 +120,11 @@ onBeforeUnmount(() => {
 
 <style lang="less" scoped>
 .receive-success-popup-wrap {
+  display: inline-block;
   padding-top: 55px;
   transform: scale(0.1);
   transform-origin: top center;
+  will-change: transform;
   transition: transform 0.5s ease;
   pointer-events: none;
 
