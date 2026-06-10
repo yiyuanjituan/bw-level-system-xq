@@ -62,6 +62,7 @@ function onOverlayClick() {
     :hidden="hiddenOverlay"
     :safe-area="safeArea"
     @click="onOverlayClick"
+    frosted
   >
     <transition :name="transitionName">
       <div v-if="show" :class="popupClasses" @click.stop>

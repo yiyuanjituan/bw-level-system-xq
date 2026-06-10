@@ -11,6 +11,7 @@
   <FindUs :ref="setRefs('findUs')" />
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
+  <download-tip />
 </template>
 
 <script setup lang="ts">

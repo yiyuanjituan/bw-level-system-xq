@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 16">
+    <g clip-path="url(#comm_icon_x__a)">
+        <path d="M15.92 16a1 1 0 0 1-.7-.3l-14-14A1 1 0 0 1 2.62.3l14 14a1 1 0 0 1-.7 1.7"></path>
+        <path d="M1.92 16a1 1 0 0 1-.7-1.7l14-14a1 1 0 0 1 1.4 1.4l-14 14a1 1 0 0 1-.7.3"></path>
+    </g>
+    <defs>
+        <clipPath>
+            <path d="M.92 0h16v16h-16z"></path>
+        </clipPath>
+    </defs>
+</svg>
