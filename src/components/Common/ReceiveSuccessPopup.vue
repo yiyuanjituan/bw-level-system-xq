@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
+import receiveAudioSrc from '@/assets/theme-0/receive.mp3';
 
 type IconType = 'coin';
 
@@ -50,6 +51,7 @@ const award = ref<string | number>('');
 
 let autoCloseTimer: ReturnType<typeof setTimeout> | undefined;
 let hideTimer: ReturnType<typeof setTimeout> | undefined;
+const receiveAudio = new Audio(receiveAudioSrc);
 
 const rewardIconSrc = computed(() => rewardIconMap[iconType.value]);
 
@@ -68,6 +70,9 @@ async function open(params: OpenParams) {
   requestAnimationFrame(() => {
     isActive.value = true;
   });
+
+  receiveAudio.currentTime = 0;
+  void receiveAudio.play();
 
   autoCloseTimer = setTimeout(() => {
     close();
@@ -102,6 +107,8 @@ defineExpose({
 
 onBeforeUnmount(() => {
   clearTimers();
+  receiveAudio.pause();
+  receiveAudio.currentTime = 0;
 });
 </script>
 
