@@ -20,7 +20,7 @@ import { tabbarTransitionName } from "@/hooks/useTransition";
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--skin__bg_1);
   overflow: hidden;
 }
 
