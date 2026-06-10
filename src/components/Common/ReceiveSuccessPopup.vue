@@ -1,20 +1,21 @@
 ﻿<template>
-  <div v-if="isRendered" class="fixed top-0 left-0 right-0 flex justify-center items-center z-50">
+  <div v-if="isRendered" class="fixed top-[120px] left-0 right-0 flex justify-center z-50" style="pointer-events: none;">
     <div
       :key="contentKey"
-      class="receive-success-popup"
-      :class="{ 'receive-success-popup--active': isActive }"
-      :data-skin-bg="skinBg"
+      class="receive-success-popup-wrap"
+      :class="{ 'receive-success-popup-wrap--active': isActive }"
     >
-      <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" alt="领取成功" />
+      <div class="receive-success-popup" :data-skin-bg="skinBg">
+        <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" alt="领取成功" />
 
-      <div class="receive-success-popup__text" v-html="messageText" />
+        <div class="receive-success-popup__text" v-html="messageText" />
 
-      <img class="receive-success-popup__anime" src="@/assets/web/animated/apng_lingqu_5_alpha.png" alt="" />
+        <img class="receive-success-popup__anime" src="@/assets/web/animated/apng_lingqu_5_alpha.png" alt="" />
 
-      <div class="receive-success-popup__reward">
-        <img :src="rewardIconSrc" alt="" class="receive-success-popup__reward-icon" />
-        <span class="receive-success-popup__award">{{ award }}</span>
+        <div class="receive-success-popup__reward">
+          <img :src="rewardIconSrc" alt="" class="receive-success-popup__reward-icon" />
+          <span class="receive-success-popup__award">{{ award }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -101,6 +102,18 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="less" scoped>
+.receive-success-popup-wrap {
+  padding-top: 55px;
+  transform: scale(0.1);
+  transform-origin: top center;
+  transition: transform 0.6s ease;
+  pointer-events: none;
+
+  &--active {
+    transform: scale(1);
+  }
+}
+
 .receive-success-popup {
   position: relative;
   padding: 10px;
@@ -110,15 +123,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   align-items: center;
   font-size: 14px;
-  transform: scale(0);
-  margin-top: 175px;
-  transition:
-    transform 1s ease,
-    opacity 0.3s ease;
-
-  &--active {
-    transform: scale(1);
-  }
+  pointer-events: auto;
 
   &[data-skin-bg='1'] {
     background: #fff;
