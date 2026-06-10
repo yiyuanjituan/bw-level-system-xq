@@ -641,6 +641,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/getCashBackDetail",
+        "summary": "获取系统返水的详情数据"
+      },
+      {
+        "method": "post",
         "path": "/accountPageList",
         "summary": "钱包记录"
       },

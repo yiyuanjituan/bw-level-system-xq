@@ -45,7 +45,7 @@ function getDetailFromItem(record: any) {
     path: '/home/cashback-rates',
     query: {
       gameCategory: record.type,
-      gameSecondCateId: record.id
+      gameSecondCateId: record.venueId
     }
   })
 }
