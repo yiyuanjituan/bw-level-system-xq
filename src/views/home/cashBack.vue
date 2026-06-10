@@ -19,16 +19,12 @@ const activeTypeData = ref<number>(3);
 const listData = ref<any[]>([]);
 const awaitNum = ref<number>(0);
 const { refs, setRefs } = useRefs();
+const isLoadingGetReward = ref<boolean>(false);
 
 function refreshListData() {
   getData();
   isRefreshLoading.value = true;
   setTimeout(() => (isRefreshLoading.value = false), 2000);
-  refs['receiveSuccess']?.open({
-    messageText: '恭喜您，获得奖励！',
-    iconType: 'coin',
-    award: '+100',
-  });
 }
 
 function getData() {
@@ -41,6 +37,21 @@ function getData() {
 function handleChangeType(record: any) {
   activeTypeData.value = record.value;
   getData();
+}
+
+function handleGetCashBack() {
+  isLoadingGetReward.value = true;
+  service.v1.user.receiveCashBack().then(res => {
+
+  })
+  setTimeout(() => {
+    isLoadingGetReward.value = false;
+    refs['receiveSuccess']?.open({
+      messageText: '恭喜您，获得奖励！',
+      iconType: 'coin',
+      award: '+1.46'
+    });
+  }, 1000);
 }
 
 onMounted(() => getData());
@@ -71,7 +82,15 @@ onMounted(() => getData());
             </div>
           </div>
           <div class="extra-btn">
-            <x-button class="mt-[10px]" size="small" type="success" :disabled="awaitNum <= 0">一键领取</x-button>
+            <x-button
+              class="mt-[10px]"
+              size="small"
+              type="success"
+              :disabled="awaitNum <= 0"
+              :loading="isLoadingGetReward"
+              @click="handleGetCashBack"
+              >一键领取</x-button
+            >
             <x-button class="mt-[10px]" size="small" plain type="primary">领取记录</x-button>
             <x-button
               class="mt-[10px]"
@@ -252,6 +271,10 @@ onMounted(() => getData());
           flex-direction: column;
           :deep(.x-button__text) {
             text-overflow: unset !important;
+          }
+          :deep(.x-button__content) {
+            text-overflow: unset !important;
+            white-space: nowrap;
           }
         }
       }

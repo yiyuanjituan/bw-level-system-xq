@@ -39,7 +39,7 @@ const rewardIconMap: Record<IconType, string> = {
 };
 
 const SCALE_DURATION_MS = 170;
-const AUTO_CLOSE_MS = 2800;
+const AUTO_CLOSE_MS = 2400;
 
 const isRendered = ref(false);
 const isActive = ref(false);

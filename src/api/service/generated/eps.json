@@ -646,6 +646,11 @@
       },
       {
         "method": "post",
+        "path": "/receiveCashBack",
+        "summary": "领取返水奖励"
+      },
+      {
+        "method": "post",
         "path": "/personalReport",
         "summary": "个人报表"
       },
