@@ -1,108 +1,106 @@
 ﻿<template>
-  <div class="receive-success-popup" :data-skin-bg="skinBg">
-    <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" alt="领取成功" />
+  <div v-if="isRendered" class="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50">
+    <div
+      :key="contentKey"
+      class="receive-success-popup"
+      :class="{ 'receive-success-popup--active': isActive }"
+      :data-skin-bg="skinBg"
+    >
+      <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" alt="领取成功" />
 
-    <div class="receive-success-popup__text" v-html="messageHtml" />
+      <div class="receive-success-popup__text" v-html="messageText" />
 
-    <img class="receive-success-popup__anime" src="@/assets/web/animated/apng_lingqu_5_alpha.png" alt="" />
+      <img class="receive-success-popup__anime" src="@/assets/web/animated/apng_lingqu_5_alpha.png" alt="" />
 
-    <div class="receive-success-popup__right-content">
-      <span v-if="activityValue !== ''" class="receive-success-popup__activity">
-        <!-- 原站这里是奖励类型组件，这里改成无依赖标签，保留展示位、颜色和文本逻辑。 -->
-        <span class="receive-success-popup__activity-badge" :class="{ 'is-discount': isDiscountType }">
-          <img src="/siteadmin/active/rmb.svg" alt="" srcset="" class="receive-success-popup__icon" />
-          <span class="receive-success-popup__text-class">{{ activityDisplay }}</span>
-        </span>
-      </span>
-
-      <span v-if="awardValue > 0" class="receive-success-popup__currency">
-        <span class="receive-success-popup__icon-anime">{{ awardDisplay }}</span>
-      </span>
+      <div class="receive-success-popup__reward">
+        <img :src="rewardIconSrc" alt="" class="receive-success-popup__reward-icon" />
+        <span class="receive-success-popup__award">{{ award }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 
-type BonusType = number | string;
+type IconType = 'coin';
 
 interface Props {
-  award?: number | string;
-  activity?: number | string;
-  messageText?: string;
-  extraBonusType?: BonusType;
-  couponName?: string;
-  skinBg?: 0 | 1;
-  couponTitleText?: string;
-  discountTypeValue?: BonusType;
-  giftCountTypes?: BonusType[];
-  giftCountFormatter?: (value: number | string) => string;
+  messageText: string;
+  skinBg: 0 | 1;
+  iconType: IconType;
+  award: string | number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  award: 0,
-  activity: 0,
-  messageText: '',
-  extraBonusType: 'activity',
-  couponName: '',
-  skinBg: 1,
-  couponTitleText: '优惠券',
-  discountTypeValue: 'discount',
-  giftCountTypes: () => [],
-  giftCountFormatter: undefined
-});
+const props = defineProps<Props>();
 
-const awardValue = computed(() => {
-  const parsed = Number(props.award);
-  return Number.isFinite(parsed) ? parsed : 0;
-});
+const rewardIconMap: Record<IconType, string> = {
+  coin: '/siteadmin/active/rmb.svg'
+};
 
-const isDiscountType = computed(() => props.extraBonusType === props.discountTypeValue);
+const SCALE_DURATION_MS = 300;
+const AUTO_CLOSE_MS = 5000;
 
-const activityValue = computed(() => {
-  if (isDiscountType.value) {
-    return props.couponName || props.couponTitleText;
-  }
-  return props.activity;
-});
+const isRendered = ref(false);
+const isActive = ref(false);
+const contentKey = ref(0);
 
-const activityDisplay = computed(() => {
-  if (activityValue.value === '' || activityValue.value === 0 || activityValue.value === '0') {
-    return '';
-  }
+let autoCloseTimer: ReturnType<typeof setTimeout> | undefined;
+let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
-  if (isDiscountType.value) {
-    return String(activityValue.value);
-  }
+const rewardIconSrc = computed(() => rewardIconMap[props.iconType]);
 
-  const shouldFormatAsGiftCount = props.giftCountTypes.includes(props.extraBonusType);
-  const formattedValue =
-    shouldFormatAsGiftCount && props.giftCountFormatter ? props.giftCountFormatter(activityValue.value) : String(activityValue.value);
+async function open() {
+  clearTimers();
+  contentKey.value += 1;
+  isRendered.value = true;
+  isActive.value = false;
 
-  return `+${formattedValue}`;
-});
+  await nextTick();
 
-const awardDisplay = computed(() => {
-  const amount = formatAmount(awardValue.value);
-  return `+${amount}`;
-});
+  requestAnimationFrame(() => {
+    isActive.value = true;
+  });
 
-const messageHtml = computed(() => props.messageText || '恭喜您，获得奖励！');
-
-function formatAmount(value: number) {
-  const hasDecimal = !Number.isInteger(value);
-  return new Intl.NumberFormat('zh-CN', {
-    minimumFractionDigits: hasDecimal ? 2 : 0,
-    maximumFractionDigits: hasDecimal ? 2 : 0
-  }).format(value);
+  autoCloseTimer = setTimeout(() => {
+    close();
+  }, AUTO_CLOSE_MS);
 }
+
+function close() {
+  clearTimers();
+  isActive.value = false;
+
+  hideTimer = setTimeout(() => {
+    isRendered.value = false;
+  }, SCALE_DURATION_MS);
+}
+
+function clearTimers() {
+  if (autoCloseTimer) {
+    clearTimeout(autoCloseTimer);
+    autoCloseTimer = undefined;
+  }
+
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = undefined;
+  }
+}
+
+defineExpose({
+  open,
+  close
+});
+
+onBeforeUnmount(() => {
+  clearTimers();
+});
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .receive-success-popup {
   position: relative;
-  margin-top: 175px;
   padding: 10px;
   border-radius: 7px;
   width: 345px;
@@ -110,118 +108,94 @@ function formatAmount(value: number) {
   gap: 6px;
   align-items: center;
   font-size: 14px;
-}
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 
-.receive-success-popup[data-skin-bg='1'] {
-  background: #fff;
-}
-
-.receive-success-popup[data-skin-bg='0'] {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.receive-success-popup__icon-img,
-.receive-success-popup__text,
-.receive-success-popup__right-content {
-  position: relative;
-  z-index: 1;
-}
-
-.receive-success-popup__icon-img {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
-}
-
-.receive-success-popup__text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex: 1;
-  min-height: 32.5px;
-  line-height: 16px;
-  text-align: left;
-}
-
-.receive-success-popup[data-skin-bg='1'] .receive-success-popup__text {
-  color: #333;
-}
-
-.receive-success-popup[data-skin-bg='0'] .receive-success-popup__text {
-  color: #fff;
-}
-
-.receive-success-popup__right-content {
-  max-width: 140px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 5px;
-}
-
-.receive-success-popup__currency,
-.receive-success-popup__activity {
-  display: flex;
-  align-items: center;
-  color: #ffaa09;
-  font-weight: 700;
-  line-height: 1.67;
-  letter-spacing: normal;
-  text-align: left;
-}
-
-.receive-success-popup__activity {
-  margin: 0;
-}
-
-.receive-success-popup__activity-badge {
-  --category-icon-size: 15px;
-  --category-icon-font-size: 15px;
-  --category-text-font-size: 12px;
-  --category-text-width: 140px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2.5px;
-  max-width: var(--category-text-width);
-  color: inherit;
-}
-
-.receive-success-popup__activity-badge.is-discount {
-  color: var(--discount, #0d79ff);
-}
-
-.receive-success-popup__icon {
-  width: var(--category-icon-size);
-  height: var(--category-icon-size);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  font-size: var(--category-icon-font-size);
-  line-height: 1;
-  animation: receive-activity-icon-spin 0.9s linear 1;
-  transform-origin: center;
-}
-
-.receive-success-popup__text-class {
-  max-width: calc(var(--category-text-width) - var(--category-icon-size));
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@keyframes receive-currency-icon-rotate-y {
-  0% {
-    transform: rotateY(0);
+  &--active {
+    transform: scale(1);
+    opacity: 1;
   }
 
-  100% {
-    transform: rotateY(-360deg);
+  &[data-skin-bg='1'] {
+    background: #fff;
+
+    .receive-success-popup__text {
+      color: #333;
+    }
+  }
+
+  &[data-skin-bg='0'] {
+    background: rgba(0, 0, 0, 0.8);
+
+    .receive-success-popup__text {
+      color: #fff;
+    }
+  }
+
+  &__icon-img,
+  &__text,
+  &__reward {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__icon-img {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+  }
+
+  &__text {
+    display: flex;
+    flex: 1;
+    min-height: 32.5px;
+    line-height: 16px;
+    text-align: left;
+  }
+
+  &__reward {
+    max-width: 140px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2.5px;
+    color: #ffaa09;
+    font-weight: 700;
+    line-height: 1.67;
+    text-align: left;
+  }
+
+  &__reward-icon {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    animation: receive-reward-icon-spin 0.9s linear 1;
+    transform-origin: center;
+  }
+
+  &__award {
+    max-width: 122px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__anime {
+    position: absolute;
+    z-index: 0;
+    width: 400px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
   }
 }
 
-@keyframes receive-activity-icon-spin {
+@keyframes receive-reward-icon-spin {
   0% {
     transform: rotate(0deg);
   }
@@ -231,21 +205,4 @@ function formatAmount(value: number) {
   }
 }
 
-.receive-success-popup__icon-anime {
-  display: inline-block;
-  animation: receive-currency-icon-rotate-y 1s linear 1;
-  transform-origin: center;
-  color: #ffaa09;
-}
-
-.receive-success-popup__anime {
-  position: absolute;
-  z-index: 0;
-  width: 400px;
-  height: 100px;
-  top: calc(50% - 50px);
-  left: calc(50%);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
 </style>

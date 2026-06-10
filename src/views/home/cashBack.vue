@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import { formatMoney } from '@/utils/common';
 import UiEmpty from '@/components/UI/empty.vue';
+import { useRefs } from '@/hooks/useRefs';
 
 const isRefreshLoading = ref(false);
 const typeOptions: { label: string; value: string | number; image?: string }[] = [
@@ -17,11 +18,13 @@ const typeOptions: { label: string; value: string | number; image?: string }[] =
 const activeTypeData = ref<number>(3);
 const listData = ref<any[]>([]);
 const awaitNum = ref<number>(0);
+const { refs, setRefs } = useRefs();
 
 function refreshListData() {
   getData();
   isRefreshLoading.value = true;
   setTimeout(() => (isRefreshLoading.value = false), 2000);
+  refs['receiveSuccess']?.open();
 }
 
 function getData() {
@@ -117,7 +120,7 @@ onMounted(() => getData());
       </div>
     </div>
     <div class="fixed top-0 left-0 right-0 flex justify-center items-center z-50">
-      <receive-success-popup award="20.00" />
+      <receive-success-popup award="20.00" :ref="setRefs('receiveSuccess')" />
     </div>
   </div>
 </template>
