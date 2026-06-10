@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import UiLoading from '@/components/UI/loading.vue';
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { handleBack } from '@/utils/common';
 import { service } from '@/api/service';
+import UiEmpty from '@/components/UI/empty.vue';
 
 const route = useRoute();
+const router = useRouter();
 
 const activeCategory = ref(1);
 const activeCodeId = ref<number | string>('');
@@ -27,6 +29,24 @@ function getTypeLabel(type: number) {
   return typeOptions.find(item => item.value === type)?.label;
 }
 
+async function syncRouteQuery(gameCategory: number, gameSecondCateId: number | string) {
+  const nextGameCategory = String(gameCategory);
+  const nextGameSecondCateId = String(gameSecondCateId);
+
+  if (route.query.gameCategory === nextGameCategory && route.query.gameSecondCateId === nextGameSecondCateId) {
+    return;
+  }
+
+  await router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      gameCategory: nextGameCategory,
+      gameSecondCateId: nextGameSecondCateId
+    }
+  });
+}
+
 async function loadDetail(gameCategory: number, gameSecondCateId: number | string) {
   isPageLoading.value = true;
   const res = await service.v1.user.getCashBackDetail({ gameCategory, gameSecondCateId });
@@ -41,6 +61,7 @@ async function loadDetail(gameCategory: number, gameSecondCateId: number | strin
   currentLevel.value = res.level;
   codeOptions.value = res.options;
   detailList.value = res.list;
+  await syncRouteQuery(gameCategory, res.activeId);
   isPageLoading.value = false;
 }
 
@@ -104,7 +125,11 @@ onMounted(() => init());
         <ui-loading />
       </div>
 
-      <div class="scroll-box" v-else>
+      <div class="loading-box" v-if="!isPageLoading && detailList.length == 0">
+        <ui-empty text="数据为空" />
+      </div>
+
+      <div class="scroll-box" v-if="!isPageLoading && detailList.length > 0">
         <div class="cell" v-for="item in detailList" :key="item.id">
           <div class="thead-item"><span>{{ getTypeLabel(item.type) }}</span></div>
           <div class="thead-item"><span>{{ item.apiCode }}</span></div>
