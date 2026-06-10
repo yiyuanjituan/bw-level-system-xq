@@ -111,14 +111,13 @@ onBeforeUnmount(() => {
   align-items: center;
   font-size: 14px;
   transform: scale(0);
-  opacity: 0;
+  margin-top: 175px;
   transition:
-    transform 0.3s ease,
+    transform 1s ease,
     opacity 0.3s ease;
 
   &--active {
     transform: scale(1);
-    opacity: 1;
   }
 
   &[data-skin-bg='1'] {
