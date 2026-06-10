@@ -8,6 +8,9 @@ import { service } from '@/api/service';
 const route = useRoute();
 
 const activeCategory = ref(1);
+const activeCodeId = ref<number | string>('');
+const currentLevel = ref(0);
+const detailList = ref<any[]>([]);
 const isPageLoading = ref(true);
 const typeOptions: any[] = [
   { label: '真人', value: 1 },
@@ -18,20 +21,44 @@ const typeOptions: any[] = [
   { label: '棋牌', value: 6 },
   { label: '电竞', value: 7 }
 ];
-const codeOptions = ref<any>([])
+const codeOptions = ref<any[]>([]);
 
-function init() {
+function getTypeLabel(type: number) {
+  return typeOptions.find(item => item.value === type)?.label;
+}
+
+async function loadDetail(gameCategory: number, gameSecondCateId: number | string) {
+  isPageLoading.value = true;
+  const res = await service.v1.user.getCashBackDetail({ gameCategory, gameSecondCateId });
+
+  if (!res.activeId) {
+    handleBack();
+    return;
+  }
+
+  activeCategory.value = gameCategory;
+  activeCodeId.value = res.activeId;
+  currentLevel.value = res.level;
+  codeOptions.value = res.options;
+  detailList.value = res.list;
+  isPageLoading.value = false;
+}
+
+async function init() {
   if (!route.query.gameCategory || !route.query.gameSecondCateId) {
     handleBack();
+    return;
   }
-  const { gameCategory, gameSecondCateId } = route.query;
-  activeCategory.value = Number(gameCategory);
-  service.v1.user
-    .getCashBackDetail({ gameCategory, gameSecondCateId })
-    .finally(() => (isPageLoading.value = false))
-    .then(res => {
-      console.log(res);
-    });
+
+  await loadDetail(Number(route.query.gameCategory), Number(route.query.gameSecondCateId));
+}
+
+async function handleCategoryChange(value: number | string) {
+  await loadDetail(Number(value), activeCodeId.value);
+}
+
+async function handleCodeChange(value: number | string) {
+  await loadDetail(activeCategory.value, value);
 }
 
 onMounted(() => init());
@@ -45,12 +72,24 @@ onMounted(() => init());
       <div class="search-header">
         <div class="thead-item">
           <div class="thead-cell">
-            <x-select :options="typeOptions" value-key="value" fit-option-width v-model="activeCategory" />
+            <x-select
+              v-model="activeCategory"
+              :options="typeOptions"
+              value-key="value"
+              fit-option-width
+              @change="handleCategoryChange"
+            />
           </div>
         </div>
         <div class="thead-item">
           <div class="thead-cell">
-            <x-select :options="typeOptions" value-key="value" fit-option-width />
+            <x-select
+              v-model="activeCodeId"
+              :options="codeOptions"
+              value-key="value"
+              fit-option-width
+              @change="handleCodeChange"
+            />
           </div>
         </div>
         <div class="thead-item">
@@ -60,15 +99,17 @@ onMounted(() => init());
           <div class="thead-cell">返水比例</div>
         </div>
       </div>
-      <div class="flex-1 flex items-center justify-center">
+
+      <div class="loading-box" v-if="isPageLoading">
         <ui-loading />
       </div>
-      <div class="scroll-box" v-if="false">
-        <div class="cell" v-for="i in 20" :key="i">
-          <div class="thead-item"><span>捕 鱼</span></div>
-          <div class="thead-item"><span>JDB</span></div>
-          <div class="thead-item"><span>VIP0</span></div>
-          <div class="thead-item"><span>0.40%</span></div>
+
+      <div class="scroll-box" v-else>
+        <div class="cell" v-for="item in detailList" :key="item.id">
+          <div class="thead-item"><span>{{ getTypeLabel(item.type) }}</span></div>
+          <div class="thead-item"><span>{{ item.apiCode }}</span></div>
+          <div class="thead-item"><span>VIP{{ item.level }}</span></div>
+          <div class="thead-item"><span>{{ item.scale }}%</span></div>
         </div>
       </div>
     </div>
@@ -89,11 +130,10 @@ onMounted(() => init());
     flex-direction: column;
     min-height: 0;
     padding: 0 10px;
-    align-items: center;
-    justify-content: center;
 
     .search-header {
       height: 45px;
+      width: 100%;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -101,16 +141,27 @@ onMounted(() => init());
       min-height: 40px;
       text-align: center;
       border-radius: 5px;
+
       :deep(.x-select__placeholder) {
         font-size: 10px;
       }
     }
+
+    .loading-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .scroll-box {
       flex: 1;
       min-height: 0;
+      width: 100%;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+
       .cell {
         min-height: 35px;
         border-radius: 5px;
@@ -120,18 +171,22 @@ onMounted(() => init());
         font-size: 10px;
         width: 100%;
         line-height: 1.5;
+
         &:nth-child(odd) {
           background-color: var(--skin__bg_2);
         }
+
         .thead-item {
           font-size: 10px !important;
           color: var(--skin__neutral_1) !important;
+
           &:first-child {
             padding-left: 5px;
           }
         }
       }
     }
+
     .thead-item {
       width: calc(355px / 4);
       display: flex;
@@ -142,9 +197,11 @@ onMounted(() => init());
       color: var(--skin__lead);
       line-height: 15px;
       word-break: break-word;
+
       &:first-child {
         padding-left: 0;
       }
+
       .thead-cell {
         display: flex;
         align-items: center;
@@ -156,11 +213,13 @@ onMounted(() => init());
         vertical-align: middle;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+
         :deep(.x-select) {
           width: 80px;
           height: 25px;
           border-radius: 9999rem;
         }
+
         :deep(.x-select__label) {
           color: var(--skin__neutral_2, var(--skin__lead));
         }
