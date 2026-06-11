@@ -34,7 +34,7 @@ class Http {
     Http.axiosInstance.interceptors.request.use(
       config => {
         // 发送请求前，可在此携带 token
-        config.headers["site_id"] = import.meta.env.VITE_SITE_ID;
+        config.headers["siteId"] = import.meta.env.VITE_SITE_ID;
         config.headers["language"] = $locale.value;
 
         const auth = localStorage.getItem("user")

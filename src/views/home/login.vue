@@ -13,6 +13,7 @@ import router from "@/router";
 import LoginPopup from "@/components/Common/Login.vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
+import type { FormExpose } from "@/components/UI/form-context";
 
 const url = "https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif";
 const richText = ref(``);
@@ -21,13 +22,13 @@ const height = ref('0px')
 const activeTabs = ref(0)
 const showLoading = ref(false);
 const registerForm = ref<registerProps>({ type: 'password' } as registerProps);
-const registerFormRef = useTemplateRef('registerFormRef')
+const registerFormRef = useTemplateRef<{ form: FormExpose }>('registerFormRef')
 const route = useRoute();
 const app = useAppStore();
 
 // 登录的form
 const loginForm = ref<loginProps>({ type: 'password', accountType: 'account' } as loginProps)
-const loginFormRef = useTemplateRef('loginFormRef')
+const loginFormRef = useTemplateRef<{ form: { validate: () => Promise<void> } }>('loginFormRef')
 
 const policyRef = ref();
 const isAgreeAccept = ref(true); // 是否同意政策

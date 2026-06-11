@@ -12,6 +12,7 @@
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
   <download-tip :ref="setRefs('downloadTip')" />
+  <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
 </template>
 
 <script setup lang="ts">

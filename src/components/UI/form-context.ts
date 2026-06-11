@@ -14,6 +14,13 @@ export type FormRules = Record<string, FormRuleItem | FormRuleItem[]>;
 export type FormModel = Record<string, any>;
 export type FormErrors = Record<string, string>;
 
+export interface FormExpose {
+  validateField: (field: string, trigger?: string) => Promise<void>;
+  validate: (fields?: string | string[]) => Promise<void>;
+  clearValidate: (fields?: string | string[]) => void;
+  errors: Ref<FormErrors>;
+}
+
 export interface FormContextValue {
   rules: Ref<FormRules>;
   model: Ref<FormModel>;

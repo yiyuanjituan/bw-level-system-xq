@@ -1,7 +1,7 @@
-import { getCommonInfo, getConfig } from "@/api/common";
-import setPageTitle from "@/utils/set-page-title";
+import { getCommonInfo, getConfig } from '@/api/common';
+import setPageTitle from '@/utils/set-page-title';
 
-export const APP_PREFIX_KEY = "YG_PREFIX";
+export const APP_PREFIX_KEY = 'YG_PREFIX';
 
 export function initApp() {
   return Promise.all([getSiteConfig(), getHomeData(), getLocalSize()]);
@@ -9,21 +9,25 @@ export function initApp() {
 
 function getSiteConfig() {
   return new Promise((resolve, reject) => {
-    getConfig().then((res) => {
-      localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
-      setPageTitle(res.title);
-      resolve(res)
-    }).catch((err) => resolve(void 0))
-  })
+    getConfig()
+      .then(res => {
+        localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
+        setPageTitle(res.title);
+        resolve(res);
+      })
+      .catch(err => resolve(void 0));
+  });
 }
 
 function getHomeData() {
   return new Promise((resolve, reject) => {
-    getCommonInfo().then((res) => {
-      localStorage.setItem(`${APP_PREFIX_KEY}_site_game`, JSON.stringify(res));
-      resolve(res)
-    }).catch((err) => resolve(void 0))
-  })
+    getCommonInfo()
+      .then(res => {
+        localStorage.setItem(`${APP_PREFIX_KEY}_site_game`, JSON.stringify(res));
+        resolve(res);
+      })
+      .catch(err => resolve(void 0));
+  });
 }
 
 export function toggleFullScreen() {
@@ -44,11 +48,14 @@ export function toggleFullScreen() {
     // 进入全屏（兼容不同浏览器）
     if (docEl.requestFullscreen) {
       docEl.requestFullscreen();
-    } else if (docEl.webkitRequestFullscreen) { // Chrome/Safari
+    } else if (docEl.webkitRequestFullscreen) {
+      // Chrome/Safari
       docEl.webkitRequestFullscreen();
-    } else if (docEl.mozRequestFullScreen) { // Firefox
+    } else if (docEl.mozRequestFullScreen) {
+      // Firefox
       docEl.mozRequestFullScreen();
-    } else if (docEl.msRequestFullscreen) { // IE/Edge
+    } else if (docEl.msRequestFullscreen) {
+      // IE/Edge
       docEl.msRequestFullscreen();
     }
   } else {
@@ -68,25 +75,25 @@ export function toggleFullScreen() {
 export function isFullscreen() {
   const doc: any = document;
   return !!(
-    doc.fullscreenElement ||
-    doc.webkitFullscreenElement ||  // Safari/Chrome
-    doc.mozFullScreenElement ||     // Firefox
-    doc.msFullscreenElement         // IE/Edge
+    (
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement || // Safari/Chrome
+      doc.mozFullScreenElement || // Firefox
+      doc.msFullscreenElement
+    ) // IE/Edge
   );
 }
 
 export function getLocalSize() {
-  const htmlDom = document.body
-  htmlDom.style.setProperty('--window-height', window.innerHeight + 'px')
-  htmlDom.style.setProperty('--lobby__screen-height', window.innerHeight + 'px')
-  htmlDom.style.setProperty('--window-width', window.innerWidth + 'px')
-  window.addEventListener('resize', (data) => {
-    htmlDom.style.setProperty('--window-width', window.innerWidth + 'px')
-    htmlDom.style.setProperty('--window-height', window.innerHeight + 'px')
-    htmlDom.style.setProperty('--lobby__screen-height', window.innerHeight + 'px')
-  })
+  const htmlDom = document.body;
+  htmlDom.style.setProperty('--window-height', window.innerHeight + 'px');
+  htmlDom.style.setProperty('--lobby__screen-height', window.innerHeight + 'px');
+  htmlDom.style.setProperty('--window-width', window.innerWidth + 'px');
+  window.addEventListener('resize', data => {
+    htmlDom.style.setProperty('--window-width', window.innerWidth + 'px');
+    htmlDom.style.setProperty('--window-height', window.innerHeight + 'px');
+    htmlDom.style.setProperty('--lobby__screen-height', window.innerHeight + 'px');
+  });
 }
 
-function initSiteLocalData() {
-
-}
+function initSiteLocalData() {}

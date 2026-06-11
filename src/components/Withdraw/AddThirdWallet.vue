@@ -9,18 +9,19 @@ import UiButton from "@/components/Common/Button.vue";
 import { bindCard } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import useAuthStore from "@/store/modules/user";
+import type { FormExpose, FormRules } from "@/components/UI/form-context";
 
 
 const { isSupported } = useClipboard()
 const emits = defineEmits(["refresh"]);
-const formRef = useTemplateRef('form')
+const formRef = useTemplateRef<FormExpose>('form')
 const show = ref(false);
 const isLoading = ref(false);
 
 const thirdList: any = inject<Ref<any[]>>("thirdList");
 const auth = useAuthStore()
 const modelValue = ref<any>();
-const formRules = ref({
+const formRules = ref<FormRules>({
   bank_number: [
     { required: true, message: "地址不能为空", trigger: "blur" },
   ],
@@ -81,24 +82,24 @@ defineExpose({
             <span>添加三方钱包</span>
           </div>
           <div class="content-box">
-            <ui-form :rule="formRules" :model="modelValue" ref="form">
-              <ui-form-item prop="bank_id">
-                <ui-common-select prefix="input_icon_bank" :options="thirdList.filter(v => v.type == 0)" value-field="id" label-field="wallet_name" icon-field="wallet_icon" v-model="modelValue.bank_id" placeholder="请选择发卡银行">
+            <x-form :rule="formRules" :model="modelValue" ref="form">
+              <x-form-item prop="bank_id">
+                <x-select prefix="input_icon_bank" :options="thirdList.filter(v => v.type == 0)" value-field="id" label-field="wallet_name" icon-field="wallet_icon" v-model="modelValue.bank_id" placeholder="请选择发卡银行">
                   <template #prefix>
                     <img :src="thirdList.find(v => v.id == modelValue.bank_id)?.wallet_icon" alt="." class="w-[15px] h-[15px]" />
                   </template>
-                </ui-common-select>
-              </ui-form-item>
-              <ui-form-item prop="bank_number">
-                <ui-input placeholder="请输入钱包地址" v-model="modelValue.bank_number" type="text">
+                </x-select>
+              </x-form-item>
+              <x-form-item prop="bank_number">
+                <x-input placeholder="请输入钱包地址" v-model="modelValue.bank_number" type="text">
                   <template #suffix>
                     <span class="main-text" @click="copyToBankNumber">粘贴</span>
                   </template>
-                </ui-input>
-              </ui-form-item>
+                </x-input>
+              </x-form-item>
               <div class="mark">请认真核对，否则将无法到账。</div>
-              <ui-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">确 定</ui-button>
-            </ui-form>
+              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">确 定</x-button>
+            </x-form>
           </div>
         </div>
       </div>

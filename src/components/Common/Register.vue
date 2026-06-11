@@ -11,6 +11,7 @@ import { showCustomToast } from "@/hooks/useCommon";
 import useAppStore from "@/store/modules/app";
 import { registerProps } from "@/enums/props";
 import UiSelect from "@/components/UI/select.vue";
+import type { FormExpose, FormRules } from "@/components/UI/form-context";
 
 defineOptions({
   name: "register-popup"
@@ -30,9 +31,9 @@ const checkInputIsPhone = computed(() => {
   return predictPhoneNumber(modelValue.value.account, modelValue.value.type == 'sms')?.isValid;
 });
 // 校验规则
-const formRef = useTemplateRef('form')
+const formRef = useTemplateRef<FormExpose>('form')
 
-const formRules = ref({
+const formRules = ref<FormRules>({
   account: [
     { required: true, message: '请输入手机号码/账号', trigger: 'blur' },
     {
@@ -117,46 +118,46 @@ defineExpose({
     <section class="login-register-tab-sub-title">
       {{ $t("支持手机号码/账号注册") }}
     </section>
-    <ui-form :rule="formRules" :model="modelValue" ref="form">
-      <ui-form-item prop="account">
-        <ui-input prefix="user" required placeholder="请输入手机号码/账号" :class="{ '!pl-[0px]': checkInputIsPhone }" v-model="modelValue.account">
+    <x-form :rule="formRules" :model="modelValue" ref="form">
+      <x-form-item prop="account">
+        <x-input prefix="user" required placeholder="请输入手机号码/账号" :class="{ '!pl-[0px]': checkInputIsPhone }" v-model="modelValue.account">
           <template #prefix v-if="checkInputIsPhone">
             <div class="country-icon">
               <img src="@/assets/common/ChineseMainland.png" alt="." class="w-[18px] h-auto" />
               <span class="ml-[10px]">+86</span>
             </div>
           </template>
-        </ui-input>
-      </ui-form-item>
+        </x-input>
+      </x-form-item>
       <change-mode v-if="modelValue.type == 'password' && app.appInfo?.openSms" @change="modelValue.type = 'sms'" />
-      <ui-form-item prop="sms_code" v-if="checkInputIsPhone && modelValue.type == 'sms'">
-        <ui-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
+      <x-form-item prop="sms_code" v-if="checkInputIsPhone && modelValue.type == 'sms'">
+        <x-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
           <template #suffix>
             <span class="inline-flex items-center" @click="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'text-[#F0C059]']">
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
               {{ smsTime > 0 ? `${smsTime}秒后重发` : '获取验证码' }}
             </span>
           </template>
-        </ui-input>
-      </ui-form-item>
-      <ui-form-item prop="password">
-        <ui-input prefix="lock" required placeholder="请输入密码" v-model="modelValue.password" show-eye />
-      </ui-form-item>
+        </x-input>
+      </x-form-item>
+      <x-form-item prop="password">
+        <x-input prefix="lock" required placeholder="请输入密码" v-model="modelValue.password" show-eye />
+      </x-form-item>
       <password-power :text="modelValue.password" />
-      <ui-form-item prop="two_password">
-        <ui-input prefix="lock" v-model="modelValue.two_password" required placeholder="请再次输入密码" show-eye />
-      </ui-form-item>
-      <ui-form-item prop="currency">
-        <ui-select required placeholder="请输入密码" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
-      </ui-form-item>
-      <ui-form-item prop="invite_code">
-        <ui-input prefix="invite_code" v-model="modelValue.invite_code" placeholder="请输入您的邀请码">
+      <x-form-item prop="two_password">
+        <x-input prefix="lock" v-model="modelValue.two_password" required placeholder="请再次输入密码" show-eye />
+      </x-form-item>
+      <x-form-item prop="currency">
+        <x-select required placeholder="请输入密码" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
+      </x-form-item>
+      <x-form-item prop="invite_code">
+        <x-input prefix="invite_code" v-model="modelValue.invite_code" placeholder="请输入您的邀请码">
           <template #suffix>
             <span class="text-[#F0C059] text-[11px] cursor-pointer" @click="copyToForm">粘贴</span>
           </template>
-        </ui-input>
-      </ui-form-item>
-    </ui-form>
+        </x-input>
+      </x-form-item>
+    </x-form>
   </div>
 </template>
 
