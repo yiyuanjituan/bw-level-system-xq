@@ -33,7 +33,7 @@ defineExpose({
 </script>
 
 <template>
-  <x-popup position="bottom" v-model:show="handleShow" :z-index="100" @close="onClosed">
+  <x-popup position="bottom" v-model:show="handleShow" :z-index="200" @close="onClosed">
     <div class="down-box">
       <div class="close-icon" @click="close">
         <svg-icon name="comm_icon_x" />

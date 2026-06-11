@@ -48,6 +48,17 @@ async function init() {
           activeTabName.value = "103";
         }
         getTaskData();
+
+        // 设置倒计时
+        if (activeTabName.value == "101") {
+          timeCountDown.value = 0;
+        } else if (activeTabName.value == "102") {
+          timeCountDown.value = dayjs().endOf("day").valueOf() - dayjs().valueOf();
+        } else if (activeTabName.value == "103") {
+          timeCountDown.value = dayjs().endOf("isoWeek").valueOf() - dayjs().valueOf();
+        }
+        // 设置倒计时
+
         resolve(void 0);
       })
       .catch(reject);
@@ -105,7 +116,7 @@ function handleGetReward(record: any) {
     });
 }
 
-function seeMore(record) {
+function seeMore(record: any) {
   let titleText = "";
   if (record.taskDetailType == 8 || record.taskDetailType == 10) {
     titleText = "仅限游戏";
