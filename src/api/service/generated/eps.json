@@ -363,6 +363,11 @@
         "method": "get",
         "path": "/findUs",
         "summary": "找到我们的数据"
+      },
+      {
+        "method": "get",
+        "path": "/popup",
+        "summary": "首页的弹窗数据"
       }
     ]
   },

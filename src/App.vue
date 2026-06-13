@@ -13,6 +13,7 @@
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
   <download-tip :ref="setRefs('downloadTip')" />
   <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
+  <dialog-tip :ref="setRefs('dialogTipRef')" />
 </template>
 
 <script setup lang="ts">
@@ -54,6 +55,7 @@ const busListen = () => {
 };
 
 function checkPopupTip() {
+  refs['dialogTipRef']?.open({})
   setTimeout(() => {
     if (route.name == 'Index') {
       refs['downloadTip']?.open();

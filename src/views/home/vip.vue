@@ -115,7 +115,7 @@ onMounted(() => init());
     position: sticky;
     top: 0;
     background: var(--skin__bg_2);
-    z-index: 99999;
+    z-index: 9;
   }
   :deep(.x-tabs__nav) {
     height: calc(39px - 7.5px);

@@ -86,14 +86,20 @@ watch(
 
 const activeGroup = computed(() => {
   if (!props.listData.length) return {};
-  if (activeIds.value[0] == 0) activeIds.value[0] = props.listData[0].id;
+  if (activeIds.value[0] == 0) {
+    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    activeIds.value[0] = props.listData[0].id;
+  }
   const info = props.listData.find(v => v.id == activeIds.value[0]);
   return info ?? {};
 });
 
 const activeInfo = computed(() => {
   const info = activeGroup.value;
-  if (activeIds.value[1] == 0 && info?.children?.length > 0) activeIds.value[1] = info.children[0].id;
+  if (activeIds.value[1] == 0 && info?.children?.length > 0) {
+    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    activeIds.value[1] = info.children[0].id;
+  }
   const childrenData = info?.children?.find(v => v.id == activeIds.value[1]);
   return childrenData ?? {};
 });
@@ -353,6 +359,9 @@ watch(
   width: 100%;
   border-bottom: solid var(--skin__border);
   border-color: var(--skin__border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
   margin-bottom: 10px;
   margin-top: 10px;
 }

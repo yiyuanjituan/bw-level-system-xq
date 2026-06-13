@@ -48,7 +48,7 @@ const list = ref([
   { name: "任务", path: "/home/task" },
   { name: "VIP", path: "/home/vip" },
   { name: "返水", path: "/home/cashback" },
-  { name: "待领取", path: "/home/task" },
+  { name: "待领取", path: "/home/canReceive" },
   { name: "利息宝", path: "/home/yuebao" },
   { name: "领取记录", path: "/home/records" }
 ]);
@@ -115,11 +115,11 @@ onMounted(() => {
       flex: 1;
 
       --van-tabs-line-height: 100%;
-      --van-tab-text-color: white;
+      --van-tab-text-color: var(--skin__lead);
       --van-padding-xs: 0px;
       --van-padding-sm: 15px;
-      --van-tabs-bottom-bar-color: #f0c059;
-      --van-tab-active-text-color: #f0c059;
+      --van-tabs-bottom-bar-color: var(--skin__primary);
+      --van-tab-active-text-color: var(--skin__primary);
       --van-tabs-bottom-bar-height: 2px;
       --van-tab-font-size: 12px;
       --van-tabs-bottom-bar-width: 24px;

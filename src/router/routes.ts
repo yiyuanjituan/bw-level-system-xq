@@ -88,6 +88,19 @@ const routes: Array<RouteRecordRaw> = [
             }
           },
           {
+            path: "canReceive",
+            name: "HomeCanReceive",
+            component: () => import("@/views/home/canReceive.vue"),
+            meta: {
+              title: "待领取",
+              order: 3,
+              tabBarOrder: 1,
+              headerOrder: 4,
+              isTabBar: true,
+              pageTransition: "page-slide-forward"
+            }
+          },
+          {
             path: "records",
             name: "HomeRecords",
             component: () => import("@/views/home/records/index.vue"),

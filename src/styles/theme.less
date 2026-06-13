@@ -1,10 +1,4 @@
-:root:root {
-  --van-button-plain-background: transparent;
-  --van-primary-color: #DFBE5B;
-  --van-button-normal-font-size: 12px;
-  --van-button-radius: 7px;
-
-
+:root {
   --skin__bg-shadow__custom: rgba(0, 0, 0, 0.06);
   --skin__bg_1: #000;
   --skin__bg_2: #191919;
@@ -31,4 +25,68 @@
   --skin__left_nav_active: #FFFFFF;
   --skin__web_left_bg_shadow: #0000001F;
   --skin__label_text_accent3: var(--skin__lead);
+}
+
+
+html[data-theme="2"]:root {
+  --skin__bg_1: #ECF5FF;
+  --skin__bg_2: #FCFDFF;
+
+  --skin__lead: #001837;
+  --skin__lead__toRgbString: 0, 24, 55;
+
+  --skin__neutral_1: #4872A6;
+  --skin__neutral_1__toRgbString: 72, 114, 166;
+
+  --skin__neutral_2: #8AB9F3;
+  --skin__neutral_2__toRgbString: 138, 185, 243;
+
+  --skin__neutral_3: #C3D4E9;
+  --skin__neutral_3__toRgbString: 195, 212, 233;
+
+  --skin__primary: #338AF8;
+  --skin__primary__toRgbString: 51, 138, 248;
+
+  --skin__border: #D3E6FF;
+  --skin__border__toRgbString: 211, 230, 255;
+
+  --skin__accent_1: #09CF31;
+  --skin__accent_1__toRgbString: 9, 207, 49;
+
+  --skin__accent_2: #F8544B;
+  --skin__accent_2__toRgbString: 248, 84, 75;
+
+  --skin__accent_3: #FFAA09;
+  --skin__accent_3__toRgbString: 255, 170, 9;
+
+  --skin__filter_active: #338AF8;
+  --skin__filter_active__toRgbString: 51, 138, 248;
+
+  --skin__text_primary: #FFFFFF;
+  --skin__text_primary__toRgbString: 255, 255, 255;
+
+  --skin__left_nav_def: #8AB9F3;
+  --skin__left_nav_def__toRgbString: 138, 185, 243;
+
+  --skin__left_nav_active: #FFFFFF;
+  --skin__left_nav_active__toRgbString: 255, 255, 255;
+
+  --skin__web_left_bg_shadow: #ABCBE21F;
+
+  --skin__label_text_accent3: #FFFFFF;
+  --skin__label_text_accent3__toRgbString: 255, 255, 255;
+
+  --lobby__px: 0.5px;
+
+  --van-popup-background: var(--skin__bg_2);
+  --van-popover-light-background: var(--skin__bg_2);
+  --van-popover-radius: 7px;
+}
+
+:root:root {
+  --van-button-plain-background: transparent;
+  --van-primary-color: var(--skin__primary);
+  --van-button-normal-font-size: 12px;
+  --van-button-radius: 7px;
+  --van-tab-text-color: var(--skin__lead) !important;
 }

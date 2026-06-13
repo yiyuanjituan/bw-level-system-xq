@@ -5,11 +5,16 @@ import useAuthStore from "@/store/modules/user";
 import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
+import { bus } from '@/utils/mitt';
 
 const auth = useAuthStore();
 const app = useAppStore();
 
 function handleWithdraw() {
+  if (!auth.token || !auth.user?.id) {
+    router.push("/home/login");
+    return false;
+  }
   if (!auth.user.hasPayPassword) {
     router.push("/home/security");
     return showCustomToast({
@@ -19,6 +24,14 @@ function handleWithdraw() {
   } else {
     router.push("/home/withdraw");
   }
+}
+
+function handleRecharge() {
+  bus.emit('showRecharge')
+}
+
+function handleLxb() {
+  router.push("/home/yuebao");
 }
 </script>
 
@@ -73,7 +86,7 @@ function handleWithdraw() {
               </div>
               <div class="label">提现</div>
             </div>
-            <div class="nav-item">
+            <div class="nav-item" @click="handleRecharge()">
               <div class="icon">
                 <picture>
                   <source
@@ -95,7 +108,7 @@ function handleWithdraw() {
               </div>
               <div class="label">存款</div>
             </div>
-            <div class="nav-item">
+            <div class="nav-item" @click="handleLxb()">
               <ui-badge content="80%">
                 <div class="icon">
                   <svg-icon name="style_2_icon_mid_lxb" class="svg-icon" />

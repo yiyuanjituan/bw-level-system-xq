@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import UiBadge from "@/components/UI/badge.vue";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { getEventData } from "@/api/common";
 import router from "@/router";
 import { showCustomToast } from "@/hooks/useCommon";
@@ -11,10 +11,15 @@ const totalTypes = ref<any[]>([]);
 const totalList = ref<any[]>([]);
 const isLoading = ref(false);
 const appData = useAppStore();
+const activeCategoryId = ref(0)
 
 function handleJump(record: any) {
   if (record.jumpMode == 1) {
     router.push(`/home/event/detail?eventId=${record.id}`);
+  } else if (record.jumpMode == 2) {
+    router.push(record.url)
+  } else {
+    window.open(record.url)
   }
 }
 function handleLoading() {
@@ -37,6 +42,10 @@ function init() {
   });
 }
 
+const activeList = computed(() => {
+
+})
+
 onMounted(() => {
   init();
 });
@@ -54,7 +63,7 @@ onMounted(() => {
             </div>
           </ui-badge>
         </div>
-        <div class="ui-tab-item" v-for="item in totalTypes">
+        <div class="ui-tab-item" v-for="item in totalTypes" :key="item.id">
           <ui-badge class="w-[75px] h-[35px] mt-[10px]" :content="0" :size="[2, 0]">
             <div class="item-box flex items-center justify-center">
               <img :src="item.logo" v-if="item.logo" alt="" srcset="" class="w-auto h-[24px]" />
@@ -81,7 +90,7 @@ onMounted(() => {
     </div>
     <div class="ui-tab-right">
       <div class="panel">
-        <div class="panel-item-box" v-for="item in totalList">
+        <div class="panel-item-box" v-for="item in totalList" :key="item.id">
           <img :src="item.image" alt="" srcset="" class="w-[100%] h-[100%]" @click="handleJump(item)" />
         </div>
       </div>

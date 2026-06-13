@@ -683,14 +683,19 @@ declare namespace Eps {
 			findUs(data?: any): Promise<any>;
 
 		/**
+			 * 首页的弹窗数据
+			 */
+			popup(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { classifyData: string; config: string; findUs: string; };
+		permission: { classifyData: string; config: string; findUs: string; popup: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { classifyData: boolean; config: boolean; findUs: boolean; };
+		_permission: { classifyData: boolean; config: boolean; findUs: boolean; popup: boolean; };
 
 		request: Service["request"];
 	}
