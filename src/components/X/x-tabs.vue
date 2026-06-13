@@ -62,6 +62,7 @@ const panelRefs = new Map<number, HTMLElement>();
 
 let contentObserver: ResizeObserver | null = null;
 let activePanelObserver: ResizeObserver | null = null;
+let navObserver: ResizeObserver | null = null;
 
 const SlotRenderer = defineComponent({
   name: "XTabsSlotRenderer",
@@ -162,10 +163,25 @@ function stopActivePanelObserver() {
   activePanelObserver = null;
 }
 
+function stopNavObserver() {
+  navObserver?.disconnect();
+  navObserver = null;
+}
+
 function resetAnimatedContent() {
   contentHeight.value = null;
   trackMotionEnabled.value = false;
   heightMotionEnabled.value = false;
+}
+
+function waitForLayout() {
+  if (typeof window === "undefined" || typeof window.requestAnimationFrame !== "function") {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>(resolve => {
+    window.requestAnimationFrame(() => resolve());
+  });
 }
 
 function ensureActivePane() {
@@ -209,10 +225,13 @@ function scrollActiveIntoView() {
   const tab = tabRefs.get(pane.uid);
   if (!tab) return;
 
+  const maxScrollLeft = Math.max(nav.scrollWidth - nav.clientWidth, 0);
+  const maxScrollTop = Math.max(nav.scrollHeight - nav.clientHeight, 0);
+
   if (isVertical.value) {
     const targetTop = tab.offsetTop - (nav.clientHeight - tab.offsetHeight) / 2;
     nav.scrollTo({
-      top: Math.max(targetTop, 0),
+      top: Math.min(Math.max(targetTop, 0), maxScrollTop),
       behavior: "smooth"
     });
     return;
@@ -220,7 +239,7 @@ function scrollActiveIntoView() {
 
   const targetLeft = tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2;
   nav.scrollTo({
-    left: Math.max(targetLeft, 0),
+    left: Math.min(Math.max(targetLeft, 0), maxScrollLeft),
     behavior: "smooth"
   });
 }
@@ -341,12 +360,28 @@ function observeContent() {
   contentObserver.observe(contentRef.value);
 }
 
+function observeNav() {
+  stopNavObserver();
+
+  if (typeof ResizeObserver === "undefined" || !navRef.value) return;
+
+  navObserver = new ResizeObserver(() => {
+    updateNavScrollState();
+    updateIndicator();
+    scrollActiveIntoView();
+  });
+  navObserver.observe(navRef.value);
+}
+
 function activatePane(pane: XTabPane) {
   if (pane.disabled.value) return;
 
   emit("tab-click", pane.name.value, pane);
 
-  if (modelValue.value === pane.name.value) return;
+  if (modelValue.value === pane.name.value) {
+    scrollActiveIntoView();
+    return;
+  }
 
   modelValue.value = pane.name.value;
   emit("change", pane.name.value);
@@ -363,10 +398,12 @@ function getPaneTitle(pane: XTabPane) {
 async function syncTabs() {
   ensureActivePane();
   await nextTick();
+  await waitForLayout();
   updateNavScrollState();
   updateIndicator();
   scrollActiveIntoView();
   updateContentMetrics();
+  observeNav();
   observeContent();
   observeActivePanel();
 }
@@ -420,6 +457,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", syncTabs);
+  stopNavObserver();
   stopContentObserver();
   stopActivePanelObserver();
 });
@@ -566,7 +604,6 @@ onBeforeUnmount(() => {
     &--card {
       border: var(--lobby__px) solid var(--skin__primary);
       border-radius: 2px;
-      overflow: hidden;
     }
 
     &--card--shrink {
