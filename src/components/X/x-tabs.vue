@@ -28,6 +28,7 @@ interface Props {
   autoHeight?: boolean;
   lineWidth?: number | string;
   lineHeight?: number | string;
+  showNavArrows?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -35,7 +36,8 @@ const props = withDefaults(defineProps<Props>(), {
   shrink: false,
   animated: false,
   position: "top",
-  autoHeight: false
+  autoHeight: false,
+  showNavArrows: true
 });
 
 const modelValue = defineModel<XTabName>();
@@ -85,8 +87,8 @@ const activeIndex = computed(() => panes.value.findIndex(pane => pane.name.value
 const activePane = computed(() => panes.value[activeIndex.value] ?? null);
 const panesSignature = computed(() => panes.value.map(pane => `${pane.uid}:${pane.name.value}:${pane.disabled.value}`).join("|"));
 const isVertical = computed(() => props.position === "left" || props.position === "right");
-const showPrevArrow = computed(() => !isVertical.value && navScrollLeft.value > 0);
-const showNextArrow = computed(() => !isVertical.value && navScrollMax.value > navScrollLeft.value);
+const showPrevArrow = computed(() => props.showNavArrows && !isVertical.value && navScrollLeft.value > 0);
+const showNextArrow = computed(() => props.showNavArrows && !isVertical.value && navScrollMax.value > navScrollLeft.value);
 
 const navClass = computed(() => [
   "x-tabs__nav",
