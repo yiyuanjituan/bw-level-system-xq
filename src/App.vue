@@ -55,8 +55,11 @@ const busListen = () => {
 };
 
 function checkPopupTip() {
-  refs['dialogTipRef']?.open({})
+  if (app.appInfo.home_popup && app.appInfo.home_popup.length) {
+    let totalLength = app.appInfo.home_popup.length
+  }
   setTimeout(() => {
+    refs['dialogTipRef']?.open({})
     if (route.name == 'Index') {
       refs['downloadTip']?.open();
     }

@@ -16,7 +16,10 @@ const activeTab = ref(0);
 const showLeftPageArrow = computed(() => listData.value.length > 1 && activeTab.value > 0);
 const showRightPageArrow = computed(() => listData.value.length > 1 && activeTab.value < listData.value.length - 1);
 
-function openDialog(params) {
+function openDialog() {
+  if (listData.value.length <= 0) {
+    return false;
+  }
   show.value = true;
   activeTab.value = 0;
   init();
