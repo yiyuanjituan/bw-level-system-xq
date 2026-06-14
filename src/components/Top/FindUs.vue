@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useWindowSize } from "@vant/use";
 import { getFindUsData } from "@/api/common";
 import MailBox from "@/components/Top/find/MailBox.vue";
+import { bus } from "@/utils/mitt";
 
 const show = ref(false);
 const params = ref<any>({});
@@ -31,6 +32,12 @@ function init() {
 }
 
 onMounted(() => init());
+
+watch(show, (value, oldValue) => {
+  if (!value && oldValue) {
+    bus.emit("closed-popup");
+  }
+});
 </script>
 
 <template>

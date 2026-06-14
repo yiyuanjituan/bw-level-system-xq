@@ -13,6 +13,7 @@ export type MittEvent = {
   showRechargeDetail: any;
   error: Error;
   logout: null;
+  'closed-popup': null;
   findUs: null;
   moneyIn: null;
   switchTab: string;

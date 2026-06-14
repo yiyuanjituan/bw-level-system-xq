@@ -4,6 +4,7 @@ import { useWindowSize } from '@vant/use';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { service } from '@/api/service';
+import { bus } from '@/utils/mitt';
 
 dayjs.extend(isoWeek);
 
@@ -56,6 +57,12 @@ watch(
   },
   { deep: true }
 );
+
+watch(show, (value, oldValue) => {
+  if (!value && oldValue) {
+    bus.emit('closed-popup');
+  }
+});
 
 defineExpose({
   open: openDialog

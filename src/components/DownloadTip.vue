@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { showCustomToast } from '@/hooks/useCommon';
 import { bus } from '@/utils/mitt';
 import useAppStore from '@/store/modules/app';
@@ -17,14 +17,19 @@ function open() {
 
 function close() {
   handleShow.value = false;
-  onClosed();
 }
 
 function onClosed() {
   setTimeout(() => {
-    bus.emit('findUs');
+    bus.emit('closed-popup');
   }, 400);
 }
+
+watch(handleShow, (value, oldValue) => {
+  if (!value && oldValue) {
+    onClosed();
+  }
+});
 
 defineExpose({
   open,
@@ -33,7 +38,7 @@ defineExpose({
 </script>
 
 <template>
-  <x-popup position="bottom" v-model:show="handleShow" :z-index="200" @close="onClosed">
+  <x-popup position="bottom" v-model:show="handleShow" :z-index="200">
     <div class="down-box">
       <div class="close-icon" @click="close">
         <svg-icon name="comm_icon_x" />

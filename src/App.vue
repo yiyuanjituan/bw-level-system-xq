@@ -20,7 +20,7 @@
 import { systemTransitionName } from './hooks/useTransition';
 import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
 import { bus, userMoneyIn } from '@/utils/mitt';
@@ -34,35 +34,103 @@ const app = useAppStore();
 const auth = useAuthStore();
 const appData = useDataStore();
 const route = useRoute();
+const popupRefMap = {
+  find_us: 'findUs',
+  popup_notice: 'dialogTipRef',
+  download_tip: 'downloadTip'
+} as const;
+
+type HomePopupKey = keyof typeof popupRefMap;
+
+const popupQueue: HomePopupKey[] = [];
+let popupTimer: ReturnType<typeof setTimeout> | undefined;
 
 const busListen = () => {
-  // 资金回归
   bus.on('moneyIn', () => {
     if (auth.token) userMoneyIn(appData.enterGameInfo.venueId).then(() => auth.updateInfo());
     appData.setEnterInfo(void 0, void 0);
   });
-  // 退出登录
+
   bus.on('logout', () => {
     auth.logout();
     refs['rechargeDrawer']?.close();
     router.replace({ path: '/home/login' });
   });
-  // 点开找到我们
+
   bus.on('findUs', refs['findUs']?.open);
-  // 点击充值按钮
   bus.on('showRecharge', refs['rechargeDrawer']?.open);
   bus.on('showRechargeDetail', refs['rechargeDetailDrawer']?.open);
 };
 
-function checkPopupTip() {
-  if (app.appInfo.home_popup && app.appInfo.home_popup.length) {
-    let totalLength = app.appInfo.home_popup.length
+function isHomePopupKey(value: unknown): value is HomePopupKey {
+  return typeof value === 'string' && value in popupRefMap;
+}
+
+function stopPopupQueueListener() {
+  bus.off('closed-popup', handleClosedPopup);
+}
+
+function openPopupByKey(popupKey: HomePopupKey) {
+  if (popupKey === 'download_tip' && route.name !== 'Index') {
+    return false;
   }
-  setTimeout(() => {
-    refs['dialogTipRef']?.open({})
-    if (route.name == 'Index') {
-      refs['downloadTip']?.open();
+
+  const popupRef = refs[popupRefMap[popupKey]];
+
+  if (!popupRef?.open) {
+    return false;
+  }
+
+  if (popupKey === 'popup_notice') {
+    return popupRef.open({});
+  }
+
+  return popupRef.open();
+}
+
+function openNextPopup() {
+  while (popupQueue.length) {
+    const popupKey = popupQueue.shift();
+
+    if (!popupKey) {
+      break;
     }
+
+    const result = openPopupByKey(popupKey);
+
+    if (result === false) {
+      continue;
+    }
+
+    return;
+  }
+
+  stopPopupQueueListener();
+}
+
+function handleClosedPopup() {
+  openNextPopup();
+}
+
+function checkPopupTip() {
+  if (popupTimer) {
+    clearTimeout(popupTimer);
+  }
+
+  popupTimer = setTimeout(() => {
+    const popupList = Array.isArray(app.appInfo.home_popup)
+      ? app.appInfo.home_popup.filter(isHomePopupKey)
+      : [];
+
+    if (!popupList.length) {
+      stopPopupQueueListener();
+      return;
+    }
+
+    popupQueue.splice(0, popupQueue.length, ...popupList);
+    stopPopupQueueListener();
+    bus.on('closed-popup', handleClosedPopup);
+    openNextPopup();
   }, 1500);
 }
 
@@ -70,11 +138,20 @@ onMounted(() => {
   busListen();
   app.refreshData();
   app.updateDownloadBtn(true);
+
   if (auth.token) {
     auth.updateInfo();
   }
-  // 检测弹层
+
   checkPopupTip();
+});
+
+onUnmounted(() => {
+  stopPopupQueueListener();
+
+  if (popupTimer) {
+    clearTimeout(popupTimer);
+  }
 });
 </script>
 <style lang="less">
