@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { createNoWalletUser, createOrder, getSiteWalletInfo } from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
 import { formatMoney, openUrlInNewWindow } from '@/utils/common';
 import { bus } from '@/utils/mitt';
-import useAppStore from "@/store/modules/app";
+import useAppStore from '@/store/modules/app';
 
 interface Props {
   listData?: any[];
@@ -14,12 +14,12 @@ const props = withDefaults(defineProps<Props>(), {
   listData: () => []
 });
 
-const app = useAppStore()
+const app = useAppStore();
 const emits = defineEmits(['close']);
 const payTypeMode = ref<'usdt' | 'user_language'>('user_language');
 const countryList = computed(() => {
-  return app.appInfo?.countryList ?? []
-})
+  return app.appInfo?.countryList ?? [];
+});
 
 const showTotalWallet = ref(true);
 const showTotalChildren = ref(true);
@@ -40,7 +40,7 @@ function handleChangePayMode() {
 
 // 获取汇率
 function getRate(countryId: any) {
-  return countryList.value.find(v => v.id == countryId)?.uRate
+  return countryList.value.find(v => v.id == countryId)?.uRate;
 }
 
 function refreshSiteWallet() {
@@ -93,32 +93,49 @@ function handleSubmit() {
 
 watch(
   () => props.listData,
-  () => {
-    if (activeIds.value[0] == 0 && props.listData.length) {
-      activeIds.value[0] = props.listData[0].id;
+  list => {
+    if (!list.length) {
+      activeIds.value = [0, 0];
+      return;
     }
-  }
+
+    const hasActiveGroup = list.some(v => v.id == activeIds.value[0]);
+    if (!hasActiveGroup) {
+      activeIds.value = [list[0].id, 0];
+    }
+  },
+  { immediate: true }
 );
 
 const activeGroup = computed(() => {
   if (!props.listData.length) return {};
-  if (activeIds.value[0] == 0) {
-    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-    activeIds.value[0] = props.listData[0].id;
-  }
-  const info = props.listData.find(v => v.id == activeIds.value[0]);
-  return info ?? {};
+  return props.listData.find(v => v.id == activeIds.value[0]) ?? props.listData[0] ?? {};
 });
 
 const activeInfo = computed(() => {
-  const info = activeGroup.value;
-  if (activeIds.value[1] == 0 && info?.children?.length > 0) {
-    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-    activeIds.value[1] = info.children[0].id;
-  }
-  const childrenData = info?.children?.find(v => v.id == activeIds.value[1]);
+  const childrenData = activeGroup.value?.children?.find(v => v.id == activeIds.value[1]);
   return childrenData ?? {};
 });
+
+watch(
+  () => activeGroup.value?.children,
+  children => {
+    const currentChildren = children ?? [];
+
+    if (!currentChildren.length) {
+      if (activeIds.value[1] !== 0) {
+        activeIds.value = [activeIds.value[0], 0];
+      }
+      return;
+    }
+
+    const hasActiveChild = currentChildren.some(v => v.id == activeIds.value[1]);
+    if (!hasActiveChild) {
+      activeIds.value = [activeIds.value[0], currentChildren[0].id];
+    }
+  },
+  { immediate: true }
+);
 
 async function getSiteWalletData() {
   isGetSiteWallet.value = true;
@@ -129,6 +146,14 @@ async function getSiteWalletData() {
       })
       .finally(() => resolve(void 0));
   });
+}
+
+function onToggleInputVal(amount: string) {
+  let val = Number(amount);
+  if (payTypeMode.value == 'user_language') {
+    val = parseInt(String(val * getRate(activeGroup.value?.country_id)))
+  }
+  inputAmount.value = val;
 }
 
 function handleBindNoWallet() {
@@ -143,13 +168,13 @@ function createBindUserByNo() {
 }
 
 watch(
-  () => activeIds.value,
-  () => {
-    if (activeInfo.value?.id && !isGetSiteWallet.value && !!activeInfo.value.siteWallet) {
+  () => [activeInfo.value?.id, activeInfo.value?.siteWallet],
+  ([id, siteWallet]) => {
+    if (id && !isGetSiteWallet.value && !!siteWallet) {
       getSiteWalletData();
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 </script>
 
@@ -250,7 +275,7 @@ watch(
       </div>
       <div class="grid-box quickly-list">
         <template v-for="(item, index) in activeInfo.quickList" :key="index">
-          <recharge-badge class="item" :class="{ 'active-item': inputAmount == item }" @click="inputAmount = Number(item)">
+          <recharge-badge class="item" :class="{ 'active-item': inputAmount == item }" @click="onToggleInputVal(item)">
             <div class="label-container" v-if="activeGroup.type == 1">
               <span class="label">{{ item }}</span>
               <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
@@ -258,7 +283,9 @@ watch(
               </div>
             </div>
             <div class="label-container" v-if="activeGroup.type == 2">
-              <span class="label">{{ payTypeMode = 'user_language' ? item : (Number(item) * getRate(activeGroup?.country_id)) }}</span>
+              <span class="label">{{
+                payTypeMode == 'user_language' ? parseInt(String(Number(item) * getRate(activeGroup?.country_id))) : item
+              }}</span>
               <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
                 <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
               </div>
@@ -282,13 +309,15 @@ watch(
         <div class="left">
           <span class="label">汇率</span>
           <div>
-            <span dir="ltr" class="rate">1 :6.8</span>
-            <svg-icon name="comm_icon_retry" class-name="retry-icon" />
+            <span dir="ltr" class="rate">1 :{{ getRate(activeGroup?.country_id) }}</span>
+            <svg-icon name="comm_icon_retry" class-name="retry-icon" @click="app.refreshData()" />
           </div>
         </div>
-        <div class="amount">
-          支付金额≈
-          <span dir="ltr">5,000.01USDT</span>
+        <div class="amount" v-if="payTypeMode == 'user_language' && !isNaN(Number(inputAmount))">
+          支付金额≈<span dir="ltr">{{ formatMoney(inputAmount / getRate(activeGroup?.country_id)) }}USDT</span>
+        </div>
+        <div class="amount" v-if="payTypeMode == 'usdt'">
+          到账金额≈<span dir="ltr">￥{{ formatMoney(inputAmount * getRate(activeGroup?.country_id)) }}</span>
         </div>
       </div>
 
