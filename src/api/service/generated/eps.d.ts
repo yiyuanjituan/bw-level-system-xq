@@ -743,6 +743,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface OpenV1Notify {
+		/**
+			 * 充值回调消息通知
+			 */
+			rechargeNotify(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { rechargeNotify: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { rechargeNotify: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface OpenV1Task {
 		/**
 			 * 定时清理过期的活跃度
@@ -1343,6 +1362,7 @@ declare namespace Eps {
 			v1: {
 				game: OpenV1Game;
 				home: OpenV1Home;
+				notify: OpenV1Notify;
 				task: OpenV1Task;
 			};
 		};

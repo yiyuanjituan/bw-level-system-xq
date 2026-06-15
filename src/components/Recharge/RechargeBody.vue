@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import UiInput from "@/components/UI/input.vue";
-import UiButton from "@/components/Common/Button.vue";
-import { createNoWalletUser, createOrder, getSiteWalletInfo } from "@/api/common";
-import { useClipboard } from "@vueuse/core";
-import { showCustomToast } from "@/hooks/useCommon";
-import { openUrlInNewWindow } from "@/utils/common";
-import { bus } from "@/utils/mitt";
+import { computed, ref, watch } from 'vue';
+import { createNoWalletUser, createOrder, getSiteWalletInfo } from '@/api/common';
+import { showCustomToast } from '@/hooks/useCommon';
+import { formatMoney, openUrlInNewWindow } from '@/utils/common';
+import { bus } from '@/utils/mitt';
+import useAppStore from "@/store/modules/app";
 
 interface Props {
   listData?: any[];
@@ -16,7 +14,12 @@ const props = withDefaults(defineProps<Props>(), {
   listData: () => []
 });
 
-const emits = defineEmits(["close"]);
+const app = useAppStore()
+const emits = defineEmits(['close']);
+const payTypeMode = ref<'usdt' | 'user_language'>('user_language');
+const countryList = computed(() => {
+  return app.appInfo?.countryList ?? []
+})
 
 const showTotalWallet = ref(true);
 const showTotalChildren = ref(true);
@@ -26,6 +29,19 @@ const inputAmount = ref<number>();
 const isGetSiteWallet = ref(false);
 const siteWalletInfo = ref<any>({});
 const isRefreshWallet = ref(false);
+
+function handleChangePayMode() {
+  if (payTypeMode.value == 'usdt') {
+    payTypeMode.value = 'user_language';
+  } else {
+    payTypeMode.value = 'usdt';
+  }
+}
+
+// 获取汇率
+function getRate(countryId: any) {
+  return countryList.value.find(v => v.id == countryId)?.uRate
+}
 
 function refreshSiteWallet() {
   isRefreshWallet.value = true;
@@ -53,8 +69,8 @@ function handleChangeActiveChildrenId(record: Record<string, any>) {
 
 // 点击创建订单
 function handleSubmit() {
-  if (activeIds.value.length != 2 || !activeIds.value[1])
-    return showCustomToast({ type: "warning", message: "订单创建错误" });
+  if (activeIds.value.length != 2 || !activeIds.value[1]) return showCustomToast({ type: 'warning', message: '订单创建错误' });
+  if (!inputAmount.value) return showCustomToast({ type: 'fail', message: '请输入支付金额' });
 
   isLoading.value = true;
   const orderWindow = openUrlInNewWindow();
@@ -64,12 +80,12 @@ function handleSubmit() {
       const url = res?.url;
       if (!url) {
         orderWindow?.close();
-        return showCustomToast({ type: "warning", message: "订单创建错误" });
+        return showCustomToast({ type: 'warning', message: '订单创建错误' });
       }
 
       openUrlInNewWindow(url, orderWindow);
-      emits("close");
-      bus.emit("showRechargeDetail", { id: res.orderId });
+      emits('close');
+      bus.emit('showRechargeDetail', { id: res.orderId });
     })
     .catch(() => orderWindow?.close())
     .finally(() => (isLoading.value = false));
@@ -126,12 +142,6 @@ function createBindUserByNo() {
   });
 }
 
-function copyText(text: string) {
-  useClipboard()
-    .copy(text)
-    .then(() => showCustomToast({ type: "success", message: "复制成功" }));
-}
-
 watch(
   () => activeIds.value,
   () => {
@@ -167,11 +177,7 @@ watch(
     </div>
     <div
       class="download-app"
-      v-if="
-        activeGroup?.download_tip &&
-        activeGroup?.wallet_url &&
-        (!activeInfo?.id || !(activeInfo?.download_tip && activeInfo?.wallet_url))
-      "
+      v-if="activeGroup?.download_tip && activeGroup?.wallet_url && (!activeInfo?.id || !(activeInfo?.download_tip && activeInfo?.wallet_url))"
     >
       <span class="inline-flex items-center text-[11px]">
         <svg-icon name="comm_icon_xz" class-name="text-[9px] mr-[5px]" />
@@ -180,12 +186,12 @@ watch(
     </div>
     <div class="fold" v-if="listData.length > 6">
       <span class="btn" @click="showTotalWallet = !showTotalWallet">
-        <span class="text">{{ showTotalWallet ? "展开" : "收起" }}</span>
+        <span class="text">{{ showTotalWallet ? '展开' : '收起' }}</span>
         <span class="arrow" :class="{ 'arrow-show': showTotalWallet }"></span>
       </span>
     </div>
     <div class="line" style="border-width: var(--lobby__px)"></div>
-    <template v-if="activeGroup?.children?.filter(v => v.frontShow).length > 0">
+    <template v-if="activeGroup?.children?.filter(v => v.frontShow).length > 1">
       <div class="grid-box">
         <template v-for="(item, index) in activeGroup?.children" :key="index">
           <recharge-badge
@@ -209,28 +215,21 @@ watch(
       </div>
       <div class="fold" v-if="activeGroup?.children?.length > 6">
         <span class="btn" @click="showTotalChildren = !showTotalChildren">
-          <span class="text">{{ showTotalChildren ? "展开" : "收起" }}</span>
+          <span class="text">{{ showTotalChildren ? '展开' : '收起' }}</span>
           <span class="arrow" :class="{ 'arrow-show': showTotalChildren }"></span>
         </span>
       </div>
       <div class="line" style="border-width: var(--lobby__px)"></div>
     </template>
 
-    <template
-      v-if="
-        activeInfo.siteWallet == 1 &&
-        isGetSiteWallet &&
-        activeInfo.siteWalletKeyword == 'wallet-no' &&
-        siteWalletInfo.bind == 1
-      "
-    >
+    <template v-if="activeInfo.siteWallet == 1 && isGetSiteWallet && activeInfo.siteWalletKeyword == 'wallet-no' && siteWalletInfo.bind == 1">
       <div class="no-balance">
         <div class="noWallet-id">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="mr-[5px] w-[25px]" />
           <span>钱包账号：</span>
           <span class="id">{{ siteWalletInfo.qAccount }}</span>
-          <span class="copy-id" @click="copyText(siteWalletInfo.qAccount)">
-            <svg-icon name="comm_icon_copy" />
+          <span class="copy-id">
+            <copy :text="siteWalletInfo.qAccount" />
           </span>
         </div>
         <div class="bind-wallet">
@@ -239,49 +238,63 @@ watch(
           <span class="refresh-icon" :class="[isRefreshWallet ? 'animate__spin' : '']" @click="refreshSiteWallet">
             <svg-icon name="comm_icon_sx" />
           </span>
-          <ui-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">购买余额</ui-button>
+          <x-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">购买余额</x-button>
         </div>
       </div>
     </template>
-
     <template v-if="activeInfo.siteWallet == 0 || [1].includes(siteWalletInfo?.bind)">
       <div class="title-box">
-        <span>存款金额</span>
+        <span v-if="payTypeMode == 'user_language'">存款金额</span>
+        <span v-if="payTypeMode == 'usdt'">上分数量</span>
         <div class="no-poster" v-html="activeGroup.tipRichText"></div>
       </div>
       <div class="grid-box quickly-list">
         <template v-for="(item, index) in activeInfo.quickList" :key="index">
-          <recharge-badge
-            class="item bg-[#000]"
-            :class="{ 'active-item': inputAmount == item }"
-            @click="inputAmount = Number(item)"
-          >
-            <div class="label-container">
+          <recharge-badge class="item" :class="{ 'active-item': inputAmount == item }" @click="inputAmount = Number(item)">
+            <div class="label-container" v-if="activeGroup.type == 1">
               <span class="label">{{ item }}</span>
+              <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
+                <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
+              </div>
+            </div>
+            <div class="label-container" v-if="activeGroup.type == 2">
+              <span class="label">{{ payTypeMode = 'user_language' ? item : (Number(item) * getRate(activeGroup?.country_id)) }}</span>
+              <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
+                <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
+              </div>
             </div>
           </recharge-badge>
         </template>
       </div>
       <div class="form-input-box">
         <div class="input-box">
-          <ui-input
-            v-model="inputAmount"
-            class="input-input"
-            :placeholder="`最低${activeInfo.min ?? 0} ~ 最高${activeInfo.min ?? 0}`"
-          >
-            <template #prefix><span class="text-[white]">￥</span></template>
-          </ui-input>
+          <x-input v-model="inputAmount" class="input-input" :placeholder="`最低${activeInfo.min ?? 0} ~ 最高${activeInfo.min ?? 0}`">
+            <template #prefix
+              ><span class="text-[white]">{{ payTypeMode == 'usdt' ? 'U' : '￥' }}</span></template
+            >
+          </x-input>
+          <div class="change-pay-mode" @click="handleChangePayMode" v-if="activeGroup.type == 2">
+            <svg-icon name="comm_icon_qhhb" />
+          </div>
         </div>
       </div>
-      <ui-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</ui-button>
+      <div class="channel-exchange-rate">
+        <div class="left">
+          <span class="label">汇率</span>
+          <div>
+            <span dir="ltr" class="rate">1 :6.8</span>
+            <svg-icon name="comm_icon_retry" class-name="retry-icon" />
+          </div>
+        </div>
+        <div class="amount">
+          支付金额≈
+          <span dir="ltr">5,000.01USDT</span>
+        </div>
+      </div>
+
+      <x-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</x-button>
     </template>
-    <template
-      v-if="
-        activeInfo.siteWallet == 1 &&
-        activeInfo.siteWalletKeyword == 'wallet-no' &&
-        [2, 3].includes(siteWalletInfo?.bind)
-      "
-    >
+    <template v-if="activeInfo.siteWallet == 1 && activeInfo.siteWalletKeyword == 'wallet-no' && [2, 3].includes(siteWalletInfo?.bind)">
       <div class="bind-container">
         <div class="bindTips">
           <p>已有账号，可登录绑定</p>
@@ -289,16 +302,18 @@ watch(
         </div>
         <div class="content">
           <div class="bind">
-            <ui-button type="info" plain @click="handleBindNoWallet">立即绑定</ui-button>
+            <x-button type="primary" plain @click="handleBindNoWallet">立即绑定</x-button>
           </div>
           <div class="setting">
-            <ui-button type="primary" @click="createBindUserByNo">立即设置</ui-button>
+            <x-button type="primary" @click="createBindUserByNo">立即设置</x-button>
           </div>
         </div>
         <div class="no-poster">
-          <span class=""><p>
+          <span class="">
+            <p>
               <span style="font-family: 'Segoe UI'">用NO钱包：赚积分，抽大奖，最高<span style="color: #e67e23">88888.88</span></span>
-            </p></span>
+            </p></span
+          >
         </div>
       </div>
     </template>
@@ -415,10 +430,52 @@ watch(
 }
 .quickly-list {
   margin-bottom: 10px;
+  grid-template-columns: repeat(4, 1fr);
   .item {
-    border-color: transparent;
-    font-weight: 700;
-    font-size: 13px;
+    height: 39.5px;
+    background: var(--skin__bg_1);
+    border: 0.5px solid var(--skin__bg_1);
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    position: relative;
+    .label-container {
+      color: var(--skin__lead);
+      font-size: 13px;
+      line-height: 23.5px;
+      font-weight: 700;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin-right: 0 !important;
+      .reward-box {
+        width: 100%;
+        line-height: 16px;
+        background: var(--skin__bg_2);
+        border-radius: 0 0 5px 5px;
+        text-align: center;
+        vertical-align: top;
+        .reward {
+          display: inline-block;
+          width: 100%;
+          font-size: 11px;
+          font-weight: 700;
+          background: color-mix(in srgb, var(--skin__accent_3) 15%, transparent);
+          color: var(--skin__accent_3);
+          text-align: center;
+          line-height: 16.5px;
+          border-radius: 0 0 5px 5px;
+          vertical-align: top;
+        }
+      }
+    }
+  }
+  .active-item {
+    border-color: var(--skin__primary);
   }
 }
 
@@ -429,9 +486,34 @@ watch(
   position: relative;
   .input-box {
     margin-bottom: 5px;
-    .input-input {
+    display: flex;
+    align-items: center;
+    .change-pay-mode {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42.5px;
+      height: 35px;
+      margin-left: 10px;
+      background-color: var(--skin__bg_2);
+      border: thin solid var(--skin__neutral_3);
+      border-radius: 5px;
+      color: var(--skin__primary);
+      font-size: 19px;
     }
-    :deep(.ui-input--focused) {
+
+    .input-input {
+      :deep(.x-input__field) {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      :deep(.x-input__field::placeholder) {
+        font-size: 11px;
+        font-weight: normal;
+      }
+    }
+    :deep(.x-input--focused) {
       border-color: var(--skin__neutral_3) !important;
     }
   }
@@ -543,6 +625,44 @@ watch(
       background: var(--skin__primary);
       border: var(--lobby__px) solid var(--skin__primary);
     }
+  }
+}
+.channel-exchange-rate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 0 2.5px;
+  .left {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 12px;
+    .label {
+      color: var(--skin__neutral_2);
+      margin-right: 5px;
+      line-height: 13px;
+    }
+  }
+  > div {
+    display: flex;
+    align-items: center;
+  }
+  .rate {
+    margin-right: 5px;
+    line-height: 13px;
+  }
+  .retry-icon {
+    vertical-align: middle;
+    color: var(--skin__primary);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .amount {
+    color: var(--skin__accent_3);
+    font-weight: 700;
+    text-align: right;
+    font-size: 12px;
   }
 }
 </style>

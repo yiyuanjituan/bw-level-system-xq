@@ -30,7 +30,7 @@ defineExpose({
 </script>
 
 <template>
-  <van-popup v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }" @close="close()">
+  <van-popup destroy-on-close v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }" @close="close()">
     <div class="popup-container">
       <div class="popup-header">
         <div class="back-icon" @click="show = false">

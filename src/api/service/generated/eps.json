@@ -729,6 +729,17 @@
     ]
   },
   {
+    "prefix": "/open/v1/notify",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/rechargeNotify",
+        "summary": "充值回调消息通知"
+      }
+    ]
+  },
+  {
     "prefix": "/open/v1/task",
     "name": "",
     "api": [
