@@ -485,7 +485,7 @@ watch(
         </div>
       </div>
 
-      <div class="channel-exchange-rate">
+      <div class="channel-exchange-rate" v-if="activeGroup.type == 2">
         <div class="left">
           <span class="label">汇率</span>
           <div>
