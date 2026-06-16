@@ -6,79 +6,261 @@ import { formatMoney, openUrlInNewWindow } from '@/utils/common';
 import { bus } from '@/utils/mitt';
 import useAppStore from '@/store/modules/app';
 
-interface Props {
-  listData?: any[];
+type PayTypeMode = 'usdt' | 'user_language';
+
+interface CountryInfo {
+  id: number | string;
+  uRate?: number | string;
 }
+
+interface RechargeChannel {
+  id: number;
+  name?: string;
+  tip?: string;
+  frontShow?: boolean;
+  siteWallet?: number;
+  siteWalletKeyword?: string;
+  download_tip?: string;
+  wallet_url?: string;
+  quickList?: Array<number | string>;
+  giftRatio?: number | string;
+  min?: number | string;
+  max?: number | string;
+}
+
+interface RechargeGroup {
+  id: number;
+  name?: string;
+  tip?: string;
+  image?: string;
+  type?: number;
+  country_id?: number | string;
+  download_tip?: string;
+  wallet_url?: string;
+  tipRichText?: string;
+  children?: RechargeChannel[];
+}
+
+interface SiteWalletInfo {
+  bind?: number;
+  buyUrl?: string;
+  bindUrl?: string;
+  qAccount?: string;
+  rmbBalance?: number | string;
+  [key: string]: unknown;
+}
+
+interface QuickAmountOption {
+  amount: number;
+  displayAmount: number;
+}
+
+interface AmountSummary {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  listData?: RechargeGroup[];
+}
+
+const EMPTY_GROUP: RechargeGroup = { id: 0 };
+const EMPTY_CHANNEL: RechargeChannel = { id: 0 };
 
 const props = withDefaults(defineProps<Props>(), {
   listData: () => []
 });
 
-const app = useAppStore();
-const emits = defineEmits(['close']);
-const payTypeMode = ref<'usdt' | 'user_language'>('user_language');
-const countryList = computed(() => {
-  return app.appInfo?.countryList ?? [];
-});
+const emits = defineEmits<{
+  (event: 'close'): void;
+}>();
 
-const showTotalWallet = ref(true);
-const showTotalChildren = ref(true);
+const app = useAppStore();
+
+const payTypeMode = ref<PayTypeMode>('user_language');
+const showAllWallets = ref(true);
+const showAllChildren = ref(true);
 const isLoading = ref(false);
-const activeIds = ref<number[]>([0, 0]); // 大分类ID， 渠道ID
+const activeGroupId = ref(0);
+const activeChannelId = ref(0);
 const inputAmount = ref<number>();
 const selectedQuickAmount = ref<number>();
 const isGetSiteWallet = ref(false);
-const siteWalletInfo = ref<any>({});
+const siteWalletInfo = ref<SiteWalletInfo>({});
 const isRefreshWallet = ref(false);
 
-function handleChangePayMode() {
-  if (payTypeMode.value == 'usdt') {
-    payTypeMode.value = 'user_language';
-  } else {
-    payTypeMode.value = 'usdt';
+const countryList = computed<CountryInfo[]>(() => app.appInfo?.countryList ?? []);
+const activeGroup = computed<RechargeGroup>(() => props.listData.find(item => item.id == activeGroupId.value) ?? props.listData[0] ?? EMPTY_GROUP);
+const activeChildren = computed<RechargeChannel[]>(() => activeGroup.value.children ?? []);
+const activeInfo = computed<RechargeChannel>(() => activeChildren.value.find(item => item.id == activeChannelId.value) ?? EMPTY_CHANNEL);
+const currentRate = computed(() => {
+  const rate = Number(countryList.value.find(item => item.id == activeGroup.value.country_id)?.uRate);
+  return Number.isFinite(rate) && rate > 0 ? rate : 0;
+});
+const visibleWallets = computed(() => (showAllWallets.value ? props.listData : props.listData.slice(0, 6)));
+const visibleChildren = computed(() => (showAllChildren.value ? activeChildren.value : activeChildren.value.slice(0, 6)));
+const quickAmounts = computed(() => {
+  return (activeInfo.value.quickList ?? []).map(item => Number(item)).filter(item => Number.isFinite(item));
+});
+const giftRatio = computed(() => {
+  const value = Number(activeInfo.value.giftRatio);
+  return Number.isFinite(value) ? value : 0;
+});
+const quickAmountOptions = computed<QuickAmountOption[]>(() => {
+  return quickAmounts.value.map(amount => ({
+    amount,
+    displayAmount: getQuickDisplayAmount(amount)
+  }));
+});
+const payModeTitle = computed(() => (payTypeMode.value == 'usdt' ? '上分数量' : '存款金额'));
+const inputPrefix = computed(() => (payTypeMode.value == 'usdt' ? 'U' : '￥'));
+const inputPlaceholder = computed(() => `最低${activeInfo.value.min ?? 0} ~ 最高${activeInfo.value.max ?? 0}`);
+const showGroupDownloadTip = computed(() => {
+  return Boolean(
+    activeGroup.value.download_tip
+      && activeGroup.value.wallet_url
+      && (!activeInfo.value.id || !(activeInfo.value.download_tip && activeInfo.value.wallet_url))
+  );
+});
+const showChildDownloadTip = computed(() => Boolean(activeInfo.value.download_tip && activeInfo.value.wallet_url));
+const showChildrenSection = computed(() => activeChildren.value.filter(item => item.frontShow).length > 1);
+const showBoundNoWallet = computed(() => {
+  return activeInfo.value.siteWallet == 1 && isGetSiteWallet.value && activeInfo.value.siteWalletKeyword == 'wallet-no' && siteWalletInfo.value.bind == 1;
+});
+const showRechargeForm = computed(() => activeInfo.value.siteWallet == 0 || [1].includes(Number(siteWalletInfo.value.bind)));
+const showBindActions = computed(() => {
+  return activeInfo.value.siteWallet == 1 && activeInfo.value.siteWalletKeyword == 'wallet-no' && [2, 3].includes(Number(siteWalletInfo.value.bind));
+});
+const amountSummary = computed<AmountSummary | null>(() => {
+  const amount = Number(inputAmount.value);
+  if (!Number.isFinite(amount) || amount <= 0 || !currentRate.value) {
+    return null;
   }
+
+  if (payTypeMode.value == 'user_language') {
+    return {
+      label: '支付金额≈',
+      value: `${formatMoney(amount / currentRate.value)}USDT`
+    };
+  }
+
+  return {
+    label: '到账金额≈',
+    value: `￥${formatMoney(amount * currentRate.value)}`
+  };
+});
+
+function resetAmountState() {
+  inputAmount.value = void 0;
+  selectedQuickAmount.value = void 0;
 }
 
-// 获取汇率
-function getRate(countryId: any) {
-  return countryList.value.find(v => v.id == countryId)?.uRate;
+function resetWalletState() {
+  isGetSiteWallet.value = false;
+  siteWalletInfo.value = {};
+}
+
+function getQuickInputAmount(amount: number, mode = payTypeMode.value) {
+  if (activeGroup.value.type != 2 || mode == 'usdt') {
+    return amount;
+  }
+
+  return Math.trunc(amount * currentRate.value);
+}
+
+function getQuickDisplayAmount(amount: number, mode = payTypeMode.value) {
+  return getQuickInputAmount(amount, mode);
+}
+
+function syncSelectedQuickAmount() {
+  const currentAmount = Number(inputAmount.value);
+  if (!Number.isFinite(currentAmount)) {
+    selectedQuickAmount.value = void 0;
+    return;
+  }
+
+  const matchedAmount = quickAmounts.value.find(amount => currentAmount === getQuickInputAmount(amount));
+  selectedQuickAmount.value = matchedAmount;
+}
+
+function handleChangePayMode() {
+  payTypeMode.value = payTypeMode.value == 'usdt' ? 'user_language' : 'usdt';
 }
 
 function refreshSiteWallet() {
   isRefreshWallet.value = true;
-  getSiteWalletData().then(() => {
+  getSiteWalletData().finally(() => {
     isRefreshWallet.value = false;
   });
 }
 
 function clickToBuyBalance() {
-  window.open(siteWalletInfo.value.buyUrl);
+  if (siteWalletInfo.value.buyUrl) {
+    window.open(siteWalletInfo.value.buyUrl);
+  }
 }
 
-function handleChangeActiveId(record: Record<string, any>) {
-  activeIds.value[0] = record.id;
-  activeIds.value[1] = 0;
-  inputAmount.value = void 0;
-  selectedQuickAmount.value = void 0;
-  isGetSiteWallet.value = false;
+function handleChangeActiveId(record: RechargeGroup) {
+  if (activeGroupId.value == record.id) return;
+  activeGroupId.value = record.id;
+  activeChannelId.value = 0;
+  resetAmountState();
+  resetWalletState();
 }
 
-function handleChangeActiveChildrenId(record: Record<string, any>) {
-  activeIds.value[1] = record.id;
-  inputAmount.value = void 0;
-  selectedQuickAmount.value = void 0;
-  isGetSiteWallet.value = false;
+function handleChangeActiveChildrenId(record: RechargeChannel) {
+  if (activeChannelId.value == record.id) return;
+  activeChannelId.value = record.id;
+  resetAmountState();
+  resetWalletState();
 }
 
-// 点击创建订单
+function handleQuickAmountClick(amount: number) {
+  selectedQuickAmount.value = amount;
+  inputAmount.value = getQuickInputAmount(amount);
+}
+
+function isQuickAmountActive(amount: number) {
+  return selectedQuickAmount.value === amount;
+}
+
+async function getSiteWalletData() {
+  if (!activeInfo.value.id) return;
+
+  isGetSiteWallet.value = true;
+  const response = await getSiteWalletInfo({ id: activeInfo.value.id });
+  siteWalletInfo.value = response ?? {};
+}
+
+function handleBindNoWallet() {
+  if (siteWalletInfo.value.bindUrl) {
+    window.open(siteWalletInfo.value.bindUrl);
+  }
+}
+
+function createBindUserByNo() {
+  createNoWalletUser({ id: activeInfo.value.id }).then(res => {
+    window.open(res.buyUrl);
+    getSiteWalletData();
+  });
+}
+
 function handleSubmit() {
-  if (activeIds.value.length != 2 || !activeIds.value[1]) return showCustomToast({ type: 'warning', message: '订单创建错误' });
-  if (!inputAmount.value) return showCustomToast({ type: 'fail', message: '请输入支付金额' });
+  const channelId = activeChannelId.value;
+  const amount = Number(inputAmount.value);
+
+  if (!channelId) {
+    return showCustomToast({ type: 'warning', message: '订单创建错误' });
+  }
+
+  if (!amount) {
+    return showCustomToast({ type: 'fail', message: '请输入支付金额' });
+  }
 
   isLoading.value = true;
   const orderWindow = openUrlInNewWindow();
 
-  createOrder({ id: activeIds.value[1], money: inputAmount.value })
+  createOrder({ id: channelId, money: amount })
     .then(res => {
       const url = res?.url;
       if (!url) {
@@ -90,111 +272,62 @@ function handleSubmit() {
       emits('close');
       bus.emit('showRechargeDetail', { id: res.orderId });
     })
-    .catch(() => orderWindow?.close())
-    .finally(() => (isLoading.value = false));
+    .catch(() => {
+      orderWindow?.close();
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
 }
 
 watch(
   () => props.listData,
   list => {
     if (!list.length) {
-      activeIds.value = [0, 0];
+      activeGroupId.value = 0;
+      activeChannelId.value = 0;
+      resetAmountState();
+      resetWalletState();
       return;
     }
 
-    const hasActiveGroup = list.some(v => v.id == activeIds.value[0]);
+    const hasActiveGroup = list.some(item => item.id == activeGroupId.value);
     if (!hasActiveGroup) {
-      activeIds.value = [list[0].id, 0];
+      activeGroupId.value = list[0].id;
+      activeChannelId.value = 0;
+      resetAmountState();
+      resetWalletState();
     }
   },
   { immediate: true }
 );
 
-const activeGroup = computed(() => {
-  if (!props.listData.length) return {};
-  return props.listData.find(v => v.id == activeIds.value[0]) ?? props.listData[0] ?? {};
-});
-
-const activeInfo = computed(() => {
-  const childrenData = activeGroup.value?.children?.find(v => v.id == activeIds.value[1]);
-  return childrenData ?? {};
-});
-
-const currentRate = computed(() => {
-  const rate = Number(getRate(activeGroup.value?.country_id));
-  return Number.isFinite(rate) && rate > 0 ? rate : 0;
-});
-
-function getQuickInputAmount(amount: string | number, mode = payTypeMode.value) {
-  const quickAmount = Number(amount);
-  if (activeGroup.value?.type != 2 || mode == 'usdt') {
-    return quickAmount;
-  }
-
-  return Math.trunc(quickAmount * currentRate.value);
-}
-
-function syncSelectedQuickAmount() {
-  const quickList = activeInfo.value?.quickList ?? [];
-  const matchedAmount = quickList.find(item => Number(inputAmount.value) === getQuickInputAmount(item));
-  selectedQuickAmount.value = matchedAmount == null ? void 0 : Number(matchedAmount);
-}
-
 watch(
-  () => activeGroup.value?.children,
+  () => activeChildren.value,
   children => {
-    const currentChildren = children ?? [];
-
-    if (!currentChildren.length) {
-      if (activeIds.value[1] !== 0) {
-        activeIds.value = [activeIds.value[0], 0];
+    if (!children.length) {
+      if (activeChannelId.value !== 0) {
+        activeChannelId.value = 0;
+        resetAmountState();
+        resetWalletState();
       }
       return;
     }
 
-    const hasActiveChild = currentChildren.some(v => v.id == activeIds.value[1]);
+    const hasActiveChild = children.some(item => item.id == activeChannelId.value);
     if (!hasActiveChild) {
-      activeIds.value = [activeIds.value[0], currentChildren[0].id];
+      activeChannelId.value = children[0].id;
+      resetAmountState();
+      resetWalletState();
     }
   },
   { immediate: true }
 );
 
-async function getSiteWalletData() {
-  isGetSiteWallet.value = true;
-  return new Promise(resolve => {
-    getSiteWalletInfo({ id: activeInfo.value.id })
-      .then(res => {
-        siteWalletInfo.value = res;
-      })
-      .finally(() => resolve(void 0));
-  });
-}
-
-function onToggleInputVal(amount: string) {
-  selectedQuickAmount.value = Number(amount);
-  inputAmount.value = getQuickInputAmount(amount);
-}
-
-function isQuickAmountActive(amount: string | number) {
-  return selectedQuickAmount.value === Number(amount);
-}
-
-function handleBindNoWallet() {
-  window.open(siteWalletInfo.value?.bindUrl);
-}
-
-function createBindUserByNo() {
-  createNoWalletUser({ id: activeInfo.value.id }).then(res => {
-    window.open(res.buyUrl);
-    getSiteWalletData();
-  });
-}
-
 watch(
-  () => [activeInfo.value?.id, activeInfo.value?.siteWallet],
+  () => [activeInfo.value.id, activeInfo.value.siteWallet],
   ([id, siteWallet]) => {
-    if (id && !isGetSiteWallet.value && !!siteWallet) {
+    if (id && siteWallet && !isGetSiteWallet.value) {
       getSiteWalletData();
     }
   },
@@ -202,7 +335,7 @@ watch(
 );
 
 watch(
-  () => [activeInfo.value?.id, activeInfo.value?.quickList],
+  () => [activeInfo.value.id, quickAmounts.value],
   () => {
     syncSelectedQuickAmount();
   },
@@ -227,153 +360,153 @@ watch(
 <template>
   <div class="body-content">
     <div class="grid-box">
-      <template v-for="(item, index) in listData" :key="index">
-        <recharge-badge
-          class="item"
-          :class="{ 'active-item': activeIds[0] == item.id }"
-          :content="item.tip"
-          @click="handleChangeActiveId(item)"
-          v-if="showTotalWallet || (!showTotalWallet && index < 6)"
-        >
-          <div class="app-icon">
-            <van-image width="100%" height="100%" :src="item.image">
-              <template v-slot:error>.</template>
-            </van-image>
-          </div>
-          <div class="label-container">
-            <span class="label">{{ item.name }}</span>
-          </div>
-        </recharge-badge>
-      </template>
+      <recharge-badge
+        v-for="item in visibleWallets"
+        :key="item.id"
+        class="item"
+        :class="{ 'active-item': activeGroupId == item.id }"
+        :content="item.tip"
+        @click="handleChangeActiveId(item)"
+      >
+        <div class="app-icon">
+          <van-image width="100%" height="100%" :src="item.image">
+            <template #error>.</template>
+          </van-image>
+        </div>
+        <div class="label-container">
+          <span class="label">{{ item.name }}</span>
+        </div>
+      </recharge-badge>
     </div>
-    <div
-      class="download-app"
-      v-if="activeGroup?.download_tip && activeGroup?.wallet_url && (!activeInfo?.id || !(activeInfo?.download_tip && activeInfo?.wallet_url))"
-    >
+
+    <div v-if="showGroupDownloadTip" class="download-app">
       <span class="inline-flex items-center text-[11px]">
         <svg-icon name="comm_icon_xz" class-name="text-[9px] mr-[5px]" />
         {{ activeGroup.download_tip }}
       </span>
     </div>
-    <div class="fold" v-if="listData.length > 6">
-      <span class="btn" @click="showTotalWallet = !showTotalWallet">
-        <span class="text">{{ showTotalWallet ? '展开' : '收起' }}</span>
-        <span class="arrow" :class="{ 'arrow-show': showTotalWallet }"></span>
+
+    <div v-if="props.listData.length > 6" class="fold">
+      <span class="btn" @click="showAllWallets = !showAllWallets">
+        <span class="text">{{ showAllWallets ? '收起' : '展开' }}</span>
+        <span class="arrow" :class="{ 'arrow-show': showAllWallets }"></span>
       </span>
     </div>
+
     <div class="line" style="border-width: var(--lobby__px)"></div>
-    <template v-if="activeGroup?.children?.filter(v => v.frontShow).length > 1">
+
+    <template v-if="showChildrenSection">
       <div class="grid-box">
-        <template v-for="(item, index) in activeGroup?.children" :key="index">
-          <recharge-badge
-            class="item"
-            :class="{ 'active-item': activeIds[1] == item.id }"
-            :content="item.tip"
-            @click="handleChangeActiveChildrenId(item)"
-            v-if="showTotalChildren || (!showTotalChildren && index < 6)"
-          >
-            <div class="label-container">
-              <span class="label">{{ item.name }}</span>
-            </div>
-          </recharge-badge>
-        </template>
+        <recharge-badge
+          v-for="item in visibleChildren"
+          :key="item.id"
+          class="item"
+          :class="{ 'active-item': activeChannelId == item.id }"
+          :content="item.tip"
+          @click="handleChangeActiveChildrenId(item)"
+        >
+          <div class="label-container">
+            <span class="label">{{ item.name }}</span>
+          </div>
+        </recharge-badge>
       </div>
-      <div class="download-app" v-if="activeInfo?.download_tip && activeInfo?.wallet_url">
+
+      <div v-if="showChildDownloadTip" class="download-app">
         <span class="inline-flex items-center text-[11px]">
           <svg-icon name="comm_icon_xz" class-name="text-[9px] mr-[5px]" />
           {{ activeInfo.download_tip }}
         </span>
       </div>
-      <div class="fold" v-if="activeGroup?.children?.length > 6">
-        <span class="btn" @click="showTotalChildren = !showTotalChildren">
-          <span class="text">{{ showTotalChildren ? '展开' : '收起' }}</span>
-          <span class="arrow" :class="{ 'arrow-show': showTotalChildren }"></span>
+
+      <div v-if="activeChildren.length > 6" class="fold">
+        <span class="btn" @click="showAllChildren = !showAllChildren">
+          <span class="text">{{ showAllChildren ? '收起' : '展开' }}</span>
+          <span class="arrow" :class="{ 'arrow-show': showAllChildren }"></span>
         </span>
       </div>
+
       <div class="line" style="border-width: var(--lobby__px)"></div>
     </template>
 
-    <template v-if="activeInfo.siteWallet == 1 && isGetSiteWallet && activeInfo.siteWalletKeyword == 'wallet-no' && siteWalletInfo.bind == 1">
+    <template v-if="showBoundNoWallet">
       <div class="no-balance">
         <div class="noWallet-id">
-          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="mr-[5px] w-[25px]" />
+          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" class="mr-[5px] w-[25px]" />
           <span>钱包账号：</span>
           <span class="id">{{ siteWalletInfo.qAccount }}</span>
           <span class="copy-id">
-            <copy :text="siteWalletInfo.qAccount" />
+            <copy :text="String(siteWalletInfo.qAccount ?? '')" />
           </span>
         </div>
         <div class="bind-wallet">
           <span>NO钱包余额</span>
           <span class="balance">{{ (Number(siteWalletInfo.rmbBalance) ?? 0).toFixed(2) }}</span>
-          <span class="refresh-icon" :class="[isRefreshWallet ? 'animate__spin' : '']" @click="refreshSiteWallet">
+          <span class="refresh-icon" :class="{ animate__spin: isRefreshWallet }" @click="refreshSiteWallet">
             <svg-icon name="comm_icon_sx" />
           </span>
           <x-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">购买余额</x-button>
         </div>
       </div>
     </template>
-    <template v-if="activeInfo.siteWallet == 0 || [1].includes(siteWalletInfo?.bind)">
+
+    <template v-if="showRechargeForm">
       <div class="title-box">
-        <span v-if="payTypeMode == 'user_language'">存款金额</span>
-        <span v-if="payTypeMode == 'usdt'">上分数量</span>
+        <span>{{ payModeTitle }}</span>
         <div class="no-poster" v-html="activeGroup.tipRichText"></div>
       </div>
+
       <div class="grid-box quickly-list">
-        <template v-for="(item, index) in activeInfo.quickList" :key="index">
-          <recharge-badge class="item" :class="{ 'active-item': isQuickAmountActive(item) }" @click="onToggleInputVal(item)">
-            <div class="label-container" v-if="activeGroup.type == 1">
-              <span class="label">{{ item }}</span>
-              <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
-                <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
-              </div>
+        <recharge-badge
+          v-for="option in quickAmountOptions"
+          :key="option.amount"
+          class="item"
+          :class="{ 'active-item': isQuickAmountActive(option.amount) }"
+          @click="handleQuickAmountClick(option.amount)"
+        >
+          <div class="label-container">
+            <span class="label">{{ option.displayAmount }}</span>
+            <div v-if="giftRatio > 0" class="reward-box">
+              <span class="reward">+{{ formatMoney(option.amount * giftRatio) }}</span>
             </div>
-            <div class="label-container" v-if="activeGroup.type == 2">
-              <span class="label">{{
-                payTypeMode == 'user_language' ? getQuickInputAmount(item, 'user_language') : item
-              }}</span>
-              <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
-                <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
-              </div>
-            </div>
-          </recharge-badge>
-        </template>
+          </div>
+        </recharge-badge>
       </div>
+
       <div class="form-input-box">
         <div class="input-box">
-          <x-input v-model="inputAmount" class="input-input" :placeholder="`最低${activeInfo.min ?? 0} ~ 最高${activeInfo.min ?? 0}`">
-            <template #prefix
-              ><span class="text-[white]">{{ payTypeMode == 'usdt' ? 'U' : '￥' }}</span></template
-            >
+          <x-input v-model="inputAmount" class="input-input" :placeholder="inputPlaceholder">
+            <template #prefix>
+              <span class="text-[white]">{{ inputPrefix }}</span>
+            </template>
           </x-input>
-          <div class="change-pay-mode" @click="handleChangePayMode" v-if="activeGroup.type == 2">
+          <div v-if="activeGroup.type == 2" class="change-pay-mode" @click="handleChangePayMode">
             <svg-icon name="comm_icon_qhhb" />
           </div>
         </div>
       </div>
+
       <div class="channel-exchange-rate">
         <div class="left">
           <span class="label">汇率</span>
           <div>
-            <span dir="ltr" class="rate">1 :{{ getRate(activeGroup?.country_id) }}</span>
+            <span dir="ltr" class="rate">1 :{{ currentRate || '--' }}</span>
             <svg-icon name="comm_icon_retry" class-name="retry-icon" @click="app.refreshData()" />
           </div>
         </div>
-        <div class="amount" v-if="payTypeMode == 'user_language' && !isNaN(Number(inputAmount))">
-          支付金额≈<span dir="ltr">{{ formatMoney(inputAmount / getRate(activeGroup?.country_id)) }}USDT</span>
-        </div>
-        <div class="amount" v-if="payTypeMode == 'usdt'">
-          到账金额≈<span dir="ltr">￥{{ formatMoney(inputAmount * getRate(activeGroup?.country_id)) }}</span>
+        <div v-if="amountSummary" class="amount">
+          {{ amountSummary.label }}
+          <span dir="ltr">{{ amountSummary.value }}</span>
         </div>
       </div>
 
       <x-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</x-button>
     </template>
-    <template v-if="activeInfo.siteWallet == 1 && activeInfo.siteWalletKeyword == 'wallet-no' && [2, 3].includes(siteWalletInfo?.bind)">
+
+    <template v-if="showBindActions">
       <div class="bind-container">
         <div class="bindTips">
           <p>已有账号，可登录绑定</p>
-          <p>首次使用？只需设置支付密码</p>
+          <p>首次使用，只需设置支付密码</p>
         </div>
         <div class="content">
           <div class="bind">
@@ -384,11 +517,10 @@ watch(
           </div>
         </div>
         <div class="no-poster">
-          <span class="">
-            <p>
-              <span style="font-family: 'Segoe UI'">用NO钱包：赚积分，抽大奖，最高<span style="color: #e67e23">88888.88</span></span>
-            </p></span
-          >
+          <p>
+            <span style="font-family: 'Segoe UI'">用NO钱包，赚积分，抽大奖，最高</span>
+            <span style="color: #e67e23">88888.88</span>
+          </p>
         </div>
       </div>
     </template>
@@ -642,6 +774,10 @@ watch(
     margin-left: 10px;
     text-align: center;
     font-size: 12px !important;
+
+    p {
+      margin: 0;
+    }
   }
 }
 .no-balance {
@@ -687,7 +823,7 @@ watch(
       color: var(--skin__primary);
     }
     .animate__spin {
-      animation: spin 0.3s linear infinite; /* 2秒一次，匀速，无限循环 */
+      animation: spin 0.3s linear infinite;
     }
     .buy-balance-btn {
       margin-left: 10px;
