@@ -95,6 +95,11 @@
         "method": "post",
         "path": "/createOrder",
         "summary": "创建订单/非站内钱包"
+      },
+      {
+        "method": "post",
+        "path": "/records",
+        "summary": "创建订单/非站内钱包"
       }
     ]
   },

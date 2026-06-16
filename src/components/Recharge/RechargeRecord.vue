@@ -1,21 +1,167 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useWindowSize } from '@vant/use';
+import { computed, ref, watch } from "vue";
+import dayjs from "dayjs";
+import { useWindowSize } from "@vant/use";
+import type { DateRangeValue } from "@/components/Common/DateRangePicker.vue";
+import UiEmpty from "@/components/UI/empty.vue";
+import UiLoading from "@/components/UI/loading.vue";
+import { service } from "@/api/service";
+
+interface RechargeRecordItem {
+  id?: number | string;
+  createTime?: string;
+  order_sn?: string;
+  money?: number | string;
+  pay_status?: number | string;
+  name?: string;
+  icon?: string;
+  content?: {
+    name?: string;
+    icon?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+type RechargeStatusOption = {
+  label: string;
+  value: number | string;
+};
+
+const DEFAULT_ICON = "https://146.103.80.124:5001/siteadmin/upload/img/finance-1691947531341-912002.avif";
+const statusOptions: RechargeStatusOption[] = [
+  { label: "全部状态", value: "" },
+  { label: "已取消", value: -1 },
+  { label: "待支付", value: 1 },
+  { label: "待确认", value: 2 },
+  { label: "已存入", value: 3 },
+  { label: "未通过", value: 4 }
+];
 
 const show = ref(false);
-const params = ref<any>({});
+const params = ref<Record<string, any>>({});
+const isLoading = ref(false);
+const listData = ref<RechargeRecordItem[]>([]);
+const timeRange = ref<DateRangeValue>(createTodayRange());
+const statusFilterValue = ref<number | string>(statusOptions[0]?.value ?? "");
 const { width: windowWidth } = useWindowSize();
 
-function openDialog() {
+let latestRequestId = 0;
+
+function createTodayRange(): DateRangeValue {
+  const today = dayjs().format("YYYY-MM-DD");
+
+  return {
+    mode: "today",
+    label: "今日",
+    startTime: dayjs(today).startOf("day").unix(),
+    endTime: dayjs(today).endOf("day").unix(),
+    startDate: today,
+    endDate: today
+  };
+}
+
+const dialogWidth = computed(() => {
+  return ((Number(params.value?.width) ? Number(params.value?.width) : 355) / 375) * windowWidth.value;
+});
+
+const hasListData = computed(() => listData.value.length > 0);
+const emptyStateText = computed(() => {
+  if (timeRange.value.mode === "custom") {
+    return "所选时间暂无充值记录";
+  }
+
+  return `${timeRange.value.label}暂无充值记录`;
+});
+
+function toNumber(value: unknown) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+function formatMoney(value: unknown) {
+  return toNumber(value).toFixed(2);
+}
+
+function normalizeList(response: any) {
+  const source = response?.data ?? response ?? {};
+
+  if (Array.isArray(source?.list)) {
+    return source.list as RechargeRecordItem[];
+  }
+
+  if (Array.isArray(source)) {
+    return source as RechargeRecordItem[];
+  }
+
+  return [];
+}
+
+function getRecordKey(item: RechargeRecordItem, index: number) {
+  return item?.id ?? item?.order_sn ?? item?.createTime ?? index;
+}
+
+function getPaymentIcon(item: RechargeRecordItem) {
+  return item?.icon || item?.content?.icon || DEFAULT_ICON;
+}
+
+function getPaymentName(item: RechargeRecordItem) {
+  return item?.name || item?.content?.name || "NO钱包";
+}
+
+function getOrderNo(item: RechargeRecordItem) {
+  return String(item?.order_sn ?? "");
+}
+
+function getCreateTime(item: RechargeRecordItem) {
+  return item?.createTime || item?.createtime || "--";
+}
+
+async function init() {
+  const requestId = ++latestRequestId;
+  isLoading.value = true;
+
+  try {
+    const response = await service.request({
+      url: "/app/base/recharge/records",
+      method: "post",
+      data: {
+        page: 1,
+        limit: 20,
+        startTime: timeRange.value.startTime,
+        endTime: timeRange.value.endTime,
+        ...(statusFilterValue.value === "" ? {} : { pay_status: Number(statusFilterValue.value) })
+      }
+    });
+
+    if (requestId === latestRequestId) {
+      listData.value = normalizeList(response);
+    }
+  } catch (_error) {
+    if (requestId === latestRequestId) {
+      listData.value = [];
+    }
+  } finally {
+    if (requestId === latestRequestId) {
+      isLoading.value = false;
+    }
+  }
+}
+
+function openDialog(nextParams: Record<string, any> = {}) {
+  params.value = nextParams;
   show.value = true;
+  void init();
 }
 
 function handleClose() {
   show.value = false;
 }
 
-const dialogWidth = computed(() => {
-  return ((Number(params.value?.width) ? Number(params.value?.width) : 355) / 375) * windowWidth.value;
+watch([() => timeRange.value.startTime, () => timeRange.value.endTime, statusFilterValue], () => {
+  if (show.value) {
+    void init();
+  }
 });
 
 defineExpose({
@@ -27,31 +173,34 @@ defineExpose({
   <van-dialog v-model:show="show" :show-cancel-button="false" :width="dialogWidth" class-name="recharge-record-popup">
     <template #default>
       <div class="dialog-container">
-        <div class="header-box"><span>存款记录</span></div>
+        <div class="header-box"><span>充值记录</span></div>
         <div class="content-box">
           <div class="content-header">
             <div class="time-picker">
-              <date-range-picker :panel-width="335" />
+              <date-range-picker v-model="timeRange" :panel-width="335" />
             </div>
             <div class="status-picker">
-              <x-select />
+              <x-select v-model="statusFilterValue" :options="statusOptions" value-key="value" />
             </div>
           </div>
-          <div class="list-wrapper">
-            <div class="item-box" v-for="i in 6" :key="i">
+          <div v-if="isLoading && !hasListData" class="content-state">
+            <ui-loading />
+          </div>
+          <div v-else-if="hasListData" class="list-wrapper">
+            <div v-for="(item, index) in listData" :key="getRecordKey(item, index)" class="item-box">
               <div class="content">
                 <div class="row">
                   <div class="left">
-                    <img class="icon" src="https://146.103.80.124:5001/siteadmin/upload/img/finance-1691947531341-912002.avif" alt="" srcset="" />
-                    <span dir="ltr" class="payment-name">NO钱包</span>
+                    <img class="icon" :src="getPaymentIcon(item)" alt="" />
+                    <span dir="ltr" class="payment-name">{{ getPaymentName(item) }}</span>
                   </div>
-                  <div class="right">300.00</div>
+                  <div class="right">{{ formatMoney(item.money) }}</div>
                 </div>
                 <div class="row">
                   <div class="left">
-                    <span class="createtime">2026/06/17 01:53:34</span>
-                    <span class="order-no">210179723590005270355</span>
-                    <copy :text="`210179723590005270355`" class-name="!text-[12px]" />
+                    <span class="createtime">{{ getCreateTime(item) }}</span>
+                    <span v-if="getOrderNo(item)" class="order-no">{{ getOrderNo(item) }}</span>
+                    <copy v-if="getOrderNo(item)" :text="getOrderNo(item)" class-name="!text-[12px]" />
                   </div>
                 </div>
               </div>
@@ -60,6 +209,7 @@ defineExpose({
               </div>
             </div>
           </div>
+          <ui-empty v-else :text="emptyStateText" />
         </div>
       </div>
     </template>
@@ -75,7 +225,7 @@ defineExpose({
 </template>
 
 <style scoped lang="less">
-div[role='dialog'] {
+div[role="dialog"] {
   .dialog-container {
     border: var(--lobby__px) solid var(--skin__border);
     width: 100%;
@@ -86,7 +236,6 @@ div[role='dialog'] {
     min-height: 150px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     .header-box {
       display: flex;
       align-items: center;
@@ -135,6 +284,12 @@ div[role='dialog'] {
             border-radius: 999rem;
           }
         }
+      }
+      .content-state {
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .list-wrapper {
         max-height: 70vh;

@@ -847,14 +847,19 @@ declare namespace Eps {
 			createOrder(data?: any): Promise<any>;
 
 		/**
+			 * 创建订单/非站内钱包
+			 */
+			records(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { createNoWalletUser: string; siteWalletInfo: string; channelList: string; createOrder: string; };
+		permission: { createNoWalletUser: string; siteWalletInfo: string; channelList: string; createOrder: string; records: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { createNoWalletUser: boolean; siteWalletInfo: boolean; channelList: boolean; createOrder: boolean; };
+		_permission: { createNoWalletUser: boolean; siteWalletInfo: boolean; channelList: boolean; createOrder: boolean; records: boolean; };
 
 		request: Service["request"];
 	}
