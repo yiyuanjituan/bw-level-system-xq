@@ -131,6 +131,27 @@ const showRechargeForm = computed(() => activeInfo.value.siteWallet == 0 || [1].
 const showBindActions = computed(() => {
   return activeInfo.value.siteWallet == 1 && activeInfo.value.siteWalletKeyword == 'wallet-no' && [2, 3].includes(Number(siteWalletInfo.value.bind));
 });
+
+function normalizeMoney(value: number) {
+  return Number(value.toFixed(2));
+}
+
+const orderAmount = computed(() => {
+  const amount = Number(inputAmount.value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  if (payTypeMode.value == 'user_language') {
+    return normalizeMoney(amount);
+  }
+
+  if (!currentRate.value) {
+    return 0;
+  }
+
+  return normalizeMoney(amount * currentRate.value);
+});
 const amountSummary = computed<AmountSummary | null>(() => {
   const amount = Number(inputAmount.value);
   if (!Number.isFinite(amount) || amount <= 0 || !currentRate.value) {
@@ -248,6 +269,7 @@ function createBindUserByNo() {
 function handleSubmit() {
   const channelId = activeChannelId.value;
   const amount = Number(inputAmount.value);
+  const submitAmount = orderAmount.value;
 
   if (!channelId) {
     return showCustomToast({ type: 'warning', message: '订单创建错误' });
@@ -257,10 +279,14 @@ function handleSubmit() {
     return showCustomToast({ type: 'fail', message: '请输入支付金额' });
   }
 
+  if (!submitAmount) {
+    return showCustomToast({ type: 'fail', message: '金额换算错误' });
+  }
+
   isLoading.value = true;
   const orderWindow = openUrlInNewWindow();
 
-  createOrder({ id: channelId, money: amount })
+  createOrder({ id: channelId, money: submitAmount })
     .then(res => {
       const url = res?.url;
       if (!url) {
