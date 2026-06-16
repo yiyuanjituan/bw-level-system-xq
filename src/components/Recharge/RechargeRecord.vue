@@ -15,7 +15,7 @@ function handleClose() {
 }
 
 const dialogWidth = computed(() => {
-  return ((Number(params.value?.width) ?? 355) / 375) * windowWidth.value;
+  return ((Number(params.value?.width) ? Number(params.value?.width) : 355) / 375) * windowWidth.value;
 });
 
 defineExpose({
@@ -24,17 +24,20 @@ defineExpose({
 </script>
 
 <template>
-  <van-dialog v-model:show="show" :show-cancel-button="false" :width="dialogWidth">
+  <van-dialog v-model:show="show" :show-cancel-button="false" :width="dialogWidth" class-name="recharge-record-popup">
     <template #default>
       <div class="dialog-container">
         <div class="header-box"><span>存款记录</span></div>
         <div class="content-box">
           <div class="content-header">
             <div class="time-picker">
-              <date-range-picker :picker-width="300" />
+              <date-range-picker :panel-width="335" />
             </div>
-            <div class="status-picker"></div>
+            <div class="status-picker">
+              <x-select />
+            </div>
           </div>
+          {{ dialogWidth }}
         </div>
       </div>
     </template>
@@ -90,9 +93,25 @@ div[role='dialog'] {
         align-items: center;
         .time-picker {
           height: 25px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          :deep(.van-popover__wrapper) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
         }
         .status-picker {
-
+          margin-left: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          :deep(.x-select) {
+            width: 85px;
+            height: 25px;
+            border-radius: 999rem;
+          }
         }
       }
     }
@@ -114,5 +133,11 @@ div[role='dialog'] {
       font-size: 30px;
     }
   }
+}
+</style>
+
+<style lang="less">
+.recharge-record-popup {
+  --van-padding-md: 0;
 }
 </style>

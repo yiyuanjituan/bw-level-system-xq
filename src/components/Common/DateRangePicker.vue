@@ -25,13 +25,15 @@ const QUICK_MODE_LABELS: Record<QuickMode, string> = {
 };
 
 const DEFAULT_PICKER_WIDTH = 152;
+const DEFAULT_PANEL_WIDTH = 355;
 
 const props = withDefaults(defineProps<{
   modelValue?: DateRangeValue;
+  panelWidth?: number | string;
   pickerWidth?: number | string;
   quickModes?: QuickMode[];
 }>(), {
-  pickerWidth: DEFAULT_PICKER_WIDTH,
+  panelWidth: DEFAULT_PANEL_WIDTH,
   quickModes: () => ["today", "yesterday"]
 });
 
@@ -101,9 +103,12 @@ function syncDraft(rangeValue: DateRangeValue) {
 
 const currentRange = computed(() => props.modelValue ?? createPresetRange("today"));
 const currentLabel = computed(() => currentRange.value.label);
+const hasCustomPickerWidth = computed(() => props.pickerWidth !== undefined && props.pickerWidth !== null && props.pickerWidth !== "");
+const resolvedPanelWidth = computed(() => formatResponsiveSize(props.panelWidth, DEFAULT_PANEL_WIDTH));
 const resolvedPickerWidth = computed(() => formatResponsiveSize(props.pickerWidth, DEFAULT_PICKER_WIDTH));
 const panelStyle = computed(() => ({
-  "--date-range-picker-width": resolvedPickerWidth.value
+  "--date-range-panel-width": resolvedPanelWidth.value,
+  ...(hasCustomPickerWidth.value ? { "--date-range-picker-width": resolvedPickerWidth.value } : {})
 }));
 const visibleQuickModes = computed(() => props.quickModes.filter(mode => mode === "today" || mode === "yesterday"));
 const hasQuickModes = computed(() => visibleQuickModes.value.length > 0);
@@ -176,7 +181,7 @@ watch(
       </button>
     </template>
 
-    <div class="time-panel" :style="panelStyle">
+    <div class="time-panel" :class="{ 'time-panel--fixed-picker': hasCustomPickerWidth }" :style="panelStyle">
       <div v-if="hasQuickModes" class="time-panel__quick">
         <button
           v-for="mode in visibleQuickModes"
@@ -239,7 +244,7 @@ watch(
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--skin__neutral_3);
+  border: 1px solid var(--skin__border);
   border-radius: 14px;
   background: #191919;
   color: var(--skin__neutral_2, var(--skin__lead));
@@ -269,7 +274,7 @@ watch(
 }
 
 .time-panel {
-  width: calc(var(--date-range-picker-width) * 2 + 50.5px);
+  width: var(--date-range-panel-width);
   border: var(--lobby__px) solid var(--skin__border);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
@@ -354,8 +359,8 @@ watch(
   }
 
   .time-panel__picker {
-    flex: 0 0 auto;
-    width: calc(var(--date-range-picker-width) + 20px);
+    flex: 1;
+    min-width: 0;
     padding: 0 10px;
     box-sizing: border-box;
     overflow: hidden;
@@ -411,4 +416,12 @@ watch(
     }
   }
 }
+
+.time-panel--fixed-picker {
+  .time-panel__picker {
+    flex: 0 0 auto;
+    width: calc(var(--date-range-picker-width) + 20px);
+  }
+}
+
 </style>
