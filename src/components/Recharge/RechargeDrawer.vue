@@ -4,6 +4,7 @@ import UiBadge from "@/components/UI/badge.vue";
 import RechargeBody from "@/components/Recharge/RechargeBody.vue";
 import { getChannelList } from "@/api/common";
 import router from '@/router';
+import { bus } from '@/utils/mitt';
 
 const show = ref(false);
 const listData = ref<any>([]);
@@ -29,6 +30,11 @@ function handleCallToService() {
   router.push('/home/notice')
 }
 
+function handleRecord() {
+  close()
+  bus.emit('showRechargeRecord')
+}
+
 defineExpose({
   open: open,
   close
@@ -46,7 +52,7 @@ defineExpose({
         <div class="actions">
           <div class="kf-ico" @click="handleCallToService"><svg-icon name="comm_icon_cz_kf" /></div>
           <ui-badge :content="0" :size="[5, 5]">
-            <div class="jl-ico"><svg-icon name="comm_icon_cz_jl" /></div>
+            <div class="jl-ico"><svg-icon name="comm_icon_cz_jl" @click="handleRecord" /></div>
           </ui-badge>
         </div>
       </div>

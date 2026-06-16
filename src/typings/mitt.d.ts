@@ -11,6 +11,7 @@ export type MittEvent = {
   showToast: string | IToastOptions;
   showRecharge: null;
   showRechargeDetail: any;
+  showRechargeRecord: any;
   error: Error;
   logout: null;
   'closed-popup': null;

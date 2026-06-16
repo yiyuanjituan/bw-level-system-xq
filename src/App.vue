@@ -11,6 +11,7 @@
   <FindUs :ref="setRefs('findUs')" />
   <recharge-drawer :ref="setRefs('rechargeDrawer')" />
   <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
+  <recharge-record :ref="setRefs('rechargeRecordRef')" />
   <download-tip :ref="setRefs('downloadTip')" />
   <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
   <dialog-tip :ref="setRefs('dialogTipRef')" />
@@ -60,6 +61,7 @@ const busListen = () => {
   bus.on('findUs', refs['findUs']?.open);
   bus.on('showRecharge', refs['rechargeDrawer']?.open);
   bus.on('showRechargeDetail', refs['rechargeDetailDrawer']?.open);
+  bus.on('showRechargeRecord', refs['rechargeRecordRef']?.open)
 };
 
 function isHomePopupKey(value: unknown): value is HomePopupKey {
