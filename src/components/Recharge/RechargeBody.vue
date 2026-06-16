@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { createNoWalletUser, createOrder, getSiteWalletInfo } from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
 import { formatMoney, openUrlInNewWindow } from '@/utils/common';
@@ -26,6 +26,7 @@ const showTotalChildren = ref(true);
 const isLoading = ref(false);
 const activeIds = ref<number[]>([0, 0]); // 大分类ID， 渠道ID
 const inputAmount = ref<number>();
+const selectedQuickAmount = ref<number>();
 const isGetSiteWallet = ref(false);
 const siteWalletInfo = ref<any>({});
 const isRefreshWallet = ref(false);
@@ -58,12 +59,14 @@ function handleChangeActiveId(record: Record<string, any>) {
   activeIds.value[0] = record.id;
   activeIds.value[1] = 0;
   inputAmount.value = void 0;
+  selectedQuickAmount.value = void 0;
   isGetSiteWallet.value = false;
 }
 
 function handleChangeActiveChildrenId(record: Record<string, any>) {
   activeIds.value[1] = record.id;
   inputAmount.value = void 0;
+  selectedQuickAmount.value = void 0;
   isGetSiteWallet.value = false;
 }
 
@@ -117,6 +120,26 @@ const activeInfo = computed(() => {
   return childrenData ?? {};
 });
 
+const currentRate = computed(() => {
+  const rate = Number(getRate(activeGroup.value?.country_id));
+  return Number.isFinite(rate) && rate > 0 ? rate : 0;
+});
+
+function getQuickInputAmount(amount: string | number, mode = payTypeMode.value) {
+  const quickAmount = Number(amount);
+  if (activeGroup.value?.type != 2 || mode == 'usdt') {
+    return quickAmount;
+  }
+
+  return Math.trunc(quickAmount * currentRate.value);
+}
+
+function syncSelectedQuickAmount() {
+  const quickList = activeInfo.value?.quickList ?? [];
+  const matchedAmount = quickList.find(item => Number(inputAmount.value) === getQuickInputAmount(item));
+  selectedQuickAmount.value = matchedAmount == null ? void 0 : Number(matchedAmount);
+}
+
 watch(
   () => activeGroup.value?.children,
   children => {
@@ -149,11 +172,12 @@ async function getSiteWalletData() {
 }
 
 function onToggleInputVal(amount: string) {
-  let val = Number(amount);
-  if (payTypeMode.value == 'user_language') {
-    val = parseInt(String(val * getRate(activeGroup.value?.country_id)))
-  }
-  inputAmount.value = val;
+  selectedQuickAmount.value = Number(amount);
+  inputAmount.value = getQuickInputAmount(amount);
+}
+
+function isQuickAmountActive(amount: string | number) {
+  return selectedQuickAmount.value === Number(amount);
 }
 
 function handleBindNoWallet() {
@@ -175,6 +199,28 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => [activeInfo.value?.id, activeInfo.value?.quickList],
+  () => {
+    syncSelectedQuickAmount();
+  },
+  { immediate: true }
+);
+
+watch(
+  () => inputAmount.value,
+  () => {
+    syncSelectedQuickAmount();
+  }
+);
+
+watch(
+  () => [payTypeMode.value, currentRate.value],
+  () => {
+    syncSelectedQuickAmount();
+  }
 );
 </script>
 
@@ -275,7 +321,7 @@ watch(
       </div>
       <div class="grid-box quickly-list">
         <template v-for="(item, index) in activeInfo.quickList" :key="index">
-          <recharge-badge class="item" :class="{ 'active-item': inputAmount == item }" @click="onToggleInputVal(item)">
+          <recharge-badge class="item" :class="{ 'active-item': isQuickAmountActive(item) }" @click="onToggleInputVal(item)">
             <div class="label-container" v-if="activeGroup.type == 1">
               <span class="label">{{ item }}</span>
               <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
@@ -284,7 +330,7 @@ watch(
             </div>
             <div class="label-container" v-if="activeGroup.type == 2">
               <span class="label">{{
-                payTypeMode == 'user_language' ? parseInt(String(Number(item) * getRate(activeGroup?.country_id))) : item
+                payTypeMode == 'user_language' ? getQuickInputAmount(item, 'user_language') : item
               }}</span>
               <div class="reward-box" v-if="Number(activeInfo.giftRatio) > 0">
                 <span class="reward">+{{ formatMoney(Number(item) * Number(activeInfo.giftRatio)) }}</span>
