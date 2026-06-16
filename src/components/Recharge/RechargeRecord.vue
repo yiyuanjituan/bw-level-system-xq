@@ -31,7 +31,7 @@ defineExpose({
         <div class="content-box">
           <div class="content-header">
             <div class="time-picker">
-              <account-time-filter />
+              <date-range-picker :picker-width="300" />
             </div>
             <div class="status-picker"></div>
           </div>
