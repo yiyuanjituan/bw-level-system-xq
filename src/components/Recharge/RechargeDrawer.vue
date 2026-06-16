@@ -3,6 +3,7 @@ import { ref } from "vue";
 import UiBadge from "@/components/UI/badge.vue";
 import RechargeBody from "@/components/Recharge/RechargeBody.vue";
 import { getChannelList } from "@/api/common";
+import router from '@/router';
 
 const show = ref(false);
 const listData = ref<any>([]);
@@ -23,6 +24,11 @@ function initData() {
   });
 }
 
+function handleCallToService() {
+  close()
+  router.push('/home/notice')
+}
+
 defineExpose({
   open: open,
   close
@@ -38,8 +44,8 @@ defineExpose({
         </div>
         <p class="title">存款</p>
         <div class="actions">
-          <div class="kf-ico"><svg-icon name="comm_icon_cz_kf" /></div>
-          <ui-badge content="1" :size="[5, 5]">
+          <div class="kf-ico" @click="handleCallToService"><svg-icon name="comm_icon_cz_kf" /></div>
+          <ui-badge :content="0" :size="[5, 5]">
             <div class="jl-ico"><svg-icon name="comm_icon_cz_jl" /></div>
           </ui-badge>
         </div>
@@ -66,7 +72,7 @@ defineExpose({
                 <span class="pl-[5px]">数字货币</span>
               </recharge-badge>
             </template>
-            <recharge-body :listData="listData.filter(v => v.type == 2)" />
+            <recharge-body :listData="listData.filter(v => v.type == 2)" @close="show = false" />
           </van-tab>
         </van-tabs>
       </div>

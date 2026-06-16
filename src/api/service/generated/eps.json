@@ -646,6 +646,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/getOrderInfoDetail",
+        "summary": "领取返水奖励"
+      },
+      {
+        "method": "post",
         "path": "/getCashBackDetail",
         "summary": "获取系统返水的详情数据"
       },

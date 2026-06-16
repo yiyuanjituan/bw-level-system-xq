@@ -143,7 +143,7 @@ onMounted(() => {
     auth.updateInfo();
   }
 
-  checkPopupTip();
+  // checkPopupTip();
 });
 
 onUnmounted(() => {

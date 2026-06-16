@@ -1,131 +1,188 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import UiBadge from "@/components/UI/badge.vue";
-import { getChannelList } from "@/api/common";
-import useClipboard from "vue-clipboard3";
-import { showCustomToast } from "@/hooks/useCommon";
-import { bus } from "@/utils/mitt";
+import { onMounted, ref } from 'vue';
+import UiBadge from '@/components/UI/badge.vue';
+import { bus } from '@/utils/mitt';
+import UiLoading from '@/components/UI/loading.vue';
+import { service } from '@/api/service';
+import { formatMoney } from '@/utils/common';
+import router from '@/router';
 
-const { toClipboard } = useClipboard()
+const orderId = ref<number>(0);
 const show = ref(false);
-const listData = ref<any>([])
-const isShowCopy = ref(true)
+const orderInfo = ref<any>({});
 
-function open() {
+function open(params: any = {}) {
+  orderId.value = params?.id;
   show.value = true;
-  initData()
-}
-
-function handleCopyText(text: string) {
-  toClipboard(text).then(() => {
-    isShowCopy.value = false;
-    showCustomToast({ type: "success", message: '复制成功' });
-    setTimeout(() => isShowCopy.value = true, 2000)
-  })
+  initData();
 }
 
 function initData() {
-  getChannelList().then((res) => {
-    listData.value = res;
-  })
+  service.v1.user.getOrderInfoDetail({ id: orderId.value }).then(res => {
+    orderInfo.value = res;
+  });
+}
+
+function callToService() {
+  close()
+  router.push('/home/notice')
 }
 
 function handleContinue() {
   show.value = false;
-  bus.emit('showRecharge')
+  bus.emit('showRecharge');
+}
+
+function close() {
+  show.value = false;
+}
+
+function onClosed() {
+  show.value = false;
 }
 
 defineExpose({
   open: open
-})
+});
 </script>
 
 <template>
-  <van-popup v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }">
+  <van-popup destroy-on-close v-model:show="show" position="bottom" :overlay-style="{ 'backdrop-filter': 'blur(5px)' }" @closed="onClosed">
     <div class="popup-container">
       <div class="popup-header">
-        <div class="back-icon" @click="show = false">
+        <div class="back-icon" @click="close">
           <svg-icon name="arrow-back" class-name="ml-[-7.5px]"></svg-icon>
         </div>
         <p class="title">存款信息</p>
         <div class="actions">
-          <ui-badge content="0" :size="[5,5]">
-            <div class="jl-ico"><svg-icon name="comm_icon_cz_jl" /></div>
+          <ui-badge content="0" :size="[5, 5]">
+            <div class="jl-ico" @click="callToService"><svg-icon name="comm_icon_cz_kf" /></div>
           </ui-badge>
         </div>
       </div>
-      <div class="body-container">
+      <div class="body-container" v-if="orderId && orderInfo?.id">
         <div class="content-box">
           <div class="status-container">
-            <div class="status-icon">
-              <img src="/siteadmin/skin/lobby_asset/comm_icon_pay_3.avif" alt="" srcset="">
-            </div>
-            <div class="status-icon cancel-icon">
-              <svg-icon name="comm_icon_tc_gant" class-name="text-[50px]" />
-            </div>
-            <div class="status-pay-text" v-if="false">
-              <span>进行中</span>
-              <svg-icon name="comm_icon_retry" class-name="main-text ml-[5px] text-[12px]" />
-            </div>
-            <div class="status-pay-text timeout-text">
-              <span>您的付款已超时，请</span>
-              <span class="retry-apply">重新发起</span>
-            </div>
+            <template v-if="[1, 2].includes(orderInfo?.pay_status)">
+              <div class="status-icon">
+                <img src="/siteadmin/skin/lobby_asset/comm_icon_pay_3.avif" alt="" srcset="" />
+              </div>
+              <div class="status-pay-text">
+                <span>进行中</span>
+                <svg-icon name="comm_icon_retry" class-name="main-text ml-[5px] text-[12px]" @click="initData()" />
+              </div>
+            </template>
+            <template v-if="[-1].includes(orderInfo?.pay_status)">
+              <div class="status-icon cancel-icon">
+                <svg-icon name="comm_icon_tc_gant" class-name="text-[50px]" />
+              </div>
+              <div class="status-pay-text timeout-text">
+                <span>您的付款已超时，请</span>
+                <span class="retry-apply" @click="handleContinue()">重新发起</span>
+              </div>
+            </template>
+            <template v-if="[3].includes(orderInfo?.pay_status)">
+              <div class="status-icon success-icon">
+                <svg-icon name="comm_icon_gou" class-name="text-[24px]" />
+              </div>
+              <div class="status-pay-text success-text">
+                <span class="">存款成功</span>
+              </div>
+            </template>
+            <template v-if="[4].includes(orderInfo?.pay_status)">
+              <div class="status-icon cancel-icon">
+                <svg-icon name="comm_icon_tc_gant" class-name="text-[50px]" />
+              </div>
+              <div class="status-pay-text timeout-text">
+                <span>您的付款失败</span>
+              </div>
+            </template>
             <div class="amount">
-              <span class=""><span class="unitName">￥</span>50.00</span>
-              <div class="ml-[5px]" @click="handleCopyText('50')">
-                <svg-icon name="comm_icon_copy" v-if="isShowCopy" class-name="text-[15px] main-text" />
-                <svg-icon name="comm_icon_gou" v-if="!isShowCopy" class-name="text-[15px] right-text" />
+              <span class=""><span class="unitName">￥</span>{{ formatMoney(orderInfo?.money) }}</span>
+              <div class="ml-[5px]">
+                <copy :text="formatMoney(orderInfo?.money)" />
               </div>
             </div>
           </div>
 
-          <div class="list">
+          <div class="list !pt-[10px]" v-if="orderInfo.mode == 1 && [1, 2].includes(orderInfo?.pay_status)">
+            <div class="list-item-box">
+              <span class="label">收款银行</span>
+              <span class="info">
+                <span class="account">{{ orderInfo?.content?.pay_bank }}</span>
+                <span class="copy-label">
+                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_bank" />
+                </span>
+              </span>
+            </div>
+            <div class="list-item-box" v-if="orderInfo">
+              <span class="label">收款姓名</span>
+              <span class="info">
+                <span class="account">{{ orderInfo?.content?.pay_name }}</span>
+                <span class="copy-label">
+                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_name" />
+                </span>
+              </span>
+            </div>
+            <div class="list-item-box">
+              <span class="label">收款账号</span>
+              <span class="info">
+                <span class="account">{{ orderInfo?.content?.pay_number }}</span>
+                <span class="copy-label">
+                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_number" />
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="list !pt-[10px]">
             <div class="list-item-box">
               <span class="label">存款方式</span>
               <span class="info">
-                <img src="https://20.2.25.135:20002/siteadmin/upload/img/finance-1764948895290-540460.avif" alt="" srcset="" class="w-[16px] h-[16px] mr-[5px]">
-                <span dir="ltr">其他电子钱包</span>
+                <img :src="orderInfo?.content?.icon" v-if="orderInfo?.content?.icon" alt="" srcset="" class="w-[16px] h-[16px] mr-[5px]" />
+                <span dir="ltr">{{ orderInfo.content?.name }}</span>
               </span>
             </div>
             <div class="list-item-box">
               <span class="label">存款账号</span>
               <span class="info">
-                <span class="account">asuya612</span>
+                <span class="account">{{ orderInfo?.userAccount }}</span>
                 <span class="copy-label">
-                  <svg-icon name="comm_icon_copy" v-if="isShowCopy" class-name="text-[13px] main-text" />
+                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.userAccount" />
                 </span>
               </span>
             </div>
             <div class="list-item-box">
               <span class="label">订单号码</span>
               <span class="info">
-                <span class="account">210179723040042054040</span>
+                <span class="account" style="white-space: nowrap">{{ orderInfo?.order_sn }}</span>
                 <span class="copy-label">
-                  <svg-icon name="comm_icon_copy" v-if="isShowCopy" class-name="text-[13px] main-text" />
+                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.order_sn" />
                 </span>
               </span>
             </div>
             <div class="list-item-box">
               <span class="label">存款金额</span>
               <span class="info">
-                <span dir="ltr">50.00</span>
+                <span dir="ltr">￥{{ formatMoney(orderInfo?.money) }}</span>
                 <span class="copy-label">
-                  <svg-icon name="comm_icon_copy" v-if="isShowCopy" class-name="text-[13px] main-text" />
+                  <copy class-name="!text-[13px] main-text" :text="formatMoney(orderInfo?.money)" />
                 </span>
               </span>
             </div>
-            <div class="list-item-box">
-              <span class="label">预计赠送</span>
+            <div class="list-item-box" v-if="Number(orderInfo.bonusAmount) > 0 && [1, 2, 3].includes(orderInfo?.pay_status)">
+              <span class="label" v-if="[1, 2].includes(orderInfo?.pay_status)">预计赠送</span>
+              <span class="label" v-if="[3].includes(orderInfo?.pay_status)">赠送金额</span>
               <span class="info">
-                <img src="/siteadmin/skin/lobby_asset/img_czjl_mccz.avif" alt="" srcset="" class="w-[19px] h-[19px] mr-[5px]">
-                <span class="reward-amount">+1.00</span>
+                <img src="/siteadmin/skin/lobby_asset/img_czjl_mccz.avif" alt="" srcset="" class="w-[19px] h-[19px] mr-[5px]" />
+                <span class="reward-amount">+{{ formatMoney(orderInfo.bonusAmount) }}</span>
               </span>
             </div>
-            <div class="list-item-box">
-              <span class="label">预计到账</span>
+            <div class="list-item-box" v-if="[1, 2, 3].includes(orderInfo?.pay_status)">
+              <span class="label" v-if="[1, 2].includes(orderInfo?.pay_status)">预计到账</span>
+              <span class="label" v-if="[3].includes(orderInfo?.pay_status)">实际到账</span>
               <span class="info">
-                <span dir="ltr">51.00</span>
+                <span dir="ltr">{{ formatMoney(Number(orderInfo.money) + Number(orderInfo.bonusAmount)) }}</span>
               </span>
             </div>
           </div>
@@ -134,15 +191,18 @@ defineExpose({
         <div class="flex-1"></div>
         <div class="footer">
           <div class="btns">
-            <div class="btn btn-plain">查看订单</div>
-            <div class="btn" @click="handleContinue">继续存款</div>
-            <div class="btn">跳转三方</div>
+            <div class="btn btn-plain" v-if="false">查看订单</div>
+            <div class="btn" @click="handleContinue" v-if="[-1, 3, 4].includes(orderInfo?.pay_status) || orderInfo?.content?.url?.startsWith('inner')">继续存款</div>
+            <div class="btn" v-if="orderInfo?.content?.url && [1,2].includes(orderInfo?.pay_status) && orderInfo?.content?.url?.startsWith('http')">跳转三方</div>
           </div>
           <div class="tips">
             <span>若存款过程遇到问题，请随时</span>
-            <span class="main-text">联系客服</span>
+            <span class="main-text" @click="callToService">联系客服</span>
           </div>
         </div>
+      </div>
+      <div class="flex flex-1 w-[100%] h-[100%] items-center justify-center" v-if="!(orderId && orderInfo?.id)">
+        <ui-loading />
       </div>
     </div>
   </van-popup>
@@ -242,14 +302,23 @@ defineExpose({
         .cancel-icon {
           background-color: var(--skin__neutral_2);
         }
+        .success-icon {
+          background-color: var(--skin__accent_1);
+        }
         .status-pay-text {
           display: flex;
           align-items: center;
           justify-content: center;
+          line-height: 1;
+          margin-top: 2px;
           span {
-            line-height: 13px;
             color: var(--skin__accent_3);
             font-size: 12px;
+          }
+        }
+        .success-text {
+          span {
+            color: var(--skin__accent_1) !important;
           }
         }
         .timeout-text {

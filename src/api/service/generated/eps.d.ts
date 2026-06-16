@@ -1249,6 +1249,11 @@ declare namespace Eps {
 
 	interface V1User {
 		/**
+			 * 领取返水奖励
+			 */
+			getOrderInfoDetail(data?: any): Promise<any>;
+
+		/**
 			 * 获取系统返水的详情数据
 			 */
 			getCashBackDetail(data?: any): Promise<any>;
@@ -1306,12 +1311,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { getCashBackDetail: string; accountPageList: string; receiveCashBack: string; personalReport: string; gamePageList: string; totalMoneyIn: string; getVipReward: string; thirdWallet: string; getCashBack: string; getVipInfo: string; vipList: string; };
+		permission: { getOrderInfoDetail: string; getCashBackDetail: string; accountPageList: string; receiveCashBack: string; personalReport: string; gamePageList: string; totalMoneyIn: string; getVipReward: string; thirdWallet: string; getCashBack: string; getVipInfo: string; vipList: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { getCashBackDetail: boolean; accountPageList: boolean; receiveCashBack: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; getVipReward: boolean; thirdWallet: boolean; getCashBack: boolean; getVipInfo: boolean; vipList: boolean; };
+		_permission: { getOrderInfoDetail: boolean; getCashBackDetail: boolean; accountPageList: boolean; receiveCashBack: boolean; personalReport: boolean; gamePageList: boolean; totalMoneyIn: boolean; getVipReward: boolean; thirdWallet: boolean; getCashBack: boolean; getVipInfo: boolean; vipList: boolean; };
 
 		request: Service["request"];
 	}

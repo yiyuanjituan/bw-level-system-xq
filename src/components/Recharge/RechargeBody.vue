@@ -117,19 +117,23 @@ const inputPrefix = computed(() => (payTypeMode.value == 'usdt' ? 'U' : '￥'));
 const inputPlaceholder = computed(() => `最低${activeInfo.value.min ?? 0} ~ 最高${activeInfo.value.max ?? 0}`);
 const showGroupDownloadTip = computed(() => {
   return Boolean(
-    activeGroup.value.download_tip
-      && activeGroup.value.wallet_url
-      && (!activeInfo.value.id || !(activeInfo.value.download_tip && activeInfo.value.wallet_url))
+    activeGroup.value.download_tip &&
+      activeGroup.value.wallet_url &&
+      (!activeInfo.value.id || !(activeInfo.value.download_tip && activeInfo.value.wallet_url))
   );
 });
 const showChildDownloadTip = computed(() => Boolean(activeInfo.value.download_tip && activeInfo.value.wallet_url));
 const showChildrenSection = computed(() => activeChildren.value.filter(item => item.frontShow).length > 1);
 const showBoundNoWallet = computed(() => {
-  return activeInfo.value.siteWallet == 1 && isGetSiteWallet.value && activeInfo.value.siteWalletKeyword == 'wallet-no' && siteWalletInfo.value.bind == 1;
+  return (
+    activeInfo.value.siteWallet == 1 && isGetSiteWallet.value && activeInfo.value.siteWalletKeyword == 'wallet-no' && siteWalletInfo.value.bind == 1
+  );
 });
 const showRechargeForm = computed(() => activeInfo.value.siteWallet == 0 || [1].includes(Number(siteWalletInfo.value.bind)));
 const showBindActions = computed(() => {
-  return activeInfo.value.siteWallet == 1 && activeInfo.value.siteWalletKeyword == 'wallet-no' && [2, 3].includes(Number(siteWalletInfo.value.bind));
+  return (
+    activeInfo.value.siteWallet == 1 && activeInfo.value.siteWalletKeyword == 'wallet-no' && [2, 3].includes(Number(siteWalletInfo.value.bind))
+  );
 });
 
 function normalizeMoney(value: number) {
@@ -284,22 +288,21 @@ function handleSubmit() {
   }
 
   isLoading.value = true;
-  const orderWindow = openUrlInNewWindow();
-
   createOrder({ id: channelId, money: submitAmount })
     .then(res => {
       const url = res?.url;
       if (!url) {
-        orderWindow?.close();
         return showCustomToast({ type: 'warning', message: '订单创建错误' });
       }
+      // 站内支付跳转的模式内部跳转
+      if (res.mode == 'inner') {
+        emits('close');
+        return bus.emit('showRechargeDetail', { id: res.orderId });
+      }
 
-      openUrlInNewWindow(url, orderWindow);
+      openUrlInNewWindow(url);
       emits('close');
       bus.emit('showRechargeDetail', { id: res.orderId });
-    })
-    .catch(() => {
-      orderWindow?.close();
     })
     .finally(() => {
       isLoading.value = false;
