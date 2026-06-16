@@ -55,6 +55,9 @@ defineExpose({
                   </div>
                 </div>
               </div>
+              <div class="arrow">
+                <svg-icon name="comm_icon_fh" class-name="rotate-[180deg] text-[8px]" style="color: var(--skin__neutral_2) !important;" />
+              </div>
             </div>
           </div>
         </div>
@@ -198,6 +201,12 @@ div[role='dialog'] {
                 justify-content: end;
               }
             }
+          }
+          .arrow {
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: var(--skin__neutral_2);
           }
         }
       }
