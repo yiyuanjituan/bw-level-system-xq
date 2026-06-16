@@ -37,7 +37,26 @@ defineExpose({
               <x-select />
             </div>
           </div>
-          {{ dialogWidth }}
+          <div class="list-wrapper">
+            <div class="item-box" v-for="i in 6" :key="i">
+              <div class="content">
+                <div class="row">
+                  <div class="left">
+                    <img class="icon" src="https://146.103.80.124:5001/siteadmin/upload/img/finance-1691947531341-912002.avif" alt="" srcset="" />
+                    <span dir="ltr" class="payment-name">NO钱包</span>
+                  </div>
+                  <div class="right">300.00</div>
+                </div>
+                <div class="row">
+                  <div class="left">
+                    <span class="createtime">2026/06/17 01:53:34</span>
+                    <span class="order-no">210179723590005270355</span>
+                    <copy :text="`210179723590005270355`" class-name="!text-[12px]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -111,6 +130,74 @@ div[role='dialog'] {
             width: 85px;
             height: 25px;
             border-radius: 999rem;
+          }
+        }
+      }
+      .list-wrapper {
+        max-height: 70vh;
+        flex: 1;
+        padding: 0 10px 10px;
+        list-style: none;
+        min-height: 50vh;
+        .item-box {
+          padding: 5px 10px;
+          border-radius: 5px;
+          display: flex;
+          width: 100%;
+          &:nth-child(odd) {
+            background-color: var(--skin__bg_1);
+          }
+          .content {
+            width: 100%;
+            flex: 1;
+            .row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 2.5px 0;
+              .left {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                .icon {
+                  height: 24px;
+                  width: 24px;
+                  margin-right: 10px;
+                }
+                .payment-name {
+                  font-size: 12px;
+                  line-height: 1.3;
+                  word-break: break-all;
+                  display: -webkit-box;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  vertical-align: middle;
+                  -webkit-line-clamp: 2;
+                  -webkit-box-orient: vertical;
+                }
+                > span {
+                  line-height: 1;
+                }
+                .createtime {
+                  color: var(--skin__neutral_2);
+                  font-size: 9px;
+                }
+                .order-no {
+                  margin: 0 5px;
+                  color: var(--skin__neutral_2);
+                  font-size: 9px;
+                }
+              }
+              .right {
+                font-size: 13px;
+                font-weight: 700;
+                max-width: 30px;
+                text-align: right;
+                display: flex;
+                align-items: center;
+                justify-content: end;
+              }
+            }
           }
         }
       }
