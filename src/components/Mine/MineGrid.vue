@@ -99,7 +99,7 @@ const list = ref([
     icon_1: "style_2_icon_list_dlsb",
     icon_2: "style_2_icon_list_dlsb2",
     name: "登录设备",
-    url: "账户明细"
+    url: "/home/device"
   },
   {
     key: "aqtc",
