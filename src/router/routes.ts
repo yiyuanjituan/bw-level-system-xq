@@ -287,6 +287,15 @@ const routes: Array<RouteRecordRaw> = [
           pageTransition: "page-slide-forward"
         },
       },
+      {
+        path: "device",
+        name: "UserDevice",
+        component: () => import("@/views/user/device.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
     ]
   }
 ];

@@ -52,7 +52,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="copy-icon" @click="handleCopyText(props.text)">
+  <div class="copy-icon" @click.stop="handleCopyText(props.text)">
     <svg-icon v-if="isShowCopy" name="comm_icon_copy" :class-name="copyIconClassName" />
     <svg-icon v-else name="comm_icon_gou" class="" :class-name="successIconClassName" />
   </div>

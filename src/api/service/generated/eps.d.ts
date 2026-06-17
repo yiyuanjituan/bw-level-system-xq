@@ -847,7 +847,7 @@ declare namespace Eps {
 			createOrder(data?: any): Promise<any>;
 
 		/**
-			 * 创建订单/非站内钱包
+			 * 充值记录
 			 */
 			records(data?: any): Promise<any>;
 

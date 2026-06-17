@@ -4,7 +4,7 @@ import UiBadge from '@/components/UI/badge.vue';
 import { bus } from '@/utils/mitt';
 import UiLoading from '@/components/UI/loading.vue';
 import { service } from '@/api/service';
-import { formatMoney } from '@/utils/common';
+import { formatMoney, openUrlInNewWindow } from '@/utils/common';
 import router from '@/router';
 
 const orderId = ref<number>(0);
@@ -31,6 +31,10 @@ function callToService() {
 function handleContinue() {
   show.value = false;
   bus.emit('showRecharge');
+}
+
+function handleJumpUrl() {
+  openUrlInNewWindow(orderInfo.value?.content?.url)
 }
 
 function close() {
@@ -193,7 +197,7 @@ defineExpose({
           <div class="btns">
             <div class="btn btn-plain" v-if="false">查看订单</div>
             <div class="btn" @click="handleContinue" v-if="[-1, 3, 4].includes(orderInfo?.pay_status) || orderInfo?.content?.url?.startsWith('inner')">继续存款</div>
-            <div class="btn" v-if="orderInfo?.content?.url && [1,2].includes(orderInfo?.pay_status) && orderInfo?.content?.url?.startsWith('http')">跳转三方</div>
+            <div class="btn" @click="handleJumpUrl" v-if="orderInfo?.content?.url && [1,2].includes(orderInfo?.pay_status) && orderInfo?.content?.url?.startsWith('http')">跳转三方</div>
           </div>
           <div class="tips">
             <span>若存款过程遇到问题，请随时</span>

@@ -6,21 +6,35 @@ import type { DateRangeValue } from "@/components/Common/DateRangePicker.vue";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
 import { service } from "@/api/service";
+import { bus } from "@/utils/mitt";
+
+interface RechargeRecordContent {
+  name: string;
+  icon: string;
+}
 
 interface RechargeRecordItem {
-  id?: number | string;
-  createTime?: string;
-  order_sn?: string;
-  money?: number | string;
-  pay_status?: number | string;
-  name?: string;
-  icon?: string;
-  content?: {
-    name?: string;
-    icon?: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
+  id: number | string;
+  createTime: string;
+  order_sn: string;
+  money: number | string;
+  pay_status: number;
+  content: RechargeRecordContent;
+}
+
+interface RechargeRecordPageData {
+  page: number;
+  limit: number;
+  total: number;
+  list: RechargeRecordItem[];
+}
+
+interface RechargeRecordQuery {
+  page: number;
+  limit: number;
+  startTime: number;
+  endTime: number;
+  pay_status?: number;
 }
 
 type RechargeStatusOption = {
@@ -28,7 +42,16 @@ type RechargeStatusOption = {
   value: number | string;
 };
 
-const DEFAULT_ICON = "https://146.103.80.124:5001/siteadmin/upload/img/finance-1691947531341-912002.avif";
+type RechargeRecordsService = {
+  records(data: RechargeRecordQuery): Promise<RechargeRecordPageData>;
+};
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const LOAD_MORE_OFFSET = 48;
+
+const rechargeRecordsService = service.base.recharge as RechargeRecordsService;
+
 const statusOptions: RechargeStatusOption[] = [
   { label: "全部状态", value: "" },
   { label: "已取消", value: -1 },
@@ -41,7 +64,8 @@ const statusOptions: RechargeStatusOption[] = [
 const show = ref(false);
 const params = ref<Record<string, any>>({});
 const isLoading = ref(false);
-const listData = ref<RechargeRecordItem[]>([]);
+const isLoadingMore = ref(false);
+const pageData = ref<RechargeRecordPageData>(createDefaultPageData());
 const timeRange = ref<DateRangeValue>(createTodayRange());
 const statusFilterValue = ref<number | string>(statusOptions[0]?.value ?? "");
 const { width: windowWidth } = useWindowSize();
@@ -61,11 +85,35 @@ function createTodayRange(): DateRangeValue {
   };
 }
 
+function createDefaultPageData(): RechargeRecordPageData {
+  return {
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    total: 0,
+    list: []
+  };
+}
+
+function createQueryParams(page: number): RechargeRecordQuery {
+  return {
+    page,
+    limit: DEFAULT_LIMIT,
+    startTime: timeRange.value.startTime,
+    endTime: timeRange.value.endTime,
+    ...(statusFilterValue.value === "" ? {} : { pay_status: Number(statusFilterValue.value) })
+  };
+}
+
+function formatAmount(value: number | string) {
+  return Number(value).toFixed(2);
+}
+
 const dialogWidth = computed(() => {
   return ((Number(params.value?.width) ? Number(params.value?.width) : 355) / 375) * windowWidth.value;
 });
 
-const hasListData = computed(() => listData.value.length > 0);
+const hasListData = computed(() => pageData.value.list.length > 0);
+const hasMoreData = computed(() => pageData.value.total > pageData.value.list.length);
 const emptyStateText = computed(() => {
   if (timeRange.value.mode === "custom") {
     return "所选时间暂无充值记录";
@@ -74,78 +122,40 @@ const emptyStateText = computed(() => {
   return `${timeRange.value.label}暂无充值记录`;
 });
 
-function toNumber(value: unknown) {
-  const amount = Number(value);
-  return Number.isFinite(amount) ? amount : 0;
-}
-
-function formatMoney(value: unknown) {
-  return toNumber(value).toFixed(2);
-}
-
-function normalizeList(response: any) {
-  const source = response?.data ?? response ?? {};
-
-  if (Array.isArray(source?.list)) {
-    return source.list as RechargeRecordItem[];
-  }
-
-  if (Array.isArray(source)) {
-    return source as RechargeRecordItem[];
-  }
-
-  return [];
-}
-
-function getRecordKey(item: RechargeRecordItem, index: number) {
-  return item?.id ?? item?.order_sn ?? item?.createTime ?? index;
-}
-
-function getPaymentIcon(item: RechargeRecordItem) {
-  return item?.icon || item?.content?.icon || DEFAULT_ICON;
-}
-
-function getPaymentName(item: RechargeRecordItem) {
-  return item?.name || item?.content?.name || "NO钱包";
-}
-
-function getOrderNo(item: RechargeRecordItem) {
-  return String(item?.order_sn ?? "");
-}
-
-function getCreateTime(item: RechargeRecordItem) {
-  return item?.createTime || item?.createtime || "--";
-}
-
-async function init() {
+async function fetchPage(page: number, append: boolean) {
   const requestId = ++latestRequestId;
-  isLoading.value = true;
+
+  if (append) {
+    isLoadingMore.value = true;
+  } else {
+    isLoading.value = true;
+  }
 
   try {
-    const response = await service.request({
-      url: "/app/base/recharge/records",
-      method: "post",
-      data: {
-        page: 1,
-        limit: 20,
-        startTime: timeRange.value.startTime,
-        endTime: timeRange.value.endTime,
-        ...(statusFilterValue.value === "" ? {} : { pay_status: Number(statusFilterValue.value) })
-      }
-    });
+    const response = await rechargeRecordsService.records(createQueryParams(page));
 
     if (requestId === latestRequestId) {
-      listData.value = normalizeList(response);
-    }
-  } catch (_error) {
-    if (requestId === latestRequestId) {
-      listData.value = [];
+      pageData.value = {
+        page: response.page,
+        limit: response.limit,
+        total: response.total,
+        list: append ? pageData.value.list.concat(response.list) : response.list
+      };
     }
   } finally {
     if (requestId === latestRequestId) {
-      isLoading.value = false;
+      if (append) {
+        isLoadingMore.value = false;
+      } else {
+        isLoading.value = false;
+      }
     }
   }
+}
+
+async function init() {
+  pageData.value = createDefaultPageData();
+  await fetchPage(DEFAULT_PAGE, false);
 }
 
 function openDialog(nextParams: Record<string, any> = {}) {
@@ -156,6 +166,23 @@ function openDialog(nextParams: Record<string, any> = {}) {
 
 function handleClose() {
   show.value = false;
+}
+
+function handleOpenDetail(item: RechargeRecordItem) {
+  bus.emit("showRechargeDetail", { id: item.id });
+}
+
+function handleListScroll(event: Event) {
+  if (isLoading.value || isLoadingMore.value || !hasMoreData.value) {
+    return;
+  }
+
+  const target = event.target as HTMLElement;
+  const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+
+  if (distanceToBottom <= LOAD_MORE_OFFSET) {
+    void fetchPage(pageData.value.page + 1, true);
+  }
 }
 
 watch([() => timeRange.value.startTime, () => timeRange.value.endTime, statusFilterValue], () => {
@@ -186,21 +213,21 @@ defineExpose({
           <div v-if="isLoading && !hasListData" class="content-state">
             <ui-loading />
           </div>
-          <div v-else-if="hasListData" class="list-wrapper">
-            <div v-for="(item, index) in listData" :key="getRecordKey(item, index)" class="item-box">
+          <div v-else-if="hasListData" class="list-wrapper" @scroll.passive="handleListScroll">
+            <div v-for="item in pageData.list" :key="item.id" class="item-box" @click="handleOpenDetail(item)">
               <div class="content">
                 <div class="row">
                   <div class="left">
-                    <img class="icon" :src="getPaymentIcon(item)" alt="" />
-                    <span dir="ltr" class="payment-name">{{ getPaymentName(item) }}</span>
+                    <img class="icon" :src="item.content.icon" alt="" />
+                    <span dir="ltr" class="payment-name">{{ item.content.name }}</span>
                   </div>
-                  <div class="right">{{ formatMoney(item.money) }}</div>
+                  <div class="right">{{ formatAmount(item.money) }}</div>
                 </div>
                 <div class="row">
                   <div class="left">
-                    <span class="createtime">{{ getCreateTime(item) }}</span>
-                    <span v-if="getOrderNo(item)" class="order-no">{{ getOrderNo(item) }}</span>
-                    <copy v-if="getOrderNo(item)" :text="getOrderNo(item)" class-name="!text-[12px]" />
+                    <span class="createtime">{{ item.createTime }}</span>
+                    <span class="order-no">{{ item.order_sn }}</span>
+                    <copy :text="item.order_sn" class-name="!text-[12px]" />
                   </div>
                 </div>
               </div>
@@ -208,6 +235,8 @@ defineExpose({
                 <svg-icon name="comm_icon_fh" class-name="rotate-[180deg] text-[8px]" style="color: var(--skin__neutral_2) !important;" />
               </div>
             </div>
+
+            <div v-if="isLoadingMore" class="list-footer">加载中...</div>
           </div>
           <ui-empty v-else :text="emptyStateText" />
         </div>
@@ -383,6 +412,26 @@ div[role="dialog"] {
       color: white;
       font-size: 30px;
     }
+  }
+
+  .content-state {
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .list-wrapper {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .list-footer {
+    padding-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--skin__neutral_2);
   }
 }
 </style>
