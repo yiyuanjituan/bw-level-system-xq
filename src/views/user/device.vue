@@ -1,13 +1,188 @@
 <script setup lang="ts">
+import { showCustomToast } from '@/hooks/useCommon';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
+import { toPng } from 'html-to-image';
+import { ref } from 'vue';
 
 const app = useAppStore();
 const auth = useAuthStore();
+const saveImageRef = ref<HTMLElement | null>(null);
+
+function waitForNextFrame() {
+  return new Promise(resolve => requestAnimationFrame(() => resolve(true)));
+}
+
+async function waitForImages(root: HTMLElement) {
+  const images = Array.from(root.querySelectorAll<HTMLImageElement>('img'));
+
+  await Promise.all(images.map((img) => {
+    if (img.complete && img.naturalWidth > 0) {
+      return img.decode?.().catch(() => undefined);
+    }
+
+    return new Promise<void>((resolve) => {
+      const clear = () => {
+        img.removeEventListener('load', handleLoad);
+        img.removeEventListener('error', handleDone);
+      };
+
+      const handleDone = () => {
+        clear();
+        resolve();
+      };
+
+      const handleLoad = () => {
+        const decodePromise = img.decode?.();
+        if (decodePromise) {
+          decodePromise.catch(() => undefined).finally(handleDone);
+          return;
+        }
+        handleDone();
+      };
+
+      img.addEventListener('load', handleLoad, { once: true });
+      img.addEventListener('error', handleDone, { once: true });
+    });
+  }));
+}
+
+function expandCaptureLayout(root: HTMLElement) {
+  root.style.height = 'auto';
+  root.style.overflow = 'visible';
+
+  const main = root.querySelector<HTMLElement>('.main');
+  if (main) {
+    main.style.height = 'auto';
+    main.style.flex = 'none';
+    main.style.overflow = 'visible';
+  }
+
+  const deviceList = root.querySelector<HTMLElement>('.device-list');
+  if (deviceList) {
+    deviceList.style.height = 'auto';
+    deviceList.style.overflow = 'visible';
+    deviceList.style.paddingBottom = '10px';
+  }
+
+  const saveImgBtn = root.querySelector<HTMLElement>('.saveImgBtn');
+  if (saveImgBtn) {
+    saveImgBtn.style.position = 'static';
+    saveImgBtn.style.left = '0';
+    saveImgBtn.style.bottom = 'auto';
+  }
+}
+
+function inlineSvgIcons(root: HTMLElement) {
+  Array.from(root.querySelectorAll<SVGSVGElement>('svg.svg-icon')).forEach(icon => {
+    const href = icon.querySelector('use')?.getAttribute('xlink:href') || icon.querySelector('use')?.getAttribute('href');
+    if (!href)
+      return;
+
+    const symbol = document.querySelector<SVGSymbolElement>(href);
+    if (!symbol)
+      return;
+
+    const inlineSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.getAttributeNames().forEach(name => {
+      const value = icon.getAttribute(name);
+      if (value !== null)
+        inlineSvg.setAttribute(name, value);
+    });
+
+    const viewBox = icon.getAttribute('viewBox') || symbol.getAttribute('viewBox');
+    if (viewBox)
+      inlineSvg.setAttribute('viewBox', viewBox);
+
+    inlineSvg.innerHTML = symbol.innerHTML;
+
+    const styles = window.getComputedStyle(icon);
+    inlineSvg.style.cssText = icon.style.cssText;
+    inlineSvg.style.width = styles.width;
+    inlineSvg.style.height = styles.height;
+    inlineSvg.style.minWidth = styles.width;
+    inlineSvg.style.minHeight = styles.height;
+    inlineSvg.style.display = styles.display === 'inline' ? 'inline-block' : styles.display;
+    inlineSvg.style.verticalAlign = styles.verticalAlign;
+    inlineSvg.style.color = styles.color;
+    inlineSvg.style.fill = styles.fill;
+    inlineSvg.style.stroke = styles.stroke;
+    inlineSvg.style.flexShrink = styles.flexShrink;
+    inlineSvg.style.transform = styles.transform === 'none' ? '' : styles.transform;
+    inlineSvg.style.transformOrigin = styles.transformOrigin;
+
+    icon.replaceWith(inlineSvg);
+  });
+}
+
+async function createCaptureNode(sourceRoot: HTMLElement) {
+  const host = document.createElement('div');
+  const cloneRoot = sourceRoot.cloneNode(true) as HTMLElement;
+  const width = Math.ceil(sourceRoot.getBoundingClientRect().width);
+
+  host.style.position = 'fixed';
+  host.style.inset = '0';
+  host.style.opacity = '0';
+  host.style.pointerEvents = 'none';
+  host.style.overflow = 'hidden';
+  host.style.zIndex = '2147483647';
+
+  cloneRoot.style.width = `${width}px`;
+  cloneRoot.style.maxWidth = 'none';
+  cloneRoot.style.minHeight = '0';
+
+  expandCaptureLayout(cloneRoot);
+  inlineSvgIcons(cloneRoot);
+
+  host.appendChild(cloneRoot);
+  document.body.appendChild(host);
+  await waitForNextFrame();
+  await waitForImages(cloneRoot);
+  await waitForNextFrame();
+
+  return {
+    captureNode: cloneRoot,
+    cleanup: () => host.remove(),
+  };
+}
+
+async function saveToImg() {
+  if (!saveImageRef.value) {
+    showCustomToast({ type: 'fail', message: '保存图片失败，请稍后重试' });
+    return;
+  }
+
+  let cleanup = () => {};
+
+  try {
+    const captureContext = await createCaptureNode(saveImageRef.value);
+    cleanup = captureContext.cleanup;
+
+    const width = Math.ceil(captureContext.captureNode.scrollWidth);
+    const height = Math.ceil(captureContext.captureNode.scrollHeight);
+    const imageData = await toPng(captureContext.captureNode, {
+      cacheBust: true,
+      pixelRatio: 2,
+      width,
+      height,
+      canvasWidth: width,
+      canvasHeight: height,
+    });
+
+    const a = document.createElement('a');
+    a.href = imageData;
+    a.setAttribute('download', '\u8bbe\u5907\u56fe\u7247.png');
+    a.click();
+  } catch {
+    showCustomToast({ type: 'fail', message: '保存图片失败，请稍后重试' });
+  } finally {
+    cleanup();
+  }
+}
 </script>
 
 <template>
-  <div class="device-container">
+  <div ref="saveImageRef" class="device-container">
     <sub-navbar title="登录设备" />
     <div class="main">
       <div class="user-and-siteInfo">
@@ -88,7 +263,7 @@ const auth = useAuthStore();
           </div>
         </div>
       </div>
-      <div class="saveImgBtn">
+      <div class="saveImgBtn" @click="saveToImg">
         <x-button type="primary" class="!w-[100%]">保存图片</x-button>
       </div>
     </div>
@@ -100,6 +275,7 @@ const auth = useAuthStore();
   display: flex;
   flex-direction: column;
   color: var(--skin__lead);
+  background: var(--skin__bg_1);
   .main {
     flex: 1;
     overflow: auto;
@@ -126,10 +302,13 @@ const auth = useAuthStore();
         position: relative;
         padding: 10px 0;
         .logo-box {
+          position: relative;
+          z-index: 1;
           height: 100%;
           display: flex !important;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
           .logo-img {
             max-width: 115px;
             object-fit: contain;
@@ -139,6 +318,8 @@ const auth = useAuthStore();
           }
         }
         .separate {
+          position: relative;
+          z-index: 1;
           height: 22px;
           width: 1px;
           background-color: var(--skin__border);
