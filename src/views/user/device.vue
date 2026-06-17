@@ -1,4 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import useAppStore from '@/store/modules/app';
+import useAuthStore from '@/store/modules/user';
+
+const app = useAppStore();
+const auth = useAuthStore();
+</script>
 
 <template>
   <div class="device-container">
@@ -7,14 +13,17 @@
       <div class="user-and-siteInfo">
         <div class="container">
           <div class="logo-box">
-            <img src="https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif" alt="" srcset="" class="logo-img" />
+            <img :src="app.appInfo.logo" alt="" srcset="" class="logo-img" />
           </div>
           <div class="separate"></div>
           <div class="userInfo">
             <p>
-              <span class="title">ID:</span><span class="content">482485509</span><span class="copy-box"><copy /></span>
+              <span class="title">ID:</span><span class="content">{{ auth.user?.unionid }}</span
+              ><span class="copy-box"><copy :text="auth.user?.unionid" /></span>
             </p>
-            <p class="account"><span class="title">账号:</span><span class="content">fils4996</span></p>
+            <p class="account">
+              <span class="title">账号:</span><span class="content">{{ auth.user?.account }}</span>
+            </p>
           </div>
           <img src="@/assets/common/comm_logo_bg2.avif" alt="" srcset="" class="bg" />
         </div>
