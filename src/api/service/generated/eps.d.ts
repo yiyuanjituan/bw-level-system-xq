@@ -721,6 +721,11 @@ declare namespace Eps {
 
 	interface OpenV1Home {
 		/**
+			 * 获取足球的数据
+			 */
+			footballData(data?: any): Promise<any>;
+
+		/**
 			 * 首页的数据
 			 */
 			pageData(data?: any): Promise<any>;
@@ -733,12 +738,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { pageData: string; helpData: string; };
+		permission: { footballData: string; pageData: string; helpData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { pageData: boolean; helpData: boolean; };
+		_permission: { footballData: boolean; pageData: boolean; helpData: boolean; };
 
 		request: Service["request"];
 	}

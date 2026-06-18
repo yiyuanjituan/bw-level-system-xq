@@ -728,6 +728,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/footballData",
+        "summary": "获取足球的数据"
+      },
+      {
+        "method": "post",
         "path": "/pageData",
         "summary": "首页的数据"
       },
