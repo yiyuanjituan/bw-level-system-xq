@@ -15,6 +15,7 @@
   <download-tip :ref="setRefs('downloadTip')" />
   <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
   <dialog-tip :ref="setRefs('dialogTipRef')" />
+  <football-dialog />
 </template>
 
 <script setup lang="ts">

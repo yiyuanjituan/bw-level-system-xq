@@ -33,11 +33,14 @@ const props = withDefaults(defineProps<Props>(), {
 
   position: relative;
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
   align-items: center;
   height: 45px;
+  min-height: 45px;
   background-color: #191919;
   border-bottom: 1px solid #242424;
+  box-sizing: border-box;
   width: 100%;
   .arrow-left {
     position: absolute;
