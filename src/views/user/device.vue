@@ -8,6 +8,8 @@ import { ref } from 'vue';
 const app = useAppStore();
 const auth = useAuthStore();
 const saveImageRef = ref<HTMLElement | null>(null);
+const captureFileName = '设备图片.png';
+const captureErrorMessage = '保存图片失败，请稍后重试';
 
 function waitForNextFrame() {
   return new Promise(resolve => requestAnimationFrame(() => resolve(true)));
@@ -17,32 +19,28 @@ async function waitForImages(root: HTMLElement) {
   const images = Array.from(root.querySelectorAll<HTMLImageElement>('img'));
 
   await Promise.all(images.map((img) => {
-    if (img.complete && img.naturalWidth > 0) {
+    if (img.complete && img.naturalWidth > 0)
       return img.decode?.().catch(() => undefined);
-    }
 
     return new Promise<void>((resolve) => {
-      const clear = () => {
+      const finish = () => {
         img.removeEventListener('load', handleLoad);
-        img.removeEventListener('error', handleDone);
-      };
-
-      const handleDone = () => {
-        clear();
+        img.removeEventListener('error', finish);
         resolve();
       };
 
       const handleLoad = () => {
         const decodePromise = img.decode?.();
-        if (decodePromise) {
-          decodePromise.catch(() => undefined).finally(handleDone);
+        if (!decodePromise) {
+          finish();
           return;
         }
-        handleDone();
+
+        decodePromise.catch(() => undefined).finally(finish);
       };
 
       img.addEventListener('load', handleLoad, { once: true });
-      img.addEventListener('error', handleDone, { once: true });
+      img.addEventListener('error', finish, { once: true });
     });
   }));
 }
@@ -74,7 +72,7 @@ function expandCaptureLayout(root: HTMLElement) {
 }
 
 function inlineSvgIcons(root: HTMLElement) {
-  Array.from(root.querySelectorAll<SVGSVGElement>('svg.svg-icon')).forEach(icon => {
+  Array.from(root.querySelectorAll<SVGSVGElement>('svg.svg-icon')).forEach((icon) => {
     const href = icon.querySelector('use')?.getAttribute('xlink:href') || icon.querySelector('use')?.getAttribute('href');
     if (!href)
       return;
@@ -84,7 +82,7 @@ function inlineSvgIcons(root: HTMLElement) {
       return;
 
     const inlineSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    icon.getAttributeNames().forEach(name => {
+    icon.getAttributeNames().forEach((name) => {
       const value = icon.getAttribute(name);
       if (value !== null)
         inlineSvg.setAttribute(name, value);
@@ -117,7 +115,7 @@ function inlineSvgIcons(root: HTMLElement) {
 
 async function createCaptureNode(sourceRoot: HTMLElement) {
   const host = document.createElement('div');
-  const cloneRoot = sourceRoot.cloneNode(true) as HTMLElement;
+  const captureNode = sourceRoot.cloneNode(true) as HTMLElement;
   const width = Math.ceil(sourceRoot.getBoundingClientRect().width);
 
   host.style.position = 'fixed';
@@ -127,40 +125,47 @@ async function createCaptureNode(sourceRoot: HTMLElement) {
   host.style.overflow = 'hidden';
   host.style.zIndex = '2147483647';
 
-  cloneRoot.style.width = `${width}px`;
-  cloneRoot.style.maxWidth = 'none';
-  cloneRoot.style.minHeight = '0';
+  captureNode.style.width = `${width}px`;
+  captureNode.style.maxWidth = 'none';
+  captureNode.style.minHeight = '0';
 
-  expandCaptureLayout(cloneRoot);
-  inlineSvgIcons(cloneRoot);
+  expandCaptureLayout(captureNode);
+  inlineSvgIcons(captureNode);
 
-  host.appendChild(cloneRoot);
+  host.appendChild(captureNode);
   document.body.appendChild(host);
   await waitForNextFrame();
-  await waitForImages(cloneRoot);
+  await waitForImages(captureNode);
   await waitForNextFrame();
 
   return {
-    captureNode: cloneRoot,
+    captureNode,
     cleanup: () => host.remove(),
   };
 }
 
+function downloadImage(imageData: string) {
+  const link = document.createElement('a');
+  link.href = imageData;
+  link.setAttribute('download', captureFileName);
+  link.click();
+}
+
 async function saveToImg() {
   if (!saveImageRef.value) {
-    showCustomToast({ type: 'fail', message: '保存图片失败，请稍后重试' });
+    showCustomToast({ type: 'fail', message: captureErrorMessage });
     return;
   }
 
   let cleanup = () => {};
 
   try {
-    const captureContext = await createCaptureNode(saveImageRef.value);
-    cleanup = captureContext.cleanup;
+    const { captureNode, cleanup: disposeCaptureNode } = await createCaptureNode(saveImageRef.value);
+    cleanup = disposeCaptureNode;
 
-    const width = Math.ceil(captureContext.captureNode.scrollWidth);
-    const height = Math.ceil(captureContext.captureNode.scrollHeight);
-    const imageData = await toPng(captureContext.captureNode, {
+    const width = Math.ceil(captureNode.scrollWidth);
+    const height = Math.ceil(captureNode.scrollHeight);
+    const imageData = await toPng(captureNode, {
       cacheBust: true,
       pixelRatio: 2,
       width,
@@ -169,12 +174,9 @@ async function saveToImg() {
       canvasHeight: height,
     });
 
-    const a = document.createElement('a');
-    a.href = imageData;
-    a.setAttribute('download', '\u8bbe\u5907\u56fe\u7247.png');
-    a.click();
+    downloadImage(imageData);
   } catch {
-    showCustomToast({ type: 'fail', message: '保存图片失败，请稍后重试' });
+    showCustomToast({ type: 'fail', message: captureErrorMessage });
   } finally {
     cleanup();
   }
@@ -188,7 +190,7 @@ async function saveToImg() {
       <div class="user-and-siteInfo">
         <div class="container">
           <div class="logo-box">
-            <img :src="app.appInfo.logo" alt="" srcset="" class="logo-img" />
+            <img :src="app.appInfo.logo" alt="" class="logo-img" />
           </div>
           <div class="separate"></div>
           <div class="userInfo">
@@ -200,7 +202,7 @@ async function saveToImg() {
               <span class="title">账号:</span><span class="content">{{ auth.user?.account }}</span>
             </p>
           </div>
-          <img src="@/assets/common/comm_logo_bg2.avif" alt="" srcset="" class="bg" />
+          <img src="@/assets/common/comm_logo_bg2.avif" alt="" class="bg" />
         </div>
         <div class="splitLine"></div>
         <div class="sec-container">
@@ -214,7 +216,6 @@ async function saveToImg() {
         </div>
       </div>
       <div class="device-list">
-        <div class="currentDevice" v-if="false"></div>
         <div class="historyDevice" v-for="i in 8" :key="i">
           <div class="deviceTitle">
             <div class="leftWrap">
@@ -280,10 +281,6 @@ async function saveToImg() {
     flex: 1;
     overflow: auto;
     height: 0;
-    .sticky-box {
-      position: sticky;
-      top: 0;
-    }
     .user-and-siteInfo {
       display: flex;
       flex-direction: column;
