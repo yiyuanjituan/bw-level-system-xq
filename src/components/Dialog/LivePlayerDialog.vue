@@ -51,10 +51,12 @@ defineOptions({
 
 interface Props {
   matchList?: FootballBallData[];
+  coverImg: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  matchList: () => []
+  matchList: () => [],
+  coverImg: ''
 });
 const emit = defineEmits(['close']);
 const app = useAppStore();
@@ -85,7 +87,7 @@ const activeLiveUrl = computed(() => {
 });
 
 const livePlayerCoverStyle = computed(() => ({
-  backgroundImage: `url(${LIVE_PLAYER_COVER_URL})`
+  backgroundImage: `url(${props.coverImg})`
 }));
 
 const showCover = computed(() => {

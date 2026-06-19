@@ -49,12 +49,14 @@ interface FootballBallData {
   teamScores?: unknown;
 }
 
-const DEFAULT_TRIGGER_IMAGE = 'https://146.103.80.124:5001/siteadmin/upload/img/2065488521723949058.avif';
+const DEFAULT_TRIGGER_IMAGE = '/siteadmin/live/2065488521723949058.avif';
+const defaultCover = '/siteadmin/live/img_sszb_bg2.avif';
 
 const btnPosition = ref({ x: 0, y: 400 });
 const livePosition = ref(getDefaultLivePosition());
 const showDialog = ref(false);
 const ballDataList = ref<FootballBallData[]>([]);
+const imgData = ref<any>({})
 
 function open() {
   showDialog.value = true;
@@ -88,6 +90,9 @@ async function init() {
   try {
     const res = await service.open.v1.home.footballData();
     const list = Array.isArray(res?.data) ? res.data : [];
+    if (res?.success) {
+      imgData.value = res.img
+    }
 
     if (!res?.success || !list.length) {
       ballDataList.value = [];
@@ -96,7 +101,7 @@ async function init() {
     }
 
     ballDataList.value = list;
-    showDialog.value = true;
+    showDialog.value = list.length > 0;
   } catch {
     ballDataList.value = [];
     showDialog.value = false;
@@ -126,12 +131,12 @@ defineExpose({
   <div class="football-dialog">
     <van-floating-bubble v-if="!showDialog" v-model:offset="btnPosition" class="football-dialog__bubble" :gap="0">
       <button class="football-dialog__trigger" type="button" @click="open">
-        <img :src="DEFAULT_TRIGGER_IMAGE" class="football-dialog__trigger-image" alt="直播入口" />
+        <img :src="(imgData?.id && imgData.icon) ? imgData.icon : DEFAULT_TRIGGER_IMAGE" class="football-dialog__trigger-image" alt="直播入口" />
       </button>
     </van-floating-bubble>
 
     <van-floating-bubble v-if="showDialog" v-model:offset="livePosition" class="football-dialog__live" :gap="0" axis="xy">
-      <live-player-dialog :match-list="ballDataList" @close="close" />
+      <live-player-dialog :match-list="ballDataList" @close="close" :cover-img="(imgData?.id && imgData.cover) ? imgData.cover : defaultCover" />
     </van-floating-bubble>
   </div>
 </template>

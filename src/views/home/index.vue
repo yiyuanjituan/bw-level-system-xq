@@ -3,6 +3,7 @@ import HomeNavBar from "@/components/Home/NavBar.vue";
 import HomeBanner from "@/components/Home/Banner.vue";
 import HomeNotice from "@/components/Home/Notice.vue";
 import HomeGameList from "@/components/Home/GameList.vue";
+import HomeFloat from '@/components/Home/Float.vue';
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import HomeGameList from "@/components/Home/GameList.vue";
       <svg-icon name="comm_icon_top"></svg-icon>
       <div class="span">返回顶部</div>
     </van-back-top>
+    <home-float />
   </div>
 </template>
 

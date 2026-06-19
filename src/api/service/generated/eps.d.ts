@@ -726,6 +726,11 @@ declare namespace Eps {
 			footballData(data?: any): Promise<any>;
 
 		/**
+			 * 获取浮窗数据
+			 */
+			floatData(data?: any): Promise<any>;
+
+		/**
 			 * 首页的数据
 			 */
 			pageData(data?: any): Promise<any>;
@@ -738,12 +743,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { footballData: string; pageData: string; helpData: string; };
+		permission: { footballData: string; floatData: string; pageData: string; helpData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { footballData: boolean; pageData: boolean; helpData: boolean; };
+		_permission: { footballData: boolean; floatData: boolean; pageData: boolean; helpData: boolean; };
 
 		request: Service["request"];
 	}

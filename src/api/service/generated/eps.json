@@ -733,6 +733,11 @@
       },
       {
         "method": "post",
+        "path": "/floatData",
+        "summary": "获取浮窗数据"
+      },
+      {
+        "method": "post",
         "path": "/pageData",
         "summary": "首页的数据"
       },
