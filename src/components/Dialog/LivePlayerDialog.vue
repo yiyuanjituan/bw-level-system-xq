@@ -432,12 +432,22 @@ onBeforeUnmount(() => {
           </span>
         </div>
         <div class="live-player-bottom-bar__right">
-          <div class="switcher-wrapper" :class="{ 'is-open': isSwitcherPanelVisible }" :aria-expanded="isSwitcherPanelVisible" @click.stop="toggleSwitcherPanel">
-            <div class="switcher-btn">
+          <div
+            class="switcher-wrapper"
+            :class="{ 'is-open': isSwitcherPanelVisible }"
+            :aria-expanded="isSwitcherPanelVisible"
+            @touchstart.stop
+            @touchmove.stop
+            @touchend.stop
+            @touchcancel.stop
+          >
+            <div class="switcher-btn" @click.stop="toggleSwitcherPanel">
               <span class="btn-text">高清</span>
-              <svg-icon name="live-icon_sszb_arrow1" class-name="switcher-arrow" />
+              <span class="switcher-arrow">
+                <svg-icon name="live-icon_sszb_arrow1" />
+              </span>
             </div>
-            <div v-if="isSwitcherPanelVisible" class="switcher-panel">
+            <div v-show="isSwitcherPanelVisible" class="switcher-panel" @click.stop>
               <div class="line-item active" @click.stop="closeSwitcherPanel">
                 <span>高清</span>
                 <div class="check-circle">
@@ -837,6 +847,8 @@ onBeforeUnmount(() => {
           display: inline-flex;
           align-items: center;
           margin-right: 15px;
+          z-index: 24;
+          pointer-events: auto;
           .switcher-btn {
             display: flex;
             align-items: center;
@@ -850,14 +862,21 @@ onBeforeUnmount(() => {
             cursor: pointer;
             color: #fff;
             white-space: nowrap;
+            pointer-events: auto;
             .btn-text {
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
+              margin-right: 2px;
+              font-size: 10px;
             }
             .switcher-arrow {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
               flex-shrink: 0;
               transition: transform 0.2s ease;
+              font-size: 10px;
             }
           }
           &.is-open {
@@ -877,7 +896,8 @@ onBeforeUnmount(() => {
             border: solid thin rgba(255, 255, 255, 0.4);
             border-radius: 5px;
             padding: 0 0 0 7px;
-            z-index: 20;
+            z-index: 25;
+            pointer-events: auto;
             .line-item {
               flex: none !important;
               flex-shrink: 0;
