@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import DPlayer from 'dplayer';
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import dayjs from 'dayjs';
 import useAppStore from '@/store/modules/app';
 
@@ -61,9 +61,15 @@ const app = useAppStore();
 
 const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
+const playerVideo = {
+  url: "https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg",
+  pic: 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif' || undefined
+};
 let player: DPlayer | null = null;
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 const isShowDetail = ref(false);
 const isPlaying = ref(false);
+const isRefreshing = ref(false);
 
 function onTapClose() {
   if (isShowDetail.value) {
@@ -84,10 +90,7 @@ function initPlayer() {
     mutex: false,
     theme: '#b7daff',
     volume: 0.7,
-    video: {
-      url: "https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg",
-      pic: 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif' || undefined
-    }
+    video: playerVideo
   });
 
   isPlaying.value = !player.video.paused && !player.video.ended;
@@ -100,6 +103,9 @@ function initPlayer() {
   player.on('ended', () => {
     isPlaying.value = false;
   });
+  player.on('loadedmetadata', stopRefresh);
+  player.on('canplay', stopRefresh);
+  player.on('error', stopRefresh);
 }
 
 function togglePlayStatus() {
@@ -111,6 +117,30 @@ function togglePlayStatus() {
   }
 
   player.play();
+}
+
+function stopRefresh() {
+  isRefreshing.value = false;
+  if (!refreshTimer) return;
+
+  clearTimeout(refreshTimer);
+  refreshTimer = null;
+}
+
+function refreshPlayer() {
+  if (!player || isRefreshing.value) return;
+
+  isRefreshing.value = true;
+  player.switchVideo(playerVideo);
+  player.play();
+
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+  }
+
+  refreshTimer = setTimeout(() => {
+    stopRefresh();
+  }, 10000);
 }
 
 function toggleScreen() {
@@ -160,6 +190,12 @@ function toggleScreen() {
 
 onMounted(() => {
   initPlayer();
+});
+
+onBeforeUnmount(() => {
+  stopRefresh();
+  player?.destroy();
+  player = null;
 });
 </script>
 
@@ -236,7 +272,7 @@ onMounted(() => {
             <svg-icon v-if="!isPlaying" name="live-icon_sszb_play1" />
             <svg-icon v-else name="live-icon_sszb_pause1" />
           </span>
-          <span class="refresh-icon">
+          <span class="refresh-icon" :class="{ 'is-refreshing': isRefreshing }" @click.stop="refreshPlayer">
             <svg-icon name="comm_icon_retry" class-name="text-[12px]" />
           </span>
         </div>
@@ -596,9 +632,15 @@ onMounted(() => {
         .refresh-icon {
           font-size: 12px !important;
           flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           cursor: pointer;
           color: #fff;
           margin-left: 15px;
+          &.is-refreshing {
+            animation: live-player-refresh-spin 1s linear infinite;
+          }
         }
       }
       .live-player-bottom-bar__right {
@@ -614,6 +656,16 @@ onMounted(() => {
 .live-player-dialog:fullscreen {
   .live-player-cover {
     height: unset !important;
+  }
+}
+
+@keyframes live-player-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
