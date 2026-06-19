@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import DPlayer from 'dplayer';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import dayjs from 'dayjs';
 import useAppStore from '@/store/modules/app';
 
@@ -58,11 +58,14 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(['close']);
 const app = useAppStore();
+const activeMatchInfo = computed<FootballBallData>(() => {
+  return props.matchList[0];
+});
 
 const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
 const playerVideo = {
-  url: "https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg",
+  url: 'https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg',
   pic: 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif' || undefined
 };
 let player: DPlayer | null = null;
@@ -90,7 +93,9 @@ function initPlayer() {
     mutex: false,
     theme: '#b7daff',
     volume: 0.7,
-    video: playerVideo
+    video: {
+      url: activeMatchInfo.value.liveUrls[0].url
+    }
   });
 
   isPlaying.value = !player.video.paused && !player.video.ended;
@@ -206,7 +211,7 @@ onBeforeUnmount(() => {
     </div>
     <div class="controls-overlay">
       <div class="live-player-cover" v-if="!isPlaying"></div>
-      <div class="loading-box">
+      <div class="loading-box" v-if="isRefreshing">
         <img
           class="loading-icon"
           src="https://146.103.80.124:5001/siteadmin/skin/lobby_asset/common/web/selfoperated-games/apng_loadingsjb.webp?manualVersion=1"
@@ -247,7 +252,7 @@ onBeforeUnmount(() => {
       <div class="close-icon" @click="onTapClose">
         <svg-icon name="live-icon_sszb_x1" />
       </div>
-      <div class="live-player-top-bar" v-if="!isShowDetail">
+      <div class="live-player-top-bar" v-if="!isShowDetail || !isPlaying">
         <div class="live-player-top-bar__left" @click="isShowDetail = true">
           <svg-icon name="live-icon_sszb_cd1" />
         </div>
@@ -256,17 +261,17 @@ onBeforeUnmount(() => {
           <svg-icon name="live-icon_sszb_max1" />
         </div>
       </div>
-      <div class="live-player-middle-area">
+      <div class="live-player-middle-area" v-if="!isShowDetail && !isPlaying">
         <div class="match-info">
-          <span class="match-info__teams">本特利绿茵 VS 南墨尔本</span>
-          <span class="match-info__time">17:30</span>
+          <span class="match-info__teams">{{ activeMatchInfo.awayTeam.teamName }} VS {{ activeMatchInfo.homeTeam.teamName }}</span>
+          <span class="match-info__time">{{ dayjs(activeMatchInfo.startTime * 1000).format('HH:mm')}}</span>
           <span class="match-info__live">
             <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />
             <span class="live-status">直播中</span>
           </span>
         </div>
       </div>
-      <div class="live-player-bottom-bar">
+      <div class="live-player-bottom-bar" v-if="!isShowDetail">
         <div class="live-player-bottom-bar__left">
           <span class="play-toggle-icon" @click.stop="togglePlayStatus">
             <svg-icon v-if="!isPlaying" name="live-icon_sszb_play1" />
