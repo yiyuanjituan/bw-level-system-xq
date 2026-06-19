@@ -131,7 +131,7 @@ defineExpose({
     </van-floating-bubble>
 
     <van-floating-bubble v-if="showDialog" v-model:offset="livePosition" class="football-dialog__live" :gap="0" axis="xy">
-      <live-player-dialog :match-list="ballDataList" />
+      <live-player-dialog :match-list="ballDataList" @close="close" />
     </van-floating-bubble>
   </div>
 </template>

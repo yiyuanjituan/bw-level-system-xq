@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import DPlayer from 'dplayer';
 import { onMounted, ref } from 'vue';
+import dayjs from 'dayjs';
+import useAppStore from '@/store/modules/app';
 
 interface TeamInfo {
   teamLogo?: string;
@@ -54,9 +56,20 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   matchList: () => []
 });
+const emit = defineEmits(['close']);
+const app = useAppStore()
 
 const livePlayerRef = ref();
 let player: DPlayer | null = null;
+const isShowDetail = ref(false);
+
+function onTapClose() {
+  if (isShowDetail.value) {
+    isShowDetail.value = false;
+  } else {
+    emit('close');
+  }
+}
 
 function initPlayer() {
   player = new DPlayer({
@@ -95,8 +108,8 @@ onMounted(() => {
           alt="."
         />
       </div>
-      <div class="live-player-overlay"></div>
-      <div class="panel">
+      <div class="live-player-overlay" v-if="isShowDetail"></div>
+      <div class="panel" v-if="isShowDetail">
         <div class="main">
           <div class="main-title">
             <div class="decorate left"></div>
@@ -104,16 +117,39 @@ onMounted(() => {
             <div class="decorate right"></div>
           </div>
           <div class="item-box" v-for="(item, index) in props.matchList" :key="index">
+            <img src="/siteadmin/live/apng_live_2.webp" alt="" srcset="" class="w-[30px] h-[14px]" />
             <div class="team-name">
-              <span class="inner-team-name">{{ item.homeTeam.teamName }}</span>
+              <div class="inner-team-name">{{ item.homeTeam.teamName }}</div>
               <div class="team-logo">
                 <img class="home-team-logo" :src="item.homeTeam.teamIcon" alt="." />
                 <span class="icon-vs">VS</span>
                 <img class="home-team-logo" :src="item.awayTeam.teamIcon" alt="." />
               </div>
-              <span class="_inner-team-name_1gf2n_163">{{ item.awayTeam.teamName }}</span>
+              <div class="inner-team-name">{{ item.awayTeam.teamName }}</div>
+            </div>
+            <div class="match-time">
+              <span class="time">
+                <span>{{ dayjs(item.startTime * 1000).format('HH:mm') }}</span>
+                <span>{{ dayjs(item.startTime * 1000).format('MM/DD') }}</span>
+              </span>
+              <div class="status-icon">
+                <svg-icon name="live-common_icon_sszx_play" />
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="close-icon" @click="onTapClose">
+        <svg-icon name="live-icon_sszb_x1" />
+      </div>
+      <div class="live-player-top-bar" v-if="!isShowDetail">
+        <div class="live-player-top-bar__left" @click="isShowDetail = true">
+          <svg-icon name="live-icon_sszb_cd1" />
+        </div>
+        <span class="live-player-top-bar__center">{{ app.appInfo.title }}</span>
+        <div class="live-player-top-bar__right">
+          <svg-icon name="live-icon_sszb_max1" />
+          <svg-icon name="live-icon_sszb_max1" />
         </div>
       </div>
     </div>
@@ -274,10 +310,10 @@ onMounted(() => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          width: 290px;
+          width: 292px;
           height: 31px;
           margin: 0 auto 5px;
-          padding: 0 7.5px;
+          padding: 0 7px;
           font-size: 8px !important;
           background-color: rgba(0, 0, 0, 0.5);
           border: solid thin rgba(255, 255, 255, 0.3);
@@ -291,10 +327,11 @@ onMounted(() => {
             flex: 1;
             min-width: 0;
             .inner-team-name {
+              flex: none;
               vertical-align: middle;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
-              width: 60px;
+              width: 61px;
               font-size: 10px;
               color: #fff;
               overflow: hidden;
@@ -322,7 +359,70 @@ onMounted(() => {
               }
             }
           }
+          .match-time {
+            display: flex;
+            align-items: center;
+            padding: 1px;
+            .time {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              font-size: 10px;
+              color: #fff;
+            }
+            .status-icon {
+              font-size: 14px;
+              color: #fff;
+              margin-left: 7px;
+            }
+          }
         }
+      }
+    }
+    .close-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #fff;
+      z-index: 23;
+    }
+    .live-player-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 0;
+      z-index: 21;
+      pointer-events: auto;
+      .live-player-top-bar__left {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 14px;
+      }
+      .live-player-top-bar__center {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translate(-50%);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        max-width: 60%;
+        color: #fff;
+        font-size: 12px;
+        cursor: pointer;
+        text-align: center;
+      }
+      .live-player-top-bar__right {
+        position: absolute;
+        top: 10px;
+        right: 38px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
       }
     }
   }
