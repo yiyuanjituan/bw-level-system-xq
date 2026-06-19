@@ -57,9 +57,10 @@ const props = withDefaults(defineProps<Props>(), {
   matchList: () => []
 });
 const emit = defineEmits(['close']);
-const app = useAppStore()
+const app = useAppStore();
 
-const livePlayerRef = ref();
+const dialogRef = ref<HTMLElement | null>(null);
+const livePlayerRef = ref<HTMLElement | null>(null);
 let player: DPlayer | null = null;
 const isShowDetail = ref(false);
 
@@ -89,13 +90,58 @@ function initPlayer() {
   });
 }
 
+function toggleScreen() {
+  const target = dialogRef.value ?? livePlayerRef.value;
+  if (!target) return;
+
+  const doc = document as Document & {
+    webkitFullscreenElement?: Element | null;
+    mozFullScreenElement?: Element | null;
+    msFullscreenElement?: Element | null;
+    webkitExitFullscreen?: () => Promise<void> | void;
+    mozCancelFullScreen?: () => Promise<void> | void;
+    msExitFullscreen?: () => Promise<void> | void;
+  };
+
+  const fullscreenTarget = target as HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void;
+    mozRequestFullScreen?: () => Promise<void> | void;
+    msRequestFullscreen?: () => Promise<void> | void;
+  };
+
+  const currentFullscreenElement = doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement;
+
+  try {
+    if (currentFullscreenElement) {
+      const exitFullscreen =
+        doc.exitFullscreen?.bind(doc) ||
+        doc.webkitExitFullscreen?.bind(doc) ||
+        doc.mozCancelFullScreen?.bind(doc) ||
+        doc.msExitFullscreen?.bind(doc);
+
+      exitFullscreen?.();
+      return;
+    }
+
+    const requestFullscreen =
+      fullscreenTarget.requestFullscreen?.bind(fullscreenTarget) ||
+      fullscreenTarget.webkitRequestFullscreen?.bind(fullscreenTarget) ||
+      fullscreenTarget.mozRequestFullScreen?.bind(fullscreenTarget) ||
+      fullscreenTarget.msRequestFullscreen?.bind(fullscreenTarget);
+
+    requestFullscreen?.();
+  } catch (error) {
+    console.error('[LivePlayerDialog] toggleScreen failed:', error);
+  }
+}
+
 onMounted(() => {
   initPlayer();
 });
 </script>
 
 <template>
-  <div class="live-player-dialog">
+  <div ref="dialogRef" class="live-player-dialog">
     <div class="live-player">
       <div ref="livePlayerRef" class="live-player__container"></div>
     </div>
@@ -147,10 +193,29 @@ onMounted(() => {
           <svg-icon name="live-icon_sszb_cd1" />
         </div>
         <span class="live-player-top-bar__center">{{ app.appInfo.title }}</span>
-        <div class="live-player-top-bar__right">
-          <svg-icon name="live-icon_sszb_max1" />
+        <div class="live-player-top-bar__right" @click="toggleScreen">
           <svg-icon name="live-icon_sszb_max1" />
         </div>
+      </div>
+      <div class="live-player-middle-area">
+        <div class="match-info">
+          <span class="match-info__teams">本特利绿茵 VS 南墨尔本</span>
+          <span class="match-info__time">17:30</span>
+          <span class="match-info__live">
+            <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />
+            <span class="live-status">直播中</span>
+          </span>
+        </div>
+      </div>
+      <div class="live-player-bottom-bar">
+        <div class="live-player-bottom-bar__left">
+          <svg-icon name="live-icon_sszb_play1" />
+          <svg-icon name="live-icon_sszb_pause1" />
+          <span class="refresh-icon">
+            <svg-icon name="comm_icon_retry" class-name="text-[12px]" />
+          </span>
+        </div>
+        <div class="live-player-bottom-bar__right"></div>
       </div>
     </div>
   </div>
@@ -425,6 +490,97 @@ onMounted(() => {
         font-size: 14px;
       }
     }
+    .live-player-middle-area {
+      position: absolute;
+      top: 40px;
+      bottom: 50px;
+      left: 0;
+      right: 0;
+      z-index: 21;
+      cursor: pointer;
+      padding-bottom: 15px;
+      .match-info {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%);
+        width: max-content;
+        max-width: calc(100% - 20px);
+        display: flex;
+        align-items: center;
+        padding: 5px 7px;
+        box-sizing: border-box;
+        color: #fff;
+        font-size: 10px;
+        white-space: nowrap;
+        border-radius: 5px;
+        border: 0.5px solid rgba(255, 255, 255, 0.5);
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2.5px);
+        .match-info__teams {
+          flex-shrink: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-right: 15px;
+          max-width: 155px;
+        }
+        .match-info__time {
+          flex-shrink: 0;
+          margin-right: 15px;
+        }
+        .match-info__live {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+          .live-badge {
+            height: 14px;
+          }
+          .live-status {
+            font-size: 10px;
+            margin-left: 2px;
+          }
+        }
+      }
+    }
+    .live-player-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      z-index: 21;
+      pointer-events: none;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+      font-size: 14px;
+      .live-player-bottom-bar__left {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        display: flex;
+        align-items: center;
+        min-height: 25px;
+        .refresh-icon {
+          font-size: 12px !important;
+          flex-shrink: 0;
+          cursor: pointer;
+          color: #fff;
+          margin-left: 15px;
+        }
+      }
+      .live-player-bottom-bar__right {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}
+.live-player-dialog:fullscreen {
+  .live-player-cover {
+    height: unset !important;
   }
 }
 </style>
