@@ -429,10 +429,10 @@ onBeforeUnmount(() => {
               <svg-icon name="live-icon_sszb_arrow1" />
             </div>
             <div class="switcher-panel">
-              <div class="line-item">
+              <div class="line-item active">
                 <span>高清</span>
                 <div class="check-circle">
-                  <svg-icon name="comm_btn_dx3" class-name="check-icon" />
+                  <svg-icon name="live-comm_btn_dx3" class-name="check-icon text-[15px]" />
                 </div>
               </div>
             </div>
@@ -895,6 +895,9 @@ onBeforeUnmount(() => {
               &:last-child {
                 border-bottom: none !important;
               }
+            }
+            .active {
+              color: #fff;
             }
           }
         }
