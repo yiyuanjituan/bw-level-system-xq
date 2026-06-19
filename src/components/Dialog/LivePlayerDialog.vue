@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="live-player-overlay" v-if="isShowDetail"></div>
       <div class="panel" v-if="isShowDetail">
-        <div class="main">
+        <div class="main" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
           <div class="main-title">
             <div class="decorate left"></div>
             <span class="league-name">其他赛事直播</span>
@@ -455,7 +455,11 @@ onBeforeUnmount(() => {
       justify-content: center;
       .main {
         height: 175px;
-        overflow: scroll;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
         .main-title {
           display: flex;
           align-items: center;
@@ -517,7 +521,7 @@ onBeforeUnmount(() => {
           cursor: pointer;
           list-style: none;
           &.active {
-            border-color: rgba(255, 255, 255, 0.8);
+            //border-color: rgba(255, 255, 255, 0.8);
           }
           .team-name {
             display: flex;

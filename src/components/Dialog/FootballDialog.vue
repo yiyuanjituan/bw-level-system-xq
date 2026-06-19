@@ -170,6 +170,7 @@ defineExpose({
   width: 345px !important;
   height: 197px !important;
   overflow: visible !important;
+  touch-action: pan-y !important;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
 }
 
