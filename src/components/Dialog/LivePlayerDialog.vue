@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
         <div class="live-player-bottom-bar__right">
           <div class="switcher-wrapper">
             <div class="switcher-btn">
-              <span class="btn-text">流畅</span>
+              <span class="btn-text">高清</span>
               <svg-icon name="live-icon_sszb_arrow1" />
             </div>
             <div class="switcher-panel">
