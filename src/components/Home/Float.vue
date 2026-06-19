@@ -1,6 +1,24 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { service } from '@/api/service';
+import { formatResponsiveSize } from '@/utils/viewport';
+
 defineOptions({
   name: 'HomeFloat'
+});
+
+const fastBtnWidth = 60;
+const swipeItemGap = 10;
+const swipeItemWidth = fastBtnWidth + swipeItemGap;
+
+function init() {
+  service.open.v1.home.floatData().then(res => {
+    console.log(res);
+  });
+}
+
+onMounted(() => {
+  init();
 });
 </script>
 <template>
@@ -9,33 +27,21 @@ defineOptions({
       <div class="fast-list">
         <section>
           <div class="fast-entry-item">
-            <van-swipe>
+            <van-swipe :width="formatResponsiveSize(swipeItemWidth)" :show-indicators="false">
               <van-swipe-item>
                 <div class="fast-btn">
                   <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
-                </div>
-              </van-swipe-item>
-              <van-swipe-item>
-                <div class="fast-btn">
-                  <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
+                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" />
                 </div>
               </van-swipe-item>
             </van-swipe>
           </div>
           <div class="fast-entry-item">
-            <van-swipe>
+            <van-swipe :width="formatResponsiveSize(swipeItemWidth)">
               <van-swipe-item>
                 <div class="fast-btn">
                   <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
-                </div>
-              </van-swipe-item>
-              <van-swipe-item>
-                <div class="fast-btn">
-                  <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
+                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" />
                 </div>
               </van-swipe-item>
             </van-swipe>
@@ -47,33 +53,21 @@ defineOptions({
       <div class="fast-list">
         <section>
           <div class="fast-entry-item">
-            <van-swipe>
+            <van-swipe :width="formatResponsiveSize(swipeItemWidth)">
               <van-swipe-item>
                 <div class="fast-btn">
                   <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
-                </div>
-              </van-swipe-item>
-              <van-swipe-item>
-                <div class="fast-btn">
-                  <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
+                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" />
                 </div>
               </van-swipe-item>
             </van-swipe>
           </div>
           <div class="fast-entry-item">
-            <van-swipe>
+            <van-swipe :width="formatResponsiveSize(swipeItemWidth)">
               <van-swipe-item>
                 <div class="fast-btn">
                   <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
-                </div>
-              </van-swipe-item>
-              <van-swipe-item>
-                <div class="fast-btn">
-                  <img src="https://146.103.80.124:5001/common/upload/1998005108970332161.webp" alt="" />
-                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon">
+                  <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" />
                 </div>
               </van-swipe-item>
             </van-swipe>
@@ -137,10 +131,7 @@ defineOptions({
   .float-right {
     right: var(--float-box-y-axis-gap);
     left: unset;
-    .close-icon {
-      left: unset !important;
-      right: 0 !important;
-    }
+    .close-icon {}
   }
 }
 </style>
