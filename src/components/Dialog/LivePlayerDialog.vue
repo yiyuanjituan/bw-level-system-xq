@@ -428,9 +428,9 @@ onBeforeUnmount(() => {
               <span class="btn-text">流畅</span>
               <svg-icon name="live-icon_sszb_arrow1" />
             </div>
-            <div class="panel">
+            <div class="switcher-panel">
               <div class="line-item">
-                <span>标清</span>
+                <span>高清</span>
                 <div class="check-circle">
                   <svg-icon name="comm_btn_dx3" class-name="check-icon" />
                 </div>
@@ -847,7 +847,7 @@ onBeforeUnmount(() => {
               white-space: nowrap;
             }
           }
-          .panel {
+          .switcher-panel {
             flex: none !important;
             position: absolute;
             bottom: 25px;
@@ -891,6 +891,9 @@ onBeforeUnmount(() => {
                   font-size: 15px;
                   flex-shrink: 0;
                 }
+              }
+              &:last-child {
+                border-bottom: none !important;
               }
             }
           }
