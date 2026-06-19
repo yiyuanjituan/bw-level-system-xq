@@ -63,6 +63,7 @@ const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
 let player: DPlayer | null = null;
 const isShowDetail = ref(false);
+const isPlaying = ref(false);
 
 function onTapClose() {
   if (isShowDetail.value) {
@@ -84,10 +85,32 @@ function initPlayer() {
     theme: '#b7daff',
     volume: 0.7,
     video: {
-      url: 'https://global1.sportstrwv.com/sport/202_5339838_1.m3u8?auth_key=1781944563-0-0-ff9feb6ede0d0493e6946f574179ec8a&siteCode=1091&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NTk5MjksIm5iZiI6MTc4MTg1NjMyOSwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MzM5ODM4LFwiY1wiOlwiMTA5MVwifSJ9.fWiqNRBTT2Ricp-UbmAZVONtSkdB0kGlISOOsvHPtxI',
+      url: "https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg",
       pic: 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif' || undefined
     }
   });
+
+  isPlaying.value = !player.video.paused && !player.video.ended;
+  player.on('play', () => {
+    isPlaying.value = true;
+  });
+  player.on('pause', () => {
+    isPlaying.value = false;
+  });
+  player.on('ended', () => {
+    isPlaying.value = false;
+  });
+}
+
+function togglePlayStatus() {
+  if (!player) return;
+
+  if (isPlaying.value) {
+    player.pause();
+    return;
+  }
+
+  player.play();
 }
 
 function toggleScreen() {
@@ -146,7 +169,7 @@ onMounted(() => {
       <div ref="livePlayerRef" class="live-player__container"></div>
     </div>
     <div class="controls-overlay">
-      <div class="live-player-cover"></div>
+      <div class="live-player-cover" v-if="!isPlaying"></div>
       <div class="loading-box">
         <img
           class="loading-icon"
@@ -209,8 +232,10 @@ onMounted(() => {
       </div>
       <div class="live-player-bottom-bar">
         <div class="live-player-bottom-bar__left">
-          <svg-icon name="live-icon_sszb_play1" />
-          <svg-icon name="live-icon_sszb_pause1" />
+          <span class="play-toggle-icon" @click.stop="togglePlayStatus">
+            <svg-icon v-if="!isPlaying" name="live-icon_sszb_play1" />
+            <svg-icon v-else name="live-icon_sszb_pause1" />
+          </span>
           <span class="refresh-icon">
             <svg-icon name="comm_icon_retry" class-name="text-[12px]" />
           </span>
@@ -560,6 +585,14 @@ onMounted(() => {
         display: flex;
         align-items: center;
         min-height: 25px;
+        pointer-events: auto;
+        .play-toggle-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          cursor: pointer;
+        }
         .refresh-icon {
           font-size: 12px !important;
           flex-shrink: 0;
