@@ -1,15 +1,40 @@
 <script setup lang="ts">
-import HomeNavBar from "@/components/Home/NavBar.vue";
-import HomeBanner from "@/components/Home/Banner.vue";
-import HomeNotice from "@/components/Home/Notice.vue";
-import HomeGameList from "@/components/Home/GameList.vue";
+import { onBeforeUnmount, ref } from 'vue';
+import HomeNavBar from '@/components/Home/NavBar.vue';
+import HomeBanner from '@/components/Home/Banner.vue';
+import HomeNotice from '@/components/Home/Notice.vue';
+import HomeGameList from '@/components/Home/GameList.vue';
 import HomeFloat from '@/components/Home/Float.vue';
+
+const scrollEndDelay = 160;
+const isHomeScrolling = ref(false);
+let scrollEndTimer: number | null = null;
+
+function handleHomeScroll() {
+  isHomeScrolling.value = true;
+
+  if (scrollEndTimer) {
+    window.clearTimeout(scrollEndTimer);
+  }
+
+  scrollEndTimer = window.setTimeout(() => {
+    isHomeScrolling.value = false;
+    scrollEndTimer = null;
+  }, scrollEndDelay);
+}
+
+onBeforeUnmount(() => {
+  if (scrollEndTimer) {
+    window.clearTimeout(scrollEndTimer);
+    scrollEndTimer = null;
+  }
+});
 </script>
 
 <template>
   <div class="home-container">
     <HomeNavBar />
-    <div class="scroll-box" id="scroll-box">
+    <div class="scroll-box" id="scroll-box" @scroll="handleHomeScroll">
       <HomeBanner />
       <HomeNotice />
       <div class="mt-[10px]">
@@ -20,7 +45,7 @@ import HomeFloat from '@/components/Home/Float.vue';
       <svg-icon name="comm_icon_top"></svg-icon>
       <div class="span">返回顶部</div>
     </van-back-top>
-    <home-float />
+    <home-float :is-put="isHomeScrolling" />
   </div>
 </template>
 
@@ -65,7 +90,7 @@ import HomeFloat from '@/components/Home/Float.vue';
     overflow: auto;
     height: 100%;
     width: 100%;
-    background-image: url("@/assets/home/bg_pattern_tile.avif");
+    background-image: url('@/assets/home/bg_pattern_tile.avif');
     background-position: center;
     background-size: 90px 90px;
   }

@@ -8,6 +8,15 @@ defineOptions({
   name: 'HomeFloat'
 });
 
+const props = withDefaults(
+  defineProps<{
+    isPut?: boolean;
+  }>(),
+  {
+    isPut: false
+  }
+);
+
 type FloatPosition = 0 | 1 | 2 | 3;
 type FloatJumpMode = 0 | 1 | 2;
 
@@ -148,7 +157,7 @@ onMounted(() => {
 </script>
 <template>
   <div class="float-box" v-if="hasFloat">
-    <div class="floatBox float-left" v-if="hasLeftFloat">
+    <div class="floatBox float-left" :class="{ isPut: props.isPut }" v-if="hasLeftFloat">
       <div class="fast-list">
         <section>
           <template v-for="position in leftPositions" :key="position">
@@ -166,7 +175,7 @@ onMounted(() => {
         </section>
       </div>
     </div>
-    <div class="floatBox float-right" v-if="hasRightFloat">
+    <div class="floatBox float-right" :class="{ isPut: props.isPut }" v-if="hasRightFloat">
       <div class="fast-list">
         <section>
           <template v-for="position in rightPositions" :key="position">
@@ -199,6 +208,7 @@ onMounted(() => {
     align-items: flex-end;
     justify-content: flex-end;
     isolation: isolate;
+    transition: transform 0.2s ease;
     .fast-list {
       width: 60px;
       > section {
@@ -238,6 +248,9 @@ onMounted(() => {
   .float-left {
     left: var(--float-box-y-axis-gap);
     right: unset;
+    &.isPut {
+      transform: translateX(-35px);
+    }
     .close-icon {
       left: unset !important;
       right: 0 !important;
@@ -246,6 +259,9 @@ onMounted(() => {
   .float-right {
     right: var(--float-box-y-axis-gap);
     left: unset;
+    &.isPut {
+      transform: translateX(35px);
+    }
     .close-icon {
     }
   }
