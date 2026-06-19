@@ -58,6 +58,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(['close']);
 const app = useAppStore();
+const LIVE_PLAYER_COVER_URL = 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif';
 
 const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
@@ -69,6 +70,9 @@ const isPlaying = ref(false);
 const isRefreshing = ref(false);
 const isLoading = ref(false);
 const isVideoReady = ref(false);
+const hasRequestedPlayback = ref(false);
+const isPlaybackRequested = ref(false);
+const isMuted = ref(false);
 
 const activeMatchInfo = computed<FootballBallData | undefined>(() => {
   return props.matchList[activeIndex.value];
@@ -77,6 +81,18 @@ const activeMatchInfo = computed<FootballBallData | undefined>(() => {
 const activeLiveUrl = computed(() => {
   const liveUrlInfo = activeMatchInfo.value?.liveUrls?.find(item => item.url || item.url2);
   return liveUrlInfo?.url || liveUrlInfo?.url2 || '';
+});
+
+const livePlayerCoverStyle = computed(() => ({
+  backgroundImage: `url(${LIVE_PLAYER_COVER_URL})`
+}));
+
+const showCover = computed(() => {
+  return !isVideoReady.value || isRefreshing.value;
+});
+
+const showLoading = computed(() => {
+  return isRefreshing.value || (isPlaybackRequested.value && isLoading.value && !isVideoReady.value);
 });
 
 function onTapClose() {
@@ -93,10 +109,9 @@ function initPlayer() {
     return;
   }
 
-  startVideoLoading();
   player = new DPlayer({
     container: livePlayerRef.value,
-    autoplay: true,
+    autoplay: false,
     airplay: true,
     screenshot: false,
     hotkey: true,
@@ -109,35 +124,71 @@ function initPlayer() {
     }
   });
 
+  player.video.muted = isMuted.value;
   isPlaying.value = !player.video.paused && !player.video.ended;
   player.on('play', () => {
     isPlaying.value = true;
+    isPlaybackRequested.value = true;
   });
   player.on('pause', () => {
     isPlaying.value = false;
   });
   player.on('ended', () => {
     isPlaying.value = false;
+    isPlaybackRequested.value = false;
   });
+  player.video.addEventListener('volumechange', syncMutedStatus);
   player.on('loadstart', () => {
-    isLoading.value = true;
+    if (isPlaybackRequested.value || isRefreshing.value) {
+      isLoading.value = true;
+    }
   });
   player.on('waiting', () => {
-    isLoading.value = true;
+    if (isPlaybackRequested.value && !isVideoReady.value) {
+      isLoading.value = true;
+    }
   });
   player.on('stalled', () => {
-    isLoading.value = true;
+    if (isPlaybackRequested.value && !isVideoReady.value) {
+      isLoading.value = true;
+    }
   });
-  player.on('canplay', finishVideoLoading);
-  player.on('playing', finishVideoLoading);
+  player.on('loadeddata', finishVideoFrameReady);
+  player.on('canplay', finishVideoFrameReady);
+  player.on('playing', finishVideoFrameReady);
   player.on('error', handleVideoLoadError);
+}
+
+function syncMutedStatus() {
+  if (!player) return;
+
+  isMuted.value = player.video.muted || player.video.volume === 0;
+}
+
+function toggleMuted() {
+  if (!player) return;
+
+  player.video.muted = !isMuted.value;
+  syncMutedStatus();
 }
 
 function togglePlayStatus() {
   if (!player) return;
 
-  if (isPlaying.value) {
+  if (isPlaybackRequested.value) {
+    isPlaybackRequested.value = false;
+    isLoading.value = false;
+    stopRefresh();
     player.pause();
+    return;
+  }
+
+  hasRequestedPlayback.value = true;
+  isPlaybackRequested.value = true;
+  if (!isVideoReady.value) {
+    loadActiveMatch({
+      shouldPlay: true
+    });
     return;
   }
 
@@ -156,6 +207,24 @@ function finishVideoLoading() {
   stopRefresh();
 }
 
+function finishVideoPlaybackFrame() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      finishVideoLoading();
+    });
+  });
+}
+
+function finishVideoFrameReady() {
+  if (!isPlaybackRequested.value) {
+    isLoading.value = false;
+    stopRefresh();
+    return;
+  }
+
+  finishVideoPlaybackFrame();
+}
+
 function handleVideoLoadError() {
   isVideoReady.value = false;
   isLoading.value = false;
@@ -170,17 +239,26 @@ function stopRefresh() {
   refreshTimer = null;
 }
 
-function loadActiveMatch(refreshing = false) {
+function loadActiveMatch(options: { refreshing?: boolean; shouldPlay?: boolean } = {}) {
+  const { refreshing = false, shouldPlay = true } = options;
+
   if (!player || !activeLiveUrl.value) {
     handleVideoLoadError();
     return;
   }
 
+  hasRequestedPlayback.value = hasRequestedPlayback.value || shouldPlay;
+  isPlaybackRequested.value = shouldPlay;
   startVideoLoading(refreshing);
   player.switchVideo({
     url: activeLiveUrl.value
   });
-  player.play();
+
+  if (shouldPlay) {
+    player.play();
+  } else {
+    player.pause();
+  }
 
   if (refreshTimer) {
     clearTimeout(refreshTimer);
@@ -194,7 +272,10 @@ function loadActiveMatch(refreshing = false) {
 function refreshPlayer() {
   if (isRefreshing.value) return;
 
-  loadActiveMatch(true);
+  loadActiveMatch({
+    refreshing: true,
+    shouldPlay: isPlaybackRequested.value
+  });
 }
 
 function switchActiveMatch(index: number) {
@@ -202,7 +283,9 @@ function switchActiveMatch(index: number) {
 
   activeIndex.value = index;
   isShowDetail.value = false;
-  loadActiveMatch();
+  loadActiveMatch({
+    shouldPlay: true
+  });
 }
 
 function toggleScreen() {
@@ -267,8 +350,8 @@ onBeforeUnmount(() => {
       <div ref="livePlayerRef" class="live-player__container"></div>
     </div>
     <div class="controls-overlay">
-      <div v-if="!isVideoReady" class="live-player-cover"></div>
-      <div v-if="isLoading" class="loading-box">
+      <div v-if="showCover" class="live-player-cover" :style="livePlayerCoverStyle"></div>
+      <div v-if="showLoading" class="loading-box">
         <img
           class="loading-icon"
           src="https://146.103.80.124:5001/siteadmin/skin/lobby_asset/common/web/selfoperated-games/apng_loadingsjb.webp?manualVersion=1"
@@ -283,12 +366,7 @@ onBeforeUnmount(() => {
             <span class="league-name">其他赛事直播</span>
             <div class="decorate right"></div>
           </div>
-          <div
-            v-for="(item, index) in props.matchList"
-            :key="item.matchId || index"
-            class="item-box"
-            :class="{ active: activeIndex === index }"
-          >
+          <div v-for="(item, index) in props.matchList" :key="item.matchId || index" class="item-box" :class="{ active: activeIndex === index }">
             <img src="/siteadmin/live/apng_live_2.webp" alt="" srcset="" class="w-[30px] h-[14px]" />
             <div class="team-name">
               <div class="inner-team-name">{{ item.homeTeam?.teamName }}</div>
@@ -305,8 +383,8 @@ onBeforeUnmount(() => {
                 <span>{{ dayjs((item.startTime || 0) * 1000).format('MM/DD') }}</span>
               </span>
               <div class="status-icon" @click.stop="switchActiveMatch(index)">
-                <svg-icon name="live-common_icon_sszx_play" v-if="activeIndex !== index" />
-                <svg-icon name="live-common_icon_sszx_pause" v-if="activeIndex === index" />
+                <svg-icon name="live-common_icon_sszx_pause" v-if="activeIndex === index && isPlaybackRequested" />
+                <svg-icon name="live-common_icon_sszx_play" v-else />
               </div>
             </div>
           </div>
@@ -326,9 +404,7 @@ onBeforeUnmount(() => {
       </div>
       <div v-if="activeMatchInfo && !isShowDetail && !isPlaying" class="live-player-middle-area">
         <div class="match-info">
-          <span class="match-info__teams">
-            {{ activeMatchInfo.awayTeam?.teamName }} VS {{ activeMatchInfo.homeTeam?.teamName }}
-          </span>
+          <span class="match-info__teams"> {{ activeMatchInfo.awayTeam?.teamName }} VS {{ activeMatchInfo.homeTeam?.teamName }} </span>
           <span class="match-info__time">{{ dayjs((activeMatchInfo.startTime || 0) * 1000).format('HH:mm') }}</span>
           <span class="match-info__live">
             <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />
@@ -339,14 +415,32 @@ onBeforeUnmount(() => {
       <div class="live-player-bottom-bar" v-if="!isShowDetail">
         <div class="live-player-bottom-bar__left">
           <span class="play-toggle-icon" @click.stop="togglePlayStatus">
-            <svg-icon v-if="!isPlaying" name="live-icon_sszb_play1" />
+            <svg-icon v-if="!isPlaybackRequested" name="live-icon_sszb_play1" />
             <svg-icon v-else name="live-icon_sszb_pause1" />
           </span>
           <span class="refresh-icon" :class="{ 'is-refreshing': isRefreshing }" @click.stop="refreshPlayer">
             <svg-icon name="comm_icon_retry" class-name="text-[12px]" />
           </span>
         </div>
-        <div class="live-player-bottom-bar__right"></div>
+        <div class="live-player-bottom-bar__right">
+          <div class="switcher-wrapper">
+            <div class="switcher-btn">
+              <span class="btn-text">流畅</span>
+              <svg-icon name="live-icon_sszb_arrow1" />
+            </div>
+            <div class="panel">
+              <div class="line-item">
+                <span>标清</span>
+                <div class="check-circle">
+                  <svg-icon name="comm_btn_dx3" class-name="check-icon" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <svg-icon v-if="isMuted" name="live-icon_sszb_jy1" @click.stop="toggleMuted" />
+          <svg-icon v-if="!isMuted" name="live-icon_sszb_sy1" @click.stop="toggleMuted" />
+        </div>
       </div>
     </div>
   </div>
@@ -414,7 +508,6 @@ onBeforeUnmount(() => {
       background-repeat: no-repeat;
       background-position: center;
       z-index: 1;
-      background-image: url('https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif');
     }
     .loading-box {
       position: absolute;
@@ -726,6 +819,82 @@ onBeforeUnmount(() => {
         right: 10px;
         display: flex;
         align-items: center;
+        color: #fff;
+        cursor: pointer;
+        pointer-events: auto;
+        .switcher-wrapper {
+          flex: none;
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          margin-right: 15px;
+          .switcher-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 25.5px;
+            padding: 0 7px;
+            font-size: 11px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: solid thin rgba(255, 255, 255, 0.4);
+            border-radius: 12.5px;
+            cursor: pointer;
+            color: #fff;
+            white-space: nowrap;
+            .btn-text {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+          .panel {
+            flex: none !important;
+            position: absolute;
+            bottom: 25px;
+            right: 0;
+            width: 100px;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.7);
+            border: solid thin rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            padding: 0 0 0 7px;
+            z-index: 20;
+            .line-item {
+              flex: none !important;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 85px;
+              height: 40px;
+              color: #fff;
+              font-size: 12px;
+              cursor: pointer;
+              white-space: nowrap;
+              border-bottom: solid thin rgba(227, 227, 227, 0.49);
+              .check-circle {
+                width: 15px;
+                height: 15px;
+                border: solid thin #fff;
+                border-radius: 100%;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .check-icon {
+                  position: relative;
+                  top: -0.5px;
+                  left: -0.5px;
+                  width: 15px;
+                  height: 15px;
+                  font-size: 15px;
+                  flex-shrink: 0;
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
