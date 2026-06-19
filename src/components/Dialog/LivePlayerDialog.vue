@@ -58,21 +58,26 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(['close']);
 const app = useAppStore();
-const activeMatchInfo = computed<FootballBallData>(() => {
-  return props.matchList[0];
-});
 
 const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
-const playerVideo = {
-  url: 'https://global1.sportstrwv.com/sport/202_5094378_1.m3u8?auth_key=1781951772-0-0-1c721be196681554f5bb4efb3c9800d5&siteCode=1797&pToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE4NjcyMDQsIm5iZiI6MTc4MTg2MzYwNCwic3ViIjoie1wiYVwiOjIwMixcImJcIjo1MDk0Mzc4LFwiY1wiOlwiMTc5N1wifSJ9.vsxUro5iNaCoG08hsxnSXbZUv3TJRLrYDjPJG8LteMg',
-  pic: 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif' || undefined
-};
 let player: DPlayer | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+const activeIndex = ref(0);
 const isShowDetail = ref(false);
 const isPlaying = ref(false);
 const isRefreshing = ref(false);
+const isLoading = ref(false);
+const isVideoReady = ref(false);
+
+const activeMatchInfo = computed<FootballBallData | undefined>(() => {
+  return props.matchList[activeIndex.value];
+});
+
+const activeLiveUrl = computed(() => {
+  const liveUrlInfo = activeMatchInfo.value?.liveUrls?.find(item => item.url || item.url2);
+  return liveUrlInfo?.url || liveUrlInfo?.url2 || '';
+});
 
 function onTapClose() {
   if (isShowDetail.value) {
@@ -83,6 +88,12 @@ function onTapClose() {
 }
 
 function initPlayer() {
+  if (!livePlayerRef.value || !activeLiveUrl.value) {
+    isLoading.value = false;
+    return;
+  }
+
+  startVideoLoading();
   player = new DPlayer({
     container: livePlayerRef.value,
     autoplay: true,
@@ -94,7 +105,7 @@ function initPlayer() {
     theme: '#b7daff',
     volume: 0.7,
     video: {
-      url: activeMatchInfo.value.liveUrls[0].url
+      url: activeLiveUrl.value
     }
   });
 
@@ -108,9 +119,18 @@ function initPlayer() {
   player.on('ended', () => {
     isPlaying.value = false;
   });
-  player.on('loadedmetadata', stopRefresh);
-  player.on('canplay', stopRefresh);
-  player.on('error', stopRefresh);
+  player.on('loadstart', () => {
+    isLoading.value = true;
+  });
+  player.on('waiting', () => {
+    isLoading.value = true;
+  });
+  player.on('stalled', () => {
+    isLoading.value = true;
+  });
+  player.on('canplay', finishVideoLoading);
+  player.on('playing', finishVideoLoading);
+  player.on('error', handleVideoLoadError);
 }
 
 function togglePlayStatus() {
@@ -124,6 +144,24 @@ function togglePlayStatus() {
   player.play();
 }
 
+function startVideoLoading(refreshing = false) {
+  isVideoReady.value = false;
+  isLoading.value = true;
+  isRefreshing.value = refreshing;
+}
+
+function finishVideoLoading() {
+  isVideoReady.value = true;
+  isLoading.value = false;
+  stopRefresh();
+}
+
+function handleVideoLoadError() {
+  isVideoReady.value = false;
+  isLoading.value = false;
+  stopRefresh();
+}
+
 function stopRefresh() {
   isRefreshing.value = false;
   if (!refreshTimer) return;
@@ -132,11 +170,16 @@ function stopRefresh() {
   refreshTimer = null;
 }
 
-function refreshPlayer() {
-  if (!player || isRefreshing.value) return;
+function loadActiveMatch(refreshing = false) {
+  if (!player || !activeLiveUrl.value) {
+    handleVideoLoadError();
+    return;
+  }
 
-  isRefreshing.value = true;
-  player.switchVideo(playerVideo);
+  startVideoLoading(refreshing);
+  player.switchVideo({
+    url: activeLiveUrl.value
+  });
   player.play();
 
   if (refreshTimer) {
@@ -144,8 +187,22 @@ function refreshPlayer() {
   }
 
   refreshTimer = setTimeout(() => {
-    stopRefresh();
+    handleVideoLoadError();
   }, 10000);
+}
+
+function refreshPlayer() {
+  if (isRefreshing.value) return;
+
+  loadActiveMatch(true);
+}
+
+function switchActiveMatch(index: number) {
+  if (index < 0 || index >= props.matchList.length) return;
+
+  activeIndex.value = index;
+  isShowDetail.value = false;
+  loadActiveMatch();
 }
 
 function toggleScreen() {
@@ -210,8 +267,8 @@ onBeforeUnmount(() => {
       <div ref="livePlayerRef" class="live-player__container"></div>
     </div>
     <div class="controls-overlay">
-      <div class="live-player-cover" v-if="!isPlaying"></div>
-      <div class="loading-box" v-if="isRefreshing">
+      <div v-if="!isVideoReady" class="live-player-cover"></div>
+      <div v-if="isLoading" class="loading-box">
         <img
           class="loading-icon"
           src="https://146.103.80.124:5001/siteadmin/skin/lobby_asset/common/web/selfoperated-games/apng_loadingsjb.webp?manualVersion=1"
@@ -226,24 +283,30 @@ onBeforeUnmount(() => {
             <span class="league-name">其他赛事直播</span>
             <div class="decorate right"></div>
           </div>
-          <div class="item-box" v-for="(item, index) in props.matchList" :key="index">
+          <div
+            v-for="(item, index) in props.matchList"
+            :key="item.matchId || index"
+            class="item-box"
+            :class="{ active: activeIndex === index }"
+          >
             <img src="/siteadmin/live/apng_live_2.webp" alt="" srcset="" class="w-[30px] h-[14px]" />
             <div class="team-name">
-              <div class="inner-team-name">{{ item.homeTeam.teamName }}</div>
+              <div class="inner-team-name">{{ item.homeTeam?.teamName }}</div>
               <div class="team-logo">
-                <img class="home-team-logo" :src="item.homeTeam.teamIcon" alt="." />
+                <img class="home-team-logo" :src="item.homeTeam?.teamIcon" alt="." />
                 <span class="icon-vs">VS</span>
-                <img class="home-team-logo" :src="item.awayTeam.teamIcon" alt="." />
+                <img class="home-team-logo" :src="item.awayTeam?.teamIcon" alt="." />
               </div>
-              <div class="inner-team-name">{{ item.awayTeam.teamName }}</div>
+              <div class="inner-team-name">{{ item.awayTeam?.teamName }}</div>
             </div>
             <div class="match-time">
               <span class="time">
-                <span>{{ dayjs(item.startTime * 1000).format('HH:mm') }}</span>
-                <span>{{ dayjs(item.startTime * 1000).format('MM/DD') }}</span>
+                <span>{{ dayjs((item.startTime || 0) * 1000).format('HH:mm') }}</span>
+                <span>{{ dayjs((item.startTime || 0) * 1000).format('MM/DD') }}</span>
               </span>
-              <div class="status-icon">
-                <svg-icon name="live-common_icon_sszx_play" />
+              <div class="status-icon" @click.stop="switchActiveMatch(index)">
+                <svg-icon name="live-common_icon_sszx_play" v-if="activeIndex !== index" />
+                <svg-icon name="live-common_icon_sszx_pause" v-if="activeIndex === index" />
               </div>
             </div>
           </div>
@@ -261,10 +324,12 @@ onBeforeUnmount(() => {
           <svg-icon name="live-icon_sszb_max1" />
         </div>
       </div>
-      <div class="live-player-middle-area" v-if="!isShowDetail && !isPlaying">
+      <div v-if="activeMatchInfo && !isShowDetail && !isPlaying" class="live-player-middle-area">
         <div class="match-info">
-          <span class="match-info__teams">{{ activeMatchInfo.awayTeam.teamName }} VS {{ activeMatchInfo.homeTeam.teamName }}</span>
-          <span class="match-info__time">{{ dayjs(activeMatchInfo.startTime * 1000).format('HH:mm')}}</span>
+          <span class="match-info__teams">
+            {{ activeMatchInfo.awayTeam?.teamName }} VS {{ activeMatchInfo.homeTeam?.teamName }}
+          </span>
+          <span class="match-info__time">{{ dayjs((activeMatchInfo.startTime || 0) * 1000).format('HH:mm') }}</span>
           <span class="match-info__live">
             <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />
             <span class="live-status">直播中</span>
@@ -451,6 +516,9 @@ onBeforeUnmount(() => {
           border-radius: 5px;
           cursor: pointer;
           list-style: none;
+          &.active {
+            border-color: rgba(255, 255, 255, 0.8);
+          }
           .team-name {
             display: flex;
             align-items: center;
@@ -660,7 +728,7 @@ onBeforeUnmount(() => {
 }
 .live-player-dialog:fullscreen {
   .live-player-cover {
-    height: unset !important;
+    height: 100% !important;
   }
 }
 
