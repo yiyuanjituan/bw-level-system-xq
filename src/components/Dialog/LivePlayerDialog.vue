@@ -73,6 +73,7 @@ const isVideoReady = ref(false);
 const hasRequestedPlayback = ref(false);
 const isPlaybackRequested = ref(false);
 const isMuted = ref(false);
+const isSwitcherPanelVisible = ref(false);
 
 const activeMatchInfo = computed<FootballBallData | undefined>(() => {
   return props.matchList[activeIndex.value];
@@ -170,6 +171,14 @@ function toggleMuted() {
 
   player.video.muted = !isMuted.value;
   syncMutedStatus();
+}
+
+function toggleSwitcherPanel() {
+  isSwitcherPanelVisible.value = !isSwitcherPanelVisible.value;
+}
+
+function closeSwitcherPanel() {
+  isSwitcherPanelVisible.value = false;
 }
 
 function togglePlayStatus() {
@@ -423,13 +432,13 @@ onBeforeUnmount(() => {
           </span>
         </div>
         <div class="live-player-bottom-bar__right">
-          <div class="switcher-wrapper">
+          <div class="switcher-wrapper" :class="{ 'is-open': isSwitcherPanelVisible }" :aria-expanded="isSwitcherPanelVisible" @click.stop="toggleSwitcherPanel">
             <div class="switcher-btn">
               <span class="btn-text">高清</span>
-              <svg-icon name="live-icon_sszb_arrow1" />
+              <svg-icon name="live-icon_sszb_arrow1" class-name="switcher-arrow" />
             </div>
-            <div class="switcher-panel">
-              <div class="line-item active">
+            <div v-if="isSwitcherPanelVisible" class="switcher-panel">
+              <div class="line-item active" @click.stop="closeSwitcherPanel">
                 <span>高清</span>
                 <div class="check-circle">
                   <svg-icon name="live-comm_btn_dx3" class-name="check-icon text-[15px]" />
@@ -845,6 +854,15 @@ onBeforeUnmount(() => {
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
+            }
+            .switcher-arrow {
+              flex-shrink: 0;
+              transition: transform 0.2s ease;
+            }
+          }
+          &.is-open {
+            .switcher-arrow {
+              transform: rotate(180deg);
             }
           }
           .switcher-panel {
