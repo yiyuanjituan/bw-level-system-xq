@@ -1,47 +1,74 @@
 <script setup lang="ts">
-import { handleBack } from "@/utils/common";
-import RegisterPopup from "@/components/Common/Register.vue";
-import { onMounted, ref, useTemplateRef } from "vue";
-import UiCheckbox from "@/components/UI/checkbox.vue";
-import policy from "@/components/Common/policy.vue";
-import UiButton from "@/components/Common/Button.vue";
-import { loginProps, registerProps } from "@/enums/props";
-import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
-import { userLogin, userPhoneLogin, userRegister } from "@/api/common";
-import useAuthStore from "@/store/modules/user";
-import router from "@/router";
-import LoginPopup from "@/components/Common/Login.vue";
-import { useRoute } from "vue-router";
-import useAppStore from "@/store/modules/app";
-import type { FormExpose } from "@/components/UI/form-context";
+import { handleBack } from '@/utils/common';
+import RegisterPopup from '@/components/Common/Register.vue';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
+import UiCheckbox from '@/components/UI/checkbox.vue';
+import policy from '@/components/Common/policy.vue';
+import UiButton from '@/components/Common/Button.vue';
+import { loginProps, registerProps } from '@/enums/props';
+import { showCustomDialog, showCustomToast } from '@/hooks/useCommon';
+import { userLogin, userPhoneLogin, userRegister } from '@/api/common';
+import useAuthStore from '@/store/modules/user';
+import LoginPopup from '@/components/Common/Login.vue';
+import { useRoute } from 'vue-router';
+import useAppStore from '@/store/modules/app';
+import type { FormExpose } from '@/components/UI/form-context';
+import router from '@/router';
 
-const url = "https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif";
+const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
-const height = ref('0px')
+const height = ref('0px');
 
-const activeTabs = ref(0)
+const route = useRoute();
+const activeTabs = ref(getTabByPath(route.path));
 const showLoading = ref(false);
 const registerForm = ref<registerProps>({ type: 'password' } as registerProps);
-const registerFormRef = useTemplateRef<{ form: FormExpose }>('registerFormRef')
-const route = useRoute();
+const registerFormRef = useTemplateRef<{ form: FormExpose }>('registerFormRef');
 const app = useAppStore();
 
 // 登录的form
-const loginForm = ref<loginProps>({ type: 'password', accountType: 'account' } as loginProps)
-const loginFormRef = useTemplateRef<{ form: { validate: () => Promise<void> } }>('loginFormRef')
+const loginForm = ref<loginProps>({ type: 'password', accountType: 'account' } as loginProps);
+const loginFormRef = useTemplateRef<{ form: { validate: () => Promise<void> } }>('loginFormRef');
 
 const policyRef = ref();
 const isAgreeAccept = ref(true); // 是否同意政策
 const openAccept = () => policyRef.value.open();
 const geeTestRef = ref();
-const auth = useAuthStore()
+const auth = useAuthStore();
+
+function getTabByPath(path: string) {
+  return path.includes('/home/login') ? 1 : 0;
+}
+
+function getPathByTab(tab: number) {
+  return tab === 1 ? '/home/login' : '/home/register';
+}
+
+function replaceCurrentPath(path: string) {
+  const nextUrl = `${window.location.pathname}${window.location.search}#${path}`;
+  window.history.replaceState(window.history.state, '', nextUrl);
+}
+
+function handleTabChange(tab: number | string) {
+  showLoading.value = false;
+  const nextTab = Number(tab);
+  const nextPath = getPathByTab(nextTab);
+
+  if (window.location.hash !== `#${nextPath}`) {
+    replaceCurrentPath(nextPath);
+  }
+}
+
+function jumpToService() {
+  router.push('/home/notice');
+}
 
 function handleQuery() {
   if (showLoading.value) return false;
   if (activeTabs.value == 0) {
     registerFormRef.value.form.validate().then(() => {
       geeTestRef.value.showCaptcha();
-    })
+    });
   }
   if (activeTabs.value == 1) {
     geeTestRef.value.showCaptcha();
@@ -49,52 +76,64 @@ function handleQuery() {
 }
 
 function handleRegister() {
-  userRegister(registerForm.value).then((result) => {
-    auth.setToken(result?.token)
-    auth.updateInfo()
-    showLoading.value = false;
-    handleBack()
-    setTimeout(() => {
-      const params = {
-        title: '注册成功',
-        message: '👉恭喜您注册成功! 赶紧玩一局吧~',
-        confirmButtonText: '立即存款',
-        titleColor: '#04be02',
-      }
-      showCustomDialog(params).then(res => {
-        // @TODO 点击充值按钮
-        console.log(res);
-      })
-    }, 100)
-  }).finally(() => showLoading.value = false);
+  userRegister(registerForm.value)
+    .then(result => {
+      auth.setToken(result?.token);
+      auth.updateInfo();
+      showLoading.value = false;
+      handleBack();
+      setTimeout(() => {
+        const params = {
+          title: '注册成功',
+          message: '👉恭喜您注册成功! 赶紧玩一局吧~',
+          confirmButtonText: '立即存款',
+          titleColor: '#04be02'
+        };
+        showCustomDialog(params).then(res => {
+          // @TODO 点击充值按钮
+          console.log(res);
+        });
+      }, 100);
+    })
+    .finally(() => (showLoading.value = false));
 }
 
 function handleLogin() {
-  (loginForm.value.type == 'sms' ? userPhoneLogin : userLogin)(loginForm.value).then((result) => {
-    auth.setToken(result?.token)
-    auth.updateInfo()
-    showLoading.value = false;
-    handleBack()
-  }).finally(() => showLoading.value = false);
+  (loginForm.value.type == 'sms' ? userPhoneLogin : userLogin)(loginForm.value)
+    .then(result => {
+      auth.setToken(result?.token);
+      auth.updateInfo();
+      showLoading.value = false;
+      handleBack();
+    })
+    .finally(() => (showLoading.value = false));
 }
 
 function handleExec() {
   showLoading.value = true;
   if (activeTabs.value == 0) {
     // 注册
-    handleRegister()
+    handleRegister();
   }
   if (activeTabs.value == 1) {
-    handleLogin()
+    handleLogin();
   }
 }
 
 onMounted(() => {
-  height.value = `${window.innerHeight}px`
-  if (route.path.includes('login')) {
-    activeTabs.value = 1;
-  }
-})
+  height.value = `${window.innerHeight}px`;
+});
+
+watch(
+  () => route.path,
+  path => {
+    const nextTab = getTabByPath(path);
+    if (activeTabs.value !== nextTab) {
+      activeTabs.value = nextTab;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -113,7 +152,7 @@ onMounted(() => {
           </section>
         </article>
       </header>
-      <x-tabs swipeable v-model:active="activeTabs" @change="showLoading = false" :line-width="78">
+      <x-tabs swipeable v-model:active="activeTabs" @change="handleTabChange" :line-width="78">
         <x-tab :name="0">
           <template #title>
             <div class="login-title-box">
@@ -137,28 +176,24 @@ onMounted(() => {
         <div class="pt-[10px] text-[11px]">
           <div class="remember-box" v-if="activeTabs == 1">
             <ui-checkbox v-model="isAgreeAccept">
-              <div @click="isAgreeAccept = !isAgreeAccept">
-                记住账号密码
-              </div>
+              <div @click="isAgreeAccept = !isAgreeAccept">记住账号密码</div>
             </ui-checkbox>
           </div>
           <div class="accept-agree" v-if="activeTabs == 0">
             <ui-checkbox v-model="isAgreeAccept">
               <div @click="isAgreeAccept = !isAgreeAccept">
-                我已满18岁,已阅读且同意<span
-                  class="text-[#F0C059]"
-                  @click.stop="openAccept"
-                  >《用户协议》</span
-                >
+                我已满18岁,已阅读且同意<span class="text-[#F0C059]" @click.stop="openAccept">《用户协议》</span>
               </div>
             </ui-checkbox>
           </div>
         </div>
-        <x-button class="mt-[10px] !w-[100%]" @click="handleQuery" :loading="showLoading">
-          {{ activeTabs == 0 ? '注册' : '登录' }}
-        </x-button>
+        <section class="mt-[12px] section-box">
+          <x-button class="!w-[100%]" @click="handleQuery" :loading="showLoading">
+            {{ activeTabs == 0 ? '注册' : '登录' }}
+          </x-button>
+        </section>
         <div class="mt-[10px] flex items-center justify-center">
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1">联系客服</div>
+          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">联系客服</div>
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">忘记密码</div>
         </div>
       </div>
@@ -255,7 +290,7 @@ onMounted(() => {
         left: 20px;
         height: 0.55px;
         background: var(--skin__border);
-        content: "";
+        content: '';
       }
     }
     .header-wrap {
@@ -313,7 +348,71 @@ onMounted(() => {
           color: white;
         }
       }
+
+      .section-box {
+        --submit-button__animation--shadow: pulse-green 1.5s infinite;
+        --submit-button__animation--scale: scale-btn 1.5s infinite;
+        --submit-button__animation--scale__to: 1.08;
+        button {
+          animation: var(--submit-button__animation--scale);
+          transition: box-shadow 0.3s, transform 0.3s;
+          &::before {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-color: #000;
+            border-radius: inherit;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            content: " ";
+          }
+          &::after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: inherit;
+            content: "";
+            border-radius: inherit;
+            animation: var(--submit-button__animation--shadow);
+            transition: inherit;
+          }
+        }
+      }
     }
+  }
+}
+</style>
+
+
+<style>
+@keyframes scale-btn {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 var(--skin__primary);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 255, 102, 0);
+  }
+
+  to {
+    box-shadow: 0 0 0 0 rgba(0, 255, 102, 0);
   }
 }
 </style>

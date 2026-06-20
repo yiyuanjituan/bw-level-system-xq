@@ -3,6 +3,7 @@ import {
   type ComponentPublicInstance,
   computed,
   defineComponent,
+  getCurrentInstance,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -29,6 +30,8 @@ interface Props {
   lineWidth?: number | string;
   lineHeight?: number | string;
   showNavArrows?: boolean;
+  modelValue?: XTabName;
+  active?: XTabName;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,13 +43,14 @@ const props = withDefaults(defineProps<Props>(), {
   showNavArrows: true
 });
 
-const modelValue = defineModel<XTabName>();
-
 const emit = defineEmits<{
+  (e: "update:modelValue", value: XTabName): void;
+  (e: "update:active", value: XTabName): void;
   (e: "change", value: XTabName): void;
   (e: "tab-click", value: XTabName, pane: XTabPane): void;
 }>();
 
+const instance = getCurrentInstance();
 const panes = shallowRef<XTabPane[]>([]);
 const navRef = ref<HTMLElement>();
 const contentRef = ref<HTMLElement>();
@@ -65,6 +69,7 @@ const panelRefs = new Map<number, HTMLElement>();
 let contentObserver: ResizeObserver | null = null;
 let activePanelObserver: ResizeObserver | null = null;
 let navObserver: ResizeObserver | null = null;
+const uncontrolledActive = ref<XTabName>();
 
 const SlotRenderer = defineComponent({
   name: "XTabsSlotRenderer",
@@ -83,7 +88,40 @@ const SlotRenderer = defineComponent({
   }
 });
 
-const activeIndex = computed(() => panes.value.findIndex(pane => pane.name.value === modelValue.value));
+function hasVNodeProp(key: string) {
+  return Object.prototype.hasOwnProperty.call(instance?.vnode.props ?? {}, key);
+}
+
+function isActiveModelBound() {
+  return hasVNodeProp("active") || hasVNodeProp("onUpdate:active");
+}
+
+function isModelValueBound() {
+  return hasVNodeProp("modelValue") || hasVNodeProp("onUpdate:modelValue");
+}
+
+const currentActive = computed<XTabName | undefined>({
+  get() {
+    if (isActiveModelBound()) return props.active;
+    if (isModelValueBound()) return props.modelValue;
+    return uncontrolledActive.value;
+  },
+  set(value) {
+    if (!isActiveModelBound() && !isModelValueBound()) {
+      uncontrolledActive.value = value;
+    }
+
+    if (isActiveModelBound()) {
+      emit("update:active", value);
+    }
+
+    if (isModelValueBound()) {
+      emit("update:modelValue", value);
+    }
+  }
+});
+
+const activeIndex = computed(() => panes.value.findIndex(pane => pane.name.value === currentActive.value));
 const activePane = computed(() => panes.value[activeIndex.value] ?? null);
 const panesSignature = computed(() => panes.value.map(pane => `${pane.uid}:${pane.name.value}:${pane.disabled.value}`).join("|"));
 const isVertical = computed(() => props.position === "left" || props.position === "right");
@@ -189,13 +227,13 @@ function waitForLayout() {
 function ensureActivePane() {
   if (panes.value.length === 0) return;
 
-  const currentPane = panes.value.find(pane => pane.name.value === modelValue.value && !pane.disabled.value);
+  const currentPane = panes.value.find(pane => pane.name.value === currentActive.value && !pane.disabled.value);
   if (currentPane) return;
 
   const firstAvailablePane = panes.value.find(pane => !pane.disabled.value);
   if (!firstAvailablePane) return;
 
-  modelValue.value = firstAvailablePane.name.value;
+  currentActive.value = firstAvailablePane.name.value;
 }
 
 function updateNavScrollState() {
@@ -380,17 +418,17 @@ function activatePane(pane: XTabPane) {
 
   emit("tab-click", pane.name.value, pane);
 
-  if (modelValue.value === pane.name.value) {
+  if (currentActive.value === pane.name.value) {
     scrollActiveIntoView();
     return;
   }
 
-  modelValue.value = pane.name.value;
+  currentActive.value = pane.name.value;
   emit("change", pane.name.value);
 }
 
 function isPaneActive(pane: XTabPane) {
-  return pane.name.value === modelValue.value;
+  return pane.name.value === currentActive.value;
 }
 
 function getPaneTitle(pane: XTabPane) {
@@ -419,7 +457,7 @@ watch(
 );
 
 watch(
-  () => modelValue.value,
+  () => currentActive.value,
   (value, previousValue) => {
     const changed = previousValue !== undefined && previousValue !== value;
     trackMotionEnabled.value = changed;
