@@ -83,7 +83,7 @@ onMounted(() => getHomeData());
 </script>
 
 <template>
-  <ui-tabs :list="list">
+  <ui-tabs :list="list" panel-scroll>
     <template #panel="{ row }">
       <section class="game-list-box" v-if="row.children && row.children.length">
         <div class="list-slide-box">

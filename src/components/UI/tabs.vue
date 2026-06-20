@@ -10,34 +10,92 @@ interface Props {
   indicator?: boolean,
   showLine?: boolean,
   showGap?: boolean,
+  panelScroll?: boolean,
+  panelScrollOffset?: number,
 }
 const props = withDefaults(defineProps<Props>(), {
   list: () => [],
   indicator: true,
   showLine: true,
   showGap: true,
+  panelScroll: false,
+  panelScrollOffset: 0,
 });
 
 const wrapScrollLeft = ref(0);
 const wrapScrollMaxWidth = ref(300);
-const scrollBoxRef = ref(null);
+const scrollBoxRef = ref<HTMLElement | null>(null);
+const panelRefs = ref<(HTMLElement | null)[]>([]);
 
-function onWrapScroll(e) {
-  wrapScrollLeft.value = e.target.scrollLeft;
-  wrapScrollMaxWidth.value = e.target.scrollWidth - e.target.clientWidth;
+function onWrapScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  wrapScrollLeft.value = target.scrollLeft;
+  wrapScrollMaxWidth.value = target.scrollWidth - target.clientWidth;
 }
 
 function scrollToLeft() {
-  scrollBoxRef.value.scrollTo({ left: 0, behavior: "smooth" });
+  scrollBoxRef.value?.scrollTo({ left: 0, behavior: "smooth" });
 }
 
 function scrollToRight() {
-  scrollBoxRef.value.scrollTo({
+  scrollBoxRef.value?.scrollTo({
     left: 9999,
     behavior: "smooth"
   });
 }
 
+function setPanelRef(el: Element | null, index: number) {
+  panelRefs.value[index] = el as HTMLElement | null;
+}
+
+function findScrollParent(el: HTMLElement | null) {
+  let current = el?.parentElement ?? null;
+
+  while (current) {
+    const { overflowY } = window.getComputedStyle(current);
+    if (/(auto|scroll)/.test(overflowY) && current.scrollHeight > current.clientHeight) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+
+  return document.scrollingElement as HTMLElement | null;
+}
+
+function scrollToPanel(index: number) {
+  if (!props.panelScroll) {
+    return;
+  }
+
+  const panel = panelRefs.value[index];
+  if (!panel) {
+    return;
+  }
+
+  const scrollParent = findScrollParent(panel);
+  if (!scrollParent) {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const useWindowScroll = [document.body, document.documentElement, document.scrollingElement].includes(scrollParent);
+  const parentTop = useWindowScroll ? 0 : scrollParent.getBoundingClientRect().top;
+  const currentTop = useWindowScroll
+    ? window.scrollY || document.documentElement.scrollTop || document.body.scrollTop
+    : scrollParent.scrollTop;
+  const targetTop = currentTop + panel.getBoundingClientRect().top - parentTop - props.panelScrollOffset;
+
+  if (useWindowScroll) {
+    window.scrollTo({ top: targetTop, behavior: "smooth" });
+    return;
+  }
+
+  scrollParent.scrollTo({ top: targetTop, behavior: "smooth" });
+}
+
+function handleTabClick(index: number) {
+  scrollToPanel(index);
+}
 </script>
 
 <template>
@@ -53,7 +111,13 @@ function scrollToRight() {
         </section>
       </div>
       <div class="scroll-content-box" :class="{ 'show-line': props.showLine }" @scroll="onWrapScroll" ref="scrollBoxRef">
-        <div class="ui-tab" v-for="(item, index) in props.list" :key="item" :class="{ 'ml-[22.5px]': index != 0 && props.showGap }">
+        <div
+          class="ui-tab"
+          v-for="(item, index) in props.list"
+          :key="item"
+          :class="{ 'ml-[22.5px]': index != 0 && props.showGap }"
+          @click="handleTabClick(index)"
+        >
           <slot name="tab" :row="item" />
           <template v-if="!$slots.tab">
             <section class="tab-item-title">
@@ -83,7 +147,7 @@ function scrollToRight() {
     </div>
     <div class="ui-tabs__content">
       <template v-for="(item, index) in props.list" :key="index">
-        <div class="ui-tab__panel">
+        <div class="ui-tab__panel" :ref="(el) => setPanelRef(el as Element | null, index)">
           <slot name="panel" :row="item" />
         </div>
       </template>
