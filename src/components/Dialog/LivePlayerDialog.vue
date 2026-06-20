@@ -51,16 +51,17 @@ defineOptions({
 
 interface Props {
   matchList?: FootballBallData[];
-  coverImg: string
+  coverImg: string;
+  title: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   matchList: () => [],
-  coverImg: ''
+  coverImg: '',
+  title: ''
 });
 const emit = defineEmits(['close']);
 const app = useAppStore();
-const LIVE_PLAYER_COVER_URL = 'https://146.103.80.124:5001/siteadmin/upload/img/2065488501127143426.avif';
 
 const dialogRef = ref<HTMLElement | null>(null);
 const livePlayerRef = ref<HTMLElement | null>(null);
@@ -408,7 +409,7 @@ onBeforeUnmount(() => {
         <div class="live-player-top-bar__left" @click="isShowDetail = true">
           <svg-icon name="live-icon_sszb_cd1" />
         </div>
-        <span class="live-player-top-bar__center">{{ app.appInfo.title }}</span>
+        <span class="live-player-top-bar__center">{{ props.title ? props.title : app.appInfo.title }}</span>
         <div class="live-player-top-bar__right" @click="toggleScreen">
           <svg-icon name="live-icon_sszb_max1" />
         </div>
