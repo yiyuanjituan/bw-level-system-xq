@@ -136,13 +136,6 @@ onMounted(() => getHomeData());
                         <div class="disabled-icon text-white"></div>
                       </section>
                     </div>
-                    <!--                    <div class="item">-->
-                    <!--                      <section-->
-                    <!--                        class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]"-->
-                    <!--                      >-->
-                    <!--                        <span class="name-inner">麻将胡了2</span>-->
-                    <!--                      </section>-->
-                    <!--                    </div>-->
                   </swiper-slide>
                 </template>
               </swiper>
