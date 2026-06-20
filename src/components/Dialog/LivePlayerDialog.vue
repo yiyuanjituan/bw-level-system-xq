@@ -416,7 +416,7 @@ onBeforeUnmount(() => {
       </div>
       <div v-if="activeMatchInfo && !isShowDetail && !isPlaying" class="live-player-middle-area">
         <div class="match-info">
-          <span class="match-info__teams"> {{ activeMatchInfo.awayTeam?.teamName }} VS {{ activeMatchInfo.homeTeam?.teamName }} </span>
+          <span class="match-info__teams"> {{ activeMatchInfo.homeTeam?.teamName }} VS {{ activeMatchInfo.awayTeam?.teamName }} </span>
           <span class="match-info__time">{{ dayjs((activeMatchInfo.startTime || 0) * 1000).format('HH:mm') }}</span>
           <span class="match-info__live">
             <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />

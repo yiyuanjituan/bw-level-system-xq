@@ -162,7 +162,7 @@ onMounted(() => {
         <section>
           <template v-for="position in leftPositions" :key="position">
             <div class="fast-entry-item" v-if="getPositionItems(position).length">
-              <van-swipe :width="swipeWidth" :show-indicators="false">
+              <van-swipe :width="swipeWidth" :show-indicators="false" :autoplay="3000">
                 <van-swipe-item v-for="item in getPositionItems(position)" :key="item.id">
                   <div class="fast-btn" @click="handleFloatClick(item)">
                     <img :src="item.image" alt="" class="fast-image" />
@@ -180,7 +180,7 @@ onMounted(() => {
         <section>
           <template v-for="position in rightPositions" :key="position">
             <div class="fast-entry-item" v-if="getPositionItems(position).length">
-              <van-swipe :width="swipeWidth" :show-indicators="false">
+              <van-swipe :width="swipeWidth" :show-indicators="false" :autoplay="3000">
                 <van-swipe-item v-for="item in getPositionItems(position)" :key="item.id">
                   <div class="fast-btn" @click="handleFloatClick(item)">
                     <img :src="item.image" alt="" class="fast-image" />

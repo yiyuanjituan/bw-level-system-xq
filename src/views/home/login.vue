@@ -99,20 +99,13 @@ onMounted(() => {
 
 <template>
   <div class="common-container">
-    <img src="@/assets/common/comm_logo_bg.avif" alt="." class="bg-img" />
+    <img src="@/assets/common/img_login_bg_style1_yd.avif" alt="." class="bg-img" />
     <div class="header">
       <div class="back-icon" @click="handleBack">
-        <i class="icon inline-flex justify-center items-center">
-          <svg width="1em" height="1em" fill="currentColor" class="">
-            <use xlink:href="#ui-arrow-418a3a"></use>
-          </svg>
-        </i>
-      </div>
-      <div class="logo-box">
-        <img :src="url" alt="logo" class="logo" />
+        <svg-icon name="arrow-back" />
       </div>
     </div>
-    <div class="main">
+    <div class="main lobby-login-register-fragment loginRegister loginRegisterFragment bodyWrap">
       <header class="header-wrap">
         <article>
           <section>
@@ -120,14 +113,26 @@ onMounted(() => {
           </section>
         </article>
       </header>
-      <van-tabs swipeable v-model:active="activeTabs" @change="showLoading = false">
-        <van-tab title="注 册">
+      <x-tabs swipeable v-model:active="activeTabs" @change="showLoading = false" :line-width="78">
+        <x-tab :name="0">
+          <template #title>
+            <div class="login-title-box">
+              <svg-icon name="login_icon_zj" />
+              <span class="ml-[4px]">注&nbsp;册</span>
+            </div>
+          </template>
           <register-popup v-model="registerForm" ref="registerFormRef" />
-        </van-tab>
-        <van-tab title="登 录">
+        </x-tab>
+        <x-tab :name="1">
+          <template #title>
+            <div class="login-title-box">
+              <svg-icon name="login_icon_dl" />
+              <span class="ml-[4px]">登&nbsp;录</span>
+            </div>
+          </template>
           <login-popup v-model="loginForm" ref="loginFormRef" />
-        </van-tab>
-      </van-tabs>
+        </x-tab>
+      </x-tabs>
       <div class="fragment__extra">
         <div class="pt-[10px] text-[11px]">
           <div class="remember-box" v-if="activeTabs == 1">
@@ -152,7 +157,6 @@ onMounted(() => {
         <x-button class="mt-[10px] !w-[100%]" @click="handleQuery" :loading="showLoading">
           {{ activeTabs == 0 ? '注册' : '登录' }}
         </x-button>
-
         <div class="mt-[10px] flex items-center justify-center">
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1">联系客服</div>
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">忘记密码</div>
@@ -167,24 +171,21 @@ onMounted(() => {
 <style scoped lang="less">
 .common-container {
   --max-height: v-bind(height);
+  --other-space: 90px;
+  --container-space: 0;
+  font-size: 12px;
 
-  background: #202329;
+  background: var(--skin__bg_2);
   position: relative;
-  //overflow-y: auto;
-  //overflow-x: hidden;
   min-height: v-bind(height);
-  //max-height: 100%;
 
   .bg-img {
     pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
-    object-fit: cover;
-    object-position: top center;
-    background-color: #141417;
     width: 100%;
-    height: 100px;
+    height: 260px;
   }
 
   .header {
@@ -224,36 +225,40 @@ onMounted(() => {
     }
   }
 
-  .main {
-    --van-tabs-line-height: 100%;
-    --van-tab-text-color: white;
-    --van-padding-xs: 0px;
-    --van-padding-sm: 15px;
-    --van-tabs-bottom-bar-color: #f0c059;
-    --van-tab-active-text-color: #f0c059;
-    --van-tabs-bottom-bar-height: 0.5px;
-    --van-tab-font-size: 13px;
-    --van-tabs-bottom-bar-width: 60px;
-    --van-tabs-nav-background: transparent;
-    --van-tab-line-height: 40px;
-    --van-padding-base: 15px;
-
-    position: relative;
-    width: 345px;
-    padding: 0 0 15px;
-    background-color: #1c1e23;
-    margin: 0 auto;
-    box-shadow: rgba(114, 159, 255, 0.12) 0 1.5px 3.5px;
+  .loginRegister {
     display: flex;
     flex-direction: column;
     border-radius: 10px;
-    font-size: 9px;
-    max-height: calc(100vh - 70px);
+    font-size: 8px;
+    max-height: calc(var(--max-height, 100vh) - var(--other-space));
     backface-visibility: hidden;
+    padding: 0 0 var(--container-space) 0;
     box-sizing: border-box;
+  }
 
+  .main {
+    :deep(.x-tab) {
+      color: var(--skin__neutral_2);
+    }
+    :deep(.x-tabs__wrap) {
+      //height: 40px !important;
+      padding-bottom: 10px !important;
+    }
+    :deep(.x-tab--active) {
+      color: var(--skin__primary);
+    }
+    :deep(.x-tabs__nav) {
+      &::before {
+        position: absolute;
+        right: 20px;
+        bottom: 1px;
+        left: 20px;
+        height: 0.55px;
+        background: var(--skin__border);
+        content: "";
+      }
+    }
     .header-wrap {
-      margin-top: 15px;
       max-height: 300px;
 
       article {
@@ -266,30 +271,21 @@ onMounted(() => {
         margin-bottom: 10px;
 
         section {
-          padding-left: 15px;
-          padding-right: 15px;
+          padding-left: 20px;
+          padding-right: 20px;
           width: 100%;
-          font-size: 12px;
+          font-size: 12px !important;
           text-align: center;
+          word-break: break-word;
+          color: var(--skin__neutral_1);
         }
       }
     }
-
-    :deep(.van-tabs__wrap) {
-      padding-left: 15px;
-      padding-right: 15px;
-    }
-
-    :deep(.van-tab) {
-      border-bottom: solid 1px #313843;
-    }
-
-    :deep(.van-tabs__line) {
-      bottom: 8px;
-    }
-
-    :deep(.van-tabs__nav--line) {
-      padding-bottom: 7.5px;
+    .login-title-box {
+      font-size: 13px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
     }
 
     .fragment__extra {

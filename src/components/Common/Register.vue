@@ -133,7 +133,7 @@ defineExpose({
       <x-form-item prop="sms_code" v-if="checkInputIsPhone && modelValue.type == 'sms'">
         <x-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
           <template #suffix>
-            <span class="inline-flex items-center" @click="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'text-[#F0C059]']">
+            <span class="inline-flex items-center" @click.stop="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'text-[#F0C059]']">
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
               {{ smsTime > 0 ? `${smsTime}秒后重发` : '获取验证码' }}
             </span>
@@ -147,7 +147,7 @@ defineExpose({
       <x-form-item prop="two_password">
         <x-input prefix="lock" v-model="modelValue.two_password" required placeholder="请再次输入密码" show-eye />
       </x-form-item>
-      <x-form-item prop="currency">
+      <x-form-item prop="currency" v-if="false">
         <x-select required placeholder="请输入密码" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
       </x-form-item>
       <x-form-item prop="invite_code">
@@ -163,9 +163,10 @@ defineExpose({
 
 <style scoped lang="less">
 .register-container {
-  width: 330px;
+  width: 375px;
   color: white;
-  padding-left: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
   font-size: 12px;
   max-height: calc(var(--max-height) - 420px);
   overflow: auto;

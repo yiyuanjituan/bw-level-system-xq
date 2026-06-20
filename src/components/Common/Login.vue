@@ -125,7 +125,7 @@ defineExpose({
           <template #suffix>
             <span
               class="inline-flex items-center"
-              @click="getSmsCode"
+              @click.stop="getSmsCode"
               :class="[smsTime > 0 && isPhone && modelValue.accountType == 'phone' ? '' : 'text-[#F0C059]']"
             >
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
@@ -143,9 +143,10 @@ defineExpose({
 
 <style scoped lang="less">
 .login-container {
-  width: 330px;
+  width: 375px;
   color: white;
-  padding-left: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
   font-size: 12px;
   max-height: calc(var(--max-height) - 420px);
   overflow: auto;
