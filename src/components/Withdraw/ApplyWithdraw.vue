@@ -70,6 +70,7 @@ onMounted(() => updateWallet());
         </div>
       </div>
 
+      <no-wallet-info v-if="selectTypeId == 0" />
       <apply-bank-withdraw v-if="selectTypeId == 1" />
     </div>
   </div>
