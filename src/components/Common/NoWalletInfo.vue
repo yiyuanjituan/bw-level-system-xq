@@ -4,13 +4,46 @@ import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
 import { formatMoney } from '@/utils/common';
 import useAuthStore from '@/store/modules/user';
+import type { XFormRules } from '@/components/X/x-form-context';
+import router from '@/router';
 const walletInfo = ref<any>({});
 const isLoadSuccess = ref(false);
 const showPassword = ref(false);
 const showKeyboard = ref(false);
-const bindWithdrawNum = ref<any>();
+const formModel = ref<any>({
+  bindWithdrawNum: ''
+});
+const formRules = ref<XFormRules>({
+  bindWithdrawNum: [
+    { required: true, message: '提现金额不能为空', trigger: ['input', 'blur'] },
+    {
+      validator: (_rule, value, callback) => {
+        if (value === '' || value === null || value === undefined) {
+          callback();
+          return;
+        }
+
+        const amount = Number(value);
+        if (!/^\d+$/.test(String(value))) {
+          callback(new Error('提现金额只能为整数'));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount <= 0) {
+          callback(new Error('提现金额必须大于0'));
+          return;
+        }
+
+        callback();
+      },
+      trigger: ['input', 'blur']
+    }
+  ]
+});
 const withdrawPassword = ref<any>();
 const auth = useAuthStore();
+function jumpToLiXiBao() {
+  router.push('/home/yuebao')
+}
 
 function init() {
   service.base.recharge.siteWalletInfo({ keyword: 'wallet-no' }).then(res => {
@@ -20,7 +53,7 @@ function init() {
 }
 
 function selectAll() {
-  bindWithdrawNum.value = parseInt(auth.user.money);
+  formModel.value.bindWithdrawNum = parseInt(auth.user.money);
 }
 function handleShowPassword() {
   showKeyboard.value = true
@@ -63,7 +96,7 @@ onMounted(() => init());
         </p>
       </section>
     </div>
-    <x-form class="form-box">
+    <x-form class="form-box" :rule="formRules" :model="formModel">
       <div v-if="!!Number(walletInfo.bind)" class="wallet-info">
         <div class="balance">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="icon" />
@@ -79,11 +112,11 @@ onMounted(() => init());
         </div>
       </div>
       <div class="amountInputWrapper">
-        <x-form-item>
+        <x-form-item prop="bindWithdrawNum">
           <span class="item__label" style="width: auto">
             <span class="item__label-text">提现金额</span>
           </span>
-          <x-input placeholder="最低100，最高50000" v-model="bindWithdrawNum">
+          <x-input placeholder="最低100，最高50000" v-model="formModel.bindWithdrawNum" type="number">
             <template #prefix>
               <div class="prefix-box">￥</div>
             </template>
@@ -102,6 +135,12 @@ onMounted(() => init());
           <van-password-input :mask="!showPassword" :value="withdrawPassword" :focused="showKeyboard" @focus="handleShowPassword" />
         </div>
       </x-form-item>
+      <div class="btn-group">
+        <x-badge class="flex-1" content="年利率88%" position="top-left" :translate-x="false" bg-color="var(--skin__accent_1)">
+          <x-button plain class="!w-[100%]" type="primary" @click="jumpToLiXiBao">赚取利息</x-button>
+        </x-badge>
+        <x-button>确定提现</x-button>
+      </div>
     </x-form>
     <teleport to="body">
       <div class="absolute z-[99999] input-keyboard">
@@ -330,6 +369,16 @@ onMounted(() => init());
   height: 0.5px;
   background: var(--skin__border);
   margin: 10px 0;
+}
+.btn-group {
+  display: flex;
+  position: relative;
+  gap: 10px;
+  padding-top: 10px;
+  :deep(button) {
+    flex: 1;
+    height: 40px;
+  }
 }
 
 

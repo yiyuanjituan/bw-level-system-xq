@@ -21,6 +21,8 @@ interface Props {
   fixed?: boolean;
   position?: BadgePosition;
   bgColor?: string;
+  translateX?: boolean;
+  translateY?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,7 +32,9 @@ const props = withDefaults(defineProps<Props>(), {
   showZero: false,
   fixed: true,
   position: "top-right",
-  bgColor: "var(--skin__accent_2)"
+  bgColor: "var(--skin__accent_2)",
+  translateX: true,
+  translateY: true
 });
 
 const shouldShow = computed(() => {
@@ -53,7 +57,9 @@ const badgeClasses = computed(() => [
   `x-badge--${props.position}`,
   {
     "x-badge--fixed": props.fixed,
-    "x-badge--dot": props.dot
+    "x-badge--dot": props.dot,
+    "x-badge--no-translate-x": !props.translateX,
+    "x-badge--no-translate-y": !props.translateY
   }
 ]);
 
@@ -92,6 +98,9 @@ const badgeStyles = computed(() => ({
   overflow: visible;
   vertical-align: middle;
   position: relative;
+  --badge-translate-x: 0;
+  --badge-translate-y: 0;
+  transform: translate(var(--badge-translate-x), var(--badge-translate-y));
 
   &::before {
     content: "";
@@ -124,43 +133,49 @@ const badgeStyles = computed(() => ({
   &--auto {
     top: 0;
     right: 0;
-    transform: translate(5px, -50%);
+    --badge-translate-x: 5px;
+    --badge-translate-y: -50%;
   }
 
   &--top-left {
     top: 0;
     left: 0;
-    transform: translate(-50%, -50%);
+    --badge-translate-x: -50%;
+    --badge-translate-y: -50%;
   }
 
   &--top-center {
     top: 0;
     left: 50%;
-    transform: translateY(-50%);
+    --badge-translate-y: -50%;
   }
 
   &--top-right {
     top: 0;
     right: 0;
-    transform: translate(50%, -50%);
+    --badge-translate-x: 50%;
+    --badge-translate-y: -50%;
   }
 
   &--bottom-left {
     bottom: 0;
     left: 0;
-    transform: translate(-50%, 50%);
+    --badge-translate-x: -50%;
+    --badge-translate-y: 50%;
   }
 
   &--bottom-right {
     bottom: 0;
     right: 0;
-    transform: translate(50%, 50%);
+    --badge-translate-x: 50%;
+    --badge-translate-y: 50%;
   }
 
   &--dot {
     top: 0;
     right: 0;
-    transform: translate(50%, -50%);
+    --badge-translate-x: 50%;
+    --badge-translate-y: -50%;
     width: 8px;
     min-width: 0;
     height: 8px;
@@ -171,6 +186,14 @@ const badgeStyles = computed(() => ({
 
   &--dot::before {
     display: none;
+  }
+
+  &--no-translate-x {
+    --badge-translate-x: 0;
+  }
+
+  &--no-translate-y {
+    --badge-translate-y: 0;
   }
 }
 
