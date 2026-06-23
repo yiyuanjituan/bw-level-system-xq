@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
         :class="{
           'x-select--focused': isOpen,
           'x-select--disabled': disabled,
-          'x-select--invalid': hasError && !isOpen
+          'x-select--invalid': hasError
         }"
         @click.stop="togglePopover"
       >
@@ -271,7 +271,7 @@ onBeforeUnmount(() => {
           <div class="x-select__value">
             <span class="x-select__placeholder" v-if="!hasDisplayValue">{{ placeholder }}</span>
             <template v-else>
-              <span class="x-select__icon-wrap" v-if="displayIcon">
+              <span class="x-select__icon-wrap" v-if="displayIcon && !($slots.prefix || prefix)">
                 <img :src="displayIcon" class="x-select__icon" alt="." />
               </span>
               <span class="x-select__label">{{ displayLabel }}</span>

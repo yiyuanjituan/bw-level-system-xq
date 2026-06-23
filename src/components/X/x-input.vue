@@ -113,7 +113,7 @@ const wrapperClasses = computed(() => [
     "x-input--focused": isFocused.value,
     "x-input--disabled": props.disabled,
     "x-input--readonly": props.readonly,
-    "x-input--invalid": hasError.value && !isFocused.value
+    "x-input--invalid": hasError.value
   }
 ]);
 
@@ -326,7 +326,7 @@ watch(
     cursor: not-allowed;
   }
 
-  &.x-input--invalid:not(.x-input--focused) {
+  &.x-input--invalid {
     border-color: var(--skin__accent_2);
   }
 

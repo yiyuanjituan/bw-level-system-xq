@@ -124,7 +124,7 @@ defineExpose({
                 <x-input placeholder="请填写真实姓名" prefix="input_icon_zsxm1" v-model="modelValue.realname" type="text" />
               </x-form-item>
               <x-form-item prop="bank_number">
-                <x-input placeholder="请输入银行卡号" prefix="input_icon_card" v-model="modelValue.bank_number" type="number">
+                <x-input placeholder="请输入银行卡号" prefix="input_icon_card" v-model="modelValue.bank_number">
                   <template #suffix>
                     <span class="main-text" @click="copyToBankNumber">粘贴</span>
                   </template>

@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
 import { formatMoney } from '@/utils/common';
 import useAuthStore from '@/store/modules/user';
 import type { XFormRules } from '@/components/X/x-form-context';
 import router from '@/router';
+
+interface Props {
+  walletData?: Record<string, any>;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  walletData: () => ({})
+});
+
 const walletInfo = ref<any>({});
 const isLoadSuccess = ref(false);
 const showPassword = ref(false);
@@ -138,6 +147,7 @@ onMounted(() => init());
         </x-form-item>
       </div>
       <div class="bindAccountSplitLine"></div>
+      {{props.walletData}}
       <x-form-item>
         <span class="item__label" style="width: auto">
           <span class="item__label-text">验证提现密码</span>

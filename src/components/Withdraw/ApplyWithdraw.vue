@@ -2,11 +2,12 @@
 import { onMounted, provide, ref } from 'vue';
 import useAuthStore from '@/store/modules/user';
 import ApplyBankWithdraw from '@/components/Withdraw/ApplyBankWithdraw.vue';
-import { getWithdrawInfo } from '@/api/common';
+import { getSiteWalletInfo, getWithdrawInfo } from '@/api/common';
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
 const userCardList = ref([]);
+const walletInfo = ref({});
 const typeList = [
   { id: 0, name: '钱包' },
   { id: 1, name: '正常提现' },
@@ -31,6 +32,7 @@ const updateWallet = () => {
 
 function init() {
   getWithdrawInfo().then(data => {
+    walletInfo.value = data;
     userCardList.value = data?.cardList ?? [];
   });
 }
@@ -44,7 +46,8 @@ onMounted(() => updateWallet());
       <div class="withdraw-info-main">
         <div class="withdraw-info">
           <div class="left">
-            余额&nbsp;<span class="currency">{{ auth.user.money }}</span>&nbsp;
+            余额&nbsp;<span class="currency">{{ auth.user.money }}</span
+            >&nbsp;
             <div class="refresh-icon" :class="[walletIsLoading ? 'ml-[4px] animate__spin' : 'ml-[4px]']" @click="updateWallet">
               <svg width="1em" height="1em" fill="#F0C059" class="">
                 <use xlink:href="#comm_icon_sx"></use>
@@ -61,12 +64,12 @@ onMounted(() => updateWallet());
           :key="index"
           @click="handleChangeType(item)"
         >
-          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" v-if="item.id == 0" class="no-icon">
+          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" v-if="item.id == 0" class="no-icon" />
           {{ item.name }}
         </div>
       </div>
 
-      <no-wallet-info v-if="selectTypeId == 0" />
+      <no-wallet-info v-if="selectTypeId == 0" :walletData="walletInfo" />
       <apply-bank-withdraw v-if="selectTypeId == 1" />
     </div>
   </div>
