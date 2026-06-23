@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
 import { formatMoney } from '@/utils/common';
@@ -42,7 +42,7 @@ const formRules = ref<XFormRules>({
 const withdrawPassword = ref<any>();
 const auth = useAuthStore();
 function jumpToLiXiBao() {
-  router.push('/home/yuebao')
+  router.push('/home/yuebao');
 }
 
 function init() {
@@ -56,10 +56,21 @@ function selectAll() {
   formModel.value.bindWithdrawNum = parseInt(auth.user.money);
 }
 function handleShowPassword() {
-  showKeyboard.value = true
+  showKeyboard.value = true;
 }
 function hideKeyboard() {
-  showKeyboard.value = false
+  showKeyboard.value = false;
+}
+function onKeyboardInput() {
+  nextTick(() => {
+    if (withdrawPassword.value && withdrawPassword.value.length >= 6) {
+      hideKeyboard();
+    }
+  });
+}
+
+function handleSubmit() {
+
 }
 
 onMounted(() => init());
@@ -139,17 +150,12 @@ onMounted(() => init());
         <x-badge class="flex-1" content="年利率88%" position="top-left" :translate-x="false" bg-color="var(--skin__accent_1)">
           <x-button plain class="!w-[100%]" type="primary" @click="jumpToLiXiBao">赚取利息</x-button>
         </x-badge>
-        <x-button>确定提现</x-button>
+        <x-button @click="handleSubmit">确定提现</x-button>
       </div>
     </x-form>
     <teleport to="body">
       <div class="absolute z-[99999] input-keyboard">
-        <van-number-keyboard
-          :maxlength="6"
-          v-model="withdrawPassword"
-          :show="showKeyboard"
-          @blur="hideKeyboard"
-        />
+        <van-number-keyboard :maxlength="6" v-model="withdrawPassword" :show="showKeyboard" @blur="hideKeyboard" @input="onKeyboardInput" />
       </div>
     </teleport>
   </template>
@@ -380,7 +386,6 @@ onMounted(() => init());
     height: 40px;
   }
 }
-
 
 .input-keyboard {
   :deep(.van-number-keyboard) {

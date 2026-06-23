@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Schema from "async-validator";
-import { computed, provide, ref } from "vue";
+import { computed, provide, ref, watch } from "vue";
 import {
   X_FORM_CONTEXT_KEY,
   type XFormErrors,
@@ -26,6 +26,12 @@ const props = withDefaults(defineProps<Props>(), {
 const errors = ref<XFormErrors>({});
 const rulesRef = computed<XFormRules>(() => props.rule ?? {});
 const modelRef = computed<XFormModel>(() => props.model ?? {});
+const modelSnapshot = computed<XFormModel>(() => {
+  return Object.keys(rulesRef.value).reduce<XFormModel>((result, field) => {
+    result[field] = modelRef.value?.[field];
+    return result;
+  }, {});
+});
 
 function toFieldList(fields?: string | string[]) {
   if (!fields) return Object.keys(rulesRef.value);
@@ -109,6 +115,17 @@ async function validate(fields?: string | string[]) {
     throw error;
   }
 }
+
+watch(
+  modelSnapshot,
+  (nextModel, prevModel) => {
+    Object.keys(nextModel).forEach((field) => {
+      if (nextModel[field] === prevModel?.[field]) return;
+      if (!errors.value[field]) return;
+      validateField(field).catch(() => {});
+    });
+  }
+);
 
 provide(X_FORM_CONTEXT_KEY, {
   rules: rulesRef,
