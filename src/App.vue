@@ -16,12 +16,14 @@
   <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
   <dialog-tip :ref="setRefs('dialogTipRef')" />
   <football-dialog />
+  <redpack-dialog />
 </template>
 
 <script setup lang="ts">
 import { systemTransitionName } from './hooks/useTransition';
 import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
+import RedpackDialog from '@/components/Dialog/RedpackDialog.vue';
 import { onMounted, onUnmounted } from 'vue';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';

@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { onMounted, provide, ref } from "vue";
-import useAuthStore from "@/store/modules/user";
-import ApplyBankWithdraw from "@/components/Withdraw/ApplyBankWithdraw.vue";
-import { getWithdrawInfo } from "@/api/common";
+import { onMounted, provide, ref } from 'vue';
+import useAuthStore from '@/store/modules/user';
+import ApplyBankWithdraw from '@/components/Withdraw/ApplyBankWithdraw.vue';
+import { getWithdrawInfo } from '@/api/common';
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
 const userCardList = ref([]);
 const typeList = [
-  { id: 0, name: "钱包" },
-  { id: 1, name: "正常提现" },
-  { id: 2, name: "转为数字货币" },
-  { id: 3, name: "三方钱包" }
+  { id: 0, name: '钱包' },
+  { id: 1, name: '正常提现' },
+  { id: 2, name: '转为数字货币' },
+  { id: 3, name: '三方钱包' }
 ];
-const selectTypeId = ref(1);
-provide("userCardList", userCardList);
+const selectTypeId = ref(0);
+provide('userCardList', userCardList);
 
 function handleChangeType(item) {
   selectTypeId.value = item.id;
@@ -44,13 +44,8 @@ onMounted(() => updateWallet());
       <div class="withdraw-info-main">
         <div class="withdraw-info">
           <div class="left">
-            余额&nbsp;<span class="currency">{{ auth.user.money }}</span
-            >&nbsp;
-            <div
-              class="refresh-icon"
-              :class="[walletIsLoading ? 'ml-[4px] animate__spin' : 'ml-[4px]']"
-              @click="updateWallet"
-            >
+            余额&nbsp;<span class="currency">{{ auth.user.money }}</span>&nbsp;
+            <div class="refresh-icon" :class="[walletIsLoading ? 'ml-[4px] animate__spin' : 'ml-[4px]']" @click="updateWallet">
               <svg width="1em" height="1em" fill="#F0C059" class="">
                 <use xlink:href="#comm_icon_sx"></use>
               </svg>
@@ -66,6 +61,7 @@ onMounted(() => updateWallet());
           :key="index"
           @click="handleChangeType(item)"
         >
+          <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" v-if="item.id == 0" class="no-icon">
           {{ item.name }}
         </div>
       </div>
@@ -134,6 +130,12 @@ onMounted(() => updateWallet());
         justify-content: center;
         min-width: 50px;
         font-size: 11px;
+        .no-icon {
+          width: 20px;
+          height: 10px;
+          font-size: 12px;
+          margin-right: 2px;
+        }
 
         &:last-child {
           margin: 0;

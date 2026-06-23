@@ -3,14 +3,30 @@ import { onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
 import { formatMoney } from '@/utils/common';
+import useAuthStore from '@/store/modules/user';
 const walletInfo = ref<any>({});
 const isLoadSuccess = ref(false);
+const showPassword = ref(false);
+const showKeyboard = ref(false);
+const bindWithdrawNum = ref<any>();
+const withdrawPassword = ref<any>();
+const auth = useAuthStore();
 
 function init() {
   service.base.recharge.siteWalletInfo({ keyword: 'wallet-no' }).then(res => {
     isLoadSuccess.value = true;
     walletInfo.value = res;
   });
+}
+
+function selectAll() {
+  bindWithdrawNum.value = parseInt(auth.user.money);
+}
+function handleShowPassword() {
+  showKeyboard.value = true
+}
+function hideKeyboard() {
+  showKeyboard.value = false
 }
 
 onMounted(() => init());
@@ -63,12 +79,40 @@ onMounted(() => init());
         </div>
       </div>
       <div class="amountInputWrapper">
-
+        <x-form-item>
+          <span class="item__label" style="width: auto">
+            <span class="item__label-text">提现金额</span>
+          </span>
+          <x-input placeholder="最低100，最高50000" v-model="bindWithdrawNum">
+            <template #prefix>
+              <div class="prefix-box">￥</div>
+            </template>
+            <template #suffix>
+              <div class="suffix-box" @click.stop="selectAll">全部</div>
+            </template>
+          </x-input>
+        </x-form-item>
       </div>
+      <div class="bindAccountSplitLine"></div>
       <x-form-item>
-        <x-input />
+        <span class="item__label" style="width: auto">
+          <span class="item__label-text">验证提现密码</span>
+        </span>
+        <div class="password-input">
+          <van-password-input :mask="!showPassword" :value="withdrawPassword" :focused="showKeyboard" @focus="handleShowPassword" />
+        </div>
       </x-form-item>
     </x-form>
+    <teleport to="body">
+      <div class="absolute z-[99999] input-keyboard">
+        <van-number-keyboard
+          :maxlength="6"
+          v-model="withdrawPassword"
+          :show="showKeyboard"
+          @blur="hideKeyboard"
+        />
+      </div>
+    </teleport>
   </template>
 </template>
 
@@ -169,6 +213,42 @@ onMounted(() => init());
 
 .form-box {
   padding: 10px;
+  .password-input {
+    box-sizing: border-box;
+    --van-password-input-margin: 0.5px;
+    --van-password-input-background: transparent;
+    --van-border-color: var(--skin__neutral_3);
+    --van-password-input-radius: 7px;
+    --van-password-input-dot-color: #fff;
+    --van-password-input-text-color: white;
+    --van-password-input-dot-size: 13px;
+    --van-password-input-cursor-width: 1.5px;
+    --van-password-input-cursor-color: white;
+    border: solid 0.5px var(--van-border-color);
+    border-radius: var(--van-password-input-radius);
+
+    :deep(.van-password-input) {
+      border-radius: var(--van-password-input-radius);
+      overflow: hidden;
+    }
+    :deep(.van-hairline--surround) {
+      &::after {
+        border-width: 0;
+      }
+    }
+    :deep(.van-password-input__item--focus) {
+      border: solid 1px var(--skin__primary);
+    }
+    :deep(.van-password-input__item) {
+      &:first-child {
+        border-radius: var(--van-password-input-radius) 0 0 var(--van-password-input-radius);
+      }
+      &:last-child {
+        border-radius: 0 var(--van-password-input-radius) var(--van-password-input-radius) 0;
+      }
+      background: var(--skin__bg_2);
+    }
+  }
 }
 
 .wallet-info {
@@ -213,7 +293,58 @@ onMounted(() => init());
   }
 }
 
+.item__label {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  font-size: 13px;
+  .item__label-text {
+    word-wrap: break-word;
+    color: var(--skin__lead);
+  }
+}
 .amountInputWrapper {
+  .prefix-box {
+    width: 28px;
+    padding-right: 10px;
+    color: var(--skin__lead);
+    font-size: 12px !important;
+    display: inline-block;
+    text-align: center;
+    line-height: 1;
+  }
+  .suffix-box {
+    color: var(--skin__primary);
+    font-size: 12px;
+    padding-left: 10px;
+  }
+  :deep(.x-input__field) {
+    font-size: 15px;
+    &::placeholder {
+      font-size: 12px !important;
+    }
+  }
+}
+.bindAccountSplitLine {
+  height: 0.5px;
+  background: var(--skin__border);
+  margin: 10px 0;
+}
 
+
+.input-keyboard {
+  :deep(.van-number-keyboard) {
+    --van-number-keyboard-background: #000;
+    --van-number-keyboard-key-background: #191919;
+    --van-number-keyboard-key-height: 46px;
+    --van-number-keyboard-key-font-size: 21px;
+  }
+  :deep(.van-key__wrapper) {
+    color: #bcbcbc;
+  }
+  :deep(.van-key--active) {
+    background: #191919 !important;
+  }
 }
 </style>
