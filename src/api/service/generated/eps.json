@@ -109,6 +109,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/applyNoWalletWithdraw",
+        "summary": "发起No钱包的提现申请"
+      },
+      {
+        "method": "post",
         "path": "/applyWithdraw",
         "summary": "发起提现申请"
       },

@@ -876,6 +876,11 @@ declare namespace Eps {
 
 	interface BaseWithdraw {
 		/**
+			 * 发起No钱包的提现申请
+			 */
+			applyNoWalletWithdraw(data?: any): Promise<any>;
+
+		/**
 			 * 发起提现申请
 			 */
 			applyWithdraw(data?: any): Promise<any>;
@@ -888,12 +893,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { applyWithdraw: string; records: string; };
+		permission: { applyNoWalletWithdraw: string; applyWithdraw: string; records: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { applyWithdraw: boolean; records: boolean; };
+		_permission: { applyNoWalletWithdraw: boolean; applyWithdraw: boolean; records: boolean; };
 
 		request: Service["request"];
 	}

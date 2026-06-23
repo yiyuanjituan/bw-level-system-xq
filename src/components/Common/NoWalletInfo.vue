@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
 import { formatMoney } from '@/utils/common';
 import useAuthStore from '@/store/modules/user';
 import type { XFormRules } from '@/components/X/x-form-context';
 import router from '@/router';
+import { showCustomToast } from '@/hooks/useCommon';
 
 interface Props {
   walletData?: Record<string, any>;
@@ -19,6 +20,8 @@ const walletInfo = ref<any>({});
 const isLoadSuccess = ref(false);
 const showPassword = ref(false);
 const showKeyboard = ref(false);
+const withdrawLoading = ref(false);
+const formRef = ref<{ validate: () => Promise<void> } | null>(null);
 const formModel = ref<any>({
   bindWithdrawNum: ''
 });
@@ -37,8 +40,16 @@ const formRules = ref<XFormRules>({
           callback(new Error('提现金额只能为整数'));
           return;
         }
-        if (!Number.isInteger(amount) || amount <= 0) {
-          callback(new Error('提现金额必须大于0'));
+        if (!Number.isInteger(amount) || amount < Number(props.walletData.noWalletInfo?.min)) {
+          callback(new Error(`提现金额必须大于${Number(props.walletData.noWalletInfo?.min)}`));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount > Number(auth.user.money)) {
+          callback(new Error(`余额不足`));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount > Number(props.walletData.noWalletInfo?.max)) {
+          callback(new Error(`提现金额必须小于${Number(props.walletData.noWalletInfo?.max)}`));
           return;
         }
 
@@ -78,8 +89,29 @@ function onKeyboardInput() {
   });
 }
 
-function handleSubmit() {
-
+async function handleSubmit() {
+  try {
+    await formRef.value?.validate();
+    withdrawLoading.value = true;
+    // No钱包提现
+    service.base.withdraw
+      .applyNoWalletWithdraw({
+        money: formModel.value.bindWithdrawNum,
+        address: walletInfo.value.qAccount,
+        password: withdrawPassword.value
+      })
+      .finally(() => (withdrawLoading.value = false))
+      .then(() => {
+        showCustomToast({ type: 'success', message: '提现成功, 请等待审核' });
+        formModel.value.bindWithdrawNum = void 0;
+        auth.updateInfo();
+        setTimeout(() => {
+          router.replace('/home/withdraw?active=3');
+        }, 500);
+      });
+  } catch {
+    return;
+  }
 }
 
 onMounted(() => init());
@@ -116,7 +148,7 @@ onMounted(() => init());
         </p>
       </section>
     </div>
-    <x-form class="form-box" :rule="formRules" :model="formModel">
+    <x-form ref="formRef" class="form-box" :rule="formRules" :model="formModel">
       <div v-if="!!Number(walletInfo.bind)" class="wallet-info">
         <div class="balance">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="icon" />
@@ -136,7 +168,11 @@ onMounted(() => init());
           <span class="item__label" style="width: auto">
             <span class="item__label-text">提现金额</span>
           </span>
-          <x-input placeholder="最低100，最高50000" v-model="formModel.bindWithdrawNum" type="number">
+          <x-input
+            :placeholder="`最低${Number(walletData.noWalletInfo?.min)}，最高${Number(walletData.noWalletInfo?.max)}`"
+            v-model="formModel.bindWithdrawNum"
+            type="number"
+          >
             <template #prefix>
               <div class="prefix-box">￥</div>
             </template>
@@ -147,7 +183,6 @@ onMounted(() => init());
         </x-form-item>
       </div>
       <div class="bindAccountSplitLine"></div>
-      {{props.walletData}}
       <x-form-item>
         <span class="item__label" style="width: auto">
           <span class="item__label-text">验证提现密码</span>
@@ -160,7 +195,7 @@ onMounted(() => init());
         <x-badge class="flex-1" content="年利率88%" position="top-left" :translate-x="false" bg-color="var(--skin__accent_1)">
           <x-button plain class="!w-[100%]" type="primary" @click="jumpToLiXiBao">赚取利息</x-button>
         </x-badge>
-        <x-button @click="handleSubmit">确定提现</x-button>
+        <x-button @click="handleSubmit" :loading="withdrawLoading">确定提现</x-button>
       </div>
     </x-form>
     <teleport to="body">

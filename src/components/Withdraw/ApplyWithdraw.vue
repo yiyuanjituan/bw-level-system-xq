@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { onMounted, provide, ref } from 'vue';
+import { computed, onMounted, provide, ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import useAuthStore from '@/store/modules/user';
+import useWithdrawStore from '@/store/modules/withdraw';
 import ApplyBankWithdraw from '@/components/Withdraw/ApplyBankWithdraw.vue';
-import { getSiteWalletInfo, getWithdrawInfo } from '@/api/common';
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
-const userCardList = ref([]);
-const walletInfo = ref({});
-const typeList = [
-  { id: 0, name: '钱包' },
-  { id: 1, name: '正常提现' },
-  { id: 2, name: '转为数字货币' },
-  { id: 3, name: '三方钱包' }
-];
+const withdrawStore = useWithdrawStore();
+const { withdrawInfo, userCardList } = storeToRefs(withdrawStore);
+const typeList = computed(() => {
+  return withdrawStore.withdrawInfo.isHaveNo ? [
+    { id: 0, name: '钱包' },
+    { id: 1, name: '正常提现' },
+    { id: 2, name: '转为数字货币' },
+    { id: 3, name: '三方钱包' }
+  ] : [
+    { id: 1, name: '正常提现' },
+    { id: 2, name: '转为数字货币' },
+    { id: 3, name: '三方钱包' }
+  ];
+})
 const selectTypeId = ref(0);
 provide('userCardList', userCardList);
 
@@ -23,19 +30,11 @@ function handleChangeType(item) {
 
 const updateWallet = () => {
   walletIsLoading.value = true;
-  auth.updateInfo();
-  init();
-  setTimeout(() => {
+  Promise.allSettled([auth.updateInfo(), withdrawStore.updateWithdrawInfo()]).finally(() => {
     walletIsLoading.value = false;
-  }, 1000);
-};
-
-function init() {
-  getWithdrawInfo().then(data => {
-    walletInfo.value = data;
-    userCardList.value = data?.cardList ?? [];
+    selectTypeId.value = withdrawStore.withdrawInfo.isHaveNo ? 0 : 1
   });
-}
+};
 
 onMounted(() => updateWallet());
 </script>
@@ -69,7 +68,7 @@ onMounted(() => updateWallet());
         </div>
       </div>
 
-      <no-wallet-info v-if="selectTypeId == 0" :walletData="walletInfo" />
+      <no-wallet-info v-if="selectTypeId == 0" :walletData="withdrawInfo" />
       <apply-bank-withdraw v-if="selectTypeId == 1" />
     </div>
   </div>
