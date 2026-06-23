@@ -4,6 +4,7 @@ import { desensitizeWithLodash, showCustomToast } from "@/hooks/useCommon";
 
 import useAuthStore from "@/store/modules/user";
 import { service } from "@/api/service";
+import router from '@/router';
 
 const auth = useAuthStore();
 const canWithdraw = computed(() => {
@@ -38,6 +39,10 @@ function init() {
 
 function withdrawAll() {
   formData.value.money = Number(auth.user.money) ?? 0;
+}
+
+function jumpToAddCard() {
+  router.push('/home/withdraw?active=10')
 }
 
 watch(
@@ -97,7 +102,7 @@ function handleApplyWithdraw() {
         </x-input>
       </x-form-item>
       <x-form-item v-if="!formData.card_id">
-        <x-input readonly placeholder="添加提现账户" v-model="formData.money">
+        <x-input readonly placeholder="添加提现账户" v-model="formData.money" @click="jumpToAddCard">
           <template #prefix>
             <svg-icon name="img_tx_tjzh" class-name="text-[25px] text-[#F4F0EC]" />
           </template>

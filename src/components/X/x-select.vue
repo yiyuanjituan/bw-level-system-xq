@@ -374,9 +374,9 @@ onBeforeUnmount(() => {
   }
 
   &__wrap {
-    flex: 1 1 0;
+    flex: 1;
     height: 100%;
-    line-height: 35px;
+    line-height: 100%;
     display: flex;
     overflow: hidden;
     min-width: 0;
