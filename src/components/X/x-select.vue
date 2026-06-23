@@ -376,8 +376,8 @@ onBeforeUnmount(() => {
   &__wrap {
     flex: 1;
     height: 100%;
-    line-height: 100%;
     display: flex;
+    align-items: center;
     overflow: hidden;
     min-width: 0;
   }
@@ -386,6 +386,7 @@ onBeforeUnmount(() => {
     color: var(--skin__accent_2);
     width: 6px;
     flex-shrink: 0;
+    line-height: 1;
   }
 
   &__value {
@@ -398,6 +399,7 @@ onBeforeUnmount(() => {
 
   &__placeholder {
     color: var(--skin__neutral_2);
+    line-height: 1;
   }
 
   &__icon-wrap {
@@ -416,6 +418,7 @@ onBeforeUnmount(() => {
   &__label {
     color: var(--skin__lead);
     font-size: 11px;
+    line-height: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -532,4 +535,3 @@ onBeforeUnmount(() => {
   margin-left: 5px;
 }
 </style>
-
