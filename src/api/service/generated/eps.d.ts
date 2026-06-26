@@ -760,14 +760,19 @@ declare namespace Eps {
 			rechargeNotify(data?: any): Promise<any>;
 
 		/**
+			 * 提现回调消息通知
+			 */
+			withdrawNotify(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { rechargeNotify: string; };
+		permission: { rechargeNotify: string; withdrawNotify: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { rechargeNotify: boolean; };
+		_permission: { rechargeNotify: boolean; withdrawNotify: boolean; };
 
 		request: Service["request"];
 	}
@@ -1415,5 +1420,5 @@ declare namespace Eps {
 		};
 	};
 
-	type DictKey = "brand" | "occupation" | "smsApi" | "gameApi" | "gameClassify" | "specialActivity" | "recharge_channel" | "site_wallet_keyword" | "activityTaskType";
+	type DictKey = "brand" | "occupation" | "smsApi" | "gameApi" | "gameClassify" | "specialActivity" | "recharge_channel" | "site_wallet_keyword" | "activityTaskType" | "withdraw_channel";
 }

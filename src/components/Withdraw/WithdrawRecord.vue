@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import dayjs from "dayjs";
-import { service } from "@/api/service";
-import Copy from "@/components/Common/Copy.vue";
-import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
-import type { AccountTimeRange, SelectOption as ReportSelectOption } from "@/components/HomeReport/types";
-import { desensitizeWithLodash } from "@/hooks/useCommon";
-import UiEmpty from "@/components/UI/empty.vue";
-import UiLoading from "@/components/UI/loading.vue";
+import { computed, onMounted, ref, watch } from 'vue';
+import dayjs from 'dayjs';
+import { service } from '@/api/service';
+import Copy from '@/components/Common/Copy.vue';
+import AccountTimeFilter from '@/components/HomeReport/AccountTimeFilter.vue';
+import type { AccountTimeRange, SelectOption as ReportSelectOption } from '@/components/HomeReport/types';
+import { desensitizeWithLodash } from '@/hooks/useCommon';
+import UiEmpty from '@/components/UI/empty.vue';
+import UiLoading from '@/components/UI/loading.vue';
 
 type WithdrawStatusOption = ReportSelectOption & {
   value: string | number;
@@ -34,18 +34,18 @@ interface WithdrawRecordState {
 }
 
 const withdrawTypeIconMap: Record<number, string> = {
-  0: "/siteadmin/pay-icon/icon_bank_nromal.png",
-  1: "/siteadmin/pay-icon/icon_normal_zfb.png",
-  2: "/siteadmin/pay-icon/icon_szhb_xnb.png",
-  3: "/siteadmin/pay-icon/icon_wallet_normal.png"
+  0: '/siteadmin/pay-icon/icon_bank_nromal.png',
+  1: '/siteadmin/pay-icon/icon_normal_zfb.png',
+  2: '/siteadmin/pay-icon/icon_szhb_xnb.png',
+  3: '/siteadmin/pay-icon/icon_wallet_normal.png'
 };
 
 const statusOptions: WithdrawStatusOption[] = [
-  { label: "全部状态", value: 0 },
-  { label: "审核中", value: 1 },
-  { label: "出款中", value: 2 },
-  { label: "提现成功", value: 3 },
-  { label: "提现拒绝", value: 4 }
+  { label: '全部状态', value: 0 },
+  { label: '审核中', value: 1 },
+  { label: '出款中', value: 2 },
+  { label: '提现成功', value: 3 },
+  { label: '提现拒绝', value: 4 }
 ];
 
 const timeRange = ref<AccountTimeRange>(createTodayRange());
@@ -60,21 +60,21 @@ let latestRequestId = 0;
 
 const hasListData = computed(() => recordState.value.list.length > 0);
 const emptyStateText = computed(() => {
-  if (timeRange.value.mode === "custom") {
-    return "所选时间暂无内容";
+  if (timeRange.value.mode === 'custom') {
+    return '所选时间暂无内容';
   }
 
   return `${timeRange.value.label}暂无内容`;
 });
 
 function createTodayRange(): AccountTimeRange {
-  const today = dayjs().format("YYYY-MM-DD");
+  const today = dayjs().format('YYYY-MM-DD');
 
   return {
-    mode: "today",
-    label: "今日",
-    startTime: dayjs(today).startOf("day").unix(),
-    endTime: dayjs(today).endOf("day").unix(),
+    mode: 'today',
+    label: '今日',
+    startTime: dayjs(today).startOf('day').unix(),
+    endTime: dayjs(today).endOf('day').unix(),
     startDate: today,
     endDate: today
   };
@@ -90,39 +90,39 @@ function formatAmount(value: unknown) {
 }
 
 function getWithdrawIcon(item: WithdrawRecordItem) {
-  return withdrawTypeIconMap[Number(item?.type)] ?? "/siteadmin/pay-icon/icon_wallet_normal.png";
+  return withdrawTypeIconMap[Number(item?.type)] ?? '/siteadmin/pay-icon/icon_wallet_normal.png';
 }
 
 function getWithdrawTitle(item: WithdrawRecordItem) {
-  const bankName = String(item?.bank_name ?? "").trim();
-  return bankName ? `提现到${bankName}` : "提现申请";
+  const bankName = String(item?.bank_name ?? '').trim();
+  return bankName ? `提现到${bankName}` : '提现申请';
 }
 
 function getWithdrawAccount(item: WithdrawRecordItem) {
-  const bankNumber = String(item?.bank_number ?? "").trim();
-  return bankNumber ? desensitizeWithLodash(bankNumber) : "";
+  const bankNumber = String(item?.bank_number ?? '').trim();
+  return bankNumber ? desensitizeWithLodash(bankNumber) : '';
 }
 
 function getWithdrawAmount(item: WithdrawRecordItem) {
-  return `-${formatAmount(item?.money).replace("-", "")}`;
+  return `-${formatAmount(item?.money).replace('-', '')}`;
 }
 
 function getWithdrawStatusText(item: WithdrawRecordItem) {
   const payStatus = Number(item?.pay_status);
 
-  if (payStatus === 1) return "审核中";
-  if (payStatus === 2) return "出款中";
-  if (payStatus === 3) return "提现成功";
-  if (payStatus === 4) return "提现拒绝";
-  return "处理中";
+  if (payStatus === 1) return '审核中';
+  if (payStatus === 2) return '出款中';
+  if (payStatus === 3) return '提现成功';
+  if (payStatus === 4) return '提现拒绝';
+  return '处理中';
 }
 
 function getWithdrawStatusClass(item: WithdrawRecordItem) {
   const payStatus = Number(item?.pay_status);
 
-  if (payStatus === 3) return "success";
-  if (payStatus === 4) return "danger";
-  return "pending";
+  if (payStatus === 3) return 'success';
+  if (payStatus === 4) return 'danger';
+  return 'pending';
 }
 
 function getWithdrawRemark(item: WithdrawRecordItem) {
@@ -134,19 +134,19 @@ function getWithdrawRemark(item: WithdrawRecordItem) {
     return `收款人: ${item.real_name}`;
   }
 
-  return "";
+  return '';
 }
 
 function handleSeeMore() {
-  const yesterday = dayjs().subtract(1, "day");
+  const yesterday = dayjs().subtract(1, 'day');
 
   timeRange.value = {
-    mode: "yesterday",
-    label: "昨日",
-    startTime: yesterday.startOf("day").unix(),
-    endTime: yesterday.endOf("day").unix(),
-    startDate: yesterday.format("YYYY-MM-DD"),
-    endDate: yesterday.format("YYYY-MM-DD")
+    mode: 'yesterday',
+    label: '昨日',
+    startTime: yesterday.startOf('day').unix(),
+    endTime: yesterday.endOf('day').unix(),
+    startDate: yesterday.format('YYYY-MM-DD'),
+    endDate: yesterday.format('YYYY-MM-DD')
   };
 }
 
@@ -196,13 +196,7 @@ onMounted(() => {
         <AccountTimeFilter v-model="timeRange" />
 
         <div class="filter-select">
-          <x-select
-            v-model="statusFilterValue"
-            :options="statusOptions"
-            value-key="value"
-            placement="bottom"
-            fit-option-width
-          />
+          <x-select v-model="statusFilterValue" :options="statusOptions" value-key="value" placement="bottom" fit-option-width />
         </div>
       </div>
 
@@ -227,34 +221,40 @@ onMounted(() => {
 
       <div v-else-if="hasListData" class="withdraw-list">
         <div v-for="item in recordState.list" :key="item.id" class="withdraw-item">
-          <div class="item-main">
-            <div class="flex items-center">
-              <img class="item-icon" :src="getWithdrawIcon(item)" alt="" />
-              <div class="item-title">
-                {{ getWithdrawTitle(item) }}
-                <span v-if="getWithdrawAccount(item)" class="item-account">({{ getWithdrawAccount(item) }})</span>
+          <div class="cell-content">
+            <div class="content">
+              <div class="name">
+                <div class="logo-box">
+                  <img v-if="item.bank_icon" :src="item.bank_icon" alt="" srcset="" />
+                  <div class="desc">
+                    <span class="withdraw-record-account-name">提现到{{ item.bank_name }}</span>
+                    <span dir="ltr">({{ desensitizeWithLodash(item.bank_number) }})</span>
+                  </div>
+                </div>
+                <div class="time">
+                  <span class="create-time">{{ dayjs(item.createTime).format('YYYY/MM/DD HH:mm:ss') }}</span>
+                  <span class="no">{{ item.order_sn }}</span>
+                  <span class="ml-[5px] leading-[100%] mt-[1px]">
+                    <copy class-name="text-[9px]" :text="item.order_sn" />
+                  </span>
+                </div>
+              </div>
+              <div class="right">
+                <p class="money">{{ Number(0 - Number(item.money)).toFixed(2) }}</p>
+                <p class="status pending" v-if="item.pay_status == 1">审核中</p>
+                <p class="status pending" v-if="item.pay_status == 2">出款中</p>
+                <p class="status success" v-if="item.pay_status == 3">提现成功</p>
+                <p class="status failed" v-if="item.pay_status == 4">拒绝出款</p>
+                <p class="status cancel" v-if="item.pay_status == 100">提现取消</p>
               </div>
             </div>
-            <div class="item-info">
-              <span>{{ item.createTime }}</span>
-              <span class="order-no">{{ item.order_sn }}</span>
-              <copy :text="item.order_sn" class="text-[14px]" />
-            </div>
-
-            <div v-if="getWithdrawRemark(item)" class="item-remark">
-              {{ getWithdrawRemark(item) }}
-            </div>
+            <span class="arrows">
+              <svg-icon name="arrow-back" class="text-[12px]" />
+            </span>
           </div>
-
-          <div class="item-right">
-            <div class="item-money">{{ getWithdrawAmount(item) }}</div>
-            <div class="item-status" :class="getWithdrawStatusClass(item)">
-              {{ getWithdrawStatusText(item) }}
-            </div>
-          </div>
-
-          <div class="item-arrow">
-            <svg-icon name="arrow-back" class="rotate-[180deg] text-[12px]" />
+          <div class="remark" v-if="item.remark">
+            <span class="label">备注</span>
+            <span class="front-remark">{{ item.remark }}</span>
           </div>
         </div>
       </div>
@@ -280,13 +280,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--skin__bg_1);
-
   .toolbar {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
     padding: 10px;
+    position: relative;
 
     &__filters {
       display: flex;
@@ -305,6 +305,12 @@ onMounted(() => {
       align-items: flex-end;
       gap: 4px;
       padding-top: 1px;
+
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      text-align: right;
+      transform: translateY(-50%);
     }
 
     &__summary-label {
@@ -318,7 +324,7 @@ onMounted(() => {
       align-items: center;
       gap: 4px;
       color: var(--skin__lead);
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1;
       font-weight: 700;
     }
@@ -332,7 +338,6 @@ onMounted(() => {
       }
     }
   }
-
   .filter-select {
     width: 83px;
     flex-shrink: 0;
@@ -366,20 +371,17 @@ onMounted(() => {
       font-size: 10px;
     }
   }
-
   .content-area {
     flex: 1;
     min-height: 0;
     display: flex;
   }
-
   .content-state {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-
   .withdraw-list {
     width: 100%;
     padding: 0 10px;
@@ -387,122 +389,118 @@ onMounted(() => {
   }
 
   .withdraw-item {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    height: 64px;
-    padding: 9px 34px 8px 9px;
-    box-sizing: border-box;
+    min-height: 62.5px;
+    border-radius: 5px;
+    padding: 10px;
     color: var(--skin__lead);
+
+    .cell-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .content {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .name {
+          .logo-box {
+            display: flex;
+            align-items: center;
+            img {
+              width: 24px;
+              height: 24px;
+              margin-right: 10px;
+              border-radius: 5px;
+            }
+            .desc {
+              max-width: 225px;
+              color: var(--skin__lead);
+              font-size: 11px;
+              .withdraw-record-account-name {
+                display: inline;
+              }
+              span:not(.withdraw-record-account-name) {
+                color: var(--skin__neutral_2);
+              }
+            }
+          }
+          .time {
+            display: flex;
+            align-items: center;
+            color: var(--skin__neutral_2);
+            font-size: 9px;
+            margin-top: 5px;
+            .create-time {
+              white-space: nowrap;
+              line-height: 12px;
+            }
+            .no {
+              margin-left: 5px;
+              line-height: 12px;
+            }
+          }
+        }
+        .right {
+          text-align: right;
+          line-height: 12px;
+          .money {
+            color: var(--skin__lead);
+            font-weight: 400;
+            font-size: 12px;
+          }
+          .status {
+            margin-top: 6px;
+            font-size: 11px;
+            max-width: 120px;
+            text-align: right;
+            &.success {
+              color: var(--skin__accent_1);
+            }
+            &.pending {
+              color: var(--skin__accent_3);
+            }
+            &.failed {
+              color: var(--skin__accent_2);
+            }
+            &.cancel {
+              color: var(--skin__neutral_2);
+            }
+          }
+        }
+      }
+      .arrows {
+        flex: 1;
+        margin-left: 10px;
+        font-size: 13px;
+        transform: rotate(180deg);
+        color: var(--skin__neutral_2);
+      }
+    }
+    .remark {
+      display: flex;
+      align-items: center;
+      font-size: 9px;
+      color: var(--skin__lead);
+      margin-top: 2.5px;
+      max-width: 312.5px;
+      height: 14px;
+      line-height: 1;
+      .label {
+        color: var(--skin__neutral_2);
+        margin-right: 2.5px;
+      }
+      .front-remark {
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
 
     &:nth-child(odd) {
       background: var(--skin__bg_2);
       border-radius: 5px;
-    }
-
-    .item-icon {
-      flex: none;
-      width: 26px;
-      height: 26px;
-      border-radius: 4px;
-      object-fit: cover;
-    }
-
-    .item-main {
-      flex: 1;
-      min-width: 0;
-      padding-right: 8px;
-    }
-
-    .item-title {
-      height: 20px;
-      line-height: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--skin__lead);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .item-account {
-      color: var(--skin__neutral_2);
-    }
-
-    .item-info {
-      display: flex;
-      align-items: center;
-      height: 18px;
-      margin-top: 3px;
-      font-size: 10px;
-      color: var(--skin__neutral_2);
-      white-space: nowrap;
-      overflow: hidden;
-
-      .order-no {
-        margin-left: 5px;
-      }
-
-      :deep(.copy-icon) {
-        flex: none;
-        margin-left: 4px;
-        font-size: 11px;
-        color: var(--skin__primary);
-      }
-    }
-
-    .item-remark {
-      margin-top: 3px;
-      font-size: 11.5px;
-      line-height: 16px;
-      color: var(--skin__neutral_1);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .item-right {
-      flex: none;
-      width: 72px;
-      text-align: right;
-    }
-
-    .item-money {
-      height: 20px;
-      line-height: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--skin__lead);
-    }
-
-    .item-status {
-      margin-top: 4px;
-      line-height: 16px;
-      font-size: 12.5px;
-
-      &.success {
-        color: var(--skin__accent_1);
-      }
-
-      &.danger {
-        color: var(--skin__accent_2);
-      }
-
-      &.pending {
-        color: var(--skin__primary);
-      }
-    }
-
-    .item-arrow {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 24px;
-      line-height: 22px;
-      font-size: 18px;
-      font-weight: 400;
-      color: var(--skin__neutral_2);
     }
   }
 

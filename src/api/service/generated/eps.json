@@ -761,6 +761,11 @@
         "method": "post",
         "path": "/rechargeNotify",
         "summary": "充值回调消息通知"
+      },
+      {
+        "method": "post",
+        "path": "/withdrawNotify",
+        "summary": "提现回调消息通知"
       }
     ]
   },

@@ -122,7 +122,7 @@ onMounted(() => init());
     <ui-loading />
   </div>
   <template v-else>
-    <div class="no-wallet-bind" v-if="walletInfo && !walletInfo?.bind">
+    <div class="no-wallet-bind" v-if="walletInfo && Number(walletInfo?.bind) != 1">
       <div class="bindTips"><span>已有账号，可登录绑定</span><span>首次使用？只需设置支付密码</span></div>
       <div class="content">
         <div class="bind">
@@ -148,8 +148,8 @@ onMounted(() => init());
         </p>
       </section>
     </div>
-    <x-form ref="formRef" class="form-box" :rule="formRules" :model="formModel">
-      <div v-if="!!Number(walletInfo.bind)" class="wallet-info">
+    <x-form ref="formRef" class="form-box" :rule="formRules" :model="formModel" v-if="Number(walletInfo.bind) == 1">
+      <div class="wallet-info">
         <div class="balance">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="icon" />
           <span class="label">钱包余额</span>
