@@ -83,8 +83,8 @@ defineExpose({
           </div>
           <div class="content-box">
             <x-form :rule="formRules" :model="modelValue" ref="form">
-              <x-form-item prop="bank_id">
-                <x-select prefix="input_icon_bank" :options="thirdList.filter(v => v.type == 0)" value-field="id" label-field="wallet_name" icon-field="wallet_icon" v-model="modelValue.bank_id" placeholder="请选择发卡银行">
+              <x-form-item prop="bank_id" v-if="thirdList.filter(v => v.type == 0).length > 0">
+                <x-select prefix="input_icon_bank" :options="thirdList.filter(v => v.type == 0)" value-key="id" label-key="wallet_name" icon-key="wallet_icon" v-model="modelValue.bank_id" placeholder="请选择钱包">
                   <template #prefix>
                     <img :src="thirdList.find(v => v.id == modelValue.bank_id)?.wallet_icon" alt="." class="w-[15px] h-[15px]" />
                   </template>

@@ -5,6 +5,7 @@ import useAuthStore from '@/store/modules/user';
 import useWithdrawStore from '@/store/modules/withdraw';
 import ApplyBankWithdraw from '@/components/Withdraw/ApplyBankWithdraw.vue';
 import ApplyNumberWithdraw from '@/components/Withdraw/ApplyNumberWithdraw.vue';
+import ApplyWalletWithdraw from '@/components/Withdraw/ApplyWalletWithdraw.vue';
 
 const walletIsLoading = ref(false);
 const auth = useAuthStore();
@@ -68,13 +69,10 @@ onMounted(() => updateWallet());
           {{ item.name }}
         </div>
       </div>
-      <div class="text-[white]">
-        {{selectTypeId}}
-
-      </div>
       <no-wallet-info v-if="selectTypeId == 0" :walletData="withdrawInfo" />
       <apply-bank-withdraw v-if="selectTypeId == 1" />
       <apply-number-withdraw v-if="selectTypeId == 2" />
+      <apply-wallet-withdraw v-if="selectTypeId == 3" />
     </div>
   </div>
 </template>

@@ -1,10 +1,11 @@
 ﻿<script setup lang="ts">
-import { computed, inject, ref, Ref, watch } from "vue";
-import { desensitizeWithLodash, showCustomToast } from "@/hooks/useCommon";
+import { computed, inject, ref, Ref, watch } from 'vue';
+import { desensitizeWithLodash, showCustomToast } from '@/hooks/useCommon';
 
-import useAuthStore from "@/store/modules/user";
-import { service } from "@/api/service";
+import useAuthStore from '@/store/modules/user';
+import { service } from '@/api/service';
 import router from '@/router';
+import type { XFormRules } from '@/components/X/x-form-context';
 
 const auth = useAuthStore();
 const canWithdraw = computed(() => {
@@ -16,7 +17,7 @@ const showKeyboard = ref(false);
 const handleShowPassword = () => (showKeyboard.value = true);
 const hideKeyboard = () => (showKeyboard.value = false);
 const formData = ref<any>({});
-const userCardList = inject<Ref<any[]>>("userCardList");
+const userCardList = inject<Ref<any[]>>('userCardList');
 const withdrawCardList = computed(() => userCardList.value.filter(v => v.type == 0 || v.type == 3));
 const withdrawCardOptions = computed(() =>
   withdrawCardList.value.map(option => ({
@@ -28,6 +29,79 @@ const withdrawCardOptions = computed(() =>
 const selectCardInfo = computed(() => withdrawCardList.value.find(v => v.id == formData.value.card_id) ?? {});
 const isCardUnavailable = computed(() => selectCardInfo.value?.disabled || !selectCardInfo.value?.id);
 const withdrawLoading = ref(false);
+const formRef = ref<{ validate: () => Promise<void> } | null>(null);
+const formRules = ref<XFormRules>({
+  card_id: [
+    { required: true, message: '请选择提现账户', trigger: ['change', 'blur'] },
+    {
+      validator: (_rule, value, callback) => {
+        if (value === '' || value === null || value === undefined) {
+          callback();
+          return;
+        }
+        if (isCardUnavailable.value) {
+          callback(new Error('该渠道维护中，无法提现'));
+          return;
+        }
+
+        callback();
+      },
+      trigger: ['change', 'blur']
+    }
+  ],
+  money: [
+    { required: true, message: '提现金额不能为空', trigger: ['input', 'blur'] },
+    {
+      validator: (_rule, value, callback) => {
+        if (value === '' || value === null || value === undefined) {
+          callback();
+          return;
+        }
+
+        const amount = Number(value);
+        const min = Number(selectCardInfo.value?.min ?? 0);
+        const max = Number(selectCardInfo.value?.max ?? 0);
+        if (!/^\d+$/.test(String(value))) {
+          callback(new Error('提现金额只能为整数'));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount < min) {
+          callback(new Error(`提现金额不能小于${min}`));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount > Number(auth.user.money)) {
+          callback(new Error('余额不足'));
+          return;
+        }
+        if (!Number.isInteger(amount) || amount > max) {
+          callback(new Error(`提现金额不能大于${max}`));
+          return;
+        }
+
+        callback();
+      },
+      trigger: ['input', 'blur']
+    }
+  ],
+  password: [
+    { required: true, message: '请输入提现密码', trigger: ['input', 'blur'] },
+    {
+      validator: (_rule, value, callback) => {
+        if (value === '' || value === null || value === undefined) {
+          callback();
+          return;
+        }
+        if (!/^\d{6}$/.test(String(value))) {
+          callback(new Error('提现密码必须为6位数字'));
+          return;
+        }
+
+        callback();
+      },
+      trigger: ['input', 'blur']
+    }
+  ]
+});
 
 function init() {
   const list = withdrawCardList.value;
@@ -42,7 +116,7 @@ function withdrawAll() {
 }
 
 function jumpToAddCard() {
-  router.push('/home/withdraw?active=10')
+  router.push('/home/withdraw?active=10');
 }
 
 watch(
@@ -53,24 +127,29 @@ watch(
   { immediate: true }
 );
 
-function handleApplyWithdraw() {
-  withdrawLoading.value = true;
-  service.base.withdraw
-    .applyWithdraw(formData.value)
-    .finally(() => (withdrawLoading.value = false))
-    .then(() => {
-      formData.value = {};
-      init();
-      showCustomToast({ message: "申请成功", type: "success" });
-      auth.updateInfo();
-    });
+async function handleApplyWithdraw() {
+  try {
+    await formRef.value?.validate();
+    withdrawLoading.value = true;
+    service.base.withdraw
+      .applyWithdraw(formData.value)
+      .finally(() => (withdrawLoading.value = false))
+      .then(() => {
+        formData.value = {};
+        init();
+        showCustomToast({ message: '申请成功', type: 'success' });
+        auth.updateInfo();
+      });
+  } catch {
+    return;
+  }
 }
 </script>
 
 <template>
   <div class="apply-box">
-    <x-form :model="formData">
-      <x-form-item class="apply-card-select" style="padding-right: 35px; position: relative" v-if="formData.card_id">
+    <x-form ref="formRef" :rule="formRules" :model="formData">
+      <x-form-item prop="card_id" class="apply-card-select" style="padding-right: 35px; position: relative" v-if="formData.card_id">
         <x-select
           v-model="formData.card_id"
           :options="withdrawCardOptions"
@@ -79,17 +158,15 @@ function handleApplyWithdraw() {
           icon-key="icon"
           placeholder="请选择发卡银行"
         />
-        <div class="absolute right-0 flex items-center justify-end h-[40px]">
+        <div class="absolute right-0 flex items-center justify-end h-[40px]" @click="jumpToAddCard">
           <svg-icon name="icon_tx_txgl" class-name="text-[25px] main-text"></svg-icon>
         </div>
       </x-form-item>
-      <x-form-item v-if="formData.card_id">
+      <x-form-item prop="money" v-if="formData.card_id">
         <x-input
           :disabled="isCardUnavailable"
           :placeholder="
-            isCardUnavailable
-              ? '该渠道维护中，无法提现'
-              : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`
+            isCardUnavailable ? '该渠道维护中，无法提现' : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`
           "
           v-model="formData.money"
         >
@@ -121,32 +198,18 @@ function handleApplyWithdraw() {
       <div class="line"></div>
       <div class="form-item-title">
         <span>验证提现密码</span>
-        <svg-icon
-          name="comm_icon_hide"
-          class-name="text-[18px] text-[#242424]"
-          v-if="!showEye"
-          @click="showEye = !showEye"
-        />
+        <svg-icon name="comm_icon_hide" class-name="text-[18px] text-[#242424]" v-if="!showEye" @click="showEye = !showEye" />
         <svg-icon name="comm_icon_show" class-name="text-[18px] main-text" v-if="showEye" @click="showEye = !showEye" />
       </div>
-      <x-form-item class="form-withdraw-pass">
-        <van-password-input
-          :mask="!showEye"
-          :value="formData.password"
-          :focused="showKeyboard"
-          @focus="handleShowPassword"
-        />
+      <x-form-item prop="password">
+        <div class="password-input">
+          <van-password-input :mask="!showEye" :value="formData.password" :focused="showKeyboard" @focus="handleShowPassword" />
+        </div>
       </x-form-item>
       <div class="button-list">
         <x-button type="primary" class="button" plain>赚取利息</x-button>
         <van-badge content="年利率88%" position="top-left" :offset="['7%', '1%']" class="absolute"></van-badge>
-        <x-button
-          type="primary"
-          class="button"
-          :disabled="!canWithdraw"
-          @click="handleApplyWithdraw"
-          :loading="withdrawLoading"
-        >
+        <x-button type="primary" class="button" :disabled="!canWithdraw" @click="handleApplyWithdraw" :loading="withdrawLoading">
           确定提现
         </x-button>
       </div>
@@ -207,7 +270,7 @@ function handleApplyWithdraw() {
       vertical-align: middle;
       --van-badge-border-width: 0px;
       &::before {
-        content: "";
+        content: '';
         display: inline-block;
         position: absolute;
         bottom: -3px;
@@ -258,17 +321,18 @@ function handleApplyWithdraw() {
   }
 }
 
-.form-withdraw-pass {
+.password-input {
+  box-sizing: border-box;
   --van-password-input-margin: 0.5px;
   --van-password-input-background: transparent;
-  --van-border-color: #242424;
+  --van-border-color: var(--skin__neutral_3);
   --van-password-input-radius: 7px;
   --van-password-input-dot-color: #fff;
   --van-password-input-text-color: white;
   --van-password-input-dot-size: 13px;
   --van-password-input-cursor-width: 1.5px;
   --van-password-input-cursor-color: white;
-  border: solid 0.5px #242424;
+  border: solid 0.5px var(--van-border-color);
   border-radius: var(--van-password-input-radius);
 
   :deep(.van-password-input) {
@@ -290,6 +354,7 @@ function handleApplyWithdraw() {
     &:last-child {
       border-radius: 0 var(--van-password-input-radius) var(--van-password-input-radius) 0;
     }
+    background: var(--skin__bg_2);
   }
 }
 

@@ -18,7 +18,7 @@ const handleShowPassword = () => (showKeyboard.value = true);
 const hideKeyboard = () => (showKeyboard.value = false);
 const formData = ref<any>({});
 const userCardList = inject<Ref<any[]>>('userCardList');
-const withdrawCardList = computed(() => userCardList.value.filter(v => v.type == 2));
+const withdrawCardList = computed(() => userCardList.value.filter(v => v.type == 1));
 const withdrawCardOptions = computed(() =>
   withdrawCardList.value.map(option => ({
     ...option,
