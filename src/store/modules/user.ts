@@ -1,13 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getUserInfo } from "@/api/common";
+import { connectSse, disconnectSse } from "@/utils/sse";
 
 export const useAuthStore = defineStore('user', () => {
   const user = ref<any>({})
   const token = ref<string>('')
 
   const setToken = (data: string) => {
-    token.value = data.trim()
+    const nextToken = data?.trim() ?? ''
+    token.value = nextToken
+
+    if (nextToken) {
+      connectSse(nextToken)
+    } else {
+      disconnectSse()
+    }
   }
 
   const updateInfo = async () => {
@@ -18,6 +26,7 @@ export const useAuthStore = defineStore('user', () => {
   const logout = () => {
     user.value = {};
     token.value = ''
+    disconnectSse()
   }
 
   return {

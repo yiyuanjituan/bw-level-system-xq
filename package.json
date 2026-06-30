@@ -11,7 +11,7 @@
     "url": "https://github.com/yulimchen/vue3-h5-template/issues"
   },
   "engines": {
-    "node": ">=16 <22"
+    "node": ">=16 <24"
   },
   "scripts": {
     "dev": "vite",

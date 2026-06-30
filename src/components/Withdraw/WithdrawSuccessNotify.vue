@@ -3,13 +3,16 @@ import { computed, onMounted, ref } from 'vue';
 import { useWindowSize } from '@vant/use';
 import { getFindUsData } from '@/api/common';
 import { formatMoney } from '@/utils/common';
+import { desensitizeWithLodash } from '@/hooks/useCommon';
 
 const show = ref(false);
 const params = ref<any>({});
 const remoteData = ref<any>({});
 const { width: windowWidth } = useWindowSize();
 
-function openDialog() {
+function openDialog(params) {
+  console.log(params);
+  remoteData.value = params;
   show.value = true;
 }
 
@@ -22,14 +25,6 @@ const dialogWidth = computed(() => {
 defineExpose({
   open: openDialog
 });
-
-function init() {
-  getFindUsData({}).then(data => {
-    remoteData.value = data;
-  });
-}
-
-onMounted(() => init());
 </script>
 
 <template>
@@ -50,23 +45,23 @@ onMounted(() => init());
             <ul>
               <li>
                 <span>提现金额</span>
-                <p>{{ formatMoney(10000000.00) }}<span class="member-currency">CNY</span></p>
+                <p>{{ formatMoney(remoteData.money) }}<span class="member-currency">CNY</span></p>
               </li>
               <li>
                 <span>手续费</span>
-                <p>{{ formatMoney(888888888.00) }}<span class="member-currency">CNY</span></p>
+                <p>{{ formatMoney(remoteData.fee) }}<span class="member-currency">CNY</span></p>
               </li>
               <li>
                 <span>实际到账</span>
-                <p>0.00<span class="member-currency">CNY</span></p>
+                <p>{{ formatMoney(remoteData.money) }}<span class="member-currency">CNY</span></p>
               </li>
               <li class="!items-center">
                 <span>提现到</span>
                 <p class="flex !items-center">
-                  <img src="https://rvmgnk882.xq60924187.com:28907/siteadmin/pay-icon/icon_no_wallet.png" alt="" srcset="" class="logo">
+                  <img :src="remoteData.bank_icon" alt="" srcset="" class="logo" />
                   <span>
-                    <span class="type-name">NO钱包-CNY</span>
-                    <span class="carAccount">(****9485)</span>
+                    <span class="type-name">{{ remoteData.bank_name }}</span>
+                    <span class="carAccount">({{ desensitizeWithLodash(remoteData.bank_number) }})</span>
                   </span>
                 </p>
               </li>

@@ -1,4 +1,5 @@
 import { DialogOptions, ToastOptions } from "vant";
+import type { SseMessage } from "@/utils/sse";
 
 export type ToastType = "text" | "loading" | "success" | "fail" | "html" | "warning";
 
@@ -18,6 +19,8 @@ export type MittEvent = {
   findUs: null;
   moneyIn: null;
   switchTab: string;
+  sseMessage: SseMessage;
+  showWithdrawSuccess: any;
 };
 
 export interface DialogPromiseHandlers {

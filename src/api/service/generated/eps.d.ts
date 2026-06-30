@@ -219,7 +219,7 @@ declare namespace Eps {
 			currencyId?: number;
 
 		/**
-			 * 价格
+			 * 余额
 			 */
 			money?: number;
 
@@ -1272,6 +1272,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface V1Sse {
+		/**
+			 * SSE消息推送连接
+			 */
+			connect(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { connect: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { connect: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface V1User {
 		/**
 			 * 领取返水奖励
@@ -1416,6 +1435,7 @@ declare namespace Eps {
 			finance: V1Finance;
 			game: V1Game;
 			notice: V1Notice;
+			sse: V1Sse;
 			user: V1User;
 		};
 	};

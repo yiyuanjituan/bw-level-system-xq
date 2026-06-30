@@ -651,6 +651,17 @@
     ]
   },
   {
+    "prefix": "/app/v1/sse",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/connect",
+        "summary": "SSE消息推送连接"
+      }
+    ]
+  },
+  {
     "prefix": "/app/v1/user",
     "name": "",
     "api": [

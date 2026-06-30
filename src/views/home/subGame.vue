@@ -180,7 +180,7 @@ onMounted(() => {
                         @click="handleChangeTab(item)"
                       >
                         <img :src="item.short_image" alt="" />
-                        <p class="">{{ item.archiveCode }}</p>
+                        <p class="">{{ item.apiCode }}</p>
                       </div>
                     </div>
                   </div>

@@ -32,6 +32,7 @@ import router from '@/router';
 import useDataStore from '@/store/modules/data';
 import { useRefs } from '@/hooks/useRefs';
 import { useRoute } from 'vue-router';
+import { connectSse, disconnectSse } from '@/utils/sse';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -65,6 +66,7 @@ const busListen = () => {
   bus.on('showRecharge', refs['rechargeDrawer']?.open);
   bus.on('showRechargeDetail', refs['rechargeDetailDrawer']?.open);
   bus.on('showRechargeRecord', refs['rechargeRecordRef']?.open)
+  bus.on('showWithdrawSuccess', (res) => refs['withdrawSuccessRef']?.open?.(res))
 };
 
 function isHomePopupKey(value: unknown): value is HomePopupKey {
@@ -145,6 +147,7 @@ onMounted(() => {
   app.updateDownloadBtn(true);
 
   if (auth.token) {
+    connectSse(auth.token);
     auth.updateInfo();
   }
 
@@ -152,6 +155,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  disconnectSse();
   stopPopupQueueListener();
 
   if (popupTimer) {
