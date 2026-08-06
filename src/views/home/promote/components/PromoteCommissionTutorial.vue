@@ -17,8 +17,12 @@ const connectorColors = {
   accent1: "#1FE11F",
   accent3: "#FFAA09"
 } as const;
-// 连接器使用百分之一 rem 作为偏移单位，36 在设计宽度下对应 18px。
-const arrowHorizontalGap = 36;
+// 连接器的 2 个偏移单位对应设计宽度下的 1px。
+const connectorOffsetPerPixel = 2;
+// C1、C3 向上起始线与左右相邻线均保持 18px。
+const arrowHorizontalGap = 18 * connectorOffsetPerPixel;
+// 以 B1、B2 的起始位置为 0，回路横线每层相差 10px。
+const routeVerticalGap = 10 * connectorOffsetPerPixel;
 const connectorLineWidth = 5;
 // 三角箭头与节点保持 0.2rem，在设计宽度下对应 10px。
 const arrowOffsetY = 20;
@@ -127,11 +131,11 @@ const tutorialConnections: ConnectorConnection[] = [
     { nodeId: "a", x: "5%", y: "100%", offsetY: arrowOffsetY },
     {
       x: { nodeId: "a", position: "5%" },
-      y: { nodeId: "b1", position: "0%", offset: -40 }
+      y: { nodeId: "b1", position: "0%", offset: -routeVerticalGap * 2 }
     },
     {
       x: { nodeId: "c1", position: "0%", offset: -10 },
-      y: { nodeId: "b1", position: "0%", offset: -40 }
+      y: { nodeId: "b1", position: "0%", offset: -routeVerticalGap * 2 }
     },
     {
       x: { nodeId: "c1", position: "0%", offset: -10 },
@@ -176,14 +180,14 @@ const tutorialConnections: ConnectorConnection[] = [
     { nodeId: "a", x: "5%", y: "100%", offsetX: arrowHorizontalGap, offsetY: arrowOffsetY },
     {
       x: { nodeId: "a", position: "5%", offset: arrowHorizontalGap },
-      y: { nodeId: "b1", position: "0%", offset: -10 }
+      y: { nodeId: "b1", position: "0%", offset: -routeVerticalGap }
     },
     {
-      x: { nodeId: "b1", position: "0%", offset: -10 },
-      y: { nodeId: "b1", position: "0%", offset: -10 }
+      x: { nodeId: "c1", position: "0%", offset: -10 + arrowHorizontalGap },
+      y: { nodeId: "b1", position: "0%", offset: -routeVerticalGap }
     },
     {
-      x: { nodeId: "b1", position: "0%", offset: -10 },
+      x: { nodeId: "c1", position: "0%", offset: -10 + arrowHorizontalGap },
       y: { nodeId: "c1", position: "0%", offset: -5 }
     }
   ], connectorColors.primary),
@@ -191,11 +195,11 @@ const tutorialConnections: ConnectorConnection[] = [
     { nodeId: "a", x: "95%", y: "100%", offsetY: arrowOffsetY },
     {
       x: { nodeId: "a", position: "95%" },
-      y: { nodeId: "b2", position: "0%", offset: -40 }
+      y: { nodeId: "b2", position: "0%", offset: -routeVerticalGap * 2 }
     },
     {
       x: { nodeId: "c3", position: "100%", offset: 12 },
-      y: { nodeId: "b2", position: "0%", offset: -40 }
+      y: { nodeId: "b2", position: "0%", offset: -routeVerticalGap * 2 }
     },
     {
       x: { nodeId: "c3", position: "100%", offset: 12 },
@@ -211,14 +215,14 @@ const tutorialConnections: ConnectorConnection[] = [
     { nodeId: "a", x: "95%", y: "100%", offsetX: -arrowHorizontalGap, offsetY: arrowOffsetY },
     {
       x: { nodeId: "a", position: "95%", offset: -arrowHorizontalGap },
-      y: { nodeId: "b2", position: "0%", offset: -20 }
+      y: { nodeId: "b2", position: "0%", offset: -routeVerticalGap }
     },
     {
-      x: { nodeId: "b2", position: "100%", offset: 4 },
-      y: { nodeId: "b2", position: "0%", offset: -20 }
+      x: { nodeId: "c3", position: "100%", offset: 12 - arrowHorizontalGap },
+      y: { nodeId: "b2", position: "0%", offset: -routeVerticalGap }
     },
     {
-      x: { nodeId: "b2", position: "100%", offset: 4 },
+      x: { nodeId: "c3", position: "100%", offset: 12 - arrowHorizontalGap },
       y: { nodeId: "c3", position: "0%", offset: -5 }
     }
   ], connectorColors.primary)
