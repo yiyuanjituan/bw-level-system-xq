@@ -23,7 +23,7 @@ const connectorOffsetPerPixel = 2;
 const arrowHorizontalGap = 18 * connectorOffsetPerPixel;
 // 以 B1、B2 的起始位置为 0，回路横线每层相差 10px。
 const routeVerticalGap = 10 * connectorOffsetPerPixel;
-const mainCardFiveSixthsX = "83.3333333333%";
+const memberCardFiveSixthsX = "83.3333333333%";
 const connectorLineWidth = 5;
 // 三角箭头与节点保持 0.2rem，在设计宽度下对应 10px。
 const arrowOffsetY = 20;
@@ -416,15 +416,20 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
       ], 5),
       commissionConnection("b2-c3-commission", [
         {
-          nodeId: "b2-main",
-          x: mainCardFiveSixthsX,
-          y: "100%",
-          offsetY: arrowOffsetY
+          x: {
+            nodeId: "b2-c3",
+            position: memberCardFiveSixthsX
+          },
+          y: {
+            nodeId: "b2-main",
+            position: "100%",
+            offset: arrowOffsetY
+          }
         },
         {
           x: {
-            nodeId: "b2-main",
-            position: mainCardFiveSixthsX
+            nodeId: "b2-c3",
+            position: memberCardFiveSixthsX
           },
           y: { nodeId: "b2-c3", position: "0%", offset: -5 }
         }
@@ -459,15 +464,20 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
       ], 5),
       commissionConnection("c1-d1-commission", [
         {
-          nodeId: "c1-main",
-          x: mainCardFiveSixthsX,
-          y: "100%",
-          offsetY: arrowOffsetY
+          x: {
+            nodeId: "c1-d1",
+            position: memberCardFiveSixthsX
+          },
+          y: {
+            nodeId: "c1-main",
+            position: "100%",
+            offset: arrowOffsetY
+          }
         },
         {
           x: {
-            nodeId: "c1-main",
-            position: mainCardFiveSixthsX
+            nodeId: "c1-d1",
+            position: memberCardFiveSixthsX
           },
           y: { nodeId: "c1-d1", position: "0%", offset: -5 }
         }
