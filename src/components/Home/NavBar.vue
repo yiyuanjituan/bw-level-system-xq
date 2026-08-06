@@ -62,7 +62,7 @@ const updateWallet = () => {
 
     <div class="header-container">
       <div class="left">
-        <div class="icon-wrap">
+        <div class="icon-wrap" v-if="false">
           <i class="inline-flex items-center justify-center" @click="changeShowNav">
             <svg width="1em" height="1em" fill="#adb6c3" class="left-icon" :class="{ 'left-icon-transX': isShowNav }">
               <use xlink:href="#btn_zcl_arrow" />

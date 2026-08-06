@@ -787,17 +787,22 @@
       {
         "method": "get",
         "path": "/clearVitalityByNow",
-        "summary": "定时清理过期的活跃度"
+        "summary": "清理过期活跃度"
+      },
+      {
+        "method": "get",
+        "path": "/clearOnlineSession",
+        "summary": "清理遗留在线会话"
       },
       {
         "method": "get",
         "path": "/generateVipGift",
-        "summary": "创建VIP天/周/月信息"
+        "summary": "创建VIP周月信息"
       },
       {
         "method": "get",
         "path": "/pullXhData",
-        "summary": "抓取星汇的游戏记录"
+        "summary": "抓取星汇游戏记录"
       }
     ]
   }

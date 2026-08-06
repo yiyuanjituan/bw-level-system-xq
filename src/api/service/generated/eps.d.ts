@@ -779,29 +779,34 @@ declare namespace Eps {
 
 	interface OpenV1Task {
 		/**
-			 * 定时清理过期的活跃度
+			 * 清理过期活跃度
 			 */
 			clearVitalityByNow(data?: any): Promise<any>;
 
 		/**
-			 * 创建VIP天/周/月信息
+			 * 清理遗留在线会话
+			 */
+			clearOnlineSession(data?: any): Promise<any>;
+
+		/**
+			 * 创建VIP周月信息
 			 */
 			generateVipGift(data?: any): Promise<any>;
 
 		/**
-			 * 抓取星汇的游戏记录
+			 * 抓取星汇游戏记录
 			 */
 			pullXhData(data?: any): Promise<any>;
 
 		/**
 		 * 权限标识
 		 */
-		permission: { clearVitalityByNow: string; generateVipGift: string; pullXhData: string; };
+		permission: { clearVitalityByNow: string; clearOnlineSession: string; generateVipGift: string; pullXhData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { clearVitalityByNow: boolean; generateVipGift: boolean; pullXhData: boolean; };
+		_permission: { clearVitalityByNow: boolean; clearOnlineSession: boolean; generateVipGift: boolean; pullXhData: boolean; };
 
 		request: Service["request"];
 	}

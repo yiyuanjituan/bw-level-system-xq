@@ -49,7 +49,7 @@ const gameList = computed(() => {
 
 function handleScroll(e) {
   const { scrollHeight, scrollTop, clientHeight } = e.target;
-  showNext.value = scrollHeight - scrollTop - clientHeight > 2;
+  showNext.value = scrollHeight - scrollTop -   clientHeight > 2;
 }
 
 function showTip() {
