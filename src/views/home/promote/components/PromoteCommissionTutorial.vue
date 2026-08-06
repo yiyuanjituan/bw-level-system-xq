@@ -23,6 +23,7 @@ const connectorOffsetPerPixel = 2;
 const arrowHorizontalGap = 18 * connectorOffsetPerPixel;
 // 以 B1、B2 的起始位置为 0，回路横线每层相差 10px。
 const routeVerticalGap = 10 * connectorOffsetPerPixel;
+const mainCardFiveSixthsX = "83.3333333333%";
 const connectorLineWidth = 5;
 // 三角箭头与节点保持 0.2rem，在设计宽度下对应 10px。
 const arrowOffsetY = 20;
@@ -283,22 +284,6 @@ const b1Connections: ConnectorConnection[] = [
     }
   ], 10, "none"),
   commissionConnection("b1-d1-primary", [
-    { nodeId: "b1-main", x: "5%", y: "100%", offsetY: arrowOffsetY },
-    {
-      x: { nodeId: "b1-main", position: "5%" },
-      y: { nodeId: "b1-c1", position: "0%", offset: -40 }
-    },
-    {
-      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
-      y: { nodeId: "b1-c1", position: "0%", offset: -40 }
-    },
-    {
-      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
-      y: { nodeId: "b1-d1", position: "50%" }
-    },
-    { nodeId: "b1-d1", x: "0%", y: "50%", offsetX: -5 }
-  ], connectorColors.primary),
-  commissionConnection("b1-c1-commission", [
     {
       nodeId: "b1-main",
       x: "5%",
@@ -312,6 +297,40 @@ const b1Connections: ConnectorConnection[] = [
         position: "5%",
         offset: arrowHorizontalGap
       },
+      y: {
+        nodeId: "b1-c1",
+        position: "0%",
+        offset: -routeVerticalGap
+      }
+    },
+    {
+      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
+      y: {
+        nodeId: "b1-c1",
+        position: "0%",
+        offset: -routeVerticalGap
+      }
+    },
+    {
+      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
+      y: { nodeId: "b1-d1", position: "50%" }
+    },
+    { nodeId: "b1-d1", x: "0%", y: "50%", offsetX: -5 }
+  ], connectorColors.accent1),
+  commissionConnection("b1-c1-commission", [
+    {
+      nodeId: "b1-main",
+      x: "5%",
+      y: "100%",
+      offsetX: arrowHorizontalGap * 2,
+      offsetY: arrowOffsetY
+    },
+    {
+      x: {
+        nodeId: "b1-main",
+        position: "5%",
+        offset: arrowHorizontalGap * 2
+      },
       y: { nodeId: "b1-c1", position: "0%", offset: -5 }
     }
   ], connectorColors.accent3),
@@ -320,10 +339,15 @@ const b1Connections: ConnectorConnection[] = [
       nodeId: "b1-main",
       x: "95%",
       y: "100%",
+      offsetX: -arrowHorizontalGap,
       offsetY: arrowOffsetY
     },
     {
-      x: { nodeId: "b1-main", position: "95%" },
+      x: {
+        nodeId: "b1-main",
+        position: "95%",
+        offset: -arrowHorizontalGap
+      },
       y: { nodeId: "b1-c2", position: "0%", offset: -5 }
     }
   ], connectorColors.accent3),
@@ -393,16 +417,14 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
       commissionConnection("b2-c3-commission", [
         {
           nodeId: "b2-main",
-          x: "50%",
+          x: mainCardFiveSixthsX,
           y: "100%",
-          offsetX: arrowHorizontalGap,
           offsetY: arrowOffsetY
         },
         {
           x: {
             nodeId: "b2-main",
-            position: "50%",
-            offset: arrowHorizontalGap
+            position: mainCardFiveSixthsX
           },
           y: { nodeId: "b2-c3", position: "0%", offset: -5 }
         }
@@ -438,16 +460,14 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
       commissionConnection("c1-d1-commission", [
         {
           nodeId: "c1-main",
-          x: "50%",
+          x: mainCardFiveSixthsX,
           y: "100%",
-          offsetX: arrowHorizontalGap,
           offsetY: arrowOffsetY
         },
         {
           x: {
             nodeId: "c1-main",
-            position: "50%",
-            offset: arrowHorizontalGap
+            position: mainCardFiveSixthsX
           },
           y: { nodeId: "c1-d1", position: "0%", offset: -5 }
         }
