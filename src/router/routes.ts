@@ -296,6 +296,15 @@ const routes: Array<RouteRecordRaw> = [
           pageTransition: "page-slide-forward"
         }
       },
+      {
+        path: "promote",
+        name: "HomePromote",
+        component: () => import("@/views/home/promote/index.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
     ]
   }
 ];

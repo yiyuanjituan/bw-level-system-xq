@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useSlots } from "vue";
 
 defineOptions({
   name: "x-badge"
@@ -37,8 +37,11 @@ const props = withDefaults(defineProps<Props>(), {
   translateY: true
 });
 
+const slots = useSlots();
+
 const shouldShow = computed(() => {
   if (props.dot) return true;
+  if (slots.content) return true;
   if (props.content === "" || props.content === null || props.content === undefined) return false;
   if (!props.showZero && Number(props.content) === 0) return false;
   return true;
@@ -72,7 +75,9 @@ const badgeStyles = computed(() => ({
   <span class="x-badge__wrapper">
     <slot />
     <span v-if="shouldShow" :class="badgeClasses" :style="badgeStyles">
-      <span class="x-badge__content">{{ displayText }}</span>
+      <span class="x-badge__content">
+        <slot name="content">{{ displayText }}</slot>
+      </span>
     </span>
   </span>
 </template>

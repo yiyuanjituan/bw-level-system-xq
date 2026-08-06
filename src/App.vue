@@ -15,7 +15,7 @@
   <download-tip :ref="setRefs('downloadTip')" />
   <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
   <dialog-tip :ref="setRefs('dialogTipRef')" />
-  <football-dialog />
+  <football-dialog v-if="false" />
   <redpack-dialog />
 </template>
 

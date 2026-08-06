@@ -71,7 +71,7 @@ const list = ref([
     icon_1: "style_2_icon_list_fxzq",
     icon_2: "style_2_icon_list_fxzq2",
     name: "分享赚钱",
-    url: "账户明细"
+    url: "/home/promote"
   },
   {
     key: "pyq",
