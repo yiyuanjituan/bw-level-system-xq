@@ -304,7 +304,7 @@ const b1Connections: ConnectorConnection[] = [
       }
     },
     {
-      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
+      x: { nodeId: "b1-main", position: "5%", offset: -10 },
       y: {
         nodeId: "b1-c1",
         position: "0%",
@@ -312,7 +312,7 @@ const b1Connections: ConnectorConnection[] = [
       }
     },
     {
-      x: { nodeId: "b1-c1", position: "0%", offset: -10 },
+      x: { nodeId: "b1-main", position: "5%", offset: -10 },
       y: { nodeId: "b1-d1", position: "50%" }
     },
     { nodeId: "b1-d1", x: "0%", y: "50%", offsetX: -5 }
