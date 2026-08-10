@@ -131,20 +131,20 @@ const socialMedia = [
 
 <style scoped lang="less">
 .invite-share {
-  margin: 0 0.2rem 0.2rem;
-  padding: 0.2rem 0.2rem 0;
-  border-radius: 0.14rem;
+  margin: 0 10px 10px;
+  padding: 10px 10px 0;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.08);
 }
 
 .invite-share__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.2rem;
-  padding-bottom: 0.2rem;
-  border-bottom: var(--lobby__px, 0.01rem) solid var(--skin__border);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: var(--lobby__px, 0.5px) solid var(--skin__border);
 
   p {
     margin: 0;
@@ -155,23 +155,23 @@ const socialMedia = [
 .invite-share__code {
   display: flex;
   align-items: center;
-  height: 0.3rem;
+  height: 15px;
   color: var(--skin__neutral_2);
-  line-height: 0.3rem;
+  line-height: 15px;
 
   label {
-    margin-right: 0.1rem;
+    margin-right: 5px;
   }
 
   strong {
-    margin-right: 0.02rem;
+    margin-right: 1px;
     color: var(--skin__lead);
     font-weight: 400;
   }
 }
 
 :deep(.invite-share__copy-icon) {
-  margin-left: 0.1rem;
+  margin-left: 5px;
   color: var(--skin__primary);
 }
 
@@ -185,10 +185,10 @@ const socialMedia = [
   display: flex;
   flex: none;
   flex-direction: column;
-  width: 1.3rem;
-  margin-right: 0.2rem;
-  border: var(--lobby__px, 0.01rem) solid var(--skin__border);
-  border-radius: 0.14rem 0.14rem 0.2rem 0.2rem;
+  width: 65px;
+  margin-right: 10px;
+  border: var(--lobby__px, 0.5px) solid var(--skin__border);
+  border-radius: 7px 7px 10px 10px;
   background: #fff;
 }
 
@@ -197,15 +197,15 @@ const socialMedia = [
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 0.14rem 0.14rem 0 0;
+  border-radius: 7px 7px 0 0;
 
   img,
   span {
     display: block;
     box-sizing: content-box;
-    width: 1.1rem;
-    height: 1.1rem;
-    padding: 0.1rem;
+    width: 55px;
+    height: 55px;
+    padding: 5px;
     object-fit: contain;
   }
 
@@ -213,17 +213,17 @@ const socialMedia = [
     background:
       linear-gradient(90deg, #111 12%, transparent 12% 24%, #111 24% 36%, transparent 36% 48%, #111 48% 60%, transparent 60% 72%, #111 72% 84%, transparent 84%),
       linear-gradient(#111 12%, transparent 12% 24%, #111 24% 36%, transparent 36% 48%, #111 48% 60%, transparent 60% 72%, #111 72% 84%, transparent 84%);
-    background-size: 0.26rem 0.26rem;
+    background-size: 13px 13px;
   }
 }
 
 .invite-share__save-button {
   width: 100%;
-  min-height: 0.5rem;
-  height: 0.66rem;
+  min-height: 25px;
+  height: 33px;
   padding: 0;
-  border-radius: 0 0 0.14rem 0.14rem;
-  font-size: 0.22rem;
+  border-radius: 0 0 7px 7px;
+  font-size: 11px;
 }
 
 .invite-share__right {
@@ -236,17 +236,17 @@ const socialMedia = [
   display: flex;
   align-items: center;
   width: 100%;
-  height: 0.7rem;
+  height: 35px;
   overflow: hidden;
-  border: var(--lobby__px, 0.01rem) solid var(--skin__border);
-  border-radius: 0.14rem;
+  border: var(--lobby__px, 0.5px) solid var(--skin__border);
+  border-radius: 7px;
 }
 
 .invite-share__link-select {
   flex: 1;
   width: 0;
   min-width: 0;
-  height: 0.68rem;
+  height: 34px;
   border: 0;
   border-radius: 0;
 }
@@ -257,27 +257,27 @@ const socialMedia = [
   justify-content: center;
   align-self: stretch;
   flex: none;
-  width: 1.1rem;
-  border-left: var(--lobby__px, 0.01rem) solid var(--skin__border);
+  width: 55px;
+  border-left: var(--lobby__px, 0.5px) solid var(--skin__border);
   color: var(--skin__primary);
 
   :deep(.copy-icon) {
-    gap: 0.08rem;
+    gap: 4px;
     width: 100%;
     height: 100%;
-    font-size: 0.22rem;
+    font-size: 11px;
   }
 
   :deep(.invite-share__copy-icon) {
     margin-left: 0;
-    font-size: 0.28rem;
+    font-size: 14px;
   }
 }
 
 .invite-share__media-scroll {
-  width: 5rem;
-  margin-top: 0.2rem;
-  padding-bottom: 0.1rem;
+  width: 250px;
+  margin-top: 10px;
+  padding-bottom: 5px;
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -296,7 +296,7 @@ const socialMedia = [
   align-items: center;
   flex: none;
   flex-direction: column;
-  margin-right: 0.4rem;
+  margin-right: 20px;
   padding: 0;
   border: 0;
   color: var(--skin__neutral_1);
@@ -308,8 +308,8 @@ const socialMedia = [
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 35px;
+    height: 35px;
     overflow: hidden;
     border-radius: 50%;
   }
@@ -323,10 +323,10 @@ const socialMedia = [
 
   small {
     display: inline-block;
-    max-width: 1.1rem;
-    margin-top: 0.1rem;
+    max-width: 55px;
+    margin-top: 5px;
     color: var(--skin__neutral_1);
-    font-size: 0.22rem;
+    font-size: 11px;
     line-height: 1.15;
     text-align: center;
     overflow-wrap: break-word;
@@ -334,34 +334,34 @@ const socialMedia = [
 }
 
 .invite-share__share-symbol {
-  border: var(--lobby__px, 0.01rem) solid var(--skin__border);
+  border: var(--lobby__px, 0.5px) solid var(--skin__border);
   color: var(--skin__primary);
 
   :deep(.svg-icon) {
-    width: 0.35rem;
-    height: 0.35rem;
+    width: 17.5px;
+    height: 17.5px;
   }
 }
 
 [dir="rtl"] {
   .invite-share__code label {
     margin-right: 0;
-    margin-left: 0.1rem;
+    margin-left: 5px;
   }
 
   .invite-share__qr-wrap {
     margin-right: 0;
-    margin-left: 0.2rem;
+    margin-left: 10px;
   }
 
   .invite-share__link-copy {
-    border-right: var(--lobby__px, 0.01rem) solid var(--skin__border);
+    border-right: var(--lobby__px, 0.5px) solid var(--skin__border);
     border-left: 0;
   }
 
   .invite-share__media {
     margin-right: 0;
-    margin-left: 0.4rem;
+    margin-left: 20px;
   }
 }
 </style>
