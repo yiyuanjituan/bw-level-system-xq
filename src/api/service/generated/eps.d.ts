@@ -1165,6 +1165,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface V1Agent {
+		/**
+			 * 代理推广配置
+			 */
+			promoteInfo(data?: any): Promise<any>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { promoteInfo: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { promoteInfo: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface V1Finance {
 		/**
 			 * 校验支付密码是否正确
@@ -1437,6 +1456,7 @@ declare namespace Eps {
 		};
 		v1: {
 			activity: V1Activity;
+			agent: V1Agent;
 			finance: V1Finance;
 			game: V1Game;
 			notice: V1Notice;

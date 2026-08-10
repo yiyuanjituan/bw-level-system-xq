@@ -563,6 +563,17 @@
     ]
   },
   {
+    "prefix": "/app/v1/agent",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/promoteInfo",
+        "summary": "代理推广配置"
+      }
+    ]
+  },
+  {
     "prefix": "/app/v1/finance",
     "name": "",
     "api": [

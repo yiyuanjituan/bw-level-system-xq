@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import QRCode from "qrcode";
 import Copy from "@/components/Common/Copy.vue";
 import douyinIcon from "@/assets/home/promote/social-douyin.avif";
 import facebookIcon from "@/assets/home/promote/social-facebook.png";
@@ -17,11 +18,13 @@ const props = withDefaults(
   defineProps<{
     inviteCode?: string;
     inviteLink?: string;
+    inviteLinks?: string[];
     qrCode?: string;
   }>(),
   {
-    inviteCode: "482485509",
-    inviteLink: "https://543gffdg-65gjg.33552555.com:18026/?dl=7z9c79",
+    inviteCode: "",
+    inviteLink: "",
+    inviteLinks: () => [],
     qrCode: ""
   }
 );
@@ -31,17 +34,74 @@ const emit = defineEmits<{
   share: [channel: string];
 }>();
 
-const selectedInviteLink = ref(props.inviteLink);
-const inviteLinkOptions = computed(() => [
-  { value: props.inviteLink, label: props.inviteLink }
-]);
+const normalizedInviteLinks = computed(() => {
+  const inviteLinks = Array.isArray(props.inviteLinks)
+    ? props.inviteLinks
+        .filter(inviteLink => typeof inviteLink === "string")
+        .map(inviteLink => inviteLink.trim())
+        .filter(Boolean)
+    : [];
+
+  if (inviteLinks.length) return [...new Set(inviteLinks)];
+
+  const inviteLink = typeof props.inviteLink === "string"
+    ? props.inviteLink.trim()
+    : "";
+  return inviteLink ? [inviteLink] : [];
+});
+const selectedInviteLink = ref("");
+const inviteLinkOptions = computed(() =>
+  normalizedInviteLinks.value.map(inviteLink => ({
+    value: inviteLink,
+    label: inviteLink
+  }))
+);
+const inviteLinkOptionsKey = computed(() => normalizedInviteLinks.value.join("\u0000"));
 
 watch(
-  () => props.inviteLink,
-  inviteLink => {
-    selectedInviteLink.value = inviteLink;
-  }
+  normalizedInviteLinks,
+  inviteLinks => {
+    if (!inviteLinks.includes(selectedInviteLink.value)) {
+      selectedInviteLink.value = inviteLinks[0] ?? "";
+    }
+  },
+  { immediate: true }
 );
+
+const generatedQrCode = ref("");
+let qrCodeGenerationId = 0;
+
+watch(
+  selectedInviteLink,
+  async inviteLink => {
+    const currentGenerationId = ++qrCodeGenerationId;
+
+    if (!inviteLink) {
+      generatedQrCode.value = "";
+      return;
+    }
+
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(inviteLink, {
+        errorCorrectionLevel: "M",
+        margin: 1,
+        width: 220
+      });
+
+      // 快速切换链接时，只保留最后一次生成的二维码。
+      if (currentGenerationId === qrCodeGenerationId) {
+        generatedQrCode.value = qrCodeDataUrl;
+      }
+    } catch {
+      if (currentGenerationId === qrCodeGenerationId) {
+        generatedQrCode.value = "";
+      }
+    }
+  },
+  { immediate: true }
+);
+
+const displayedQrCode = computed(() => generatedQrCode.value || props.qrCode);
 
 const socialMedia = [
   { label: "微信", value: "wechat", icon: wechatIcon },
@@ -72,7 +132,7 @@ const socialMedia = [
     <div class="invite-share__content">
       <div class="invite-share__qr-wrap">
         <div class="invite-share__qr">
-          <img v-if="qrCode" :src="qrCode" alt="推广二维码" />
+          <img v-if="displayedQrCode" :src="displayedQrCode" alt="推广二维码" />
           <span v-else aria-label="推广二维码占位图" />
         </div>
         <x-button
@@ -86,17 +146,20 @@ const socialMedia = [
 
       <div class="invite-share__right">
         <div class="invite-share__link">
-          <x-select
-            v-model="selectedInviteLink"
-            :options="inviteLinkOptions"
-            value-key="value"
-            label-key="label"
-            class="invite-share__link-select"
-          />
+          <div class="invite-share__link-select">
+            <x-select
+              v-if="inviteLinkOptions.length"
+              :key="inviteLinkOptionsKey"
+              v-model="selectedInviteLink"
+              :options="inviteLinkOptions"
+              value-key="value"
+              label-key="label"
+            />
+            <span v-else class="invite-share__link-empty">暂无可用推广域名</span>
+          </div>
           <span class="invite-share__link-copy">
             <copy
               :text="selectedInviteLink"
-              label="复制"
               class-name="invite-share__copy-icon"
             />
           </span>
@@ -243,12 +306,28 @@ const socialMedia = [
 }
 
 .invite-share__link-select {
-  flex: 1;
+  flex: 1 1 0;
   width: 0;
   min-width: 0;
   height: 34px;
-  border: 0;
-  border-radius: 0;
+  overflow: hidden;
+
+  :deep(.x-select) {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+.invite-share__link-empty {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 10px;
+  color: var(--skin__neutral_2);
+  font-size: 11px;
 }
 
 .invite-share__link-copy {
@@ -257,12 +336,12 @@ const socialMedia = [
   justify-content: center;
   align-self: stretch;
   flex: none;
-  width: 55px;
+  box-sizing: border-box;
+  width: 35px;
   border-left: var(--lobby__px, 0.5px) solid var(--skin__border);
   color: var(--skin__primary);
 
   :deep(.copy-icon) {
-    gap: 4px;
     width: 100%;
     height: 100%;
     font-size: 11px;

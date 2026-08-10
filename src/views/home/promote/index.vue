@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { getPromoteInfo } from "@/api/common";
 import SubNavbar from "@/components/SubNavbar.vue";
 import PromoteCreateSubordinate from "./pages/PromoteCreateSubordinate.vue";
 import PromoteData from "./pages/PromoteData.vue";
 import PromoteHome from "./pages/PromoteHome.vue";
+import PromoteRebateRatio from "./pages/PromoteRebateRatio.vue";
 import PromoteShare from "./pages/PromoteShare.vue";
 import PromoteSubordinate from "./pages/PromoteSubordinate.vue";
+import type { PromoteInfo } from "./types";
 
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +36,7 @@ let ownsStylesheet = false;
 
 const defaultActive: PromoteTabValue = "index";
 const activeTab = ref<PromoteTabValue>(defaultActive);
+const promoteInfo = ref<PromoteInfo | null>(null);
 
 function normalizeActive(active: unknown): PromoteTabValue {
   const activeValue = String(Array.isArray(active) ? active[0] : active ?? defaultActive);
@@ -72,6 +76,14 @@ watch(activeTab, active => {
 });
 
 onMounted(() => {
+  void getPromoteInfo()
+    .then(info => {
+      promoteInfo.value = info as PromoteInfo;
+    })
+    .catch(() => {
+      promoteInfo.value = null;
+    });
+
   if (document.getElementById(PROMOTE_STYLESHEET_ID))
     return;
 
@@ -110,12 +122,20 @@ onBeforeUnmount(() => {
         <section class="promote-panel">
           <promote-home
             v-if="tab.value === 'index'"
+            :info="promoteInfo"
             @select-tab="activeTab = $event"
           />
-          <promote-share v-else-if="tab.value === 'share'" />
+          <promote-share
+            v-else-if="tab.value === 'share'"
+            :info="promoteInfo"
+          />
           <promote-subordinate v-else-if="tab.value === 'subordinate'" />
           <promote-data v-else-if="tab.value === 'data'" />
           <promote-create-subordinate v-else-if="tab.value === 'createSubordinate'" />
+          <promote-rebate-ratio
+            v-else-if="tab.value === 'rebateRatio'"
+            :info="promoteInfo"
+          />
           <span v-else class="promote-placeholder">{{ tab.label }}内容</span>
         </section>
       </van-tab>

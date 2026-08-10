@@ -1,20 +1,28 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import dayjs from "dayjs";
 import levelIcon from "@/assets/home/promote/level-current.avif";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     platformId?: string;
-    auditMultiple?: string;
-    settlementDate?: string;
+    agentModeName?: string;
+    auditMultiple?: number;
+    settlementCycleName?: string;
+    nextSettlementTimestamp?: number;
+    highestCommissionRate?: number;
     receivedCommission?: string;
     unclaimedCommission?: string;
     yesterdayPerformance?: string;
     totalCommission?: string;
   }>(),
   {
-    platformId: "482485509",
-    auditMultiple: "0.00",
-    settlementDate: "2026/08/09",
+    platformId: "",
+    agentModeName: "加载中",
+    auditMultiple: 0,
+    settlementCycleName: "",
+    nextSettlementTimestamp: 0,
+    highestCommissionRate: 0,
     receivedCommission: "0.00",
     unclaimedCommission: "0.00",
     yesterdayPerformance: "0.00",
@@ -22,6 +30,43 @@ withDefaults(
   }
 );
 
+const nowTimestamp = ref(Date.now());
+let countdownTimer: ReturnType<typeof setInterval> | undefined;
+
+const auditMultipleText = computed(() =>
+  Number(props.auditMultiple || 0).toFixed(2)
+);
+const settlementDate = computed(() =>
+  props.nextSettlementTimestamp
+    ? dayjs(props.nextSettlementTimestamp).format("YYYY/MM/DD")
+    : "--/--/--"
+);
+const countdownText = computed(() => {
+  if (!props.nextSettlementTimestamp)
+    return "--";
+
+  const remainingSeconds = Math.max(
+    Math.floor((props.nextSettlementTimestamp - nowTimestamp.value) / 1000),
+    0
+  );
+  const days = Math.floor(remainingSeconds / 86400);
+  const hours = Math.floor((remainingSeconds % 86400) / 3600);
+  const minutes = Math.floor((remainingSeconds % 3600) / 60);
+  const seconds = remainingSeconds % 60;
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `${days}天 ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+});
+
+onMounted(() => {
+  countdownTimer = setInterval(() => {
+    nowTimestamp.value = Date.now();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (countdownTimer) clearInterval(countdownTimer);
+});
 </script>
 
 <template>
@@ -35,9 +80,9 @@ withDefaults(
 
         <div class="agent-summary__profile">
           <p><button type="button" class="agent-summary__id">{{ platformId }}</button></p>
-          <p><label>稽核倍数</label><strong>{{ auditMultiple }}</strong></p>
-          <p><span class="agent-summary__mode">三级净盈利</span></p>
-          <p><label>结算日期</label><strong>{{ settlementDate }}</strong></p>
+          <p><label>稽核倍数</label><strong>{{ auditMultipleText }}</strong></p>
+          <p><span class="agent-summary__mode">{{ agentModeName }}</span></p>
+          <p><label>{{ settlementCycleName || "结算" }}日期</label><strong>{{ settlementDate }}</strong></p>
         </div>
       </div>
 
@@ -54,11 +99,11 @@ withDefaults(
               <template #content>
                 <span class="agent-summary__bubble-content">
                   <svg-icon name="promote-megaphone" class-name="agent-summary__bubble-icon" />
-                  <span>最高返佣<em>25%</em>，月入百万不是梦</span>
+                  <span>最高返佣<em>{{ highestCommissionRate.toFixed(2) }}%</em></span>
                 </span>
               </template>
             </x-badge>
-            <small>(距离下次结算 <i>3天</i> 05:31:47)</small>
+            <small>(距离下次结算 <i>{{ countdownText }}</i>)</small>
           </div>
           <span class="agent-summary__arrow" aria-hidden="true">
             <svg-icon name="arrow-back" />

@@ -230,3 +230,10 @@ export function getHelpData(data: any = {}): Promise<any> {
     data: data
   });
 }
+
+export function getPromoteInfo(): Promise<any> {
+  return http.request({
+    url: "/app/v1/agent/promoteInfo",
+    method: "post"
+  });
+}

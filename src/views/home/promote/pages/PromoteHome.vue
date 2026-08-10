@@ -7,6 +7,11 @@ import PromoteAgentSummary from "../components/PromoteAgentSummary.vue";
 import PromoteBroadcast from "../components/PromoteBroadcast.vue";
 import PromoteInviteShare from "../components/PromoteInviteShare.vue";
 import PromoteQuickActions from "../components/PromoteQuickActions.vue";
+import type { PromoteInfo } from "../types";
+
+defineProps<{
+  info: PromoteInfo | null;
+}>();
 
 defineEmits<{
   selectTab: [active: "createSubordinate" | "rebateRatio"];
@@ -36,8 +41,18 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       <promote-broadcast :items="leadingBroadcastItems" :duration="50" />
       <promote-broadcast :duration="30" />
     </div>
-    <promote-agent-summary />
-    <promote-invite-share />
+    <promote-agent-summary
+      :platform-id="info?.user.account || ''"
+      :agent-mode-name="info?.config.agentModeName || '加载中'"
+      :audit-multiple="info?.config.auditMultiplier ?? 0"
+      :settlement-cycle-name="info?.config.settlementCycleName || ''"
+      :next-settlement-timestamp="info?.config.nextSettlementTimestamp || 0"
+      :highest-commission-rate="info?.config.highestCommissionRate ?? 0"
+    />
+    <promote-invite-share
+      :invite-code="info?.user.inviteCode || ''"
+      :invite-links="info?.inviteLinks || []"
+    />
     <promote-quick-actions @select-tab="$emit('selectTab', $event)" />
     <promote-activity-reward />
   </div>
