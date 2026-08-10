@@ -2,6 +2,15 @@
 import createIcon from "@/assets/home/promote/action-create-subordinate.avif";
 import rebateIcon from "@/assets/home/promote/action-rebate-ratio.avif";
 
+withDefaults(
+  defineProps<{
+    showCreateSubordinate?: boolean;
+  }>(),
+  {
+    showCreateSubordinate: true
+  }
+);
+
 defineEmits<{
   selectTab: [active: "createSubordinate" | "rebateRatio"];
 }>();
@@ -10,7 +19,7 @@ defineEmits<{
 
 <template>
   <nav class="quick-actions" aria-label="推广快捷入口">
-    <button type="button" class="quick-actions__item quick-actions__item--primary" @click="$emit('selectTab', 'createSubordinate')">
+    <button v-if="showCreateSubordinate" type="button" class="quick-actions__item quick-actions__item--primary" @click="$emit('selectTab', 'createSubordinate')">
       <span class="quick-actions__text-wrap"><img :src="createIcon" alt="" /><span class="quick-actions__title">创建下级</span></span>
       <svg-icon name="arrow-back" class-name="quick-actions__arrow" aria-hidden="true" />
     </button>

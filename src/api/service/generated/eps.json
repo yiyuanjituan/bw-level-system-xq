@@ -450,6 +450,17 @@
     ]
   },
   {
+    "prefix": "/app/user/device",
+    "name": "",
+    "api": [
+      {
+        "method": "get",
+        "path": "/list",
+        "summary": "获取用户登录设备"
+      }
+    ]
+  },
+  {
     "prefix": "/app/user/info",
     "name": "UserInfoEntity",
     "api": [

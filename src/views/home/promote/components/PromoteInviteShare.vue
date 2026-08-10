@@ -16,12 +16,14 @@ import xiaohongshuIcon from "@/assets/home/promote/social-xiaohongshu.avif";
 
 const props = withDefaults(
   defineProps<{
+    showInviteCode?: boolean;
     inviteCode?: string;
     inviteLink?: string;
     inviteLinks?: string[];
     qrCode?: string;
   }>(),
   {
+    showInviteCode: true,
     inviteCode: "",
     inviteLink: "",
     inviteLinks: () => [],
@@ -120,7 +122,7 @@ const socialMedia = [
 
 <template>
   <section class="invite-share">
-    <header class="invite-share__header">
+    <header v-if="showInviteCode" class="invite-share__header">
       <p>邀请好友</p>
       <div class="invite-share__code">
         <label>我的邀请码</label>

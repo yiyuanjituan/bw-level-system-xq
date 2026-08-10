@@ -5,6 +5,7 @@ import levelIcon from "@/assets/home/promote/level-current.avif";
 
 const props = withDefaults(
   defineProps<{
+    loggedIn?: boolean;
     platformId?: string;
     agentModeName?: string;
     auditMultiple?: number;
@@ -17,6 +18,7 @@ const props = withDefaults(
     totalCommission?: string;
   }>(),
   {
+    loggedIn: false,
     platformId: "",
     agentModeName: "加载中",
     auditMultiple: 0,
@@ -71,22 +73,26 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="agent-summary">
-    <div class="agent-summary__card">
+    <div class="agent-summary__card" :class="{ 'agent-summary__card--guest': !loggedIn }">
       <div class="agent-summary__identity">
-        <div class="agent-summary__level">
+        <div v-if="loggedIn" class="agent-summary__level">
           <img :src="levelIcon" alt="当前代理等级" />
           <span>?</span>
         </div>
 
-        <div class="agent-summary__profile">
-          <p><button type="button" class="agent-summary__id">{{ platformId }}</button></p>
-          <p><label>稽核倍数</label><strong>{{ auditMultipleText }}</strong></p>
+        <div class="agent-summary__profile" :class="{ 'agent-summary__profile--guest': !loggedIn }">
+          <p>
+            <button v-if="loggedIn" type="button" class="agent-summary__id">{{ platformId }}</button>
+            <span v-else class="agent-summary__guest-value">-</span>
+          </p>
+          <p><label>稽核倍数</label><strong>{{ loggedIn ? auditMultipleText : "-" }}</strong></p>
           <p><span class="agent-summary__mode">{{ agentModeName }}</span></p>
-          <p><label>{{ settlementCycleName || "结算" }}日期</label><strong>{{ settlementDate }}</strong></p>
+          <p v-if="loggedIn"><label>{{ settlementCycleName || "结算" }}日期</label><strong>{{ settlementDate }}</strong></p>
+          <p v-else><label>结算周期</label><strong>{{ settlementCycleName || "-" }}</strong></p>
         </div>
       </div>
 
-      <div class="agent-summary__commission">
+      <div v-if="loggedIn" class="agent-summary__commission">
         <div class="agent-summary__title">
           <div class="agent-summary__title-copy">
             <x-badge
@@ -147,6 +153,11 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 0.5px solid var(--skin__border, #e3e3e3);
+}
+
+.agent-summary__card--guest .agent-summary__identity {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .agent-summary__level {
@@ -211,6 +222,15 @@ onBeforeUnmount(() => {
     color: var(--skin__lead);
     font-weight: 400;
   }
+}
+
+.agent-summary__profile--guest {
+  width: 100%;
+  margin-left: 0;
+}
+
+.agent-summary__guest-value {
+  color: var(--skin__neutral_2);
 }
 
 .agent-summary__id {

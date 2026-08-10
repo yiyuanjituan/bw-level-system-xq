@@ -14,10 +14,10 @@ export interface PromoteRuleGroup {
 }
 
 export interface PromoteInfo {
-  user: {
+  user?: {
     account: string;
     inviteCode: string;
-  };
+  } | null;
   config: {
     agentMode: number;
     agentModeName: string;

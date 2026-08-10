@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getPromoteInfo } from "@/api/common";
 import SubNavbar from "@/components/SubNavbar.vue";
@@ -37,6 +37,11 @@ let ownsStylesheet = false;
 const defaultActive: PromoteTabValue = "index";
 const activeTab = ref<PromoteTabValue>(defaultActive);
 const promoteInfo = ref<PromoteInfo | null>(null);
+const promoteInfoLoaded = ref(false);
+const isLoggedIn = computed(() => Boolean(promoteInfo.value?.user?.account));
+const visiblePromoteTabs = computed(() =>
+  promoteTabs.filter(tab => tab.value !== "createSubordinate" || isLoggedIn.value)
+);
 
 function normalizeActive(active: unknown): PromoteTabValue {
   const activeValue = String(Array.isArray(active) ? active[0] : active ?? defaultActive);
@@ -75,6 +80,13 @@ watch(activeTab, active => {
   syncRouteActive(active);
 });
 
+watch([promoteInfoLoaded, isLoggedIn], ([loaded, loggedIn]) => {
+  if (!loaded || loggedIn || activeTab.value !== "createSubordinate")
+    return;
+
+  activeTab.value = defaultActive;
+});
+
 onMounted(() => {
   void getPromoteInfo()
     .then(info => {
@@ -82,6 +94,9 @@ onMounted(() => {
     })
     .catch(() => {
       promoteInfo.value = null;
+    })
+    .finally(() => {
+      promoteInfoLoaded.value = true;
     });
 
   if (document.getElementById(PROMOTE_STYLESHEET_ID))
@@ -114,7 +129,7 @@ onBeforeUnmount(() => {
       animated
     >
       <van-tab
-        v-for="tab in promoteTabs"
+        v-for="tab in visiblePromoteTabs"
         :key="tab.value"
         :name="tab.value"
         :title="tab.label"

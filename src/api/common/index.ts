@@ -231,6 +231,13 @@ export function getHelpData(data: any = {}): Promise<any> {
   });
 }
 
+export function getUserDevices(): Promise<any> {
+  return http.request({
+    url: "/app/user/device/list",
+    method: "get"
+  });
+}
+
 export function getPromoteInfo(): Promise<any> {
   return http.request({
     url: "/app/v1/agent/promoteInfo",

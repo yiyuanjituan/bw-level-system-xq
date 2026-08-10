@@ -1028,6 +1028,25 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface UserDevice {
+		/**
+			 * 获取用户登录设备
+			 */
+			list(data?: any): Promise<any[]>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { list: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { list: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface UserInfo {
 		/**
 			 * 更新用户密码
@@ -1451,6 +1470,7 @@ declare namespace Eps {
 		user: {
 			address: UserAddress;
 			comm: UserComm;
+			device: UserDevice;
 			info: UserInfo;
 			login: UserLogin;
 		};

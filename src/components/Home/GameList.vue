@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { Swiper, SwiperSlide } from "swiper/vue";
 import UiTabs from "@/components/UI/tabs.vue";
-import { computed, nextTick, onMounted, ref } from "vue";
-import "swiper/css";
-import "swiper/css/pagination";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { getHomeApiData } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
@@ -35,6 +32,16 @@ const list = computed(() => {
 });
 const appData = useDataStore();
 const auth = useAuthStore();
+const currentPageByIndex = reactive<Record<number, number>>({});
+const dragOffsetByIndex = reactive<Record<number, number>>({});
+const isDraggingByIndex = reactive<Record<number, boolean>>({});
+const pointerStateByIndex = new Map<
+  number,
+  { startX: number; startY: number; startOffset: number; pointerId: number; moved: boolean }
+>();
+const suppressClickIndexes = new Set<number>();
+const swipeThreshold = 40;
+const slidePageGap = 15;
 
 defineOptions({
   name: "HomeGameList"
@@ -52,6 +59,135 @@ function getPageItems(row: any, pageIndex: number) {
   const pageShowNum = getPageShowNum(row);
   const start = pageIndex * pageShowNum;
   return row.children?.slice(start, start + pageShowNum) ?? [];
+}
+
+function getCurrentPage(row: any, index: number) {
+  const pageCount = getPageCount(row);
+  return Math.min(currentPageByIndex[index] ?? 0, Math.max(pageCount - 1, 0));
+}
+
+function setCurrentPage(row: any, index: number, pageIndex: number) {
+  const lastPage = Math.max(getPageCount(row) - 1, 0);
+  currentPageByIndex[index] = Math.max(0, Math.min(pageIndex, lastPage));
+  dragOffsetByIndex[index] = 0;
+}
+
+function getTrackStyle(row: any, index: number) {
+  const currentPage = getCurrentPage(row, index);
+  const dragOffset = dragOffsetByIndex[index] ?? 0;
+
+  return {
+    transform: `translate3d(calc(${currentPage * -100}% - ${currentPage * slidePageGap}px + ${dragOffset}px), 0, 0)`,
+    transition: isDraggingByIndex[index] ? "none" : "transform 300ms ease"
+  };
+}
+
+function canSlidePrev(row: any, index: number) {
+  return getCurrentPage(row, index) > 0;
+}
+
+function canSlideNext(row: any, index: number) {
+  return getCurrentPage(row, index) < getPageCount(row) - 1;
+}
+
+function slidePrev(row: any, index: number) {
+  if (!canSlidePrev(row, index)) {
+    dragOffsetByIndex[index] = 0;
+    return;
+  }
+  setCurrentPage(row, index, getCurrentPage(row, index) - 1);
+}
+
+function slideNext(row: any, index: number) {
+  if (!canSlideNext(row, index)) {
+    dragOffsetByIndex[index] = 0;
+    return;
+  }
+  setCurrentPage(row, index, getCurrentPage(row, index) + 1);
+}
+
+function handlePointerDown(index: number, event: PointerEvent) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+
+  const target = event.currentTarget as HTMLElement;
+  target.setPointerCapture?.(event.pointerId);
+  pointerStateByIndex.set(index, {
+    startX: event.clientX,
+    startY: event.clientY,
+    startOffset: dragOffsetByIndex[index] ?? 0,
+    pointerId: event.pointerId,
+    moved: false
+  });
+  isDraggingByIndex[index] = true;
+}
+
+function handlePointerMove(row: any, index: number, event: PointerEvent) {
+  const pointerState = pointerStateByIndex.get(index);
+  if (!pointerState || pointerState.pointerId !== event.pointerId) return;
+
+  const distanceX = event.clientX - pointerState.startX;
+  const distanceY = event.clientY - pointerState.startY;
+
+  if (!pointerState.moved && Math.abs(distanceY) > 8 && Math.abs(distanceY) > Math.abs(distanceX)) {
+    handlePointerCancel(index);
+    return;
+  }
+
+  if (Math.abs(distanceX) > 5) pointerState.moved = true;
+  if (!pointerState.moved) return;
+
+  const currentPage = getCurrentPage(row, index);
+  const lastPage = getPageCount(row) - 1;
+  const isDraggingPastStart = currentPage === 0 && distanceX > 0;
+  const isDraggingPastEnd = currentPage === lastPage && distanceX < 0;
+  const resistance = isDraggingPastStart || isDraggingPastEnd ? 0.3 : 1;
+
+  dragOffsetByIndex[index] = pointerState.startOffset + distanceX * resistance;
+}
+
+function handlePointerUp(row: any, index: number, event: PointerEvent) {
+  const pointerState = pointerStateByIndex.get(index);
+  pointerStateByIndex.delete(index);
+  isDraggingByIndex[index] = false;
+
+  if (!pointerState || pointerState.pointerId !== event.pointerId) return;
+
+  const distanceX = event.clientX - pointerState.startX;
+  if (!pointerState.moved) {
+    dragOffsetByIndex[index] = 0;
+    return;
+  }
+
+  suppressClickIndexes.add(index);
+  window.setTimeout(() => suppressClickIndexes.delete(index), 300);
+
+  if (distanceX <= -swipeThreshold) {
+    slideNext(row, index);
+    return;
+  }
+
+  if (distanceX >= swipeThreshold) {
+    slidePrev(row, index);
+    return;
+  }
+
+  dragOffsetByIndex[index] = 0;
+}
+
+function handlePointerCancel(index: number) {
+  pointerStateByIndex.delete(index);
+  isDraggingByIndex[index] = false;
+  dragOffsetByIndex[index] = 0;
+}
+
+function handleGameClick(record: any, index: number) {
+  if (suppressClickIndexes.has(index)) return;
+  clickGameItem(record);
+}
+
+function handleDisabledClick(index: number) {
+  if (suppressClickIndexes.has(index)) return;
+  showDisabledTip();
 }
 
 function getHomeData() {
@@ -84,7 +220,7 @@ onMounted(() => getHomeData());
 
 <template>
   <ui-tabs :list="list" panel-scroll>
-    <template #panel="{ row }">
+    <template #panel="{ row, index }">
       <section class="game-list-box" v-if="row.children && row.children.length">
         <div class="list-slide-box">
           <section class="arrow-load-view">
@@ -95,50 +231,74 @@ onMounted(() => getHomeData());
               </div>
               <div class="switch-pagination-box">
                 <div class="switch-pagination">
-                  <div class="arrow-btn">
+                  <button
+                    type="button"
+                    class="arrow-btn"
+                    :disabled="!canSlidePrev(row, index)"
+                    @click="slidePrev(row, index)"
+                  >
                     <i class="inline-flex justify-center items-center left-icon">
                       <svg width="1em" height="1em" fill="currentColor" class="">
                         <use xlink:href="#comm_icon_fy_jt"></use>
                       </svg>
                     </i>
-                  </div>
+                  </button>
                   <div class="btn-all-inside">全部</div>
-                  <div class="arrow-btn">
+                  <button
+                    type="button"
+                    class="arrow-btn"
+                    :disabled="!canSlideNext(row, index)"
+                    @click="slideNext(row, index)"
+                  >
                     <i class="inline-flex justify-center items-center">
                       <svg width="1em" height="1em" fill="currentColor" class="">
                         <use xlink:href="#comm_icon_fy_jt"></use>
                       </svg>
                     </i>
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
-            <div class="list-slide-layout">
-              <swiper class="" :space-between="15">
-                <template v-for="pageIndex in getPageCount(row)" :key="pageIndex">
-                  <swiper-slide
-                    class="list-slide-layout-inner"
-                    :data-length="getPageItems(row, pageIndex - 1).length"
+            <div
+              class="list-slide-layout"
+              @pointerdown="handlePointerDown(index, $event)"
+              @pointermove="handlePointerMove(row, index, $event)"
+              @pointerup="handlePointerUp(row, index, $event)"
+              @pointercancel="handlePointerCancel(index)"
+            >
+              <div
+                class="list-slide-track"
+                :class="{ 'is-dragging': isDraggingByIndex[index] }"
+                :style="getTrackStyle(row, index)"
+              >
+                <div
+                  v-for="pageIndex in getPageCount(row)"
+                  :key="pageIndex"
+                  class="list-slide-page"
+                  :data-length="getPageItems(row, pageIndex - 1).length"
+                >
+                  <div
+                    v-for="(game, gameIndex) in getPageItems(row, pageIndex - 1)"
+                    :key="`${pageIndex}-${game.id ?? game.gameCode ?? gameIndex}`"
+                    class="item"
+                    :style="{ '--bg-img': `url(${game?.image})` }"
+                    @click="handleGameClick(game, index)"
                   >
-                    <div
-                      v-for="(game, gameIndex) in getPageItems(row, pageIndex - 1)"
-                      :key="`${pageIndex}-${game.id ?? game.gameCode ?? gameIndex}`"
-                      class="item"
-                      :style="{ '--bg-img': `url(${game?.image})` }"
-                      @click="clickGameItem(game)"
+                    <section class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]">
+                      <span class="name-inner" v-if="game?.gameMode == 'game'">
+                        {{ game?.name }}
+                      </span>
+                    </section>
+                    <section
+                      class="disabled-box"
+                      v-if="game?.isOpen == 0"
+                      @click.stop="handleDisabledClick(index)"
                     >
-                      <section class="w-100% h-46px px-[5px] pb-[5px] text-white text-[16px]">
-                        <span class="name-inner" v-if="game?.gameMode == 'game'">
-                          {{ game?.name }}
-                        </span>
-                      </section>
-                      <section class="disabled-box" v-if="game?.isOpen == 0" @click.stop="showDisabledTip">
-                        <div class="disabled-icon text-white"></div>
-                      </section>
-                    </div>
-                  </swiper-slide>
-                </template>
-              </swiper>
+                      <div class="disabled-icon text-white"></div>
+                    </section>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -184,9 +344,11 @@ onMounted(() => getHomeData());
             border: thin solid #313843;
 
             .arrow-btn {
-              color: #68707b;
-              cursor: not-allowed;
-              pointer-events: none;
+              padding: 0;
+              border: 0;
+              color: white;
+              cursor: pointer;
+              background: transparent;
               flex-grow: 0;
               flex-shrink: 0;
               display: flex;
@@ -195,8 +357,20 @@ onMounted(() => getHomeData());
               width: 30px;
               height: 100%;
               font-size: 8px;
+              transition: color 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+
               .left-icon {
                 transform: rotate(180deg);
+              }
+
+              &:active:not(:disabled) {
+                background-color: rgba(255, 255, 255, 0.12);
+                transform: scale(0.92);
+              }
+
+              &:disabled {
+                color: #68707b;
+                cursor: not-allowed;
               }
             }
             .btn-all-inside {
@@ -219,8 +393,24 @@ onMounted(() => getHomeData());
       .list-slide-layout {
         width: 345px;
         margin-top: 10px;
+        overflow: hidden;
+        touch-action: pan-y;
+        user-select: none;
 
-        .list-slide-layout-inner {
+        .list-slide-track {
+          display: flex;
+          gap: 15px;
+          height: 100%;
+          will-change: transform;
+          transition: transform 300ms ease;
+
+          &.is-dragging {
+            transition: none;
+          }
+        }
+
+        .list-slide-page {
+          flex: 0 0 345px;
           width: 345px;
           padding-left: 0;
           height: 294.3px;
@@ -231,6 +421,7 @@ onMounted(() => getHomeData());
           box-sizing: border-box;
           .item {
             width: 105px;
+            background-color: #1c1e23;
             background-image: var(--bg-img);
             background-size: 100% 100%;
             display: flex;

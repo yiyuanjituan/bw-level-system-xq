@@ -1,15 +1,60 @@
 <script setup lang="ts">
+import { getUserDevices } from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
 import { toPng } from 'html-to-image';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+
+interface UserDevice {
+  id: number;
+  current: boolean;
+  client: string;
+  browserType: string;
+  operatingSystem: string;
+  systemVersion: string;
+  deviceBrand: string;
+  deviceModel: string;
+  ip: string;
+  address: string;
+  loginTime: string;
+}
 
 const app = useAppStore();
 const auth = useAuthStore();
 const saveImageRef = ref<HTMLElement | null>(null);
+const deviceList = ref<UserDevice[]>([]);
+const loading = ref(true);
 const captureFileName = '设备图片.png';
 const captureErrorMessage = '保存图片失败，请稍后重试';
+
+function formatLoginTime(value: string) {
+  if (!value)
+    return '未知';
+
+  return value.replace(/-/g, '/').replace('T', ' ').slice(0, 19);
+}
+
+function formatIpRegion(device: UserDevice) {
+  if (!device.address || device.address === '未知')
+    return device.ip || '未知';
+
+  return `${device.ip} ${device.address}`;
+}
+
+async function loadDevices() {
+  loading.value = true;
+  try {
+    const result = await getUserDevices();
+    deviceList.value = Array.isArray(result) ? result : [];
+  } catch {
+    deviceList.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadDevices);
 
 function waitForNextFrame() {
   return new Promise(resolve => requestAnimationFrame(() => resolve(true)));
@@ -204,67 +249,61 @@ async function saveToImg() {
           </div>
           <img src="@/assets/common/comm_logo_bg2.avif" alt="" class="bg" />
         </div>
-        <div class="splitLine"></div>
-        <div class="sec-container">
-          <div class="titleWrap">自动退出登录<span>(闲置时长)</span></div>
-          <div class="selectWrap">
-            <span>1年</span>
-            <span class="arrow-icon">
-              <svg-icon name="arrow-back" />
-            </span>
-          </div>
-        </div>
       </div>
       <div class="device-list">
-        <div class="historyDevice" v-for="i in 8" :key="i">
-          <div class="deviceTitle">
-            <div class="leftWrap">
-              <svg-icon name="icon_dlsb_sj" class-name="picBg" />
-              <div class="text-[13px]">当前设备</div>
-              <div class="currentBg">
-                <svg-icon name="comm_icon_gou" class-name="!text-[9px]" />
+        <div v-if="loading" class="device-state">正在加载设备信息...</div>
+        <div v-else-if="!deviceList.length" class="device-state">暂无登录设备记录</div>
+        <template v-else>
+          <div v-for="device in deviceList" :key="device.id" class="historyDevice">
+            <div class="deviceTitle">
+              <div class="leftWrap">
+                <svg-icon name="icon_dlsb_sj" class-name="picBg" />
+                <div class="text-[13px]">{{ device.current ? '当前设备' : '历史设备' }}</div>
+                <div v-if="device.current" class="currentBg">
+                  <svg-icon name="comm_icon_gou" class-name="!text-[9px]" />
+                </div>
+              </div>
+            </div>
+            <div class="device-content-wrapper">
+              <div class="info-list">
+                <div class="info-item">
+                  <p class="infoLabel">客户端</p>
+                  <p class="infoValue">{{ device.client }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">浏览器类型</p>
+                  <p class="infoValue">{{ device.browserType }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">操作系统</p>
+                  <p class="infoValue">{{ device.operatingSystem }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">系统版本</p>
+                  <p class="infoValue">{{ device.systemVersion }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">设备品牌</p>
+                  <p class="infoValue">{{ device.deviceBrand }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">设备型号</p>
+                  <p class="infoValue">{{ device.deviceModel }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">IP地区</p>
+                  <p class="infoValue">{{ formatIpRegion(device) }}</p>
+                </div>
+                <div class="info-item">
+                  <p class="infoLabel">登录时间</p>
+                  <p class="infoValue">{{ formatLoginTime(device.loginTime) }}</p>
+                </div>
               </div>
             </div>
           </div>
-          <div class="device-content-wrapper">
-            <div class="info-list">
-              <div class="info-item">
-                <p class="infoLabel">客户端</p>
-                <p class="infoValue">H5(7.3.112)</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">浏览器类型</p>
-                <p class="infoValue">Mobile Safari v18.5</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">操作系统</p>
-                <p class="infoValue">Windows</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">系统版本</p>
-                <p class="infoValue">Windows 10</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">设备品牌</p>
-                <p class="infoValue">未知</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">设备型号</p>
-                <p class="infoValue">Chrome v146.0.0.0</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">IP地区</p>
-                <p class="infoValue">103.129.54.82 Hong Kong/North District-Sheung Shui</p>
-              </div>
-              <div class="info-item">
-                <p class="infoLabel">登录时间</p>
-                <p class="infoValue">2026/03/16 10:11:50</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        </template>
       </div>
-      <div class="saveImgBtn" @click="saveToImg">
+      <div v-if="deviceList.length" class="saveImgBtn" @click="saveToImg">
         <x-button type="primary" class="!w-[100%]">保存图片</x-button>
       </div>
     </div>
@@ -399,8 +438,14 @@ async function saveToImg() {
     }
     .device-list {
       padding: 10px 10px 65px;
-      height: calc(100% - 145px);
+      height: calc(100% - 100px);
       overflow-y: auto;
+      .device-state {
+        padding: 45px 10px;
+        color: var(--skin__neutral_2);
+        font-size: 13px;
+        text-align: center;
+      }
       .currentDevice,
       .historyDevice {
         width: 100%;

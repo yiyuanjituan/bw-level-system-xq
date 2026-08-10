@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { service } from "@/api/service";
 import UiBadge from "@/components/UI/badge.vue";
+import { APP_PREFIX_KEY } from "@/utils/site";
 
 defineOptions({
   name: "HomeNotice"
@@ -13,33 +14,95 @@ type MarqueeItem = {
   content?: string;
 };
 
+type NoticeCache = {
+  marqueeList: MarqueeItem[];
+  messageCount: number;
+  expiresAt: number;
+};
+
+const NOTICE_CACHE_KEY = `${APP_PREFIX_KEY}_home_notice`;
+const NOTICE_CACHE_DURATION = 5 * 60 * 1000;
+
 const marqueeList = ref<MarqueeItem[]>([]);
 const messageCount = ref(0);
 const router = useRouter();
 
-function init() {
-  service.v1.notice
-    .marqueeList({ limit: 9999 })
-    .then(res => {
-      marqueeList.value = Array.isArray(res?.list) ? res.list : [];
-    })
-    .catch(error => {
-      marqueeList.value = [];
-      console.error("获取首页跑马灯公告失败，失败原因：", error);
-    });
+async function init() {
+  let cachedNotice: NoticeCache | null = null;
 
-  service.v1.notice
-    .notifyList({ limit: 9999 })
-    .then(res => {
-      const total = Number(res?.total);
-      const notifyList = Array.isArray(res?.list) ? res.list : [];
+  try {
+    const cacheContent = localStorage.getItem(NOTICE_CACHE_KEY);
+    const parsedCache = cacheContent
+      ? (JSON.parse(cacheContent) as NoticeCache)
+      : null;
 
-      messageCount.value = Number.isFinite(total) ? total : notifyList.length;
-    })
-    .catch(error => {
-      messageCount.value = 0;
-      console.error("获取首页消息数量失败，失败原因：", error);
-    });
+    if (
+      parsedCache &&
+      Array.isArray(parsedCache.marqueeList) &&
+      Number.isFinite(parsedCache.messageCount) &&
+      Number.isFinite(parsedCache.expiresAt)
+    ) {
+      cachedNotice = parsedCache;
+      marqueeList.value = parsedCache.marqueeList;
+      messageCount.value = parsedCache.messageCount;
+
+      if (parsedCache.expiresAt > Date.now()) return;
+    }
+  } catch (error) {
+    localStorage.removeItem(NOTICE_CACHE_KEY);
+    console.error("读取首页公告缓存失败，失败原因：", error);
+  }
+
+  const [marqueeResult, notifyResult] = await Promise.allSettled([
+    service.v1.notice.marqueeList({ limit: 9999 }),
+    service.v1.notice.notifyList({ limit: 9999 })
+  ]);
+
+  if (marqueeResult.status === "fulfilled") {
+    marqueeList.value = Array.isArray(marqueeResult.value?.list)
+      ? marqueeResult.value.list
+      : [];
+  } else {
+    console.error(
+      "获取首页跑马灯公告失败，失败原因：",
+      marqueeResult.reason
+    );
+  }
+
+  if (notifyResult.status === "fulfilled") {
+    const total = Number(notifyResult.value?.total);
+    const notifyList = Array.isArray(notifyResult.value?.list)
+      ? notifyResult.value.list
+      : [];
+
+    messageCount.value = Number.isFinite(total) ? total : notifyList.length;
+  } else {
+    console.error("获取首页消息数量失败，失败原因：", notifyResult.reason);
+  }
+
+  // 两个接口都成功时才更新缓存，避免部分失败覆盖上一次完整数据。
+  if (
+    marqueeResult.status === "fulfilled" &&
+    notifyResult.status === "fulfilled"
+  ) {
+    try {
+      localStorage.setItem(
+        NOTICE_CACHE_KEY,
+        JSON.stringify({
+          marqueeList: marqueeList.value,
+          messageCount: messageCount.value,
+          expiresAt: Date.now() + NOTICE_CACHE_DURATION
+        } satisfies NoticeCache)
+      );
+    } catch (error) {
+      console.error("保存首页公告缓存失败，失败原因：", error);
+    }
+  } else if (!cachedNotice) {
+    marqueeList.value =
+      marqueeResult.status === "fulfilled" ? marqueeList.value : [];
+    messageCount.value =
+      notifyResult.status === "fulfilled" ? messageCount.value : 0;
+  }
 }
 
 function openNoticeDetail(notice: MarqueeItem) {

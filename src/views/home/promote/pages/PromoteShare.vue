@@ -11,7 +11,8 @@ defineProps<{
 <template>
   <div class="promote-share">
     <promote-invite-share
-      :invite-code="info?.user.inviteCode || ''"
+      :show-invite-code="Boolean(info?.user?.account)"
+      :invite-code="info?.user?.inviteCode || ''"
       :invite-links="info?.inviteLinks || []"
     />
     <promote-commission-tutorial />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import goldLevelTwoIcon from "@/assets/home/promote/level-gold-2.avif";
 import goldLevelIcon from "@/assets/home/promote/level-gold.avif";
 import silverLevelIcon from "@/assets/home/promote/level-silver.avif";
@@ -9,7 +10,7 @@ import PromoteInviteShare from "../components/PromoteInviteShare.vue";
 import PromoteQuickActions from "../components/PromoteQuickActions.vue";
 import type { PromoteInfo } from "../types";
 
-defineProps<{
+const props = defineProps<{
   info: PromoteInfo | null;
 }>();
 
@@ -22,6 +23,8 @@ interface PromoteBroadcastItem {
   commission: string;
   levelIcon: string;
 }
+
+const isLoggedIn = computed(() => Boolean(props.info?.user?.account));
 
 const leadingBroadcastItems: PromoteBroadcastItem[] = [
   { account: "43****573", commission: "1,994.51", levelIcon: goldLevelIcon },
@@ -42,7 +45,8 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       <promote-broadcast :duration="30" />
     </div>
     <promote-agent-summary
-      :platform-id="info?.user.account || ''"
+      :logged-in="isLoggedIn"
+      :platform-id="info?.user?.account || ''"
       :agent-mode-name="info?.config.agentModeName || '加载中'"
       :audit-multiple="info?.config.auditMultiplier ?? 0"
       :settlement-cycle-name="info?.config.settlementCycleName || ''"
@@ -50,11 +54,15 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       :highest-commission-rate="info?.config.highestCommissionRate ?? 0"
     />
     <promote-invite-share
-      :invite-code="info?.user.inviteCode || ''"
+      :show-invite-code="isLoggedIn"
+      :invite-code="info?.user?.inviteCode || ''"
       :invite-links="info?.inviteLinks || []"
     />
-    <promote-quick-actions @select-tab="$emit('selectTab', $event)" />
-    <promote-activity-reward />
+    <promote-quick-actions
+      :show-create-subordinate="isLoggedIn"
+      @select-tab="$emit('selectTab', $event)"
+    />
+    <promote-activity-reward v-if="isLoggedIn" />
   </div>
 </template>
 

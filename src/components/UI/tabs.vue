@@ -148,7 +148,7 @@ function handleTabClick(index: number) {
     <div class="ui-tabs__content">
       <template v-for="(item, index) in props.list" :key="index">
         <div class="ui-tab__panel" :ref="(el) => setPanelRef(el as Element | null, index)">
-          <slot name="panel" :row="item" />
+          <slot name="panel" :row="item" :index="index" />
         </div>
       </template>
     </div>
