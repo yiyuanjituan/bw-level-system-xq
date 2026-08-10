@@ -25,7 +25,7 @@ const arrowHorizontalGap = 18 * connectorOffsetPerPixel;
 const routeVerticalGap = 10 * connectorOffsetPerPixel;
 const memberCardFiveSixthsX = "83.3333333333%";
 const connectorLineWidth = 5;
-// 三角箭头与节点保持 0.2rem，在设计宽度下对应 10px。
+// 三角箭头与节点保持 10px，在设计宽度下对应 10px。
 const arrowOffsetY = 20;
 const activeTutorial = ref("a");
 const tutorialTabs = [
@@ -643,7 +643,7 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
             </div>
           </canvas-connector>
 
-          <van-empty v-else description="暂无教程内容" image-size="1.6rem" />
+          <van-empty v-else description="暂无教程内容" image-size="80px" />
         </x-tab>
       </x-tabs>
     </div>
@@ -669,21 +669,21 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
 
 <style scoped lang="less">
 .commission-tutorial {
-  padding-bottom: 0.2rem;
+  padding-bottom: 10px;
   overflow: hidden;
 }
 
 .commission-tutorial__content {
-  padding: 0 0.2rem 0.2rem;
+  padding: 0 10px 10px;
 }
 
 .commission-tutorial__tabs {
   :deep(.x-tabs__wrap) {
-    padding: 0.2rem 0;
+    padding: 10px 0;
   }
 
   :deep(.x-tabs__nav--card) {
-    gap: 0.12rem;
+    gap: 6px;
     min-width: 100%;
     border: 0;
   }
@@ -691,13 +691,13 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
   :deep(.x-tab--card) {
     flex: 1;
     min-width: 0;
-    height: 0.5rem;
-    min-height: 0.5rem;
-    padding: 0 0.12rem;
-    border: var(--lobby__px, 0.01rem) solid var(--skin__border);
-    border-radius: 0.3rem;
+    height: 25px;
+    min-height: 25px;
+    padding: 0 6px;
+    border: var(--lobby__px, 0.5px) solid var(--skin__border);
+    border-radius: 15px;
     color: var(--skin__neutral_1);
-    font-size: 0.2rem;
+    font-size: 10px;
     background: var(--skin__bg_2);
   }
 
@@ -719,11 +719,11 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  min-height: 1.8rem;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  min-height: 90px;
+  padding: 10px;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.08);
 }
 
 .commission-tutorial__main-badge {
@@ -732,12 +732,12 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
   :deep(.x-badge) {
     right: 0;
     bottom: 0;
-    min-width: 0.38rem;
-    height: 0.3rem;
-    padding: 0 0.08rem;
+    min-width: 19px;
+    height: 15px;
+    padding: 0 4px;
     border-radius: 50%;
-    font-size: 0.18rem;
-    line-height: 0.3rem;
+    font-size: 9px;
+    line-height: 15px;
     transform: none;
   }
 
@@ -748,10 +748,10 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
 
 .commission-tutorial__main-avatar {
   display: block;
-  width: 0.96rem;
-  height: 0.96rem;
-  padding: 0.03rem;
-  border: 0.03rem solid var(--skin__accent_3);
+  width: 48px;
+  height: 48px;
+  padding: 1.5px;
+  border: 1.5px solid var(--skin__accent_3);
   border-radius: 50%;
 
   img {
@@ -765,11 +765,11 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
 .commission-tutorial__main-content {
   position: relative;
   flex: 1;
-  max-width: 4.8rem;
-  margin-left: 0.2rem;
-  padding: 0.45rem 0;
+  max-width: 240px;
+  margin-left: 10px;
+  padding: 22.5px 0;
   color: var(--skin__lead);
-  font-size: 0.22rem;
+  font-size: 11px;
   line-height: 1.64;
 
   p {
@@ -789,12 +789,12 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: 0.1rem;
-  border-radius: 0.14rem 0;
+  padding: 5px;
+  border-radius: 7px 0;
   color: var(--skin__lead, #333);
   background-color: rgba(var(--skin__border__toRgbString), 0.5);
   font-family: "Microsoft YaHei Lobby", "Microsoft YaHei", sans-serif;
-  font-size: 0.2rem;
+  font-size: 10px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -806,8 +806,8 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  gap: 0.2rem;
-  margin-top: 0.55rem;
+  gap: 10px;
+  margin-top: 27.5px;
 
 }
 
@@ -816,22 +816,22 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
 }
 
 .commission-tutorial__detail {
-  margin: 0 0.2rem;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  margin: 0 10px;
+  padding: 10px;
+  border-radius: 7px;
   color: var(--skin__lead);
-  font-size: 0.24rem;
-  line-height: 0.4rem;
+  font-size: 12px;
+  line-height: 20px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.08);
 
   p {
     margin: 0;
-    text-indent: 0.4rem;
+    text-indent: 20px;
   }
 
   p + p {
-    margin-top: 0.08rem;
+    margin-top: 4px;
   }
 
   strong {
@@ -850,14 +850,14 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
 
 [dir="rtl"] {
   .commission-tutorial__main-content {
-    margin-right: 0.2rem;
+    margin-right: 10px;
     margin-left: 0;
   }
 
   .commission-tutorial__balance {
     right: auto;
     left: 0;
-    border-radius: 0 0.14rem;
+    border-radius: 0 7px;
   }
 }
 </style>

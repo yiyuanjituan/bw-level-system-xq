@@ -13,6 +13,6 @@ import PromoteInviteShare from "../components/PromoteInviteShare.vue";
 <style scoped lang="less">
 .promote-share {
   width: 100%;
-  padding-top: 0.2rem;
+  padding-top: 10px;
 }
 </style>

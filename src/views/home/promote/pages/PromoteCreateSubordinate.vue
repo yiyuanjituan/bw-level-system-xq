@@ -133,28 +133,28 @@ async function handleCreate() {
   }
 
   :deep(.x-tabs__nav) {
-    min-height: 0.5rem;
+    min-height: 25px;
     border: 0;
     border-radius: 0;
   }
 
   :deep(.x-tab) {
     flex: none;
-    min-width: 1.3rem;
-    min-height: 0.5rem;
-    margin-right: 0.2rem;
-    padding: 0 0.2rem;
+    min-width: 65px;
+    min-height: 25px;
+    margin-right: 10px;
+    padding: 0 10px;
     color: var(--skin__neutral_1);
-    font-size: 0.22rem;
+    font-size: 11px;
     font-weight: 400;
     text-align: center;
     background: var(--skin__text_bg_2);
     border: var(--lobby__px) solid var(--skin__border);
-    border-radius: 0.25rem;
+    border-radius: 12.5px;
   }
 
   :deep(.x-tab:first-child) {
-    margin-left: 0.2rem;
+    margin-left: 10px;
   }
 
   :deep(.x-tab--active) {
@@ -182,35 +182,35 @@ async function handleCreate() {
 }
 
 .create-subordinate__form-item {
-  margin-bottom: 0.2rem;
+  margin-bottom: 10px;
 }
 
 .create-subordinate__password-item {
-  margin-bottom: 0.12rem;
+  margin-bottom: 6px;
 }
 
 .create-subordinate__label {
   display: flex;
   align-items: center;
-  min-height: 0.4rem;
-  margin-bottom: 0.1rem;
+  min-height: 20px;
+  margin-bottom: 5px;
   color: var(--skin__neutral_1);
-  font-size: 0.24rem;
+  font-size: 12px;
   line-height: 1.2;
 }
 
 .create-subordinate__required {
-  margin-right: 0.04rem;
+  margin-right: 2px;
   color: var(--skin__accent_2);
 }
 
 .create-subordinate__form {
   :deep(.x-input) {
-    height: 0.7rem;
+    height: 35px;
     color: var(--skin__lead);
     background: var(--skin__text_bg_2);
     border-color: var(--skin__border);
-    border-radius: 0.1rem;
+    border-radius: 5px;
   }
 
   :deep(.x-input:focus-within) {
@@ -219,7 +219,7 @@ async function handleCreate() {
 
   :deep(.x-input__input) {
     color: var(--skin__lead);
-    font-size: 0.24rem;
+    font-size: 12px;
   }
 
   :deep(.x-input__input::placeholder) {
@@ -229,27 +229,27 @@ async function handleCreate() {
   :deep(.x-input__prefix),
   :deep(.x-input__suffix) {
     color: var(--skin__neutral_2);
-    font-size: 0.34rem;
+    font-size: 17px;
   }
 
   :deep(.x-form-item__explain) {
-    margin-top: 0.08rem;
+    margin-top: 4px;
     color: var(--skin__accent_2);
-    font-size: 0.22rem;
+    font-size: 11px;
   }
 
   :deep(.password-power) {
-    height: 0.3rem;
+    height: 15px;
     margin: 0;
     color: var(--skin__neutral_1);
-    font-size: 0.22rem;
+    font-size: 11px;
   }
 
   :deep(.password-power .colorLump) {
-    width: 0.8rem;
-    height: 0.12rem;
-    margin-right: 0.1rem;
-    border-radius: 0.12rem;
+    width: 40px;
+    height: 6px;
+    margin-right: 5px;
+    border-radius: 6px;
   }
 }
 
@@ -258,23 +258,23 @@ async function handleCreate() {
 }
 
 .create-subordinate__submit :deep(.x-button) {
-  height: 0.7rem;
-  font-size: 0.24rem;
-  border-radius: 0.1rem;
+  height: 35px;
+  font-size: 12px;
+  border-radius: 5px;
 }
 
 [dir="rtl"] .create-subordinate__type :deep(.x-tab) {
   margin-right: 0;
-  margin-left: 0.2rem;
+  margin-left: 10px;
 }
 
 [dir="rtl"] .create-subordinate__type :deep(.x-tab:first-child) {
-  margin-right: 0.2rem;
+  margin-right: 10px;
   margin-left: 0;
 }
 
 [dir="rtl"] .create-subordinate__required {
   margin-right: 0;
-  margin-left: 0.04rem;
+  margin-left: 2px;
 }
 </style>

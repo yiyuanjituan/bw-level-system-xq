@@ -203,28 +203,28 @@ const incomeRows: AccumulatedMetric[][] = [
 }
 
 :deep(.promote-data__period-tabs > .x-tabs__wrap) {
-  min-height: 0.5rem;
+  min-height: 25px;
   margin: 0;
   border: 0;
 }
 
 :deep(.promote-data__period-tabs .x-tabs__nav) {
-  min-height: 0.5rem;
-  padding: 0 0 0 0.2rem;
+  min-height: 25px;
+  padding: 0 0 0 10px;
   border: 0;
 }
 
 :deep(.promote-data__period-tabs .x-tab) {
   flex: 0 0 auto;
-  min-width: 1rem;
-  min-height: 0.5rem;
-  padding: 0 0.1rem;
-  margin-right: 0.2rem;
+  min-width: 50px;
+  min-height: 25px;
+  padding: 0 5px;
+  margin-right: 10px;
   color: var(--skin__neutral_1);
-  font-size: 0.22rem;
+  font-size: 11px;
   background: var(--skin__text_bg, var(--skin__bg_2));
   border: var(--lobby__px) solid var(--skin__border);
-  border-radius: 0.25rem;
+  border-radius: 12.5px;
 }
 
 :deep(.promote-data__period-tabs .x-tab--active) {

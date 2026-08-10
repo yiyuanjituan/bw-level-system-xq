@@ -46,10 +46,10 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
 <style scoped lang="less">
 .promote-home {
   width: 100%;
-  padding: 0.2rem 0;
+  padding: 10px 0;
 }
 
 .promote-home__broadcasts {
-  margin-bottom: 0.1rem;
+  margin-bottom: 5px;
 }
 </style>

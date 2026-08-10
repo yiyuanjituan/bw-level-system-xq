@@ -55,8 +55,8 @@ withDefaults(
 
   position: relative;
   flex: 1;
-  max-width: 3.05rem;
-  padding-top: 0.4rem;
+  max-width: 152.5px;
+  padding-top: 20px;
   color: var(--skin__neutral_1);
   text-align: center;
 }
@@ -79,15 +79,15 @@ withDefaults(
   transform: translateX(-50%);
 
   :deep(.x-badge) {
-    right: -0.04rem;
+    right: -2px;
     bottom: 0;
-    min-width: 0.34rem;
-    height: 0.28rem;
-    padding: 0 0.06rem;
-    border: var(--lobby__px, 0.01rem) solid var(--skin__bg_2);
+    min-width: 17px;
+    height: 14px;
+    padding: 0 3px;
+    border: var(--lobby__px, 0.5px) solid var(--skin__bg_2);
     border-radius: 50%;
-    font-size: 0.16rem;
-    line-height: 0.26rem;
+    font-size: 8px;
+    line-height: 13px;
     transform: none;
   }
 
@@ -98,10 +98,10 @@ withDefaults(
 
 .commission-member__avatar {
   display: block;
-  width: 0.8rem;
-  height: 0.8rem;
-  padding: 0.03rem;
-  border: 0.03rem solid var(--member-color);
+  width: 40px;
+  height: 40px;
+  padding: 1.5px;
+  border: 1.5px solid var(--member-color);
   border-radius: 50%;
   background: var(--skin__bg_2);
 
@@ -120,11 +120,11 @@ withDefaults(
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-height: 1.2rem;
-  padding: 0.55rem 0.1rem 0.2rem;
-  border-radius: 0.16rem;
+  min-height: 60px;
+  padding: 27.5px 5px 10px;
+  border-radius: 8px;
   background-color: var(--member-background);
-  font-size: 0.18rem;
+  font-size: 9px;
   line-height: 1.55;
 
   p {
@@ -151,11 +151,11 @@ withDefaults(
   }
 
   p + p {
-    margin-top: 0.06rem;
+    margin-top: 3px;
   }
 
   p:last-child span:first-child {
-    margin-right: 0.01rem;
+    margin-right: 0.5px;
   }
 
   em {
@@ -166,6 +166,6 @@ withDefaults(
 
 [dir="rtl"] .commission-member__content p:last-child span:first-child {
   margin-right: 0;
-  margin-left: 0.01rem;
+  margin-left: 0.5px;
 }
 </style>

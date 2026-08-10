@@ -105,7 +105,7 @@ const broadcastItems = computed(() =>
   flex-flow: row;
   align-items: center;
   width: 100%;
-  margin-bottom: 0.1rem;
+  margin-bottom: 5px;
   overflow: hidden;
 }
 
@@ -123,7 +123,7 @@ const broadcastItems = computed(() =>
   flex-flow: row nowrap;
   justify-content: flex-start;
   align-items: center;
-  max-height: 0.4rem;
+  max-height: 20px;
 }
 
 .promote-broadcast__item {
@@ -131,10 +131,10 @@ const broadcastItems = computed(() =>
   align-items: center;
   justify-content: center;
   flex: none;
-  margin-right: 0.3rem;
-  padding: 0.04rem 0.12rem;
-  line-height: 0.32rem;
-  border-radius: 0.9rem;
+  margin-right: 15px;
+  padding: 2px 6px;
+  line-height: 16px;
+  border-radius: 45px;
   background: var(--skin__bg_2, #fff);
 }
 
@@ -142,8 +142,8 @@ const broadcastItems = computed(() =>
   position: relative;
   display: flex;
   flex: none;
-  width: 0.32rem;
-  margin-right: 0.05rem;
+  width: 16px;
+  margin-right: 2.5px;
 
   img {
     display: block;
@@ -155,7 +155,7 @@ const broadcastItems = computed(() =>
 .promote-broadcast__commission {
   margin: 0;
   color: var(--skin__neutral_2, #999);
-  font-size: 0.18rem;
+  font-size: 9px;
   font-weight: 400;
   white-space: nowrap;
 }
@@ -169,7 +169,7 @@ const broadcastItems = computed(() =>
 }
 
 .promote-broadcast__space {
-  font-size: 0.18rem;
+  font-size: 9px;
 }
 
 @keyframes promote-broadcast-scroll-left {

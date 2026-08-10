@@ -24,9 +24,9 @@ defineEmits<{
 <style scoped lang="less">
 .quick-actions {
   display: flex;
-  gap: 0.2rem;
-  padding: 0 0.2rem;
-  margin-bottom: 0.2rem;
+  gap: 10px;
+  padding: 0 10px;
+  margin-bottom: 10px;
 }
 
 .quick-actions__item {
@@ -34,12 +34,12 @@ defineEmits<{
   align-items: center;
   justify-content: space-between;
   flex: 1;
-  height: 0.8rem;
-  padding: 0 0.1rem;
+  height: 40px;
+  padding: 0 5px;
   border: 0;
-  border-radius: 0.16rem;
+  border-radius: 8px;
   color: var(--skin__text_primary, #fff);
-  font-size: 0.24rem;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   cursor: pointer;
@@ -54,14 +54,14 @@ defineEmits<{
 
   img {
     flex: none;
-    width: 0.44rem;
+    width: 22px;
   }
 }
 
 .quick-actions__title {
   display: -webkit-box;
   flex: 1;
-  margin-left: 0.08rem;
+  margin-left: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
@@ -72,20 +72,20 @@ defineEmits<{
 :deep(.quick-actions__arrow) {
   flex: none;
   color: var(--skin__bg_2);
-  font-size: 0.2rem;
+  font-size: 10px;
   font-weight: 400;
   opacity: 0.7;
-  transform: translateY(0.01rem) rotate(180deg);
+  transform: translateY(0.5px) rotate(180deg);
 }
 
 .quick-actions__item--primary {
   background: var(--skin__primary);
-  box-shadow: 0 0.02rem 0.04rem rgba(var(--skin__primary__toRgbString), 0.1);
+  box-shadow: 0 1px 2px rgba(var(--skin__primary__toRgbString), 0.1);
 }
 
 .quick-actions__item--accent {
   color: var(--skin__text_accent3, #fff);
   background: var(--skin__accent_3);
-  box-shadow: 0 0.02rem 0.04rem rgba(var(--skin__accent_3__toRgbString), 0.1);
+  box-shadow: 0 1px 2px rgba(var(--skin__accent_3__toRgbString), 0.1);
 }
 </style>

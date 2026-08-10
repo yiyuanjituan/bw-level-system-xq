@@ -36,23 +36,23 @@ withDefaults(
 
 <style scoped lang="less">
 .activity-reward {
-  margin: 0 0.2rem 0.2rem;
-  border-radius: 0.14rem;
+  margin: 0 10px 10px;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.08);
 }
 
 .activity-reward__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: calc(100% - 0.4rem);
-  margin: 0 0.2rem;
-  padding: 0.2rem 0;
-  gap: 0.2rem;
-  border-bottom: 0.01rem solid var(--skin__border, #e3e3e3);
+  width: calc(100% - 20px);
+  margin: 0 10px;
+  padding: 10px 0;
+  gap: 10px;
+  border-bottom: 0.5px solid var(--skin__border, #e3e3e3);
   color: var(--skin__neutral_2);
-  font-size: 0.26rem;
+  font-size: 13px;
 
   > span {
     display: -webkit-box;
@@ -67,23 +67,23 @@ withDefaults(
   > div {
     display: flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: 10px;
   }
 
   strong {
     color: var(--skin__accent_3);
-    font-size: 0.22rem;
+    font-size: 11px;
     font-weight: 400;
   }
 
   button {
-    width: 1.2rem;
-    height: 0.5rem;
+    width: 60px;
+    height: 25px;
     border: 0;
-    border-radius: 0.1rem;
+    border-radius: 5px;
     color: #191919;
-    font-size: 0.2rem;
-    line-height: 0.5rem;
+    font-size: 10px;
+    line-height: 25px;
     background: #656565;
   }
 }
@@ -93,23 +93,23 @@ withDefaults(
   align-items: center;
   justify-content: center;
   width: max-content;
-  max-width: calc(100% - 0.4rem);
-  margin: 0.2rem 0.2rem 0;
-  padding: 0.1rem 0.2rem;
+  max-width: calc(100% - 20px);
+  margin: 10px 10px 0;
+  padding: 5px 10px;
   overflow: hidden;
-  border: 0.01rem solid var(--skin__border, #e3e3e3);
-  border-radius: 0.9rem;
+  border: 0.5px solid var(--skin__border, #e3e3e3);
+  border-radius: 45px;
   color: var(--skin__text_primary, #fff);
-  font-size: 0.22rem;
+  font-size: 11px;
   white-space: nowrap;
   text-overflow: ellipsis;
   background: var(--skin__primary);
 
   > span {
-    max-width: 5.2rem;
+    max-width: 260px;
     overflow: hidden;
     color: var(--skin__text_primary, #fff);
-    font-size: 0.22rem;
+    font-size: 11px;
     font-weight: 400;
     line-height: normal;
     white-space: nowrap;
@@ -121,28 +121,28 @@ withDefaults(
   flex: none;
   width: 1em;
   height: 1em;
-  margin-right: 0.08rem;
+  margin-right: 4px;
   color: var(--skin__text_primary, #fff);
-  transform: translateY(-0.01rem);
+  transform: translateY(-0.5px);
 }
 
 .activity-reward__row {
   display: flex;
   align-items: center;
-  padding: 0.2rem;
+  padding: 10px;
 
   > span {
     display: flex;
     flex: 1;
     min-width: 0;
     color: var(--skin__neutral_2);
-    font-size: 0.22rem;
+    font-size: 11px;
   }
 
   label {
     display: -webkit-box;
-    max-width: 1.5rem;
-    margin-right: 0.05rem;
+    max-width: 75px;
+    margin-right: 2.5px;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
@@ -156,13 +156,13 @@ withDefaults(
   }
 
   button {
-    width: 1rem;
-    height: 0.4rem;
+    width: 50px;
+    height: 20px;
     border: 0;
-    border-radius: 0.08rem;
+    border-radius: 4px;
     color: #191919;
-    font-size: 0.18rem;
-    line-height: 0.4rem;
+    font-size: 9px;
+    line-height: 20px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -172,9 +172,9 @@ withDefaults(
 
 :deep(.activity-reward__arrow) {
   flex: none;
-  margin-left: 0.2rem;
+  margin-left: 10px;
   color: var(--skin__neutral_2);
-  font-size: 0.18rem;
+  font-size: 9px;
   transform: rotate(180deg);
 }
 
