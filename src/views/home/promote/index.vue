@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import SubNavbar from "@/components/SubNavbar.vue";
+import PromoteCreateSubordinate from "./pages/PromoteCreateSubordinate.vue";
+import PromoteData from "./pages/PromoteData.vue";
 import PromoteHome from "./pages/PromoteHome.vue";
 import PromoteShare from "./pages/PromoteShare.vue";
+import PromoteSubordinate from "./pages/PromoteSubordinate.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -23,6 +26,10 @@ const promoteTabs = [
 ] as const;
 
 type PromoteTabValue = (typeof promoteTabs)[number]["value"];
+
+const PROMOTE_STYLESHEET_ID = "promote-chunk-stylesheet";
+const PROMOTE_STYLESHEET_PATH = "/1_PromoteChunk.BshcCXWk.css";
+let ownsStylesheet = false;
 
 const defaultActive: PromoteTabValue = "index";
 const activeTab = ref<PromoteTabValue>(defaultActive);
@@ -63,6 +70,25 @@ watch(
 watch(activeTab, active => {
   syncRouteActive(active);
 });
+
+onMounted(() => {
+  if (document.getElementById(PROMOTE_STYLESHEET_ID))
+    return;
+
+  const stylesheet = document.createElement("link");
+  stylesheet.id = PROMOTE_STYLESHEET_ID;
+  stylesheet.rel = "stylesheet";
+  stylesheet.href = PROMOTE_STYLESHEET_PATH;
+  document.head.appendChild(stylesheet);
+  ownsStylesheet = true;
+});
+
+onBeforeUnmount(() => {
+  if (!ownsStylesheet)
+    return;
+
+  document.getElementById(PROMOTE_STYLESHEET_ID)?.remove();
+});
 </script>
 
 <template>
@@ -87,6 +113,9 @@ watch(activeTab, active => {
             @select-tab="activeTab = $event"
           />
           <promote-share v-else-if="tab.value === 'share'" />
+          <promote-subordinate v-else-if="tab.value === 'subordinate'" />
+          <promote-data v-else-if="tab.value === 'data'" />
+          <promote-create-subordinate v-else-if="tab.value === 'createSubordinate'" />
           <span v-else class="promote-placeholder">{{ tab.label }}内容</span>
         </section>
       </van-tab>

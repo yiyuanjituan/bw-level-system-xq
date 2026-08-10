@@ -14,6 +14,7 @@ import { useRoute } from 'vue-router';
 import useAppStore from '@/store/modules/app';
 import type { FormExpose } from '@/components/UI/form-context';
 import router from '@/router';
+import { bus } from '@/utils/mitt';
 
 const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
@@ -90,8 +91,7 @@ function handleRegister() {
           titleColor: '#04be02'
         };
         showCustomDialog(params).then(res => {
-          // @TODO 点击充值按钮
-          console.log(res);
+          bus.emit('showRecharge')
         });
       }, 100);
     })

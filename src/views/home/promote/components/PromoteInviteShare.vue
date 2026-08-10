@@ -94,7 +94,11 @@ const socialMedia = [
             class="invite-share__link-select"
           />
           <span class="invite-share__link-copy">
-            <copy :text="selectedInviteLink" class-name="invite-share__copy-icon" />
+            <copy
+              :text="selectedInviteLink"
+              label="复制"
+              class-name="invite-share__copy-icon"
+            />
           </span>
         </div>
 
@@ -240,6 +244,7 @@ const socialMedia = [
 
 .invite-share__link-select {
   flex: 1;
+  width: 0;
   min-width: 0;
   height: 0.68rem;
   border: 0;
@@ -249,10 +254,19 @@ const socialMedia = [
 .invite-share__link-copy {
   display: flex;
   align-items: center;
+  justify-content: center;
   align-self: stretch;
   flex: none;
-  padding: 0.2rem;
+  width: 1.1rem;
   border-left: var(--lobby__px, 0.01rem) solid var(--skin__border);
+  color: var(--skin__primary);
+
+  :deep(.copy-icon) {
+    gap: 0.08rem;
+    width: 100%;
+    height: 100%;
+    font-size: 0.22rem;
+  }
 
   :deep(.invite-share__copy-icon) {
     margin-left: 0;

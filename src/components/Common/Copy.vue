@@ -6,11 +6,13 @@ import useClipboard from "vue-clipboard3";
 interface Props {
   text?: string;
   className?: string;
+  label?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   text: "",
-  className: ""
+  className: "",
+  label: ""
 });
 
 const { toClipboard } = useClipboard();
@@ -55,6 +57,7 @@ onBeforeUnmount(() => {
   <div class="copy-icon" @click.stop="handleCopyText(props.text)">
     <svg-icon v-if="isShowCopy" name="comm_icon_copy" :class-name="copyIconClassName" />
     <svg-icon v-else name="comm_icon_gou" class="" :class-name="successIconClassName" />
+    <span v-if="label" class="copy-icon__label">{{ label }}</span>
   </div>
 </template>
 
@@ -64,6 +67,9 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+.copy-icon__label {
+  white-space: nowrap;
 }
 .right-text {
   color: var(--skin__accent_1);
