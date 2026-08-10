@@ -33,6 +33,7 @@ import useDataStore from '@/store/modules/data';
 import { useRefs } from '@/hooks/useRefs';
 import { useRoute } from 'vue-router';
 import { connectSse, disconnectSse } from '@/utils/sse';
+import { startVersionUpdateCheck } from '@/utils/versionUpdate';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -49,6 +50,7 @@ type HomePopupKey = keyof typeof popupRefMap;
 
 const popupQueue: HomePopupKey[] = [];
 let popupTimer: ReturnType<typeof setTimeout> | undefined;
+let stopVersionUpdateCheck: (() => void) | undefined;
 
 const busListen = () => {
   bus.on('moneyIn', () => {
@@ -142,6 +144,7 @@ function checkPopupTip() {
 }
 
 onMounted(() => {
+  stopVersionUpdateCheck = startVersionUpdateCheck();
   busListen();
   app.refreshData();
   app.updateDownloadBtn(true);
@@ -155,6 +158,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  stopVersionUpdateCheck?.();
   disconnectSse();
   stopPopupQueueListener();
 

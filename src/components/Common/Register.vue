@@ -24,7 +24,13 @@ const smsLoading = ref<boolean>(false)
 const modelValue = defineModel<registerProps>({
   type: Object,
   default: () => ({
+    account: '',
     type: 'password',
+    password: '',
+    invite_code: '',
+    two_password: '',
+    sms_code: '',
+    currency: '',
   })
 });
 const checkInputIsPhone = computed(() => {

@@ -3,7 +3,7 @@ import UiForm from "@/components/UI/form.vue";
 import UiFormItem from "@/components/UI/form-item.vue";
 import UiInput from "@/components/UI/input.vue";
 import { computed, ref, useTemplateRef } from "vue";
-import { loginProps, registerProps } from "@/enums/props";
+import { loginProps } from "@/enums/props";
 import useAppStore from "@/store/modules/app";
 import { predictPhoneNumber } from "@/utils/common";
 import { sendSms } from "@/api/common";
@@ -20,7 +20,11 @@ const smsLoading = ref<boolean>(false);
 const modelValue = defineModel<loginProps>({
   type: Object,
   default: () => ({
-    type: "password"
+    account: "",
+    accountType: "account",
+    type: "password",
+    password: "",
+    sms_code: ""
   })
 });
 
