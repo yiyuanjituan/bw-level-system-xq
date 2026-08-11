@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getPromoteInfo } from "@/api/common";
 import SubNavbar from "@/components/SubNavbar.vue";
@@ -9,6 +9,8 @@ import PromoteHome from "./pages/PromoteHome.vue";
 import PromoteRebateRatio from "./pages/PromoteRebateRatio.vue";
 import PromoteShare from "./pages/PromoteShare.vue";
 import PromoteSubordinate from "./pages/PromoteSubordinate.vue";
+import PromoteSubordinateBetting from "./pages/PromoteSubordinateBetting.vue";
+import PromoteSubordinateReceive from "./pages/PromoteSubordinateReceive.vue";
 import type { PromoteInfo } from "./types";
 
 const route = useRoute();
@@ -29,10 +31,6 @@ const promoteTabs = [
 ] as const;
 
 type PromoteTabValue = (typeof promoteTabs)[number]["value"];
-
-const PROMOTE_STYLESHEET_ID = "promote-chunk-stylesheet";
-const PROMOTE_STYLESHEET_PATH = "/1_PromoteChunk.BshcCXWk.css";
-let ownsStylesheet = false;
 
 const defaultActive: PromoteTabValue = "index";
 const activeTab = ref<PromoteTabValue>(defaultActive);
@@ -99,22 +97,6 @@ onMounted(() => {
       promoteInfoLoaded.value = true;
     });
 
-  if (document.getElementById(PROMOTE_STYLESHEET_ID))
-    return;
-
-  const stylesheet = document.createElement("link");
-  stylesheet.id = PROMOTE_STYLESHEET_ID;
-  stylesheet.rel = "stylesheet";
-  stylesheet.href = PROMOTE_STYLESHEET_PATH;
-  document.head.appendChild(stylesheet);
-  ownsStylesheet = true;
-});
-
-onBeforeUnmount(() => {
-  if (!ownsStylesheet)
-    return;
-
-  document.getElementById(PROMOTE_STYLESHEET_ID)?.remove();
 });
 </script>
 
@@ -146,6 +128,8 @@ onBeforeUnmount(() => {
           />
           <promote-subordinate v-else-if="tab.value === 'subordinate'" />
           <promote-data v-else-if="tab.value === 'data'" />
+          <promote-subordinate-betting v-else-if="tab.value === 'subordinateBetting'" />
+          <promote-subordinate-receive v-else-if="tab.value === 'subordinateReceive'" />
           <promote-create-subordinate v-else-if="tab.value === 'createSubordinate'" />
           <promote-rebate-ratio
             v-else-if="tab.value === 'rebateRatio'"

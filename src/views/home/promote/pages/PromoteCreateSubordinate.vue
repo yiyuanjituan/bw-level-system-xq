@@ -56,7 +56,7 @@ async function handleCreate() {
 
 <template>
   <section class="create-subordinate">
-    <div class="create-subordinate__type _created-type_9kid7_59">
+    <div class="create-subordinate__type">
       <x-tabs
         v-model="createType"
         type="card"
@@ -67,8 +67,8 @@ async function handleCreate() {
       </x-tabs>
     </div>
 
-    <div class="create-subordinate__body _prmote-base-layout_9exyk_60 _create-account_9exyk_64">
-      <div class="create-subordinate__scroll lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar _register-form_9exyk_99">
+    <div class="create-subordinate__body">
+      <div class="create-subordinate__scroll lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar">
         <x-form ref="formRef" :rule="formRules" :model="formModel" class="create-subordinate__form">
           <x-form-item prop="account" class="create-subordinate__form-item">
             <label class="create-subordinate__label" for="promote-subordinate-account">
@@ -104,7 +104,7 @@ async function handleCreate() {
         </x-form>
       </div>
 
-      <div class="create-subordinate__submit _submit-button_9exyk_113">
+      <div class="create-subordinate__submit">
         <x-button type="primary" block @click="handleCreate">
           创建直属下级
         </x-button>
@@ -126,6 +126,9 @@ async function handleCreate() {
 
 .create-subordinate__type {
   flex-shrink: 0;
+  padding: 10px 0;
+  border-bottom: var(--lobby__px) solid var(--skin__border);
+  background: var(--skin__bg_2);
 
   :deep(.x-tabs__wrap) {
     min-height: 0;
@@ -169,14 +172,21 @@ async function handleCreate() {
 }
 
 .create-subordinate__body {
+  position: relative;
   display: flex;
+  width: 100%;
+  height: 100%;
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+  background: var(--skin__bg_1);
 }
 
 .create-subordinate__scroll {
+  flex: 1;
   min-height: 0;
+  padding: 10px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -254,7 +264,11 @@ async function handleCreate() {
 }
 
 .create-subordinate__submit {
+  width: 100%;
   flex-shrink: 0;
+  padding: 10px 10px 20px;
+  background: var(--skin__bg_2);
+  box-shadow: 0 -1.5px 5px rgba(0, 0, 0, 0.1);
 }
 
 .create-subordinate__submit :deep(.x-button) {

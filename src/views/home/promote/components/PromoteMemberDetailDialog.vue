@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
-import useClipboard from "vue-clipboard3";
 import { getPromoteSubordinateDetail } from "@/api/common";
 import vipBadgeIcon from "@/assets/home/promote/vip-badge.avif";
+import Copy from "@/components/Common/Copy.vue";
 import UiLoading from "@/components/UI/loading.vue";
-import { showCustomToast } from "@/hooks/useCommon";
 import type { PromoteSubordinateDetail, PromoteSubordinatePeriodData } from "../types";
 
 interface PromoteSubordinatePeriodSource extends Partial<PromoteSubordinatePeriodData> {
@@ -28,6 +27,7 @@ interface PromoteSubordinateDetailSource extends Partial<PromoteSubordinateDetai
 const props = defineProps<{
   show: boolean;
   userIdx: number;
+  zIndex?: number;
 }>();
 
 const emit = defineEmits<{
@@ -38,7 +38,6 @@ const loading = ref(false);
 const failed = ref(false);
 const detail = ref<PromoteSubordinateDetail | null>(null);
 let latestRequestId = 0;
-const { toClipboard } = useClipboard();
 
 const sections = computed(() => [
   { title: "今日数据", value: detail.value?.today },
@@ -123,17 +122,6 @@ async function loadDetail() {
   }
 }
 
-async function copyMemberId() {
-  if (!detail.value) return;
-
-  try {
-    await toClipboard(String(detail.value.userIdx));
-    showCustomToast({ type: "success", message: "会员ID复制成功" });
-  } catch {
-    showCustomToast({ type: "fail", message: "复制失败，请稍后重试" });
-  }
-}
-
 function closeDialog() {
   emit("update:show", false);
 }
@@ -151,7 +139,7 @@ watch(
     :show="show"
     title="会员详情"
     :width="350"
-    :z-index="2019"
+    :z-index="zIndex ?? 2019"
     :show-confirm-button="false"
     :show-cancel-button="false"
     close-on-click-overlay
@@ -179,9 +167,7 @@ watch(
                 </span>
                 <span class="member">
                   <span>{{ detail.userIdx }}</span>
-                  <button class="copy" type="button" aria-label="复制会员ID" @click="copyMemberId">
-                    <svg-icon name="comm_icon_copy" />
-                  </button>
+                  <copy class="copy" :text="String(detail.userIdx)" />
                 </span>
               </span>
             </span>
@@ -366,6 +352,16 @@ watch(
   align-items: center;
   color: var(--skin__lead);
   word-break: break-all;
+}
+
+._number-column_1ngn0_59._number-column-green_1ngn0_76,
+._number-column_1ngn0_59._number-column-green_1ngn0_76 span {
+  color: var(--skin__accent_1) !important;
+}
+
+._number-column_1ngn0_59._number-column-red_1ngn0_82,
+._number-column_1ngn0_59._number-column-red_1ngn0_82 span {
+  color: var(--skin__accent_2) !important;
 }
 
 .account,

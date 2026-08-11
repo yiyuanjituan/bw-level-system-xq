@@ -248,7 +248,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
       v-model="activePeriod"
       type="card"
       :show-nav-arrows="false"
-      class="_time-select_p4q46_59 promote-data__period-tabs"
+      class="promote-data__period-tabs"
     >
       <x-tab
         v-for="period in periods"
@@ -268,7 +268,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
       </button>
     </div>
 
-    <div v-else class="_prmote-base-layout_pluce_60 promote-data__content lobby-scroll lobby-scroll--y">
+    <div v-else class="promote-data__content lobby-scroll lobby-scroll--y">
       <section class="_commissionCard_5ctcb_59">
         <div class="_headerSection_5ctcb_66">
           <span class="_title_5ctcb_72">{{ commissionTitle }}</span>
@@ -298,7 +298,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
         <div class="_header_8fyve_67">全部数据</div>
         <div class="_grid_8fyve_78">
           <article v-for="card in allDataCards" :key="card.title" class="_dataItem_8fyve_83">
-            <div class="_titleAndTotal_8fyve_198">
+            <div>
               <div class="_titleRow_8fyve_91">
                 <span class="_title_8fyve_91">{{ card.title }}</span>
                 <span v-if="card.unit" class="_subTitle_8fyve_101"> ({{ card.unit }})</span>
@@ -432,12 +432,15 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 }
 
 .promote-data__content {
+  position: relative;
   flex: 1;
   min-height: 0;
   height: auto;
+  padding: 0.2rem;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: var(--skin__bg_1);
 }
 
 .promote-data__content > section {
@@ -461,6 +464,13 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   background: transparent;
   color: var(--skin__primary);
   cursor: pointer;
+}
+
+.promote-data__period-tabs {
+  flex-shrink: 0;
+  padding: 0.2rem 0;
+  border-bottom: var(--lobby__px) solid var(--skin__border);
+  background-color: var(--skin__bg_2);
 }
 
 :deep(.promote-data__period-tabs > .x-tabs__wrap) {
@@ -498,33 +508,341 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   display: none;
 }
 
-/* 当前模板直接输出数字文本，需要在数字节点本身补齐参考页面的字号和状态色。 */
-:deep(._allDataContainer_8fyve_59 ._value_8fyve_150) {
+._number-column_1ngn0_59 {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--skin__lead);
+  word-break: break-all;
+}
+
+._number-column_1ngn0_59._number-column-yellow_1ngn0_66,
+._number-column_1ngn0_59._number-column-yellow_1ngn0_66 span {
+  color: var(--skin__accent_3) !important;
+}
+
+._number-column_1ngn0_59._number-column-green_1ngn0_76,
+._number-column_1ngn0_59._number-column-green_1ngn0_76 span {
+  color: var(--skin__accent_1) !important;
+}
+
+._number-column_1ngn0_59._number-column-red_1ngn0_82,
+._number-column_1ngn0_59._number-column-red_1ngn0_82 span {
+  color: var(--skin__accent_2) !important;
+}
+
+._data-link-to_1ngn0_89._has-value_1ngn0_89 ._number-column_1ngn0_59 {
+  color: var(--skin__primary);
+  text-decoration: underline;
+  text-underline-offset: 0.06rem;
+}
+
+._commissionCard_5ctcb_59 {
+  width: 100%;
+  padding: 0.2rem;
+  border-radius: 0.14rem;
+  background: var(--skin__bg_2);
+  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
+}
+
+._commissionCard_5ctcb_59 ._headerSection_5ctcb_66 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.12rem;
+}
+
+._commissionCard_5ctcb_59 ._title_5ctcb_72 {
+  color: var(--skin__lead);
+  font-size: 0.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+:global(html[data-skin-layout="98"]) ._commissionCard_5ctcb_59 ._title_5ctcb_72 {
+  color: var(--skin__primary);
+}
+
+._commissionCard_5ctcb_59 ._amountGroup_5ctcb_81 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.04rem;
+}
+
+._commissionCard_5ctcb_59 ._mainAmount_5ctcb_86 {
+  color: var(--skin__accent_3, #ffaa09);
+  font-size: 0.34rem;
+  font-weight: 600;
+  line-height: normal;
+}
+
+._commissionCard_5ctcb_59 ._subAmount_5ctcb_92,
+._commissionCard_5ctcb_59 ._subAmount_5ctcb_92 span {
+  color: var(--skin__neutral_2, #999) !important;
+  font-size: 0.24rem;
+  font-weight: 400;
+  line-height: normal;
+}
+
+._commissionCard_5ctcb_59 ._divider_5ctcb_102 {
+  height: 0.01rem;
+  margin-bottom: 0.16rem;
+  background-color: var(--skin__border);
+}
+
+._commissionCard_5ctcb_59 ._detailGrid_5ctcb_107 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: left;
+}
+
+:global([dir="rtl"]) ._commissionCard_5ctcb_59 ._detailGrid_5ctcb_107 {
+  text-align: right;
+}
+
+._commissionCard_5ctcb_59 ._detailItem_5ctcb_112 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+
+._commissionCard_5ctcb_59 ._label_5ctcb_117 {
+  color: var(--skin__neutral_1, #666);
+  font-size: 0.24rem;
+  white-space: nowrap;
+}
+
+._commissionCard_5ctcb_59 ._detailGrid_5ctcb_107 ._value_5ctcb_122 {
+  color: var(--skin__lead);
+  font-size: 0.28rem;
+  font-weight: 600;
+}
+
+._commissionCard_5ctcb_59 ._detailGrid_5ctcb_107 ._highlight_5ctcb_129 {
+  color: var(--skin__accent_3, #ffaa09);
+}
+
+._allDataContainer_8fyve_59 {
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.2rem;
+  border-radius: 0.14rem;
+  background: var(--skin__bg_2);
+  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
+}
+
+._allDataContainer_8fyve_59 ._header_8fyve_67 {
+  margin-bottom: 0.2rem;
+  color: var(--skin__lead);
+  font-size: 0.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: center;
+}
+
+:global(html[data-skin-layout="98"]) ._allDataContainer_8fyve_59 ._header_8fyve_67 {
+  color: var(--skin__primary);
+}
+
+._allDataContainer_8fyve_59 ._grid_8fyve_78 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.16rem 0.2rem;
+}
+
+._allDataContainer_8fyve_59 ._dataItem_8fyve_83 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.2rem;
+  border-radius: 0.14rem;
+  background-color: rgba(var(--skin__primary__toRgbString), 0.05);
+}
+
+._allDataContainer_8fyve_59 ._titleRow_8fyve_91 {
+  margin-bottom: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+._allDataContainer_8fyve_59 ._title_8fyve_91,
+._allDataContainer_8fyve_59 ._subTitle_8fyve_101 {
+  font-size: 0.26rem;
+  line-height: normal;
+}
+
+._allDataContainer_8fyve_59 ._title_8fyve_91 {
+  color: var(--skin__lead);
+}
+
+._allDataContainer_8fyve_59 ._subTitle_8fyve_101 {
+  color: var(--skin__neutral_2, #999);
+  white-space: nowrap;
+}
+
+._allDataContainer_8fyve_59 ._totalRow_8fyve_107 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.04rem;
+}
+
+._allDataContainer_8fyve_59 ._totalAmount_8fyve_113 {
+  font-size: 0.3rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+._allDataContainer_8fyve_59 ._totalCount_8fyve_122 {
+  color: var(--skin__neutral_2, #999);
+  font-size: 0.3rem;
+  font-weight: 400;
+  line-height: normal;
+}
+
+._allDataContainer_8fyve_59 ._totalCountNoLink_8fyve_128,
+._allDataContainer_8fyve_59 ._totalCountNoLink_8fyve_128 span {
+  color: var(--skin__neutral_2, #999) !important;
+}
+
+._allDataContainer_8fyve_59 ._divider_8fyve_134 {
+  height: 0.01rem;
+  background-color: var(--skin__border);
+  opacity: 0.3;
+}
+
+._allDataContainer_8fyve_59 ._detailRow_8fyve_139 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+._allDataContainer_8fyve_59 ._label_8fyve_144 {
+  flex-shrink: 0;
+  color: var(--skin__neutral_2, #666);
+  font-size: 0.24rem;
+  line-height: normal;
+}
+
+._allDataContainer_8fyve_59 ._valueWrap_8fyve_150 {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.04rem;
+}
+
+._allDataContainer_8fyve_59 ._value_8fyve_150,
+._allDataContainer_8fyve_59 ._value_8fyve_150 span {
+  color: var(--skin__lead);
   font-size: 0.24rem;
   font-weight: 500;
   line-height: normal;
 }
 
-:deep(._number-column-yellow_1ngn0_66) {
-  color: var(--skin__accent_3, #ffaa09);
+._allDataContainer_8fyve_59 ._linkCount_8fyve_165 {
+  color: var(--skin__neutral_2, #999);
+  font-size: 0.24rem;
+  font-weight: 400;
+  line-height: normal;
+  text-decoration: none;
 }
 
-:deep(._commissionCard_5ctcb_59 ._highlight_5ctcb_129) {
-  color: var(--skin__accent_3, #ffaa09);
+._allDataContainer_8fyve_59 ._extraValue_8fyve_172,
+._allDataContainer_8fyve_59 ._extraValue_8fyve_172 span {
+  color: var(--skin__neutral_2, #999);
 }
 
-:deep(._number-column-green_1ngn0_76) {
-  color: var(--skin__accent_1);
+._teamDataTableContainer_12h2o_59 {
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.2rem;
+  border-radius: 0.14rem;
+  background: var(--skin__bg_2);
+  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
 }
 
-:deep(._number-column-red_1ngn0_82) {
-  color: var(--skin__accent_2);
+._teamDataTableContainer_12h2o_59 ._header_12h2o_67,
+._teamDataTableContainer_12h2o_59 ._sectionTitle_12h2o_78 {
+  color: var(--skin__lead);
+  font-size: 0.3rem;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: center;
 }
 
-:deep(._data-link-to_1ngn0_89._has-value_1ngn0_89 ._number-column_1ngn0_59),
-:deep(._underline_1ngn0_90._has-value_1ngn0_89 ._number-column_1ngn0_59) {
+._teamDataTableContainer_12h2o_59 ._header_12h2o_67 {
+  margin-bottom: 0.2rem;
+}
+
+._teamDataTableContainer_12h2o_59 ._sectionTitle_12h2o_78 {
+  margin: 0.1rem 0 0.16rem;
+}
+
+:global(html[data-skin-layout="98"]) ._teamDataTableContainer_12h2o_59 ._header_12h2o_67,
+:global(html[data-skin-layout="98"]) ._teamDataTableContainer_12h2o_59 ._sectionTitle_12h2o_78 {
   color: var(--skin__primary);
-  text-decoration: underline;
-  text-underline-offset: 0.06rem;
+}
+
+._teamDataTableContainer_12h2o_59 ._section_12h2o_78 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+  padding: 0;
+  margin-bottom: 0.1rem;
+  border-radius: 0.14rem;
+}
+
+._teamDataTableContainer_12h2o_59 ._row_12h2o_98 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  gap: 0.2rem;
+}
+
+._teamDataTableContainer_12h2o_59 ._dataItem_12h2o_104 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 0.8rem;
+  padding: 0.16rem 0.2rem;
+  gap: 0.08rem;
+  border-radius: 0.14rem;
+  text-align: center;
+}
+
+._teamDataTableContainer_12h2o_59 ._label_12h2o_115 {
+  max-width: 1.9rem;
+  color: var(--skin__lead);
+  font-size: 0.24rem;
+  font-weight: 400;
+  line-height: normal;
+}
+
+._teamDataTableContainer_12h2o_59 ._value_12h2o_122 span {
+  font-size: 0.28rem;
+  font-weight: 600;
+  line-height: normal;
+}
+
+._teamDataTableContainer_12h2o_59 ._divider_12h2o_127 {
+  height: 0.01rem;
+  margin: 0.2rem 0 0;
+  background-color: var(--skin__border);
+}
+
+._teamDataTableContainer_12h2o_59 ._blueSection_12h2o_132,
+._teamDataTableContainer_12h2o_59 ._yellowSection_12h2o_132 {
+  background-color: transparent;
+}
+
+._teamDataTableContainer_12h2o_59 ._blueSection_12h2o_132 ._dataItem_12h2o_104 {
+  background-color: rgba(var(--skin__primary__toRgbString), 0.05);
+}
+
+._teamDataTableContainer_12h2o_59 ._yellowSection_12h2o_132 ._dataItem_12h2o_104 {
+  background-color: rgb(255 193 7 / 10%);
 }
 </style>

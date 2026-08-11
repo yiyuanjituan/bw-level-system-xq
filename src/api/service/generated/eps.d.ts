@@ -1216,6 +1216,16 @@ declare namespace Eps {
 
 	interface V1Agent {
 		/**
+			 * 代理下级投注明细
+			 */
+			subordinateBettingDetail(data?: any): Promise<any>;
+
+		/**
+			 * 代理下级领取统计
+			 */
+			subordinateReceiveInfo(data?: any): Promise<any>;
+
+		/**
 			 * 代理下级会员详情
 			 */
 			subordinateDetail(data?: any): Promise<any>;
@@ -1238,12 +1248,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { subordinateDetail: string; subordinateInfo: string; promoteInfo: string; dataInfo: string; };
+		permission: { subordinateBettingDetail: string; subordinateReceiveInfo: string; subordinateDetail: string; subordinateInfo: string; promoteInfo: string; dataInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
+		_permission: { subordinateBettingDetail: boolean; subordinateReceiveInfo: boolean; subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
 
 		request: Service["request"];
 	}

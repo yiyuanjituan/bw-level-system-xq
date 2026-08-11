@@ -55,7 +55,9 @@ onMounted(() => loadData());
     </div>
     <div class="content-box">
       <div class="list-box">
-        <ui-loading v-if="isLoading" />
+        <div v-if="isLoading" class="loading-box">
+          <ui-loading />
+        </div>
         <ui-empty v-else-if="rewardList.length === 0" text="" />
         <div v-for="reward in rewardList" :key="reward.key" class="item-box">
           <div class="item-info">
@@ -112,6 +114,12 @@ onMounted(() => loadData());
     .list-box {
       min-height: calc(var(--window-height) - 148px);
       padding: 0 10px 10px;
+      .loading-box {
+        min-height: calc(var(--window-height) - 148px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       .item-box {
         display: flex;
         flex-direction: column;

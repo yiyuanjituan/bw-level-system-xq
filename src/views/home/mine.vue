@@ -6,9 +6,41 @@ import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
 import { bus } from '@/utils/mitt';
+import { service } from "@/api/service";
+import { onMounted, ref } from "vue";
 
 const auth = useAuthStore();
 const app = useAppStore();
+const messageCount = ref(0);
+
+function jumpToService() {
+  router.push({
+    path: "/home/notice",
+    query: { noticeType: 4 }
+  });
+}
+
+function jumpToMessage() {
+  router.push({
+    path: "/home/notice",
+    query: { noticeType: 1 }
+  });
+}
+
+async function loadMessageCount() {
+  if (!auth.token) return;
+
+  try {
+    const response = await service.v1.notice.notifyList({ limit: 9999 });
+    const total = Number(response?.total);
+    const messageList = Array.isArray(response?.list) ? response.list : [];
+
+    messageCount.value = Number.isFinite(total) ? total : messageList.length;
+  } catch (error) {
+    messageCount.value = 0;
+    console.error("获取消息数量失败，失败原因：", error);
+  }
+}
 
 function handleWithdraw() {
   if (!auth.token || !auth.user?.id) {
@@ -33,6 +65,8 @@ function handleRecharge() {
 function handleLxb() {
   router.push("/home/yuebao");
 }
+
+onMounted(loadMessageCount);
 </script>
 
 <template>
@@ -52,14 +86,14 @@ function handleLxb() {
             <div class="float-message">
               <div />
               <header v-if="auth.token">
-                <div class="btn-container">
+                <div class="btn-container" @click="jumpToService">
                   <div class="w-[24px] h-[24px] text-[24px]">
                     <svg-icon name="top_kf" class="absolute text-[#68707B]" />
                     <svg-icon name="top_kf2" class="absolute text-[#F0C059]" />
                   </div>
                 </div>
-                <ui-badge :content="999" :size="[2, -2]">
-                  <div class="btn-container">
+                <ui-badge :content="messageCount" :size="[2, -2]">
+                  <div class="btn-container" @click="jumpToMessage">
                     <div class="w-[24px] h-[24px] text-[24px]">
                       <svg-icon name="top_xx" class="absolute text-[#68707B]" />
                       <svg-icon

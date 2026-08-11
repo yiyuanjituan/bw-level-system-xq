@@ -237,7 +237,6 @@ const socialMedia = [
 
 :deep(.invite-share__copy-icon) {
   margin-left: 5px;
-  color: var(--skin__primary);
 }
 
 .invite-share__content {

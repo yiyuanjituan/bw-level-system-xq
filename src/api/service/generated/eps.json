@@ -584,6 +584,16 @@
     "api": [
       {
         "method": "post",
+        "path": "/subordinateBettingDetail",
+        "summary": "代理下级投注明细"
+      },
+      {
+        "method": "post",
+        "path": "/subordinateReceiveInfo",
+        "summary": "代理下级领取统计"
+      },
+      {
+        "method": "post",
         "path": "/subordinateDetail",
         "summary": "代理下级会员详情"
       },

@@ -1,5 +1,9 @@
 import { http } from "@/utils/http";
-import type { PromoteDataResponse } from "@/views/home/promote/types";
+import type {
+  PromoteBettingDetailResponse,
+  PromoteDataResponse,
+  PromoteSubordinateReceiveResponse
+} from "@/views/home/promote/types";
 
 type ListResult = {
   code: number;
@@ -294,10 +298,30 @@ export function getPromoteSubordinates(data: Record<string, unknown> = {}): Prom
   });
 }
 
+export function getPromoteSubordinateReceive(
+  data: Record<string, unknown> = {}
+): Promise<PromoteSubordinateReceiveResponse> {
+  return http.request<PromoteSubordinateReceiveResponse>({
+    url: "/app/v1/agent/subordinateReceiveInfo",
+    method: "post",
+    data
+  });
+}
+
 export function getPromoteSubordinateDetail(userIdx: number): Promise<any> {
   return http.request({
     url: "/app/v1/agent/subordinateDetail",
     method: "post",
     data: { userIdx }
+  });
+}
+
+export function getPromoteSubordinateBettingDetail(
+  data: Record<string, unknown>
+): Promise<PromoteBettingDetailResponse> {
+  return http.request<PromoteBettingDetailResponse>({
+    url: "/app/v1/agent/subordinateBettingDetail",
+    method: "post",
+    data
   });
 }

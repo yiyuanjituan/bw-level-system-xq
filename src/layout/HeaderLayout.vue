@@ -16,9 +16,12 @@
             :key="item.name"
           >
             <template #title>
-              <ui-badge :offset="0" :size="[-1, -10]">
+              <x-badge
+                class="header-reward-badge"
+                :content="item.source ? canReceiveCounts[item.source] : 0"
+              >
                 {{ item.name }}
-              </ui-badge>
+              </x-badge>
             </template>
           </van-tab>
         </van-tabs>
@@ -39,20 +42,34 @@ import { setTabBarName } from "@/hooks/useTransition";
 import router from "@/router";
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import UiBadge from "@/components/UI/badge.vue";
+import XBadge from "@/components/X/x-badge.vue";
 import { handleBack } from "@/utils/common";
+import { getCanReceiveList, type CanReceiveSource } from "@/api/common";
+
+interface HeaderTab {
+  name: string;
+  path: string;
+  source?: CanReceiveSource;
+}
 
 const route = useRoute();
-const list = ref([
-  { name: "活动", path: "/home/event" },
-  { name: "任务", path: "/home/task" },
-  { name: "VIP", path: "/home/vip" },
-  { name: "返水", path: "/home/cashback" },
+const list = ref<HeaderTab[]>([
+  { name: "活动", path: "/home/event", source: 2 },
+  { name: "任务", path: "/home/task", source: 3 },
+  { name: "VIP", path: "/home/vip", source: 4 },
+  { name: "返水", path: "/home/cashback", source: 5 },
   { name: "待领取", path: "/home/canReceive" },
-  { name: "利息宝", path: "/home/yuebao" },
+  { name: "利息宝", path: "/home/yuebao", source: 6 },
   { name: "领取记录", path: "/home/records" }
 ]);
 const active = ref(0);
+const canReceiveCounts = ref<Record<CanReceiveSource, number>>({
+  2: 0,
+  3: 0,
+  4: 0,
+  5: 0,
+  6: 0
+});
 const transitionName = ref("page-slide-forward");
 
 function handleHeaderChange(index: number) {
@@ -69,9 +86,32 @@ watch(
     active.value = list.value.findIndex(item => item.path === path);
   }
 );
-onMounted(() => {
+onMounted(async () => {
   const path = route.path;
   active.value = list.value.findIndex(item => item.path === path);
+
+  try {
+    const response = await getCanReceiveList();
+    const sourceCounts: Record<CanReceiveSource, number> = {
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0
+    };
+    response?.list?.forEach(reward => {
+      sourceCounts[reward.source] += 1;
+    });
+    canReceiveCounts.value = sourceCounts;
+  } catch {
+    canReceiveCounts.value = {
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0
+    };
+  }
 });
 </script>
 
@@ -127,6 +167,10 @@ onMounted(() => {
 
       :deep(.van-tabs) {
         height: 100%;
+      }
+
+      :deep(.header-reward-badge .x-badge--top-right) {
+        --badge-translate-x: calc(100% + 2px);
       }
     }
   }

@@ -97,7 +97,11 @@ onMounted(() => {
         </div>
       </div>
       <div class="event-extra-button">
-        <div type="button" class="btn-small ui-button mt-[10px] bg-transparent">
+        <div
+          type="button"
+          class="btn-small ui-button mt-[10px] bg-transparent"
+          @click="router.push('/home/records')"
+        >
           <div class="lh-[100%] text-[#F0C059] pt-[2px]">
             <span class="text">领取记录</span>
           </div>

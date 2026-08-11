@@ -44,6 +44,8 @@ export interface PromoteSubordinate {
   directChildCount: number;
   deposit: number;
   validBet: number;
+  validBetCount?: number;
+  profitLose?: number;
   isDeposit: number;
   regTime: number;
   loginTimes: number;
@@ -67,6 +69,9 @@ export interface PromoteSubordinateResponse {
   directValidBet: number;
   otherValidBet: number;
   totalValidBet: number;
+  directProfitLose?: number;
+  otherProfitLose?: number;
+  totalProfitLose?: number;
   directRegisterPerson: number;
   otherRegisterPerson: number;
   totalRegisterPerson: number;
@@ -96,6 +101,72 @@ export interface PromoteSubordinateDetail {
   today: PromoteSubordinatePeriodData;
   yesterday: PromoteSubordinatePeriodData;
   total: PromoteSubordinatePeriodData;
+}
+
+export interface PromoteBettingDetailItem {
+  type: number;
+  typeName: string;
+  apiCode: string;
+  playType: string;
+  validBetAmount: number;
+  netAmount: number;
+  betCount: number;
+}
+
+export interface PromoteBettingDetailResponse {
+  list: PromoteBettingDetailItem[];
+  gameTypes: Array<{
+    label: string;
+    value: number;
+  }>;
+  summary: {
+    totalBetCount: number;
+    totalValidBetAmount: number;
+    totalNetAmount: number;
+  };
+  page: number;
+  pageSize: number;
+  total: number;
+  more: boolean;
+  startTime: number;
+  endTime: number;
+}
+
+export interface PromoteSubordinateReceiveOtherCoupon {
+  otherName: string;
+  otherAmount: number;
+}
+
+export interface PromoteSubordinateReceive {
+  userIdx: number;
+  account: string;
+  encryption: string;
+  vipLevel: number;
+  directChildCount: number;
+  activityReward: number;
+  returnGold: number;
+  taskReward: number;
+  agentCommission: number;
+  totalOther: number;
+  totalReward: number;
+  otherCoupons: PromoteSubordinateReceiveOtherCoupon[];
+}
+
+export interface PromoteSubordinateReceiveResponse {
+  list: PromoteSubordinateReceive[];
+  totalRecords: number;
+  total: number;
+  page: number;
+  pageSize: number;
+  more: boolean;
+  totalActivityReward: number;
+  totalReturnGold: number;
+  totalTaskReward: number;
+  totalAgentCommission: number;
+  totalOther: number;
+  totalValue: number;
+  startTime: number;
+  endTime: number;
 }
 
 export interface PromoteDataResponse {
