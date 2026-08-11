@@ -17,8 +17,14 @@ function init() {
   })
 }
 
-function handleChangeId(id: number) {
-  router.replace({ path: route.path, query: { eventId: id } })
+function handleActivityClick(activity: any) {
+  if (activity.jumpMode == 1) {
+    router.replace({ path: route.path, query: { eventId: activity.id } })
+  } else if (activity.jumpMode == 2) {
+    router.push(activity.url)
+  } else {
+    window.open(activity.url)
+  }
 }
 
 watch(() => route.query, () => init())
@@ -32,7 +38,7 @@ onMounted(() => {
     <sub-navbar :title="info.title" />
     <div class="content">
       <EventDetail :info="info" v-if="true" />
-      <EventDetailTab :list="showList" :id="info.id" @change="handleChangeId" />
+      <EventDetailTab :list="showList" :id="info.id" @change="handleActivityClick" />
       <div class="h-[20px]" />
       <div class="sticky bottom-0 z-[100]">
         <EventDetailBottom />

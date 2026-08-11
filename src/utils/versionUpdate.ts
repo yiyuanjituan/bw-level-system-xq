@@ -1,5 +1,4 @@
-import { showDialog } from "vant";
-import "vant/es/dialog/style";
+import { showCustomDialog } from "@/hooks/useCommon";
 
 const VERSION_CHECK_INTERVAL = 60 * 1000;
 
@@ -61,15 +60,18 @@ export function startVersionUpdateCheck(): () => void {
       hasUpdate = true;
       stop();
 
-      showDialog({
-        title: "版本更新",
+      showCustomDialog({
+        title: "温馨提示",
         message: "检测到新版本，请刷新页面后继续使用。",
         confirmButtonText: "立即刷新",
+        width: 300,
         closeOnClickOverlay: false,
         closeOnPopstate: false,
         lockScroll: true
-      }).then(() => {
-        window.location.reload();
+      }).then((result) => {
+        if (result) {
+          window.location.reload();
+        }
       });
     } catch {
       // 断网或服务器暂时不可用时跳过本次检测，避免影响正常业务。

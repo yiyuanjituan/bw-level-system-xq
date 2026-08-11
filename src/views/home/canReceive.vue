@@ -1,4 +1,51 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
+import dayjs from "dayjs";
+import UiEmpty from "@/components/UI/empty.vue";
+import UiLoading from "@/components/UI/loading.vue";
+import {
+  getCanReceiveList,
+  type CanReceiveItem,
+  type CanReceiveSource
+} from "@/api/common";
+import router from "@/router";
+import { formatMoney } from "@/utils/common";
+
+const rewardList = ref<CanReceiveItem[]>([]);
+const isLoading = ref(false);
+
+const sourceRouteMap: Record<CanReceiveSource, string> = {
+  2: "/home/event",
+  3: "/home/task",
+  4: "/home/vip",
+  5: "/home/cashback",
+  6: "/home/yuebao"
+};
+
+async function loadData() {
+  if (isLoading.value) return;
+
+  isLoading.value = true;
+  try {
+    const response = await getCanReceiveList();
+    rewardList.value = Array.isArray(response?.list) ? response.list : [];
+  } catch {
+    rewardList.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function handleGo(source: CanReceiveSource) {
+  router.push(sourceRouteMap[source]);
+}
+
+function formatTime(value?: string | null) {
+  if (!value || !dayjs(value).isValid()) return "";
+  return dayjs(value).format("YYYY/MM/DD HH:mm");
+}
+
+onMounted(() => loadData());
 </script>
 
 <template>
@@ -8,30 +55,34 @@
     </div>
     <div class="content-box">
       <div class="list-box">
-        <div class="item-box">
+        <ui-loading v-if="isLoading" />
+        <ui-empty v-else-if="rewardList.length === 0" text="" />
+        <div v-for="reward in rewardList" :key="reward.key" class="item-box">
           <div class="item-info">
-            <div class="name">注册账号</div>
+            <div class="name">{{ reward.name }}</div>
             <div class="rewards">
-              <div class="rewards-item">
+              <div v-if="reward.vitality > 0" class="rewards-item">
                 <svg-icon name="comm_icon_shy" class-name="text-[12px]"></svg-icon>
-                <span class="category-text">0.01</span>
+                <span class="category-text">{{ reward.vitality }}</span>
               </div>
-              <div class="rewards-item">
+              <div v-if="reward.money > 0" class="rewards-item">
                 <img src="/siteadmin/active/rmb.svg" alt="." class="w-[12px]" />
-                <span class="category-text mt-[1.7px] ml-[2px]" style="color: var(--skin__accent_3);">0.01</span>
+                <span class="category-text mt-[1.7px] ml-[2px]" style="color: var(--skin__accent_3);">
+                  {{ formatMoney(reward.money) }}
+                </span>
               </div>
             </div>
           </div>
           <div class="item-sub">
             <div class="source">
-              <span class="time">2025/12/03 23:32</span>
+              <span v-if="formatTime(reward.createTime)" class="time">{{ formatTime(reward.createTime) }}</span>
               <span class="template">
                 <span class="activeTypeName">来源:</span>
-                <span class="source-text">任务奖励</span>
+                <span class="source-text">{{ reward.sourceName }}</span>
               </span>
             </div>
             <div class="receive-btn-box">
-              <x-button size="small" type="primary">前 往</x-button>
+              <x-button size="small" type="primary" @click="handleGo(reward.source)">前 往</x-button>
             </div>
           </div>
         </div>
@@ -99,8 +150,7 @@
             flex-shrink: 0;
           }
           .rewards {
-            display: flex;
-            align-items: center;
+            display: inline-block;
             text-align: right;
             margin-bottom: 5px;
             min-width: 75px;
@@ -113,8 +163,7 @@
               line-height: 1.67;
               letter-spacing: normal;
               text-align: right;
-              word-break: break-all;
-              display: flex;
+              display: inline-flex;
               align-items: center;
               .category-text {
                 max-width: 97.5px;
@@ -150,6 +199,8 @@
                 color: var(--skin__lead);
               }
               .source-text {
+                cursor: pointer;
+                color: var(--skin__primary);
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -170,6 +221,10 @@
               width: 75px;
               height: 30px;
               line-height: normal
+            }
+            :deep(.x-button__text) {
+              font-size: 11px;
+              margin-bottom: 2px;
             }
           }
         }

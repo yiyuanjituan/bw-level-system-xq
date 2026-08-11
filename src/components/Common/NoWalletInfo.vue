@@ -7,6 +7,7 @@ import useAuthStore from '@/store/modules/user';
 import type { XFormRules } from '@/components/X/x-form-context';
 import router from '@/router';
 import { showCustomToast } from '@/hooks/useCommon';
+import { createNoWalletUser } from '@/api/common';
 
 interface Props {
   walletData?: Record<string, any>;
@@ -21,6 +22,7 @@ const isLoadSuccess = ref(false);
 const showPassword = ref(false);
 const showKeyboard = ref(false);
 const withdrawLoading = ref(false);
+const noWalletSettingLoading = ref(false);
 const formRef = ref<{ validate: () => Promise<void> } | null>(null);
 const formModel = ref<any>({
   bindWithdrawNum: ''
@@ -72,8 +74,40 @@ function init() {
   });
 }
 
+function handleBindNoWallet() {
+  if (!walletInfo.value.bindUrl) {
+    showCustomToast({ type: 'warning', message: '暂未获取NO钱包绑定地址' });
+    return;
+  }
+
+  window.open(walletInfo.value.bindUrl);
+}
+
+async function createBindUserByNo() {
+  if (!walletInfo.value.id) {
+    showCustomToast({ type: 'warning', message: '暂未获取NO钱包配置信息' });
+    return;
+  }
+
+  noWalletSettingLoading.value = true;
+
+  try {
+    const result = await createNoWalletUser({ id: walletInfo.value.id });
+
+    if (!result?.buyUrl) {
+      showCustomToast({ type: 'warning', message: '暂未获取NO钱包设置地址' });
+      return;
+    }
+
+    window.open(result.buyUrl);
+    init();
+  } finally {
+    noWalletSettingLoading.value = false;
+  }
+}
+
 function selectAll() {
-  formModel.value.bindWithdrawNum = parseInt(auth.user.money);
+  formModel.value.bindWithdrawNum = Math.trunc(Number(auth.user.money));
 }
 function handleShowPassword() {
   showKeyboard.value = true;
@@ -126,10 +160,10 @@ onMounted(() => init());
       <div class="bindTips"><span>已有账号，可登录绑定</span><span>首次使用？只需设置支付密码</span></div>
       <div class="content">
         <div class="bind">
-          <x-button type="primary" plain>立即绑定</x-button>
+          <x-button type="primary" plain @click="handleBindNoWallet">立即绑定</x-button>
         </div>
         <div class="setting">
-          <x-button type="primary">立即设置</x-button>
+          <x-button type="primary" :loading="noWalletSettingLoading" @click="createBindUserByNo">立即设置</x-button>
         </div>
       </div>
       <div class="intro">用NO钱包：赚积分，抽大奖，最高<span>88,888.88CNY</span></div>

@@ -269,6 +269,26 @@ declare namespace Eps {
 			showAccount?: number;
 
 		/**
+			 * 生日
+			 */
+			birthday?: string;
+
+		/**
+			 * 微信号
+			 */
+			wechat?: string;
+
+		/**
+			 * WhatsApp账号
+			 */
+			whatsapp?: string;
+
+		/**
+			 * Telegram账号
+			 */
+			telegram?: string;
+
+		/**
 			 * 用户标签
 			 */
 			user_tag?: string;
@@ -789,6 +809,11 @@ declare namespace Eps {
 			clearOnlineSession(data?: any): Promise<any>;
 
 		/**
+			 * 刷新代理每日数据快照
+			 */
+			refreshAgentData(data?: any): Promise<any>;
+
+		/**
 			 * 创建VIP周月信息
 			 */
 			generateVipGift(data?: any): Promise<any>;
@@ -801,12 +826,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { clearVitalityByNow: string; clearOnlineSession: string; generateVipGift: string; pullXhData: string; };
+		permission: { clearVitalityByNow: string; clearOnlineSession: string; refreshAgentData: string; generateVipGift: string; pullXhData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { clearVitalityByNow: boolean; clearOnlineSession: boolean; generateVipGift: boolean; pullXhData: boolean; };
+		_permission: { clearVitalityByNow: boolean; clearOnlineSession: boolean; refreshAgentData: boolean; generateVipGift: boolean; pullXhData: boolean; };
 
 		request: Service["request"];
 	}
@@ -1167,6 +1192,11 @@ declare namespace Eps {
 			interestInfo(data?: any): Promise<any>;
 
 		/**
+			 * 待领取奖励
+			 */
+			canReceive(data?: any): Promise<any>;
+
+		/**
 			 * 领取记录
 			 */
 			records(data?: any): Promise<any>;
@@ -1174,12 +1204,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { interestTransferOut: string; interestTransferIn: string; interestRecords: string; interestClaim: string; interestInfo: string; records: string; };
+		permission: { interestTransferOut: string; interestTransferIn: string; interestRecords: string; interestClaim: string; interestInfo: string; canReceive: string; records: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { interestTransferOut: boolean; interestTransferIn: boolean; interestRecords: boolean; interestClaim: boolean; interestInfo: boolean; records: boolean; };
+		_permission: { interestTransferOut: boolean; interestTransferIn: boolean; interestRecords: boolean; interestClaim: boolean; interestInfo: boolean; canReceive: boolean; records: boolean; };
 
 		request: Service["request"];
 	}
@@ -1201,14 +1231,19 @@ declare namespace Eps {
 			promoteInfo(data?: any): Promise<any>;
 
 		/**
+			 * 代理我的数据
+			 */
+			dataInfo(data?: any): Promise<any>;
+
+		/**
 		 * 权限标识
 		 */
-		permission: { subordinateDetail: string; subordinateInfo: string; promoteInfo: string; };
+		permission: { subordinateDetail: string; subordinateInfo: string; promoteInfo: string; dataInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; };
+		_permission: { subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
 
 		request: Service["request"];
 	}

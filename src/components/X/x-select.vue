@@ -12,6 +12,8 @@ interface SelectOption {
   value?: string | number;
   label?: string;
   icon?: string;
+  svgIcon?: string;
+  title?: string;
   disabled?: boolean;
   [key: string]: any;
 }
@@ -31,6 +33,7 @@ interface Props {
   valueKey?: string;
   labelKey?: string;
   iconKey?: string;
+  svgIconKey?: string;
   validateEvent?: boolean;
   placement?: "top" | "bottom" | "left" | "right";
   fitOptionWidth?: boolean;
@@ -49,6 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
   valueKey: "id",
   labelKey: "label",
   iconKey: "icon",
+  svgIconKey: "svgIcon",
   validateEvent: true,
   placement: "bottom",
   fitOptionWidth: false
@@ -81,6 +85,14 @@ function getOptionLabel(option: SelectOption) {
 
 function getOptionIcon(option: SelectOption) {
   return (option?.[props.iconKey] ?? option?.icon ?? "") as string;
+}
+
+function getOptionSvgIcon(option: SelectOption) {
+  return (option?.[props.svgIconKey] ?? option?.svgIcon ?? "") as string;
+}
+
+function getOptionTitle(option: SelectOption) {
+  return String(option?.title ?? "");
 }
 
 function isEmptyValue(value: unknown) {
@@ -126,6 +138,16 @@ const displayLabel = computed(() => {
 const displayIcon = computed(() => {
   if (!displayOption.value) return "";
   return getOptionIcon(displayOption.value);
+});
+
+const displaySvgIcon = computed(() => {
+  if (!displayOption.value) return "";
+  return getOptionSvgIcon(displayOption.value);
+});
+
+const displayTitle = computed(() => {
+  if (!displayOption.value) return "";
+  return getOptionTitle(displayOption.value);
 });
 
 const hasValue = computed(() => !isEmptyValue(modelValue.value));
@@ -271,8 +293,10 @@ onBeforeUnmount(() => {
           <div class="x-select__value">
             <span class="x-select__placeholder" v-if="!hasDisplayValue">{{ placeholder }}</span>
             <template v-else>
-              <span class="x-select__icon-wrap" v-if="displayIcon && !($slots.prefix || prefix)">
-                <img :src="displayIcon" class="x-select__icon" alt="." />
+              <span class="x-select__icon-wrap" v-if="(displaySvgIcon || displayIcon || displayTitle) && !($slots.prefix || prefix)">
+                <svg-icon v-if="displaySvgIcon" :name="displaySvgIcon" class-name="x-select__svg-icon" />
+                <img v-else-if="displayIcon" :src="displayIcon" class="x-select__icon" alt="." />
+                <span v-else class="x-select__title">{{ displayTitle }}</span>
               </span>
               <span class="x-select__label">{{ displayLabel }}</span>
             </template>
@@ -321,7 +345,9 @@ onBeforeUnmount(() => {
           @click="handleSelect(option)"
         >
           <div class="x-select-options__content">
-            <img v-if="getOptionIcon(option)" :src="getOptionIcon(option)" class="x-select-options__icon" alt="." />
+            <svg-icon v-if="getOptionSvgIcon(option)" :name="getOptionSvgIcon(option)" class-name="x-select-options__svg-icon" />
+            <img v-else-if="getOptionIcon(option)" :src="getOptionIcon(option)" class="x-select-options__icon" alt="." />
+            <span v-else-if="getOptionTitle(option)" class="x-select-options__title">{{ getOptionTitle(option) }}</span>
             <span>{{ getOptionLabel(option) }}</span>
           </div>
         </div>
@@ -415,6 +441,20 @@ onBeforeUnmount(() => {
     border-radius: 9999px;
   }
 
+  &__svg-icon {
+    width: 18px;
+    height: 18px;
+    color: inherit;
+  }
+
+  &__title {
+    min-width: 18px;
+    color: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+
   &__label {
     color: var(--skin__lead);
     font-size: 11px;
@@ -505,6 +545,23 @@ onBeforeUnmount(() => {
     height: 18px;
     border-radius: 9999px;
   }
+
+  &__svg-icon {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 5px;
+    color: inherit;
+  }
+
+  &__title {
+    flex: 0 0 18px;
+    margin-right: 5px;
+    color: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
 }
 
 .x-select-options--fit-option-width {
@@ -530,7 +587,9 @@ onBeforeUnmount(() => {
   padding-left: 5px;
 }
 
-[dir="rtl"] .x-select-options__icon {
+[dir="rtl"] .x-select-options__icon,
+[dir="rtl"] .x-select-options__svg-icon,
+[dir="rtl"] .x-select-options__title {
   margin-right: 0;
   margin-left: 5px;
 }

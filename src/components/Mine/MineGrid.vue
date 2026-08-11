@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
 import useAuthStore from "@/store/modules/user";
 import router from "@/router";
@@ -110,8 +110,19 @@ const list = ref([
   },
 ]);
 const auth = useAuthStore()
+const displayList = computed(() => {
+  if (auth.token) {
+    return list.value;
+  }
+
+  return list.value.filter(item => item.key !== "aqtc");
+});
 
 function safeLogOut() {
+  if (!auth.token) {
+    return;
+  }
+
   const options = {
     title: '温馨提示',
     message: '是否退出当前账号?',
@@ -147,7 +158,7 @@ const onTapItem = (item: any) => {
     <div class="grid-row">
       <div
         class="grid-item-box"
-        v-for="(i, idx) in list"
+        v-for="(i, idx) in displayList"
         :key="i.key"
         @click="onTapItem(i)"
       >

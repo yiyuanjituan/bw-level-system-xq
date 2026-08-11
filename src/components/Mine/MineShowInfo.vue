@@ -38,6 +38,10 @@ function handleChangeAccount(type: number) {
         {{ _.join(_.takeRight(auth.user.phone, 3), "") }}</span
       >
     </div>
+    <div class="name-item" :class="{ 'active-item': auth.user.showAccount == 0 }" @click="handleChangeAccount(0)">
+      <span class="item-title">ID</span>
+      <span class="item-content">{{ auth.user.unionid }}</span>
+    </div>
   </div>
 </template>
 
@@ -70,6 +74,14 @@ function handleChangeAccount(type: number) {
     gap: 5px;
     height: 40px;
     color: #999;
+
+    .item-title {
+      flex: 0 0 15px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+    }
+
     .item-content {
       max-width: 160px;
       overflow: hidden;

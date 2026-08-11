@@ -15,7 +15,11 @@ const emits = defineEmits(['change'])
 watch(() => props.id, () => activeId.value = props.id)
 
 function handleChange() {
-  emits('change', activeId.value)
+  const selectedActivity = props.list.find((activity: any) => activity.id == activeId.value)
+
+  if (selectedActivity) {
+    emits('change', selectedActivity)
+  }
 }
 
 </script>

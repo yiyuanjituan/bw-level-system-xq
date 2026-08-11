@@ -135,7 +135,7 @@ onBeforeUnmount(stopClock);
                   v-model="inputEnterValue"
                 >
                   <template #suffix>
-                    <span class="main-text" @click="inputEnterValue = parseInt(auth.user.money)">全部</span>
+                    <span class="main-text" @click="inputEnterValue = Math.trunc(Number(auth.user.money))">全部</span>
                   </template>
                 </x-input>
               </x-form-item>

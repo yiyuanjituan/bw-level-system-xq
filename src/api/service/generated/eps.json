@@ -568,6 +568,11 @@
       },
       {
         "method": "post",
+        "path": "/canReceive",
+        "summary": "待领取奖励"
+      },
+      {
+        "method": "post",
         "path": "/records",
         "summary": "领取记录"
       }
@@ -591,6 +596,11 @@
         "method": "post",
         "path": "/promoteInfo",
         "summary": "代理推广配置"
+      },
+      {
+        "method": "post",
+        "path": "/dataInfo",
+        "summary": "代理我的数据"
       }
     ]
   },
@@ -825,6 +835,11 @@
         "method": "get",
         "path": "/clearOnlineSession",
         "summary": "清理遗留在线会话"
+      },
+      {
+        "method": "get",
+        "path": "/refreshAgentData",
+        "summary": "刷新代理每日数据快照"
       },
       {
         "method": "get",

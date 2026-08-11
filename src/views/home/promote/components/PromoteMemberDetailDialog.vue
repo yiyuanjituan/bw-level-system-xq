@@ -6,7 +6,24 @@ import { getPromoteSubordinateDetail } from "@/api/common";
 import vipBadgeIcon from "@/assets/home/promote/vip-badge.avif";
 import UiLoading from "@/components/UI/loading.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import type { PromoteSubordinateDetail } from "../types";
+import type { PromoteSubordinateDetail, PromoteSubordinatePeriodData } from "../types";
+
+interface PromoteSubordinatePeriodSource extends Partial<PromoteSubordinatePeriodData> {
+  chargeDiff?: number;
+  profitLose?: number;
+}
+
+interface PromoteSubordinateDetailSource extends Partial<PromoteSubordinateDetail> {
+  userName?: string;
+  userStatus?: number;
+  onLine?: boolean | number;
+  onLineCount?: number;
+  loginTime?: number;
+  registerTime?: number;
+  todayValue?: PromoteSubordinatePeriodSource;
+  yesterdayValue?: PromoteSubordinatePeriodSource;
+  totalValue?: PromoteSubordinatePeriodSource;
+}
 
 const props = defineProps<{
   show: boolean;
@@ -33,9 +50,49 @@ function formatMoney(value: unknown) {
   return Number(value || 0).toFixed(2);
 }
 
-function formatTime(timestamp: number) {
-  if (!timestamp) return "-";
-  return dayjs(timestamp * 1000).format("YYYY/MM/DD HH:mm:ss");
+function getWinLossClass(value: unknown) {
+  const amount = Number(value);
+  return {
+    "_number-column-green_1ngn0_76": amount < 0,
+    "_number-column-red_1ngn0_82": amount > 0
+  };
+}
+
+function normalizeOnlineStatus(value: unknown) {
+  return value === true || value === 1 || value === "1" || value === "true" ? 1 : 0;
+}
+
+function normalizePeriodData(source: PromoteSubordinatePeriodSource | undefined): PromoteSubordinatePeriodData {
+  return {
+    deposit: Number(source?.deposit || 0),
+    withdraw: Number(source?.withdraw || 0),
+    difference: Number(source?.difference ?? source?.chargeDiff ?? 0),
+    discount: Number(source?.discount || 0),
+    validBet: Number(source?.validBet || 0),
+    profit: Number(source?.profit ?? source?.profitLose ?? 0)
+  };
+}
+
+function normalizeDetail(response: unknown): PromoteSubordinateDetail {
+  const source = (
+    (response as { data?: PromoteSubordinateDetailSource })?.data
+    ?? response
+    ?? {}
+  ) as PromoteSubordinateDetailSource;
+  return {
+    userIdx: Number(source.userIdx || 0),
+    account: String(source.account ?? source.userName ?? ""),
+    encryption: String(source.encryption ?? ""),
+    vipLevel: Number(source.vipLevel || 0),
+    status: Number(source.status ?? source.userStatus ?? 0),
+    online: normalizeOnlineStatus(source.online ?? source.onLine),
+    loginTimes: Number(source.loginTimes ?? source.onLineCount ?? 0),
+    lastLoginTime: Number(source.lastLoginTime ?? source.loginTime ?? 0),
+    regTime: Number(source.regTime ?? source.registerTime ?? 0),
+    today: normalizePeriodData(source.today ?? source.todayValue),
+    yesterday: normalizePeriodData(source.yesterday ?? source.yesterdayValue),
+    total: normalizePeriodData(source.total ?? source.totalValue)
+  };
 }
 
 function formatDate(timestamp: number) {
@@ -51,9 +108,9 @@ async function loadDetail() {
   failed.value = false;
   detail.value = null;
   try {
-    const response = await getPromoteSubordinateDetail(props.userIdx) as PromoteSubordinateDetail;
+    const response = await getPromoteSubordinateDetail(props.userIdx);
     if (requestId === latestRequestId) {
-      detail.value = response;
+      detail.value = normalizeDetail(response);
     }
   } catch {
     if (requestId === latestRequestId) {
@@ -130,15 +187,26 @@ watch(
             </span>
             <span class="col">
               <label>账号状态</label>
-              <span class="number value" :class="detail.status === 1 ? 'green' : 'red'">{{ detail.status === 1 ? "正常" : "停用" }}</span>
+              <span
+                class="number value _number-column_1ngn0_59"
+                :class="detail.status === 1 ? '_number-column-green_1ngn0_76' : '_number-column-red_1ngn0_82'"
+              >{{ detail.status === 1 ? "正常" : "停用" }}</span>
             </span>
           </div>
           <div class="row">
-            <span class="col"><label>当前</label><span><span class="number value" :class="{ green: detail.online === 1 }">{{ detail.online === 1 ? "在线" : "离线" }}</span></span></span>
+            <span class="col">
+              <label>当前</label>
+              <span>
+                <span
+                  class="number value _number-column_1ngn0_59"
+                  :class="{ '_number-column-green_1ngn0_76': detail.online === 1 }"
+                >{{ detail.online === 1 ? "在线" : "离线" }}</span>
+              </span>
+            </span>
             <span class="col"><label>登录次数</label><span><span class="number value">{{ detail.loginTimes }}</span></span></span>
           </div>
           <div class="row">
-            <span class="col"><label>登录日期</label><span><span class="value">{{ formatTime(detail.lastLoginTime) }}</span></span></span>
+            <span class="col"><label>登录日期</label><span><span class="value">{{ formatDate(detail.lastLoginTime) }}</span></span></span>
             <span class="col"><label>注册日期</label><span><span class="value">{{ formatDate(detail.regTime) }}</span></span></span>
           </div>
         </div>
@@ -150,12 +218,28 @@ watch(
             <span class="col"><label>提现金额</label><span class="value"><span class="number">{{ formatMoney(section.value?.withdraw) }}</span></span></span>
           </div>
           <div class="row">
-            <span class="col"><label>充提差额</label><span class="value"><span class="number">{{ formatMoney(section.value?.difference) }}</span></span></span>
+            <span class="col">
+              <label>充提差额</label>
+              <span class="value">
+                <span
+                  class="number number-column-value _number-column_1ngn0_59"
+                  :class="getWinLossClass(section.value?.difference)"
+                >{{ formatMoney(section.value?.difference) }}</span>
+              </span>
+            </span>
             <span class="col"><label>领取优惠</label><span class="value"><span class="number">{{ formatMoney(section.value?.discount) }}</span></span></span>
           </div>
           <div class="row">
             <span class="col"><label>有效投注</label><span class="value"><span class="number">{{ formatMoney(section.value?.validBet) }}</span></span></span>
-            <span class="col"><label>输赢金额</label><span class="value"><span class="number" :class="Number(section.value?.profit) < 0 ? 'red' : ''">{{ formatMoney(section.value?.profit) }}</span></span></span>
+            <span class="col">
+              <label>输赢金额</label>
+              <span class="value">
+                <span
+                  class="number number-column-value _number-column_1ngn0_59"
+                  :class="getWinLossClass(section.value?.profit)"
+                >{{ formatMoney(section.value?.profit) }}</span>
+              </span>
+            </span>
           </div>
         </div>
       </template>
@@ -282,14 +366,6 @@ watch(
   align-items: center;
   color: var(--skin__lead);
   word-break: break-all;
-}
-
-.green {
-  color: var(--skin__accent_1);
-}
-
-.red {
-  color: var(--skin__accent_2);
 }
 
 .account,

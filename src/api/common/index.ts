@@ -1,10 +1,35 @@
 import { http } from "@/utils/http";
+import type { PromoteDataResponse } from "@/views/home/promote/types";
 
 type ListResult = {
   code: number;
   message: string;
   data: Array<any>;
 };
+
+export type CanReceiveSource = 2 | 3 | 4 | 5 | 6;
+
+export interface CanReceiveItem {
+  key: string;
+  name: string;
+  money: number;
+  vitality: number;
+  source: CanReceiveSource;
+  sourceName: string;
+  createTime?: string | null;
+}
+
+export interface CanReceiveResponse {
+  list: CanReceiveItem[];
+  total: number;
+  totalMoney: number;
+  totalVitality: number;
+}
+
+export type UpdateUserInfoPayload = Partial<Pick<
+  Eps.UserInfoEntity,
+  "avatarUrl" | "nickName" | "showAccount" | "birthday" | "wechat" | "whatsapp" | "telegram"
+>>;
 
 export function getConfig(data?: object): Promise<any> {
   return http.request({
@@ -47,8 +72,8 @@ export function userPhoneLogin(data?: object): Promise<any> {
   });
 }
 
-export function getUserInfo(data?: object): Promise<any> {
-  return http.request({
+export function getUserInfo(data?: object): Promise<Eps.UserInfoEntity> {
+  return http.request<Eps.UserInfoEntity>({
     url: "/app/user/info/person",
     method: "get",
     params: data
@@ -119,6 +144,13 @@ export function getActivityRecords(data: any): Promise<any> {
   });
 }
 
+export function getCanReceiveList(): Promise<CanReceiveResponse> {
+  return http.request<CanReceiveResponse>({
+    url: "/app/v1/activity/canReceive",
+    method: "post"
+  });
+}
+
 export function getFindUsData(data: any): Promise<any> {
   return http.request({
     url: "/open/site/base/findUs",
@@ -127,8 +159,8 @@ export function getFindUsData(data: any): Promise<any> {
   });
 }
 
-export function updateUserInfo(data: any): Promise<any> {
-  return http.request({
+export function updateUserInfo(data: UpdateUserInfoPayload): Promise<unknown> {
+  return http.request<unknown>({
     url: "/app/user/info/updatePerson",
     method: "post",
     data: data
@@ -242,6 +274,14 @@ export function getPromoteInfo(): Promise<any> {
   return http.request({
     url: "/app/v1/agent/promoteInfo",
     method: "post"
+  });
+}
+
+export function getPromoteData(timeEnum: number): Promise<PromoteDataResponse> {
+  return http.request<PromoteDataResponse>({
+    url: "/app/v1/agent/dataInfo",
+    method: "post",
+    data: { timeEnum }
   });
 }
 

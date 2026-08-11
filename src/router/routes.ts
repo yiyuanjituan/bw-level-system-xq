@@ -234,6 +234,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: "setting",
+        name: "Setting",
+        component: () => import("@/views/home/setting.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
         path: "withdraw",
         name: "Withdraw",
         component: () => import("@/views/home/withdraw.vue"),

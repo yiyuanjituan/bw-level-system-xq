@@ -11,7 +11,19 @@ const totalTypes = ref<any[]>([]);
 const totalList = ref<any[]>([]);
 const isLoading = ref(false);
 const appData = useAppStore();
-const activeCategoryId = ref(0)
+const activeCategoryId = ref(0);
+
+const activeList = computed(() => {
+  if (activeCategoryId.value === 0) {
+    return totalList.value;
+  }
+
+  return totalList.value.filter(activity => activity.type == activeCategoryId.value);
+});
+
+function handleCategoryChange(categoryId: number) {
+  activeCategoryId.value = categoryId;
+}
 
 function handleJump(record: any) {
   if (record.jumpMode == 1) {
@@ -42,10 +54,6 @@ function init() {
   });
 }
 
-const activeList = computed(() => {
-
-})
-
 onMounted(() => {
   init();
 });
@@ -55,15 +63,29 @@ onMounted(() => {
   <div class="event-container">
     <div class="ui-tab-left">
       <div class="scroll-col">
-        <div class="ui-tab-item">
+        <div
+          class="ui-tab-item"
+          :class="{ 'ui-tab-item--active': activeCategoryId === 0 }"
+          @click="handleCategoryChange(0)"
+        >
           <ui-badge class="w-[75px] h-[35px] mt-[10px]" :content="0" :size="[2, 0]">
             <div class="item-box flex items-center justify-center">
-              <svg-icon name="event_zh" color="#adb6c3" class="!w-[24px] !h-[24px]" />
+              <svg-icon
+                name="event_zh"
+                :color="activeCategoryId === 0 ? '#F0C059' : '#adb6c3'"
+                class="!w-[24px] !h-[24px]"
+              />
               <div class="w-[46.5px] text-[12.5px] text-center">综 合</div>
             </div>
           </ui-badge>
         </div>
-        <div class="ui-tab-item" v-for="item in totalTypes" :key="item.id">
+        <div
+          v-for="item in totalTypes"
+          :key="item.id"
+          class="ui-tab-item"
+          :class="{ 'ui-tab-item--active': activeCategoryId === item.id }"
+          @click="handleCategoryChange(item.id)"
+        >
           <ui-badge class="w-[75px] h-[35px] mt-[10px]" :content="0" :size="[2, 0]">
             <div class="item-box flex items-center justify-center">
               <img :src="item.logo" v-if="item.logo" alt="" srcset="" class="w-auto h-[24px]" />
@@ -90,7 +112,7 @@ onMounted(() => {
     </div>
     <div class="ui-tab-right">
       <div class="panel">
-        <div class="panel-item-box" v-for="item in totalList" :key="item.id">
+        <div class="panel-item-box" v-for="item in activeList" :key="item.id">
           <img :src="item.image" alt="" srcset="" class="w-[100%] h-[100%]" @click="handleJump(item)" />
         </div>
       </div>
@@ -131,6 +153,8 @@ onMounted(() => {
         .item-box {
           width: 100%;
           height: 100%;
+          border: 1px solid transparent;
+          box-sizing: border-box;
           background-image: url("@/assets/common/btn_zc1_2.avif");
           border-radius: 7px;
           padding: 0 3px 0 2px;
@@ -138,6 +162,13 @@ onMounted(() => {
           color: #adb6c3;
           box-shadow: 0 1px 2px 0 #0000001f;
           word-break: break-all;
+        }
+
+        &--active {
+          .item-box {
+            border-color: #f0c059;
+            color: #f0c059;
+          }
         }
       }
     }

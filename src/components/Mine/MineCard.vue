@@ -5,6 +5,7 @@ import * as _ from "lodash-es";
 import useAppStore from "@/store/modules/app";
 import useClipboard from "vue-clipboard3";
 import { showCustomToast } from "@/hooks/useCommon";
+import router from "@/router";
 
 defineOptions({ name: "mine-card" });
 
@@ -55,7 +56,7 @@ const updateWallet = () => {
         :src="avatarUrl"
         @error="avatarLoadFailed = true"
       />
-      <div class="edit-icon absolute">
+      <div class="edit-icon absolute" @click="router.push('/home/setting')">
         <svg-icon name="icon_grzl" />
       </div>
     </div>
@@ -81,10 +82,11 @@ const updateWallet = () => {
           ***
           {{ _.join(_.takeRight(auth.user.phone, 3), "") }}
         </span>
+        <span class="user-info-show-name" v-if="auth.user.showAccount == 0">{{ auth.user.unionid }}</span>
         <span
           class="copy-icon"
-          v-if="auth.user.showAccount == 1"
-          @click="copyAccount(auth.user.account)"
+          v-if="auth.user.showAccount == 0 || auth.user.showAccount == 1"
+          @click="copyAccount(auth.user.showAccount == 0 ? auth.user.unionid : auth.user.account)"
         >
           <svg width="1em" height="1em" fill="currentColor" class="">
             <use xlink:href="#comm_icon_copy"></use>

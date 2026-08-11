@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { getPromoteData } from "@/api/common";
+import type { PromoteDataResponse } from "../types";
 
 type PeriodValue = "today" | "yesterday" | "thisWeek" | "lastWeek" | "thisMonth" | "lastMonth";
 
 interface DataCard {
   title: string;
   unit?: string;
+  winLoss?: boolean;
   totalValue: string;
   totalCount?: string;
   directValue: string;
@@ -18,53 +21,225 @@ interface AccumulatedMetric {
   label: string;
   value: string;
   highlight?: boolean;
+  link?: boolean;
+  winLoss?: boolean;
 }
 
-const periods: Array<{ label: string; value: PeriodValue }> = [
-  { label: "今日", value: "today" },
-  { label: "昨日", value: "yesterday" },
-  { label: "本周", value: "thisWeek" },
-  { label: "上周", value: "lastWeek" },
-  { label: "本月", value: "thisMonth" },
-  { label: "上月", value: "lastMonth" },
+const periods: Array<{ label: string; value: PeriodValue; timeEnum: number }> = [
+  { label: "今日", value: "today", timeEnum: 1 },
+  { label: "昨日", value: "yesterday", timeEnum: 2 },
+  { label: "本周", value: "thisWeek", timeEnum: 3 },
+  { label: "上周", value: "lastWeek", timeEnum: 4 },
+  { label: "本月", value: "thisMonth", timeEnum: 5 },
+  { label: "上月", value: "lastMonth", timeEnum: 6 },
 ];
 
 const activePeriod = ref<PeriodValue>("today");
+const periodCache = ref<Partial<Record<PeriodValue, PromoteDataResponse>>>({});
+const loading = ref(false);
+const requestFailed = ref(false);
+let latestRequestId = 0;
+
+const currentData = computed(() => periodCache.value[activePeriod.value]);
 const commissionTitle = computed(
   () => `${periods.find(period => period.value === activePeriod.value)?.label ?? "今日"}佣金`,
 );
 
-const commissionDetails = [
-  { label: "直属佣金", value: "0.00", highlight: true },
-  { label: "其他佣金", value: "0.00", highlight: true },
-  { label: "推广活动奖励", value: "0.00" },
-  { label: "代理活动奖励", value: "0.00" },
-];
+function formatMoney(value: unknown) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount.toFixed(2) : "0.00";
+}
 
-const allDataCards: DataCard[] = [
-  { title: "总新增人数", totalValue: "0", directValue: "0", otherValue: "0" },
-  { title: "总充值", unit: "人次", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "总首充", unit: "人数", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "当天注册首充", unit: "人数", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "总提现", unit: "次数", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "领取总奖励", unit: "人次", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "总有效投注", unit: "人次", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-  { title: "总业绩", unit: "人次", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "-" },
-  { title: "总输赢", unit: "人次", totalValue: "0.00", totalCount: "0", directValue: "0.00", directCount: "0", otherValue: "0.00", otherCount: "0" },
-];
+function formatCount(value: unknown) {
+  const count = Number(value);
+  return Number.isFinite(count) ? String(Math.max(Math.trunc(count), 0)) : "0";
+}
 
-const teamDataRows: AccumulatedMetric[][] = [
-  [{ label: "总人数", value: "0" }, { label: "直属人数", value: "0" }, { label: "其他人数", value: "0" }],
-  [{ label: "总业绩", value: "0.00" }, { label: "直属业绩", value: "0.00" }, { label: "其他业绩", value: "0.00" }],
-  [{ label: "累计直属充值", value: "0.00" }, { label: "累计直属提现", value: "0.00" }, { label: "累计直属领取", value: "0.00" }],
-  [{ label: "累计直属有效投注", value: "0.00" }, { label: "累计直属输赢", value: "0.00" }],
-];
+function getWinLossClass(value: string) {
+  const amount = Number(value);
+  return {
+    "_number-column-green_1ngn0_76": amount < 0,
+    "_number-column-red_1ngn0_82": amount > 0,
+  };
+}
 
-const incomeRows: AccumulatedMetric[][] = [
-  [{ label: "总佣金", value: "0.00", highlight: true }, { label: "直属佣金", value: "0.00", highlight: true }, { label: "其他佣金", value: "0.00", highlight: true }],
-  [{ label: "累计实发佣金", value: "0.00", highlight: true }, { label: "待领取", value: "0.00", highlight: true }, { label: "已领取", value: "0.00", highlight: true }],
-  [{ label: "推广活动累计奖励", value: "0.00" }, { label: "代理活动累计奖励", value: "0.00" }],
-];
+function hasValue(value: string) {
+  return Number(value) !== 0;
+}
+
+const commissionDetails = computed(() => {
+  const response = currentData.value;
+  return [
+    { label: "直属佣金", value: formatMoney(response?.timeDirectCommission), highlight: true },
+    { label: "其他佣金", value: formatMoney(response?.timeOtherCommission), highlight: true },
+    { label: "推广活动奖励", value: formatMoney(response?.timePromoteActiveAmount) },
+    { label: "代理活动奖励", value: formatMoney(response?.timeAgentActiveAmount) },
+  ];
+});
+
+const allDataCards = computed<DataCard[]>(() => {
+  const response = currentData.value;
+  return [
+    {
+      title: "总新增人数",
+      totalValue: formatCount(response?.timeNewAddTotalMember),
+      directValue: formatCount(response?.timeNewAddDirectMember),
+      otherValue: formatCount(response?.timeNewAddOtherMember),
+    },
+    {
+      title: "总充值",
+      unit: "人次",
+      totalValue: formatMoney(response?.timeTotalDeposit),
+      totalCount: formatCount(response?.timeTotalDepositPerson),
+      directValue: formatMoney(response?.timeDirectDeposit),
+      directCount: formatCount(response?.timeDirectDepositPerson),
+      otherValue: formatMoney(response?.timeOtherDeposit),
+      otherCount: formatCount(response?.timeOtherDepositPerson),
+    },
+    {
+      title: "总首充",
+      unit: "人数",
+      totalValue: formatMoney(response?.timeTotalFirstDeposit),
+      totalCount: formatCount(response?.timeTotalFirstDepositPerson),
+      directValue: formatMoney(response?.timeDirectFirstDeposit),
+      directCount: formatCount(response?.timeDirectFirstDepositPerson),
+      otherValue: formatMoney(response?.timeOtherFirstDeposit),
+      otherCount: formatCount(response?.timeOtherFirstDepositPerson),
+    },
+    {
+      title: "当天注册首充",
+      unit: "人数",
+      totalValue: formatMoney(response?.timeTotalRegisterDeposit),
+      totalCount: formatCount(response?.timeTotalRegisterDepositPerson),
+      directValue: formatMoney(response?.timeDirectRegisterDeposit),
+      directCount: formatCount(response?.timeDirectRegisterDepositPerson),
+      otherValue: formatMoney(response?.timeOtherRegisterDeposit),
+      otherCount: formatCount(response?.timeOtherRegisterDepositPerson),
+    },
+    {
+      title: "总提现",
+      unit: "次数",
+      totalValue: formatMoney(response?.timeTotalWithdraw),
+      totalCount: formatCount(response?.timeTotalWithdrawPerson),
+      directValue: formatMoney(response?.timeDirectWithdraw),
+      directCount: formatCount(response?.timeDirectWithdrawPerson),
+      otherValue: formatMoney(response?.timeOtherWithdraw),
+      otherCount: formatCount(response?.timeOtherWithdrawPerson),
+    },
+    {
+      title: "领取总奖励",
+      unit: "人次",
+      totalValue: formatMoney(response?.timeTotalDiscount),
+      totalCount: formatCount(response?.timeTotalDiscountPerson),
+      directValue: formatMoney(response?.timeDirectDiscount),
+      directCount: formatCount(response?.timeDirectDiscountPerson),
+      otherValue: formatMoney(response?.timeOtherDiscount),
+      otherCount: formatCount(response?.timeOtherDiscountPerson),
+    },
+    {
+      title: "总有效投注",
+      unit: "人次",
+      totalValue: formatMoney(response?.timeTotalValidBet),
+      totalCount: formatCount(response?.timeTotalValidBetPerson),
+      directValue: formatMoney(response?.timeDirectValidBet),
+      directCount: formatCount(response?.timeDirectValidBetPerson),
+      otherValue: formatMoney(response?.timeOtherValidBet),
+      otherCount: formatCount(response?.timeOtherValidBetPerson),
+    },
+    {
+      title: "总业绩",
+      unit: "人次",
+      totalValue: formatMoney(response?.timeTotalPerformance),
+      totalCount: formatCount(response?.timeTotalContribute),
+      directValue: formatMoney(response?.timeDirectPerformance),
+      directCount: formatCount(response?.timeDirectContribute),
+      otherValue: formatMoney(response?.timeOtherPerformance),
+      otherCount: formatCount(response?.timeOtherContribute),
+    },
+    {
+      title: "总输赢",
+      unit: "人次",
+      totalValue: formatMoney(response?.timeTotalProfitLose),
+      winLoss: true,
+      totalCount: formatCount(response?.timeTotalProfitLosePerson),
+      directValue: formatMoney(response?.timeDirectProfitLose),
+      directCount: formatCount(response?.timeDirectProfitLosePerson),
+      otherValue: formatMoney(response?.timeOtherProfitLose),
+      otherCount: formatCount(response?.timeOtherProfitLosePerson),
+    },
+  ];
+});
+
+const teamDataRows = computed<AccumulatedMetric[][]>(() => {
+  const response = currentData.value;
+  return [
+    [
+      { label: "总人数", value: formatCount(response?.totalMember), link: true },
+      { label: "直属人数", value: formatCount(response?.directMember), link: true },
+      { label: "其他人数", value: formatCount(response?.otherMember), link: true },
+    ],
+    [
+      { label: "总业绩", value: formatMoney(response?.totalPerformance) },
+      { label: "直属业绩", value: formatMoney(response?.directPerformance) },
+      { label: "其他业绩", value: formatMoney(response?.otherPerformance) },
+    ],
+    [
+      { label: "累计直属充值", value: formatMoney(response?.totalDeposit), link: true },
+      { label: "累计直属提现", value: formatMoney(response?.totalWithdraw), link: true },
+      { label: "累计直属领取", value: formatMoney(response?.totalDiscount), link: true },
+    ],
+    [
+      { label: "累计直属有效投注", value: formatMoney(response?.totalValidBet), link: true },
+      { label: "累计直属输赢", value: formatMoney(response?.totalProfitLose), winLoss: true },
+    ],
+  ];
+});
+
+const incomeRows = computed<AccumulatedMetric[][]>(() => {
+  const response = currentData.value;
+  return [
+    [
+      { label: "总佣金", value: formatMoney(response?.totalCommission), highlight: true },
+      { label: "直属佣金", value: formatMoney(response?.directCommission), highlight: true },
+      { label: "其他佣金", value: formatMoney(response?.otherCommission), highlight: true },
+    ],
+    [
+      { label: "累计实发佣金", value: formatMoney(response?.sumCommission), highlight: true },
+      { label: "待领取", value: formatMoney(response?.canTakeCommission), highlight: true },
+      { label: "已领取", value: formatMoney(response?.takenCommission), highlight: true },
+    ],
+    [
+      { label: "推广活动累计奖励", value: formatMoney(response?.promoteActiveAmount) },
+      { label: "代理活动累计奖励", value: formatMoney(response?.agentActiveAmount) },
+    ],
+  ];
+});
+
+async function loadPeriod(periodValue: PeriodValue, force = false) {
+  if (!force && periodCache.value[periodValue]) return;
+
+  const period = periods.find(periodItem => periodItem.value === periodValue);
+  if (!period) return;
+
+  const requestId = ++latestRequestId;
+  loading.value = true;
+  requestFailed.value = false;
+  try {
+    const response = await getPromoteData(period.timeEnum);
+    if (requestId !== latestRequestId) return;
+
+    periodCache.value = {
+      ...periodCache.value,
+      [periodValue]: response,
+    };
+  } catch {
+    if (requestId === latestRequestId) requestFailed.value = true;
+  } finally {
+    if (requestId === latestRequestId) loading.value = false;
+  }
+}
+
+watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: true });
 </script>
 
 <template>
@@ -83,16 +258,28 @@ const incomeRows: AccumulatedMetric[][] = [
       />
     </x-tabs>
 
-    <div class="_prmote-base-layout_pluce_60 promote-data__content lobby-scroll lobby-scroll--y">
+    <div v-if="loading && !currentData" class="promote-data__state">
+      <ui-loading />
+    </div>
+    <div v-else-if="requestFailed && !currentData" class="promote-data__state">
+      <span>数据加载失败</span>
+      <button type="button" class="promote-data__retry" @click="loadPeriod(activePeriod, true)">
+        重新加载
+      </button>
+    </div>
+
+    <div v-else class="_prmote-base-layout_pluce_60 promote-data__content lobby-scroll lobby-scroll--y">
       <section class="_commissionCard_5ctcb_59">
         <div class="_headerSection_5ctcb_66">
           <span class="_title_5ctcb_72">{{ commissionTitle }}</span>
           <div class="_amountGroup_5ctcb_81">
             <span class="_mainAmount_5ctcb_86">
-              <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">0.00</span>
+              <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">
+                {{ formatMoney(currentData?.timeReceiveCommission) }}
+              </span>
             </span>
             <span class="_subAmount_5ctcb_92">
-              (总佣金 <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">0.00</span>)
+              (总佣金 <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">{{ formatMoney(currentData?.timeCommission) }}</span>)
             </span>
           </div>
         </div>
@@ -117,9 +304,20 @@ const incomeRows: AccumulatedMetric[][] = [
                 <span v-if="card.unit" class="_subTitle_8fyve_101"> ({{ card.unit }})</span>
               </div>
               <div class="_totalRow_8fyve_107">
-                <span class="number-column-value _number-column_1ngn0_59 _totalAmount_8fyve_113">{{ card.totalValue }}</span>
+                <span
+                  class="_totalAmount_8fyve_113"
+                  :class="{ '_data-link-to_1ngn0_89': card.totalCount === undefined, '_has-value_1ngn0_89': card.totalCount === undefined && hasValue(card.totalValue) }"
+                >
+                  <span
+                    class="number-column-value _number-column_1ngn0_59"
+                    :class="card.winLoss ? getWinLossClass(card.totalValue) : undefined"
+                  >{{ card.totalValue }}</span>
+                </span>
                 <span v-if="card.totalCount !== undefined" class="_totalCount_8fyve_122">
-                  (<span class="_number-column_1ngn0_59 _totalCountNoLink_8fyve_128">{{ card.totalCount }}</span>)
+                  (<span
+                    class="_data-link-to_1ngn0_89 _totalCountNoLink_8fyve_128"
+                    :class="{ '_has-value_1ngn0_89': hasValue(card.totalCount) }"
+                  ><span class="_number-column_1ngn0_59">{{ card.totalCount }}</span></span>)
                 </span>
               </div>
             </div>
@@ -127,18 +325,40 @@ const incomeRows: AccumulatedMetric[][] = [
             <div class="_detailRow_8fyve_139">
               <span class="_label_8fyve_144">直属数据</span>
               <div class="_valueWrap_8fyve_150">
-                <span class="number-column-value _number-column_1ngn0_59 _value_8fyve_150">{{ card.directValue }}</span>
+                <span
+                  class="_value_8fyve_150"
+                  :class="{ '_data-link-to_1ngn0_89': card.directCount === undefined, '_has-value_1ngn0_89': card.directCount === undefined && hasValue(card.directValue) }"
+                >
+                  <span
+                    class="number-column-value _number-column_1ngn0_59"
+                    :class="card.winLoss ? getWinLossClass(card.directValue) : undefined"
+                  >{{ card.directValue }}</span>
+                </span>
                 <span v-if="card.directCount !== undefined" class="_linkCount_8fyve_165">
-                  (<span class="_data-link-to_1ngn0_89 _extraValue_8fyve_172">{{ card.directCount }}</span>)
+                  (<span
+                    class="_data-link-to_1ngn0_89 _extraValue_8fyve_172"
+                    :class="{ '_has-value_1ngn0_89': hasValue(card.directCount) }"
+                  ><span class="_number-column_1ngn0_59">{{ card.directCount }}</span></span>)
                 </span>
               </div>
             </div>
             <div class="_detailRow_8fyve_139">
               <span class="_label_8fyve_144">其他数据</span>
               <div class="_valueWrap_8fyve_150">
-                <span class="number-column-value _number-column_1ngn0_59 _value_8fyve_150">{{ card.otherValue }}</span>
+                <span
+                  class="_value_8fyve_150"
+                  :class="{ '_data-link-to_1ngn0_89': card.otherCount === undefined, '_has-value_1ngn0_89': card.otherCount === undefined && hasValue(card.otherValue) }"
+                >
+                  <span
+                    class="number-column-value _number-column_1ngn0_59"
+                    :class="card.winLoss ? getWinLossClass(card.otherValue) : undefined"
+                  >{{ card.otherValue }}</span>
+                </span>
                 <span v-if="card.otherCount !== undefined" class="_linkCount_8fyve_165">
-                  (<span class="_number-column_1ngn0_59 _extraValue_8fyve_172">{{ card.otherCount }}</span>)
+                  (<span
+                    class="_data-link-to_1ngn0_89 _extraValue_8fyve_172"
+                    :class="{ '_has-value_1ngn0_89': hasValue(card.otherCount) }"
+                  ><span class="_number-column_1ngn0_59">{{ card.otherCount }}</span></span>)
                 </span>
               </div>
             </div>
@@ -147,13 +367,29 @@ const incomeRows: AccumulatedMetric[][] = [
       </section>
 
       <section class="_teamDataTableContainer_12h2o_59">
-        <div class="_header_12h2o_67">累计数据(含其他下级)</div>
+        <div class="_header_12h2o_67">累计数据（含其他下级）</div>
         <div class="_blueSection_12h2o_132">
           <div class="_section_12h2o_78">
             <div v-for="(row, rowIndex) in teamDataRows" :key="rowIndex" class="_row_12h2o_98">
               <div v-for="metric in row" :key="metric.label" class="_dataItem_12h2o_104">
                 <div class="_label_12h2o_115">{{ metric.label }}</div>
-                <div class="_value_12h2o_122"><span class="_number-column_1ngn0_59">{{ metric.value }}</span></div>
+                <div class="_value_12h2o_122">
+                  <span
+                    v-if="metric.link"
+                    class="_data-link-to_1ngn0_89"
+                    :class="{ '_has-value_1ngn0_89': hasValue(metric.value) }"
+                  >
+                    <span
+                      class="_number-column_1ngn0_59"
+                      :class="metric.winLoss ? getWinLossClass(metric.value) : undefined"
+                    >{{ metric.value }}</span>
+                  </span>
+                  <span
+                    v-else
+                    class="_number-column_1ngn0_59"
+                    :class="metric.winLoss ? getWinLossClass(metric.value) : undefined"
+                  >{{ metric.value }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -167,7 +403,13 @@ const incomeRows: AccumulatedMetric[][] = [
               <div v-for="metric in row" :key="metric.label" class="_dataItem_12h2o_104">
                 <div class="_label_12h2o_115">{{ metric.label }}</div>
                 <div class="_value_12h2o_122">
-                  <span class="_number-column_1ngn0_59" :class="{ '_number-column-yellow_1ngn0_66': metric.highlight }">
+                  <span
+                    class="_number-column_1ngn0_59"
+                    :class="[
+                      { '_number-column-yellow_1ngn0_66': metric.highlight },
+                      metric.winLoss ? getWinLossClass(metric.value) : undefined,
+                    ]"
+                  >
                     {{ metric.value }}
                   </span>
                 </div>
@@ -200,6 +442,25 @@ const incomeRows: AccumulatedMetric[][] = [
 
 .promote-data__content > section {
   box-sizing: border-box;
+}
+
+.promote-data__state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--skin__neutral_2);
+}
+
+.promote-data__retry {
+  padding: 5px 12px;
+  border: var(--lobby__px) solid var(--skin__primary);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--skin__primary);
+  cursor: pointer;
 }
 
 :deep(.promote-data__period-tabs > .x-tabs__wrap) {
@@ -235,5 +496,35 @@ const incomeRows: AccumulatedMetric[][] = [
 
 :deep(.promote-data__period-tabs .x-tabs__content) {
   display: none;
+}
+
+/* 当前模板直接输出数字文本，需要在数字节点本身补齐参考页面的字号和状态色。 */
+:deep(._allDataContainer_8fyve_59 ._value_8fyve_150) {
+  font-size: 0.24rem;
+  font-weight: 500;
+  line-height: normal;
+}
+
+:deep(._number-column-yellow_1ngn0_66) {
+  color: var(--skin__accent_3, #ffaa09);
+}
+
+:deep(._commissionCard_5ctcb_59 ._highlight_5ctcb_129) {
+  color: var(--skin__accent_3, #ffaa09);
+}
+
+:deep(._number-column-green_1ngn0_76) {
+  color: var(--skin__accent_1);
+}
+
+:deep(._number-column-red_1ngn0_82) {
+  color: var(--skin__accent_2);
+}
+
+:deep(._data-link-to_1ngn0_89._has-value_1ngn0_89 ._number-column_1ngn0_59),
+:deep(._underline_1ngn0_90._has-value_1ngn0_89 ._number-column_1ngn0_59) {
+  color: var(--skin__primary);
+  text-decoration: underline;
+  text-underline-offset: 0.06rem;
 }
 </style>

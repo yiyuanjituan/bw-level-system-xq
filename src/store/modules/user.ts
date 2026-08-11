@@ -4,7 +4,7 @@ import { getUserInfo } from "@/api/common";
 import { connectSse, disconnectSse } from "@/utils/sse";
 
 export const useAuthStore = defineStore('user', () => {
-  const user = ref<any>({})
+  const user = ref<Eps.UserInfoEntity>({})
   const token = ref<string>('')
 
   const setToken = (data: string) => {

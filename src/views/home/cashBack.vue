@@ -5,7 +5,9 @@ import { formatMoney } from '@/utils/common';
 import UiEmpty from '@/components/UI/empty.vue';
 import { useRefs } from '@/hooks/useRefs';
 import router from '@/router';
+import useAuthStore from '@/store/modules/user';
 
+const auth = useAuthStore();
 const isRefreshLoading = ref(false);
 const typeOptions: { label: string; value: string | number; image?: string }[] = [
   { label: '电子', value: 3, image: 'game-icon_dtfl_dz_0' },
@@ -29,7 +31,7 @@ function refreshListData() {
 }
 
 function getData() {
-  service.v1.user.getCashBack({ type: activeTypeData.value }).then(res => {
+  return service.v1.user.getCashBack({ type: activeTypeData.value }).then(res => {
     listData.value = res.list;
     awaitNum.value = res.awaitNum;
   });
@@ -60,6 +62,8 @@ function handleGetCashBack() {
         iconType: 'coin',
         award: `+${res.amount}`
       });
+
+      return Promise.all([getData(), auth.updateInfo()]);
     })
     .finally(() => (isLoadingGetReward.value = false));
 }
@@ -101,7 +105,15 @@ onMounted(() => getData());
               @click="handleGetCashBack"
               >一键领取</x-button
             >
-            <x-button class="mt-[10px]" size="small" plain type="primary">领取记录</x-button>
+            <x-button
+              class="mt-[10px]"
+              size="small"
+              plain
+              type="primary"
+              @click="router.push('/home/records')"
+            >
+              领取记录
+            </x-button>
             <x-button
               class="mt-[10px]"
               style="white-space: nowrap"
