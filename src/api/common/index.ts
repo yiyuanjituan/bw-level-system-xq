@@ -244,3 +244,20 @@ export function getPromoteInfo(): Promise<any> {
     method: "post"
   });
 }
+
+// 查询代理下级列表及所选时间范围内的汇总数据
+export function getPromoteSubordinates(data: Record<string, unknown> = {}): Promise<any> {
+  return http.request({
+    url: "/app/v1/agent/subordinateInfo",
+    method: "post",
+    data
+  });
+}
+
+export function getPromoteSubordinateDetail(userIdx: number): Promise<any> {
+  return http.request({
+    url: "/app/v1/agent/subordinateDetail",
+    method: "post",
+    data: { userIdx }
+  });
+}

@@ -579,6 +579,16 @@
     "api": [
       {
         "method": "post",
+        "path": "/subordinateDetail",
+        "summary": "代理下级会员详情"
+      },
+      {
+        "method": "post",
+        "path": "/subordinateInfo",
+        "summary": "代理下级信息"
+      },
+      {
+        "method": "post",
         "path": "/promoteInfo",
         "summary": "代理推广配置"
       }

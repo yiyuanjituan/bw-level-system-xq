@@ -1186,6 +1186,16 @@ declare namespace Eps {
 
 	interface V1Agent {
 		/**
+			 * 代理下级会员详情
+			 */
+			subordinateDetail(data?: any): Promise<any>;
+
+		/**
+			 * 代理下级信息
+			 */
+			subordinateInfo(data?: any): Promise<any>;
+
+		/**
 			 * 代理推广配置
 			 */
 			promoteInfo(data?: any): Promise<any>;
@@ -1193,12 +1203,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { promoteInfo: string; };
+		permission: { subordinateDetail: string; subordinateInfo: string; promoteInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { promoteInfo: boolean; };
+		_permission: { subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; };
 
 		request: Service["request"];
 	}

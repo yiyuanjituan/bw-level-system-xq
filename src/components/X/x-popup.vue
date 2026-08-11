@@ -12,6 +12,7 @@ interface Props {
   show?: boolean;
   position?: PopupPosition;
   zIndex?: number | string;
+  teleport?: string | HTMLElement | null;
   closeOnClickOverlay?: boolean;
   showClose?: boolean;
   safeArea?: boolean;
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
   show: false,
   position: "center",
   zIndex: 1,
+  teleport: null,
   closeOnClickOverlay: true,
   showClose: false,
   safeArea: false,
@@ -57,29 +59,31 @@ function onOverlayClick() {
 </script>
 
 <template>
-  <x-overlay
-    :show="show"
-    :z-index="zIndex"
-    :hidden="hiddenOverlay"
-    :safe-area="safeArea"
-    @click="onOverlayClick"
-    frosted
-  />
-  <transition :name="transitionName">
-    <div
-      v-if="show"
-      :class="popupClasses"
-      :style="popupStyle"
-      role="dialog"
-      aria-modal="true"
-      @click.stop
-    >
-      <div v-if="showClose" class="x-popup__close-icon" @click="close">
-        <svg-icon name="close" />
+  <teleport :to="teleport || 'body'" :disabled="!teleport">
+    <x-overlay
+      :show="show"
+      :z-index="zIndex"
+      :hidden="hiddenOverlay"
+      :safe-area="safeArea"
+      @click="onOverlayClick"
+      frosted
+    />
+    <transition :name="transitionName">
+      <div
+        v-if="show"
+        :class="popupClasses"
+        :style="popupStyle"
+        role="dialog"
+        aria-modal="true"
+        @click.stop
+      >
+        <div v-if="showClose" class="x-popup__close-icon" @click="close">
+          <svg-icon name="close" />
+        </div>
+        <slot />
       </div>
-      <slot />
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <style scoped lang="less">

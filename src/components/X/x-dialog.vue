@@ -20,6 +20,7 @@ interface Props {
   closeOnClickOverlay?: boolean;
   showClose?: boolean;
   width?: string;
+  teleport?: string | HTMLElement | null;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -33,7 +34,8 @@ withDefaults(defineProps<Props>(), {
   cancelButtonText: "取消",
   closeOnClickOverlay: false,
   showClose: false,
-  width: "300px"
+  width: "300px",
+  teleport: null
 });
 
 const emit = defineEmits<{
@@ -63,6 +65,7 @@ function onCancel() {
   <x-popup
     :show="show"
     position="center"
+    :teleport="teleport"
     :show-close="showClose"
     :close-on-click-overlay="closeOnClickOverlay"
     @update:show="value => emit('update:show', value)"
@@ -70,21 +73,27 @@ function onCancel() {
   >
     <div class="x-dialog" :style="{ width }">
       <div class="x-dialog__main">
-        <div v-if="title" class="x-dialog__header" :class="`x-dialog__header--${type}`">
-          <span>{{ title }}</span>
+        <div v-if="title || $slots.header" class="x-dialog__header" :class="`x-dialog__header--${type}`">
+          <slot name="header">
+            <span>{{ title }}</span>
+          </slot>
         </div>
 
-        <div class="x-dialog__content" :class="{ 'x-dialog__content--has-title': !!title }">
-          <div class="x-dialog__message">{{ message }}</div>
+        <div class="x-dialog__content" :class="{ 'x-dialog__content--has-title': !!title || !!$slots.header }">
+          <slot>
+            <div class="x-dialog__message">{{ message }}</div>
+          </slot>
         </div>
 
-        <div v-if="showCancelButton || showConfirmButton" class="x-dialog__footer">
-          <x-button v-if="showCancelButton" plain block @click="onCancel">
-            {{ cancelButtonText }}
-          </x-button>
-          <x-button v-if="showConfirmButton" block @click="onConfirm">
-            {{ confirmButtonText }}
-          </x-button>
+        <div v-if="$slots.footer || showCancelButton || showConfirmButton" class="x-dialog__footer">
+          <slot name="footer">
+            <x-button v-if="showCancelButton" plain block @click="onCancel">
+              {{ cancelButtonText }}
+            </x-button>
+            <x-button v-if="showConfirmButton" block @click="onConfirm">
+              {{ confirmButtonText }}
+            </x-button>
+          </slot>
         </div>
       </div>
     </div>

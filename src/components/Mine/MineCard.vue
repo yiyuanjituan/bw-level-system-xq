@@ -1,6 +1,6 @@
 <script setup lang="ts" name="mine-card">
 import useAuthStore from "@/store/modules/user";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import * as _ from "lodash-es";
 import useAppStore from "@/store/modules/app";
 import useClipboard from "vue-clipboard3";
@@ -11,11 +11,24 @@ defineOptions({ name: "mine-card" });
 const auth = useAuthStore();
 const app = useAppStore();
 const walletIsLoading = ref(false);
+const avatarLoadFailed = ref(false);
+const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
 const { toClipboard } = useClipboard();
 const isShowInfo = ref(false);
+const avatarUrl = computed(() => {
+  return auth.user.avatarUrl && !avatarLoadFailed.value ? auth.user.avatarUrl : defaultAvatarUrl;
+});
 const currencyInfo = computed(() => {
   return app.appInfo.countryList.find(v => v.id == auth.user.currencyId);
 });
+
+watch(
+  () => auth.user.avatarUrl,
+  () => {
+    // 用户更换头像后重新尝试加载接口返回的新地址。
+    avatarLoadFailed.value = false;
+  }
+);
 
 function copyAccount(text) {
   toClipboard(text).then(() => {
@@ -35,7 +48,13 @@ const updateWallet = () => {
 <template>
   <div class="user-center">
     <div class="avatar-box">
-      <van-image round width="100%" height="100%" :src="auth.user.avatarUrl" />
+      <van-image
+        round
+        width="100%"
+        height="100%"
+        :src="avatarUrl"
+        @error="avatarLoadFailed = true"
+      />
       <div class="edit-icon absolute">
         <svg-icon name="icon_grzl" />
       </div>
