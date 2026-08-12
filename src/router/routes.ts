@@ -243,6 +243,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: "setting/updateAvator",
+        name: "UpdateAvator",
+        component: () => import("@/views/home/setting/updateAvator.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
         path: "withdraw",
         name: "Withdraw",
         component: () => import("@/views/home/withdraw.vue"),

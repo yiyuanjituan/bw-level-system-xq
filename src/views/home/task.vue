@@ -86,7 +86,7 @@ function handleTapGo(type: any) {
   } else if (type == 2) {
     bus.emit("showRecharge");
   } else if (type == 3) {
-    router.push("/home/security");
+    router.push("/home/security?active=5");
   } else if (type == 4) {
     router.push("/home/yuebao");
   } else if (type == 5) {

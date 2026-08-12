@@ -1,7 +1,13 @@
 import { http } from "@/utils/http";
 import type {
   PromoteBettingDetailResponse,
+  PromoteCommissionParams,
+  PromoteCommissionResponse,
   PromoteDataResponse,
+  PromotePerformanceParams,
+  PromotePerformanceResponse,
+  PromoteSubordinateFinanceParams,
+  PromoteSubordinateFinanceResponse,
   PromoteSubordinateReceiveResponse
 } from "@/views/home/promote/types";
 
@@ -28,6 +34,22 @@ export interface CanReceiveResponse {
   total: number;
   totalMoney: number;
   totalVitality: number;
+}
+
+export interface BindEmailPayload {
+  email: string;
+}
+
+export interface UpdateLoginPasswordPayload {
+  password: string;
+}
+
+export interface PayPasswordPayload {
+  password: string;
+}
+
+export interface UpdatePayPasswordPayload extends PayPasswordPayload {
+  loginPassword: string;
 }
 
 export type UpdateUserInfoPayload = Partial<Pick<
@@ -171,11 +193,19 @@ export function updateUserInfo(data: UpdateUserInfoPayload): Promise<unknown> {
   });
 }
 
-export function setPayPassword(data: any): Promise<any> {
-  return http.request({
+export function setPayPassword(data: PayPasswordPayload): Promise<void> {
+  return http.request<void>({
     url: "/app/user/info/setPayPassword",
     method: "post",
-    data: data
+    data
+  });
+}
+
+export function updatePayPassword(data: UpdatePayPasswordPayload): Promise<void> {
+  return http.request<void>({
+    url: "/app/user/info/updatePayPassword",
+    method: "post",
+    data
   });
 }
 
@@ -267,6 +297,22 @@ export function getHelpData(data: any = {}): Promise<any> {
   });
 }
 
+export function updateLoginPassword(data: UpdateLoginPasswordPayload): Promise<void> {
+  return http.request<void>({
+    url: "/app/user/info/updatePassword",
+    method: "post",
+    data
+  });
+}
+
+export function bindEmail(data: BindEmailPayload): Promise<void> {
+  return http.request<void>({
+    url: "/app/user/info/bindEmail",
+    method: "post",
+    data
+  });
+}
+
 export function getUserDevices(): Promise<any> {
   return http.request({
     url: "/app/user/device/list",
@@ -278,6 +324,26 @@ export function getPromoteInfo(): Promise<any> {
   return http.request({
     url: "/app/v1/agent/promoteInfo",
     method: "post"
+  });
+}
+
+export function getPromoteCommission(
+  data: PromoteCommissionParams
+): Promise<PromoteCommissionResponse> {
+  return http.request<PromoteCommissionResponse>({
+    url: "/app/v1/agent/commissionInfo",
+    method: "post",
+    data
+  });
+}
+
+export function getPromotePerformance(
+  data: PromotePerformanceParams
+): Promise<PromotePerformanceResponse> {
+  return http.request<PromotePerformanceResponse>({
+    url: "/app/v1/agent/performanceInfo",
+    method: "post",
+    data
   });
 }
 
@@ -293,6 +359,16 @@ export function getPromoteData(timeEnum: number): Promise<PromoteDataResponse> {
 export function getPromoteSubordinates(data: Record<string, unknown> = {}): Promise<any> {
   return http.request({
     url: "/app/v1/agent/subordinateInfo",
+    method: "post",
+    data
+  });
+}
+
+export function getPromoteSubordinateFinance(
+  data: PromoteSubordinateFinanceParams
+): Promise<PromoteSubordinateFinanceResponse> {
+  return http.request<PromoteSubordinateFinanceResponse>({
+    url: "/app/v1/agent/subordinateFinanceInfo",
     method: "post",
     data
   });

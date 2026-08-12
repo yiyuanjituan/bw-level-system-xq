@@ -7,7 +7,6 @@ import useAuthStore from "@/store/modules/user";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
 import { handleBack } from "@/utils/common";
-import { service } from "@/api/service";
 import XDatePicker from "@/components/X/x-date-picker.vue";
 import type { XFormRules } from "@/components/X/x-form-context";
 import XInput from "@/components/X/x-input.vue";
@@ -39,7 +38,6 @@ const app = useAppStore();
 const form = reactive<SettingForm>({ ...EMPTY_FORM });
 const originalForm = ref<SettingForm>({ ...EMPTY_FORM });
 const isSaving = ref(false);
-const isAvatarUploading = ref(false);
 const isNicknameEditing = ref(false);
 const avatarLoadFailed = ref(false);
 const formRef = ref<{
@@ -134,6 +132,11 @@ function syncForm() {
   formRef.value?.clearValidate("nickName");
 }
 
+function handleBindPhone() {
+  if (auth.user.phone) return;
+  router.push("/home/security?active=0");
+}
+
 async function finishNicknameEditing() {
   try {
     await formRef.value?.validate("nickName");
@@ -160,49 +163,6 @@ function buildUpdatePayload() {
   if (!hasBoundBirthday.value && form.birthday) payload.birthday = form.birthday;
 
   return payload;
-}
-
-async function handleAvatarChange(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-
-  if (!file) {
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    showCustomToast({ type: "warning", message: "请选择图片文件" });
-    input.value = "";
-    return;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    showCustomToast({ type: "warning", message: "头像图片不能超过5MB" });
-    input.value = "";
-    return;
-  }
-
-  const uploadData = new FormData();
-  uploadData.append("file", file);
-  isAvatarUploading.value = true;
-
-  try {
-    const result = await service.base.comm.upload(uploadData);
-    const uploadedUrl = typeof result === "string" ? result : result?.url;
-
-    if (!uploadedUrl) {
-      showCustomToast({ type: "warning", message: "头像上传失败，请稍后重试" });
-      return;
-    }
-
-    form.avatarUrl = uploadedUrl;
-    avatarLoadFailed.value = false;
-  } catch {
-    return;
-  } finally {
-    isAvatarUploading.value = false;
-    input.value = "";
-  }
 }
 
 async function handleSave() {
@@ -265,7 +225,12 @@ onMounted(() => {
     <main class="setting-content">
       <x-form ref="formRef" :rule="formRules" :model="form">
         <section class="profile-card">
-          <label class="avatar-area" :class="{ uploading: isAvatarUploading }">
+          <button
+            type="button"
+            class="avatar-area"
+            aria-label="更换头像"
+            @click="router.push('/home/setting/updateAvator')"
+          >
             <van-image
               round
               width="55px"
@@ -274,7 +239,7 @@ onMounted(() => {
               @error="avatarLoadFailed = true"
             />
             <span class="avatar-edit-icon">
-              <svg-icon name="icon_grzl" class-name="avatar-edit-svg" />
+              <svg-icon name="icon_grzl" class-name="avatar-edit-svg text-[20px]" />
             </span>
             <span class="avatar-vip-wrap">
               <span class="avatar-vip-badge">
@@ -282,9 +247,7 @@ onMounted(() => {
                 <span>{{ Number(auth.user.level) || 0 }}</span>
               </span>
             </span>
-            <span v-if="isAvatarUploading" class="avatar-loading">上传中</span>
-            <input type="file" accept="image/*" :disabled="isAvatarUploading" @change="handleAvatarChange" />
-          </label>
+          </button>
 
           <div class="profile-info">
             <div class="user-id">
@@ -306,7 +269,7 @@ onMounted(() => {
                   <svg-icon name="login_icon_bj" class-name="nickname-edit-icon" />
                 </button>
                 <x-input
-                  v-else
+                  v-elseq
                   v-model="form.nickName"
                   class="nickname-input"
                   :maxlength="20"
@@ -346,8 +309,10 @@ onMounted(() => {
         <x-input
           :model-value="String(auth.user.phone ?? '')"
           class="setting-input readonly-input"
+          :class="{ 'readonly-input--actionable': !auth.user.phone }"
           placeholder="请绑定手机"
           readonly
+          @click="handleBindPhone"
         >
           <template #prefix>
             <svg-icon name="input_icon_sj" class-name="setting-input-svg setting-input-svg--small" />
@@ -438,28 +403,10 @@ onMounted(() => {
   flex: 0 0 55px;
   width: 55px;
   height: 55px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
-
-  > input {
-    display: none;
-  }
-
-  &.uploading {
-    pointer-events: none;
-  }
-}
-
-.avatar-loading {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 10px;
-  background: rgb(0 0 0 / 58%);
 }
 
 .avatar-edit-icon {
@@ -469,15 +416,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   border: 1px solid var(--skin__bg_1);
   border-radius: 50%;
   background: var(--skin__primary);
+  font-size: 12px;
 
   :deep(.avatar-edit-svg) {
-    width: 15px;
-    height: 15px;
     color: #fff;
   }
 }
@@ -694,6 +640,10 @@ onMounted(() => {
 :deep(.readonly-input.x-input-wrapper) {
   background: var(--skin__bg_1);
   cursor: default;
+}
+
+:deep(.readonly-input--actionable.x-input-wrapper) {
+  cursor: pointer;
 }
 
 .birthday-title {

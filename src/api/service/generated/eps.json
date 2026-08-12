@@ -466,13 +466,18 @@
     "api": [
       {
         "method": "post",
+        "path": "/updatePayPassword",
+        "summary": "更新提现密码"
+      },
+      {
+        "method": "post",
         "path": "/updatePassword",
         "summary": "更新用户密码"
       },
       {
         "method": "post",
         "path": "/setPayPassword",
-        "summary": "更新用户密码"
+        "summary": "设置提现密码"
       },
       {
         "method": "post",
@@ -483,6 +488,11 @@
         "method": "post",
         "path": "/bindPhone",
         "summary": "绑定手机号"
+      },
+      {
+        "method": "post",
+        "path": "/bindEmail",
+        "summary": "绑定邮箱"
       },
       {
         "method": "post",
@@ -589,6 +599,11 @@
       },
       {
         "method": "post",
+        "path": "/subordinateFinanceInfo",
+        "summary": "代理下级财务统计"
+      },
+      {
+        "method": "post",
         "path": "/subordinateReceiveInfo",
         "summary": "代理下级领取统计"
       },
@@ -599,8 +614,18 @@
       },
       {
         "method": "post",
+        "path": "/performanceInfo",
+        "summary": "代理我的业绩"
+      },
+      {
+        "method": "post",
         "path": "/subordinateInfo",
         "summary": "代理下级信息"
+      },
+      {
+        "method": "post",
+        "path": "/commissionInfo",
+        "summary": "代理我的佣金"
       },
       {
         "method": "post",

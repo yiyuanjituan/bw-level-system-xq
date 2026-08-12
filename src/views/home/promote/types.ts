@@ -33,6 +33,61 @@ export interface PromoteInfo {
   inviteLinks: string[];
 }
 
+export interface PromoteCommissionRecord {
+  id: number;
+  settlementDate: string;
+  subordinateCount: number;
+  validSubordinateCount: number;
+  performance: number;
+  directCommission: number;
+  otherCommission: number;
+  commission: number;
+  receivedCommission: number;
+}
+
+export interface PromoteCommissionParams {
+  size: number;
+  startTime: number;
+  endTime: number;
+  cursorId?: number;
+}
+
+export interface PromoteCommissionResponse {
+  list: PromoteCommissionRecord[];
+  pageSize: number;
+  more: boolean;
+  nextCursorId: number | null;
+  startTime: number;
+  endTime: number;
+}
+
+export interface PromotePerformanceRecord {
+  id: number;
+  statisticDate: string;
+  totalPerformance: number;
+  directPerformance: number;
+  otherPerformance: number;
+  totalContribute: number;
+  directContribute: number;
+  otherContribute: number;
+}
+
+export interface PromotePerformanceParams {
+  size: number;
+  startTime: number;
+  endTime: number;
+  cursorId?: number;
+}
+
+export interface PromotePerformanceResponse {
+  list: PromotePerformanceRecord[];
+  pageSize: number;
+  more: boolean;
+  nextCursorId: number | null;
+  startTime: number;
+  endTime: number;
+}
+
 export interface PromoteSubordinate {
   userIdx: number;
   vipLevel: number;
@@ -75,6 +130,44 @@ export interface PromoteSubordinateResponse {
   directRegisterPerson: number;
   otherRegisterPerson: number;
   totalRegisterPerson: number;
+  startTime: number;
+  endTime: number;
+}
+
+export interface PromoteSubordinateFinance {
+  userIdx: number;
+  vipLevel: number;
+  directChildCount: number;
+  deposit: number;
+  depositCount: number;
+  withdraw: number;
+  withdrawCount: number;
+  difference: number;
+  balance: number;
+}
+
+export interface PromoteSubordinateFinanceParams {
+  size: number;
+  sortOrder: 1 | 2;
+  startTime: number;
+  endTime: number;
+  userIdx?: number;
+  cursorValue?: number;
+  cursorMemberId?: number;
+}
+
+export interface PromoteSubordinateFinanceResponse {
+  list: PromoteSubordinateFinance[];
+  pageSize: number;
+  more: boolean;
+  nextCursorValue: number | null;
+  nextCursorMemberId: number | null;
+  totalDeposit: number;
+  totalDepositCount: number;
+  totalFirstDeposit: number;
+  totalFirstDepositPerson: number;
+  totalWithdraw: number;
+  totalWithdrawCount: number;
   startTime: number;
   endTime: number;
 }

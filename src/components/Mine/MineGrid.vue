@@ -36,7 +36,7 @@ const list = ref([
     icon_1: "style_2_icon_list_txgl",
     icon_2: "style_2_icon_list_txgl2",
     name: "提现管理",
-    url: "账户明细"
+    url: "/home/withdraw?active=10"
   },
   {
     key: "grbb",
@@ -57,7 +57,7 @@ const list = ref([
     icon_1: "style_2_icon_list_aqzx",
     icon_2: "style_2_icon_list_aqzx2",
     name: "安全中心",
-    url: "账户明细"
+    url: "/home/security"
   },
   {
     key: "zdwm",
@@ -78,7 +78,7 @@ const list = ref([
     icon_1: "style_2_icon_list_pyq",
     icon_2: "style_2_icon_list_pyq2",
     name: "发现",
-    url: "账户明细"
+    url: "/home/plazza"
   },
   {
     key: "cjwt",

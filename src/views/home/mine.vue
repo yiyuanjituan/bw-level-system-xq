@@ -48,7 +48,7 @@ function handleWithdraw() {
     return false;
   }
   if (!auth.user.hasPayPassword) {
-    router.push("/home/security");
+    router.push("/home/security?active=5");
     return showCustomToast({
       type: "warning",
       message: "为了资金安全，需先设置提现密码哦！"

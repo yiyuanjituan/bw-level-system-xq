@@ -1,237 +1,330 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 import SubNavbar from "@/components/SubNavbar.vue";
-import { setPayPassword } from "@/api/common";
-import { showCustomToast } from "@/hooks/useCommon";
-import { handleBack } from "@/utils/common";
+import Copy from "@/components/Common/Copy.vue";
+import EmailBinding from "@/views/home/security/EmailBinding.vue";
+import LoginPassword from "@/views/home/security/LoginPassword.vue";
+import PayPassword from "@/views/home/security/PayPassword.vue";
+import PhoneBinding from "@/views/home/security/PhoneBinding.vue";
 import useAuthStore from "@/store/modules/user";
+import { showCustomToast } from "@/hooks/useCommon";
+import router from "@/router";
 
-const showPassword = ref(false);
-const showPasswordConfirm = ref(false);
-
-const form = reactive({
-  password: "",
-  password_confirmation: "",
-})
-
-const value = ref('')
-const showKeyboard = ref(false)
-const showKeyboardByConfirm = ref(false)
-const hideKeyboard = () => {
-  showKeyboard.value = false
-  showKeyboardByConfirm.value = false
-}
-const handleShowPassword = () => {
-  showKeyboard.value = true
-  showKeyboardByConfirm.value = false
-}
-const handleShowConfirm = () => {
-  showKeyboard.value = false
-  showKeyboardByConfirm.value = true
+interface SecurityMenuItem {
+  key: string;
+  label: string;
+  icon: string;
+  iconClass: string;
+  value?: string;
+  status?: string;
+  statusNote?: string;
+  disabled?: boolean;
+  showCopy?: boolean;
+  hideArrow?: boolean;
+  active?: string;
 }
 
-function handleSubmit() {
-  if (!form.password || form.password.length != 6) {
-    return showCustomToast(({ type: 'fail', message: '请输入六位数字' }))
+const route = useRoute();
+const auth = useAuthStore();
+
+const isPhoneBindingView = computed(() => String(route.query.active ?? "") === "0");
+const isEmailBindingView = computed(() => String(route.query.active ?? "") === "2");
+const isLoginPasswordView = computed(() => String(route.query.active ?? "") === "4");
+const isPayPasswordView = computed(() => String(route.query.active ?? "") === "5");
+const account = computed(() => String(auth.user.account || auth.user.unionid || "--"));
+
+const securityMenuGroups = computed<SecurityMenuItem[][]>(() => [
+  [
+    {
+      key: "account",
+      label: "会员账号",
+      icon: "input_icon_zh",
+      iconClass: "security-menu__icon--gray",
+      value: account.value,
+      disabled: true,
+      showCopy: account.value !== "--"
+    },
+    {
+      key: "phone",
+      label: "手机",
+      icon: "input_icon_sj",
+      iconClass: "security-menu__icon--blue",
+      status: auth.user.phone ? "已验证绑定" : "未添加",
+      hideArrow: Boolean(auth.user.phone),
+      active: "0"
+    },
+    {
+      key: "email",
+      label: "邮箱",
+      icon: "security_email",
+      iconClass: "security-menu__icon--gray",
+      status: auth.user.email
+        ? auth.user.emailVerified
+          ? "已验证绑定"
+          : "已添加"
+        : "未添加",
+      statusNote: auth.user.email && !auth.user.emailVerified ? "(未验证)" : undefined,
+      active: "2"
+    },
+    {
+      key: "googleAuthenticator",
+      label: "Google验证器",
+      icon: "security_google",
+      iconClass: "security-menu__icon--google",
+      status: auth.user.hasGoogleAuthenticator || auth.user.googleBind ? "已绑定" : "未绑定"
+    }
+  ],
+  [
+    {
+      key: "loginPassword",
+      label: "登录密码",
+      icon: "security_password",
+      iconClass: "security-menu__icon--green",
+      active: "4"
+    },
+    {
+      key: "payPassword",
+      label: "提现密码",
+      icon: "input_icon_card",
+      iconClass: "security-menu__icon--red",
+      status: auth.user.hasPayPassword ? "已设置" : "未设置",
+      active: "5"
+    },
+    {
+      key: "securityQuestion",
+      label: "密保问题",
+      icon: "security_question",
+      iconClass: "security-menu__icon--green",
+      status: auth.user.hasSecurityQuestion ? "已设置" : "未设置"
+    }
+  ]
+]);
+
+function handleMenuItem(menuItem: SecurityMenuItem) {
+  if (menuItem.disabled || menuItem.hideArrow) return;
+
+  if (menuItem.active) {
+    router.push({ path: "/home/security", query: { active: menuItem.active } });
+    return;
   }
-  if (!form.password_confirmation || form.password_confirmation.length != 6) {
-    return showCustomToast(({ type: 'fail', message: '请输入确认密码' }))
-  }
-  if (form.password != form.password_confirmation) {
-    return showCustomToast(({ type: 'fail', message: '两次密码不一致' }))
-  }
-  setPayPassword({ password: form.password }).then(() => {
-    showCustomToast(({ type: 'success', message: '提现密码设置成功' }))
-    useAuthStore().updateInfo()
-    handleBack()
-  })
-}
 
-onMounted(() => {})
+  showCustomToast({ type: "warning", message: `${menuItem.label}功能暂未开放` });
+}
 </script>
 
 <template>
-  <div class="security-container">
-    <sub-navbar title="提现密码" />
-    <div class="inner-box">
-      <div class="body">
-        <div class="content">
-          <h3 class="topTitle">为了资金安全，需先设置提现密码哦！</h3>
-          <div class="mb-[10px]">
-            <div class="title-container">
-              <span class="label">设置提现密码</span>
-              <span class="icon">
-            <svg-icon name="comm_icon_show" class-name="text-[#DFBE5B]" v-if="showPassword" @click="showPassword = !showPassword" />
-            <svg-icon name="comm_icon_hide" class-name="text-[#242424]" v-if="!showPassword" @click="showPassword = !showPassword" />
+  <phone-binding v-if="isPhoneBindingView" />
+  <email-binding v-else-if="isEmailBindingView" />
+  <login-password v-else-if="isLoginPasswordView" />
+  <pay-password v-else-if="isPayPasswordView" />
+
+  <div v-else class="security-page">
+    <sub-navbar title="安全中心" />
+
+    <main class="security-page__content">
+      <ul v-for="(menuGroup, groupIndex) in securityMenuGroups" :key="groupIndex" class="security-menu">
+        <li
+          v-for="menuItem in menuGroup"
+          :key="menuItem.key"
+          class="security-menu__item"
+          :class="{ 'security-menu__item--disabled': menuItem.disabled }"
+          @click="handleMenuItem(menuItem)"
+        >
+          <svg-icon
+            :name="menuItem.icon"
+            class-name="security-menu__icon"
+            :class="menuItem.iconClass"
+          />
+
+          <span
+            class="security-menu__label"
+            :class="{ 'security-menu__label--required': menuItem.status?.startsWith('未') }"
+          >
+            {{ menuItem.label }}
           </span>
-            </div>
-            <div class="form-withdraw-pass">
-              <van-password-input :mask="!showPassword" :value="form.password" :focused="showKeyboard" @focus="handleShowPassword" />
-            </div>
-          </div>
 
-          <div class="mb-[10px]">
-            <div class="title-container">
-              <span class="label">确认提现密码</span>
-              <span class="icon">
-            <svg-icon name="comm_icon_show" class-name="text-[#DFBE5B]" v-if="showPasswordConfirm" @click="showPasswordConfirm = !showPasswordConfirm" />
-            <svg-icon name="comm_icon_hide" class-name="text-[#242424]" v-if="!showPasswordConfirm" @click="showPasswordConfirm = !showPasswordConfirm" />
+          <span class="security-menu__suffix">
+            <span v-if="menuItem.value" class="security-menu__value">{{ menuItem.value }}</span>
+            <span
+              v-else-if="menuItem.status"
+              class="security-menu__status"
+              :class="{
+                'security-menu__status--bound': menuItem.status?.startsWith('已'),
+                'security-menu__status--verified': menuItem.status === '已验证绑定',
+                'security-menu__status--unverified': Boolean(menuItem.statusNote)
+              }"
+            >
+              {{ menuItem.status }}
+              <span v-if="menuItem.statusNote" class="security-menu__status-note">
+                {{ menuItem.statusNote }}
+              </span>
+            </span>
+            <copy
+              v-if="menuItem.showCopy"
+              :text="menuItem.value"
+              class="security-menu__copy"
+            />
+            <svg-icon
+              v-if="!menuItem.disabled && !menuItem.hideArrow"
+              name="comm_icon_fh"
+              class-name="security-menu__arrow"
+            />
           </span>
-            </div>
-            <div class="form-withdraw-pass">
-              <van-password-input :mask="!showPasswordConfirm" :value="form.password_confirmation" :focused="showKeyboardByConfirm" @focus="handleShowConfirm" />
-            </div>
-          </div>
-
-          <div class="bottom-title">
-            <div class="prefix">
-              <img src="/siteadmin/skin/lobby_asset/comm_icon_tip1.avif" alt="" class="" />
-            </div>
-            <div class="desc">注意：提现密码保护您的资金安全，非常重要，只能自己知道，以免造成资金损失</div>
-          </div>
-
-          <!-- 数字键盘 -->
-          <van-number-keyboard :maxlength="6" v-model="form.password" :show="showKeyboard" @blur="hideKeyboard" />
-          <van-number-keyboard :maxlength="6" v-model="form.password_confirmation" :show="showKeyboardByConfirm" @blur="hideKeyboard" />
-        </div>
-      </div>
-      <div class="footer">
-        <div class="ui-button" @click="handleSubmit">确 定</div>
-      </div>
-    </div>
+        </li>
+      </ul>
+    </main>
   </div>
 </template>
 
 <style scoped lang="less">
-.security-container {
+.security-page {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
-  background: black;
-  color: white;
+  min-height: 0;
+  color: var(--skin__lead, #fff);
+  background: #000;
+}
 
+.security-page__content {
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 12px;
+}
+
+.security-menu {
+  padding: 0 10px;
+  margin: 0 0 10px;
+  overflow: hidden;
+  list-style: none;
+  background: var(--skin__bg_2, #191919);
+  border-radius: 7px;
+  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.06);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.security-menu__item {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-direction: column;
+  height: 35px;
+  padding-left: 2px;
+  border-bottom: 1px solid var(--skin__border, #242424);
+  cursor: pointer;
 
-  .inner-box {
-    flex: 1;
-    overflow: auto;
-    height: 0;
-    padding-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  .body {
-    flex: 1;
-    overflow: auto;
-    height: 0;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-
-    .content {
-      flex: 1;
-      overflow-y: auto;
-      .topTitle {
-        font-size: 12px;
-        color: #1FE11F;
-        font-weight: 400;
-        text-align: center;
-        padding-bottom: 10px;
-      }
-      .title-container {
-        font-size: 12px;
-        color: #fff;
-        display: flex;
-        margin-bottom: 10px;
-        justify-content: flex-start;
-        align-items: center;
-        .icon {
-          flex: 1;
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          font-size: 18px;
-          color: #fff;
-        }
-      }
-
-      .form-withdraw-pass {
-        --van-password-input-margin: 0.5px;
-        --van-password-input-background: #191919;
-        --van-border-color: #242424;
-        --van-password-input-radius: 100px;
-        --van-password-input-dot-color: #fff;
-        --van-password-input-text-color: white;
-        --van-password-input-dot-size: 13px;
-        --van-password-input-cursor-width: 1.5px;
-        --van-password-input-cursor-color: white;
-
-        :deep(.van-password-input) {
-          border-radius: 7px;
-          overflow: hidden;
-        }
-      }
-
-      .bottom-title {
-        font-size: 11px;
-        margin-bottom: 10px;
-        color: #F84673;
-        line-height: 1.75;
-        display: flex;
-
-        .prefix {
-          width: 13px;
-          height: 13px;
-          font-size: 8px;
-          line-height: 15px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background-color: #F84673;
-          border-radius: 9999.99rem;
-        }
-        .desc {
-          flex: 1;
-          margin-left: 5px;
-          line-height: 15px;
-          font-size: 12px;
-        }
-      }
-    }
-  }
-
-  .footer {
-    margin: -10px;
-    padding: 10px 10px 20px;
-    background-color: #191919;
-    box-shadow: 0 -1.5px 5px rgba(0, 0, 0, .1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .ui-button {
-      width: 355px;
-      height: 35px;
-      color: white;
-      background: #DFBE5B;
-      border: solid 1px #DFBE5B;
-      border-radius: 7px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+  &:last-child {
+    border-bottom: 0;
   }
 }
 
-
-:deep(.van-number-keyboard) {
-  --van-number-keyboard-background: #000;
-  --van-number-keyboard-key-background: #191919;
-  --van-number-keyboard-key-height: 46px;
-  --van-number-keyboard-key-font-size: 21px;
+.security-menu__item--disabled {
+  cursor: no-drop;
 }
 
+.security-menu__icon {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin-right: 7px;
+  font-size: 15px;
+}
+
+.security-menu__icon--gray {
+  color: var(--skin__neutral_2, #8d929b);
+}
+
+.security-menu__icon--blue {
+  color: var(--skin__primary, #dfbe5b);
+}
+
+.security-menu__icon--google {
+  color: #ffac12;
+}
+
+.security-menu__icon--green {
+  color: #04be02;
+}
+
+.security-menu__icon--red {
+  color: #e94d3c;
+}
+
+.security-menu__label {
+  position: relative;
+  display: -webkit-box;
+  max-width: 175px;
+  overflow: hidden;
+  color: var(--skin__lead, #fff);
+  text-align: left;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.security-menu__label--required::after {
+  position: absolute;
+  top: -2.5px;
+  right: -10px;
+  width: 10px;
+  height: 10px;
+  content: "";
+  background: var(--skin__accent_2, #f84673);
+  border-radius: 50%;
+}
+
+.security-menu__suffix {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  color: var(--skin__neutral_2, #8d929b);
+}
+
+.security-menu__value,
+.security-menu__status {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.security-menu__status--bound {
+  color: var(--skin__primary, #dfbe5b);
+}
+
+.security-menu__status--verified {
+  color: var(--skin__accent_1, #04be02);
+}
+
+.security-menu__status--unverified {
+  color: var(--skin__neutral_2, #8d929b);
+}
+
+.security-menu__status-note {
+  color: var(--skin__primary, #dfbe5b);
+}
+
+.security-menu__copy {
+  margin-left: 5px;
+  font-size: 15px;
+  vertical-align: middle;
+}
+
+.security-menu__arrow {
+  width: 13px;
+  height: 13px;
+  margin-left: 5px;
+  color: var(--skin__border, #242424);
+  font-size: 13px;
+  transform: rotate(180deg);
+}
 </style>

@@ -1,538 +1,626 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import SubNavbar from "@/components/SubNavbar.vue";
+import { computed, nextTick, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showCustomToast } from '@/hooks/useCommon';
+import useAuthStore from '@/store/modules/user';
+import SubNavbar from '@/components/SubNavbar.vue';
+import PlazzaMyProfile from './plazza/pages/PlazzaMyProfile.vue';
+import PlazzaPostList from './plazza/pages/PlazzaPostList.vue';
+import type { PlazzaPost, PlazzaProfile, PlazzaRecentGame, PlazzaTabValue } from './plazza/types';
 
-interface PlazaAuthor {
-  name: string;
-  badge: string;
-  followers: string;
-}
+const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
 
-interface PlazaPost {
-  id: number;
-  author: PlazaAuthor;
-  title: string;
-  summary: string[];
-  stats: {
-    likes: number;
-    favorites: number;
-    shares: number;
-  };
-}
+const plazzaTabs = [
+  { label: '全部', value: 'all', emptyText: '暂无内容' },
+  { label: '关注', value: 'following', emptyText: '暂无关注内容' },
+  { label: '收藏', value: 'favorites', emptyText: '暂无收藏内容' },
+  { label: '点赞', value: 'likes', emptyText: '暂无点赞内容' },
+  { label: '我的主页', value: 'profile', emptyText: '作者还没发布' }
+] as const;
 
-const navList = ["全部", "关注", "收藏", "点赞", "我的主页"];
-const activeNav = ref(0);
-
-const postList = ref<PlazaPost[]>([
+const defaultActive: PlazzaTabValue = 'all';
+const POST_PAGE_SIZE = 2;
+const activeTab = ref<PlazzaTabValue>(defaultActive);
+const isSearchVisible = ref(false);
+const isRefreshing = ref(false);
+const isLoadingMore = ref(false);
+const currentPostPage = ref(1);
+const searchKeyword = ref('');
+const searchInputRef = ref<HTMLInputElement | null>(null);
+let loadMoreRequestId = 0;
+let isLoadMoreRequestPending = false;
+// 当前项目尚未提供广场最近游戏接口，先由容器保留真实数据入口。
+const recentGames: PlazzaRecentGame[] = [];
+// 当前项目尚未提供广场帖子接口，按用户提供的页面内容建立数据入口，后续可直接替换接口结果。
+const postList = ref<PlazzaPost[]>([
   {
     id: 1,
     author: {
-      name: "皇家福利官",
-      badge: "V",
-      followers: "10.79K 位粉丝"
+      name: 'Cq9杀手',
+      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn7.avif',
+      followers: 0,
+      following: false
     },
-    title: "【沙林足球】引爆全场",
-    summary: [
-      "轻松一脚，大奖轻松到手，以小博大，享受超高的爆率。",
-      "连续组合奖励示意图仅作展示，实际图片区域你可以直接替换。"
-    ],
-    stats: {
-      likes: 417,
-      favorites: 153,
-      shares: 98
-    }
+    content: '兄弟们3块1拉中彩票了',
+    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/413459514_20260811180747.863.avif'],
+    createdAt: '2026/08/11 18:07:49',
+    liked: false,
+    likes: 1,
+    favorited: false,
+    favorites: 0
   },
   {
     id: 2,
     author: {
-      name: "皇家福利官",
-      badge: "V",
-      followers: "10.79K 位粉丝"
+      name: 'Cq9杀手',
+      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn7.avif',
+      followers: 0,
+      following: false
     },
-    title: "【雪球娱乐·沙林足球】",
-    summary: [
-      "只需 40 元，轻松赢取超值大奖。",
-      "这里预留了图文卡片和说明区，后续只替换图片素材即可。"
-    ],
-    stats: {
-      likes: 266,
-      favorites: 87,
-      shares: 44
-    }
+    content: '6900倍',
+    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/413459514_20260811181151.645.avif'],
+    createdAt: '2026/08/11 18:11:54',
+    liked: true,
+    likes: 1,
+    favorited: true,
+    favorites: 1
+  },
+  {
+    id: 3,
+    author: {
+      name: '7',
+      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn11.avif',
+      followers: 1,
+      following: false
+    },
+    content: '牛逼星系',
+    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/441962317_20260810235756.737.avif'],
+    createdAt: '2026/08/10 23:57:58',
+    liked: false,
+    likes: 1,
+    favorited: false,
+    favorites: 0
   }
 ]);
 
-const activeLabel = computed(() => navList[activeNav.value] || "全部");
+const profile = computed<PlazzaProfile>(() => ({
+  avatarUrl: String(auth.user.avatarUrl || ''),
+  nickname: String(auth.user.nickName || '请设置昵称'),
+  followers: 0,
+  bio: '请设置个人介绍',
+  statistics: {
+    articles: 0,
+    likes: 0,
+    favorites: 0
+  },
+  rewards: {
+    today: 0,
+    total: 0
+  }
+}));
+
+const currentEmptyText = computed(() => {
+  if (searchKeyword.value.trim()) return '未搜索到相关内容';
+
+  return plazzaTabs.find(tab => tab.value === activeTab.value)?.emptyText || '暂无内容';
+});
+
+const visiblePosts = computed(() => {
+  let matchedPosts = postList.value;
+
+  if (activeTab.value === 'following') {
+    matchedPosts = matchedPosts.filter(post => post.author.following);
+  } else if (activeTab.value === 'favorites') {
+    matchedPosts = matchedPosts.filter(post => post.favorited);
+  } else if (activeTab.value === 'likes') {
+    matchedPosts = matchedPosts.filter(post => post.liked);
+  }
+
+  const keyword = searchKeyword.value.trim().toLowerCase();
+  if (!keyword) return matchedPosts;
+
+  return matchedPosts.filter(post => {
+    return post.content.toLowerCase().includes(keyword) || post.author.name.toLowerCase().includes(keyword);
+  });
+});
+
+const paginatedPosts = computed(() => {
+  return visiblePosts.value.slice(0, currentPostPage.value * POST_PAGE_SIZE);
+});
+
+const isPostListFinished = computed(() => {
+  return paginatedPosts.value.length >= visiblePosts.value.length;
+});
+
+function normalizeActive(active: unknown): PlazzaTabValue {
+  const activeValue = String(Array.isArray(active) ? active[0] : active ?? defaultActive);
+  return plazzaTabs.some(tab => tab.value === activeValue) ? (activeValue as PlazzaTabValue) : defaultActive;
+}
+
+function syncRouteActive(active: PlazzaTabValue) {
+  if (route.query.active === active) return;
+
+  void router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      active
+    }
+  });
+}
+
+async function toggleSearch() {
+  isSearchVisible.value = !isSearchVisible.value;
+
+  if (!isSearchVisible.value) {
+    searchKeyword.value = '';
+    return;
+  }
+
+  await nextTick();
+  searchInputRef.value?.focus();
+}
+
+function handleUnavailable(message: string) {
+  showCustomToast({ type: 'warning', message });
+}
+
+function handleRefresh() {
+  // 广场接口接入后在这里重新请求当前频道，当前先保留下拉刷新的完整交互反馈。
+  window.setTimeout(() => {
+    resetPostPagination();
+    isRefreshing.value = false;
+  }, 350);
+}
+
+function resetPostPagination() {
+  // 使切换频道或搜索前发起的加载失效，避免旧请求把新列表翻到下一页。
+  loadMoreRequestId += 1;
+  isLoadMoreRequestPending = false;
+  currentPostPage.value = 1;
+  isLoadingMore.value = false;
+}
+
+async function loadNextPostPage() {
+  if (isLoadMoreRequestPending || isPostListFinished.value) return;
+
+  const requestId = ++loadMoreRequestId;
+  isLoadMoreRequestPending = true;
+  isLoadingMore.value = true;
+
+  // 当前暂无广场分页接口，保留加载反馈；接入接口后在这里请求并追加下一页数据。
+  await new Promise<void>(resolve => window.setTimeout(resolve, 350));
+  if (requestId !== loadMoreRequestId) return;
+
+  currentPostPage.value += 1;
+  isLoadMoreRequestPending = false;
+  isLoadingMore.value = false;
+}
+
+function toggleFollow(authorName: string) {
+  const authorPost = postList.value.find(post => post.author.name === authorName);
+  if (!authorPost) return;
+
+  const nextFollowing = !authorPost.author.following;
+  // 同一作者的多条帖子同步关注状态，避免列表中出现互相冲突的按钮。
+  postList.value.forEach(post => {
+    if (post.author.name === authorName) post.author.following = nextFollowing;
+  });
+}
+
+function togglePostAction(postId: number, action: 'like' | 'favorite') {
+  const post = postList.value.find(postItem => postItem.id === postId);
+  if (!post) return;
+
+  if (action === 'like') {
+    post.liked = !post.liked;
+    post.likes = Math.max(0, post.likes + (post.liked ? 1 : -1));
+    return;
+  }
+
+  post.favorited = !post.favorited;
+  post.favorites = Math.max(0, post.favorites + (post.favorited ? 1 : -1));
+}
+
+watch(
+  () => route.query.active,
+  active => {
+    const normalizedActive = normalizeActive(active);
+    activeTab.value = normalizedActive;
+
+    if (active !== normalizedActive) syncRouteActive(normalizedActive);
+  },
+  { immediate: true }
+);
+
+watch(activeTab, active => {
+  searchKeyword.value = '';
+  isSearchVisible.value = false;
+  resetPostPagination();
+  syncRouteActive(active);
+});
+
+watch(searchKeyword, resetPostPagination);
 </script>
 
 <template>
-  <div class="plazza-page">
-    <sub-navbar title="发现">
-      <template #title>
-        <div class="title-slot">发现</div>
-      </template>
-    </sub-navbar>
+  <main class="plazza-page">
+    <sub-navbar title="发现" />
 
-    <div class="plazza-page__nav">
-      <button
-        v-for="(item, index) in navList"
-        :key="item"
-        type="button"
-        class="nav-chip"
-        :class="{ 'nav-chip--active': activeNav === index }"
-        @click="activeNav = index"
-      >
-        {{ item }}
-      </button>
-      <button type="button" class="nav-search" aria-label="search">
+    <div class="plazza-tabs-wrap">
+      <van-tabs v-model:active="activeTab" class="plazza-tabs" shrink animated>
+        <van-tab v-for="tab in plazzaTabs" :key="tab.value" :name="tab.value" :title="tab.label">
+          <section class="plazza-panel">
+            <div v-if="isSearchVisible" class="plazza-search">
+              <label class="plazza-search__field">
+                <svg-icon name="comm_icon_ss" class-name="plazza-search__icon" />
+                <input
+                  ref="searchInputRef"
+                  v-model.trim="searchKeyword"
+                  type="search"
+                  :placeholder="activeTab === 'profile' ? '搜索我的文章' : '搜索广场内容'"
+                  maxlength="30"
+                />
+                <button v-if="searchKeyword" type="button" class="plazza-search__clear" aria-label="清空搜索内容" @click="searchKeyword = ''">
+                  ×
+                </button>
+              </label>
+              <button type="button" class="plazza-search__cancel" @click="toggleSearch">取消</button>
+            </div>
+
+            <div class="plazza-list-container">
+              <div class="plazza-scroll">
+                <van-pull-refresh
+                  v-model="isRefreshing"
+                  class="plazza-pull-refresh"
+                  :head-height="32"
+                  pulling-text="下拉即可刷新"
+                  loosing-text="释放即可刷新"
+                  success-text="刷新成功"
+                  @refresh="handleRefresh"
+                >
+                  <template #loading>
+                    <div class="plazza-pull-refresh__loading">
+                      <span class="plazza-pull-refresh__spinning" aria-hidden="true">
+                        <i class="plazza-pull-refresh__loader"></i>
+                      </span>
+                      <span class="plazza-pull-refresh__loading-text">加载中...</span>
+                    </div>
+                  </template>
+
+                  <plazza-my-profile
+                    v-if="tab.value === 'profile'"
+                    :profile="profile"
+                    :recent-games="recentGames"
+                    :empty-text="currentEmptyText"
+                    @edit-profile="router.push('/home/setting')"
+                    @publish="handleUnavailable('发布功能暂未开放')"
+                    @search="toggleSearch"
+                    @share="handleUnavailable('分享功能暂未开放')"
+                    @select-game="handleUnavailable('游戏功能暂未开放')"
+                    @toggle-favorite="handleUnavailable('收藏功能暂未开放')"
+                  />
+                  <van-list
+                    v-else
+                    v-model:loading="isLoadingMore"
+                    :finished="isPostListFinished"
+                    :finished-text="paginatedPosts.length ? '没有更多了' : ''"
+                    :immediate-check="false"
+                    :offset="30"
+                    @load="loadNextPostPage"
+                  >
+                    <template #loading>
+                      <div class="plazza-load-more__loading">
+                        <span class="plazza-pull-refresh__spinning" aria-hidden="true">
+                          <i class="plazza-pull-refresh__loader"></i>
+                        </span>
+                        <span>加载下一页...</span>
+                      </div>
+                    </template>
+
+                    <plazza-post-list
+                      :posts="paginatedPosts"
+                      :empty-text="currentEmptyText"
+                      @toggle-follow="toggleFollow"
+                      @toggle-like="togglePostAction($event, 'like')"
+                      @toggle-favorite="togglePostAction($event, 'favorite')"
+                      @share="handleUnavailable('分享功能暂未开放')"
+                    />
+                  </van-list>
+                </van-pull-refresh>
+              </div>
+            </div>
+          </section>
+        </van-tab>
+      </van-tabs>
+
+      <button type="button" class="plazza-tabs__search" aria-label="搜索" :aria-expanded="isSearchVisible" @click="toggleSearch">
         <svg-icon name="comm_icon_ss" />
       </button>
     </div>
-
-    <div class="plazza-page__body">
-      <div class="post-card" v-for="post in postList" :key="post.id">
-        <div class="post-card__header">
-          <div class="post-card__author">
-            <div class="avatar-ring">
-              <div class="avatar-image">图</div>
-              <span class="avatar-plus">+</span>
-            </div>
-            <div class="author-meta">
-              <div class="author-row">
-                <span class="author-name">{{ post.author.name }}</span>
-                <span class="author-badge">{{ post.author.badge }}</span>
-              </div>
-              <div class="author-followers">{{ post.author.followers }}</div>
-            </div>
-          </div>
-          <button type="button" class="follow-btn">+关注</button>
-        </div>
-
-        <div class="post-card__content">
-          <h3 class="post-title">{{ post.title }}</h3>
-          <p class="post-summary" v-for="line in post.summary" :key="line">
-            {{ line }}
-          </p>
-          <button type="button" class="expand-link">查看全文</button>
-        </div>
-
-        <div class="media-panel">
-          <div class="media-panel__top">
-            <div class="slot-machine slot-machine--left">
-              <div class="slot-machine__grid">
-                <span v-for="index in 15" :key="`left-${index}`" class="slot-tile">
-                  {{ index % 5 === 0 ? "10" : "K" }}
-                </span>
-              </div>
-            </div>
-            <div class="media-arrow">
-              <span></span>
-            </div>
-            <div class="slot-machine slot-machine--right">
-              <div class="slot-machine__grid">
-                <span v-for="index in 15" :key="`right-${index}`" class="slot-tile slot-tile--gold">
-                  {{ index % 4 === 0 ? "A" : "Q" }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="media-panel__bottom">
-            <div class="bottom-tag">图位 01</div>
-            <div class="progress-strip">
-              <span v-for="index in 7" :key="index"></span>
-            </div>
-            <div class="bottom-tag bottom-tag--right">图位 02</div>
-          </div>
-        </div>
-
-        <div class="post-card__footer">
-          <div class="footer-action">
-            <span class="footer-icon">♡</span>
-            <span>{{ post.stats.likes }}</span>
-          </div>
-          <div class="footer-action">
-            <span class="footer-icon">☆</span>
-            <span>{{ post.stats.favorites }}</span>
-          </div>
-          <div class="footer-action footer-action--share">
-            <span class="footer-icon footer-icon--share">↗</span>
-            <span>分享</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="floating-tip">{{ activeLabel }}</div>
-  </div>
+  </main>
 </template>
 
 <style scoped lang="less">
 .plazza-page {
-  --plazza-bg: #0f0f10;
-  --plazza-panel: #1b1b1d;
-  --plazza-panel-strong: #232326;
-  --plazza-text: #f7f4eb;
-  --plazza-muted: #8d8a84;
-  --plazza-gold: #dfbe5b;
-  --plazza-border: #2b2b2f;
-
-  min-height: 100%;
-  height: 100%;
-  background:
-    radial-gradient(circle at top right, rgba(223, 190, 91, 0.08), transparent 28%),
-    linear-gradient(180deg, #121214 0%, #09090a 100%);
-  color: var(--plazza-text);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--skin__lead);
+  background: var(--skin__bg_1);
 }
 
-.title-slot {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-.plazza-page__nav {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 14px;
-  height: 40px;
-  border-bottom: 1px solid var(--plazza-border);
-  background: rgba(20, 20, 21, 0.92);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.plazza-page__nav::-webkit-scrollbar {
-  display: none;
-}
-
-.nav-chip {
-  border: 0;
-  background: transparent;
-  color: #f0eee8;
-  font-size: 12px;
-  padding: 0;
+.plazza-tabs-wrap {
   position: relative;
-  white-space: nowrap;
-  flex-shrink: 0;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
 
-  &--active {
-    color: var(--plazza-gold);
-    font-weight: 700;
+.plazza-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+
+  --van-tabs-line-height: 36px;
+  --van-tabs-nav-background: var(--skin__bg_2);
+  --van-tab-text-color: var(--skin__lead);
+  --van-tab-active-text-color: var(--skin__primary);
+  --van-tabs-bottom-bar-color: var(--skin__primary);
+  --van-tabs-bottom-bar-width: 24px;
+  --van-tabs-bottom-bar-height: 2px;
+  --van-tab-font-size: 12px;
+  --van-font-bold: 400;
+
+  :deep(.van-tabs__wrap) {
+    flex-shrink: 0;
+    height: 36px;
+    border-bottom: var(--lobby__px, 0.5px) solid var(--skin__border);
   }
 
-  &--active::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -11px;
-    height: 2px;
-    background: var(--plazza-gold);
-    border-radius: 999px;
+  :deep(.van-tabs__nav) {
+    padding-right: 44px;
+  }
+
+  :deep(.van-tab) {
+    flex: none;
+    padding: 0 10px;
+  }
+
+  :deep(.van-tab__text) {
+    line-height: 1;
+  }
+
+  :deep(.van-tabs__content) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  :deep(.van-tabs__track),
+  :deep(.van-tab__panel) {
+    height: 100%;
   }
 }
 
-.nav-search {
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  color: var(--plazza-gold);
-  font-size: 16px;
-  display: inline-flex;
+.plazza-tabs__search {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  color: var(--skin__primary);
+  font-size: 18px;
+  background: var(--skin__bg_2);
+  cursor: pointer;
+}
+
+.plazza-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--skin__bg_1);
+}
+
+.plazza-search {
+  display: flex;
   flex-shrink: 0;
-}
-
-.plazza-page__body {
-  flex: 1;
-  overflow: auto;
-  padding: 12px 12px 80px;
-}
-
-.post-card {
-  background: linear-gradient(180deg, rgba(31, 31, 34, 0.96), rgba(22, 22, 24, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
-}
-
-.post-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.post-card__author {
-  display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  margin: 10px 10px 0;
 }
 
-.avatar-ring {
+.plazza-list-container {
+  flex: 1 1 auto;
+  width: 100%;
+  height: calc(calc(var(--lobby__screen-height) - var(--subpage-tabbar-base-height, 0px)) - 1.83rem);
+  min-height: 0;
+  box-sizing: border-box;
+  padding-top: 0.2rem;
+  overflow: hidden;
+  background: var(--skin__bg_1);
+}
+
+.plazza-scroll {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 10px 10px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.plazza-pull-refresh {
+  min-height: 100%;
+  overflow: hidden;
+}
+
+:deep(.plazza-pull-refresh .van-pull-refresh__track) {
   position: relative;
-  width: 42px;
-  height: 42px;
+  height: 100%;
+  min-height: 100%;
+  transition-property: transform;
+}
+
+:deep(.plazza-pull-refresh .van-pull-refresh__head) {
+  height: 32px;
+  overflow: hidden;
+  color: var(--skin__neutral_2);
+  font-size: 12px;
+  line-height: 32px;
+  text-align: center;
+}
+
+:deep(.plazza-pull-refresh__loading) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 10px 0;
+  overflow: hidden;
+  color: var(--skin__neutral_2);
+}
+
+.plazza-pull-refresh__spinning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12px;
+  min-height: 12px;
+}
+
+.plazza-pull-refresh__loader {
+  display: block;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
   border-radius: 50%;
+  animation: plazza-pull-refresh-rotate 0.7s linear infinite;
+}
+
+.plazza-pull-refresh__loading-text {
+  color: var(--skin__neutral_2);
+  font-size: 12px;
+  line-height: 12px;
+  white-space: nowrap;
+}
+
+.plazza-load-more__loading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  color: var(--skin__neutral_2);
+  font-size: 12px;
+  line-height: 12px;
+  white-space: nowrap;
+}
+
+:deep(.van-list__finished-text) {
+  color: var(--skin__neutral_2);
+  font-size: 12px;
+  line-height: 40px;
+}
+
+@keyframes plazza-pull-refresh-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.plazza-search__field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  height: 25px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: var(--lobby__px, 0.5px) solid var(--skin__border);
+  border-radius: 12.5px;
+  color: var(--skin__neutral_2);
+  background: var(--skin__bg_2);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 7px;
+    border: 0;
+    outline: 0;
+    color: var(--skin__lead);
+    font: inherit;
+    font-size: 13px;
+    background: transparent;
+
+    &::placeholder {
+      color: var(--skin__neutral_2);
+    }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+}
+
+.plazza-search__icon {
   flex-shrink: 0;
-  background: linear-gradient(180deg, #eceef3, #babec8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--skin__primary);
 }
 
-.avatar-image {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #ffffff, #dce0e8);
-  color: #5e6672;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
+.plazza-search__clear,
+.plazza-search__cancel {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  color: var(--skin__neutral_1);
+  font-family: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
-.avatar-plus {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
+.plazza-search__clear {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--plazza-gold);
-  color: #121212;
-  font-size: 14px;
-  line-height: 18px;
-  text-align: center;
-  font-weight: 700;
-}
-
-.author-meta {
-  min-width: 0;
-}
-
-.author-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.author-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: #f4f1e8;
-}
-
-.author-badge {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #6ad0ff, #368dff);
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.author-followers {
-  margin-top: 2px;
-  color: #8b8b90;
-  font-size: 11px;
-}
-
-.follow-btn {
-  border: 0;
-  height: 28px;
-  min-width: 62px;
-  padding: 0 12px;
-  border-radius: 7px;
-  background: linear-gradient(180deg, #e7c862, #d2a83e);
-  color: #fffdf6;
-  font-size: 12px;
-  font-weight: 700;
-  box-shadow: 0 6px 16px rgba(223, 190, 91, 0.2);
-}
-
-.post-card__content {
-  margin-top: 12px;
-}
-
-.post-title {
+  color: var(--skin__bg_2);
   font-size: 15px;
-  font-weight: 700;
-  color: #e7e4dc;
-  margin: 0 0 10px;
+  line-height: 17px;
+  background: var(--skin__neutral_2);
 }
 
-.post-summary {
-  font-size: 13px;
-  line-height: 1.65;
-  color: #a7a19a;
-  margin: 0;
-}
-
-.expand-link {
-  margin-top: 8px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--plazza-gold);
+.plazza-search__cancel {
   font-size: 12px;
-  font-weight: 700;
 }
 
-.media-panel {
-  margin-top: 14px;
-  border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(46, 46, 52, 0.95), rgba(32, 32, 37, 0.98)),
-    url("@/assets/home/active_shading.avif");
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  overflow: hidden;
-  padding: 14px 12px 12px;
-}
-
-.media-panel__top {
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  align-items: center;
-  gap: 8px;
-}
-
-.slot-machine {
-  min-height: 128px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #2a2a2d, #202023);
-  padding: 8px;
-  position: relative;
-}
-
-.slot-machine__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-
-.slot-tile {
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #f6c75c, #c98325);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #65430d;
-  font-size: 18px;
-  font-weight: 800;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.slot-tile--gold {
-  background: linear-gradient(180deg, #f6e2a8, #d8a437);
-  color: #714b0f;
-}
-
-.media-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  span {
-    width: 0;
-    height: 0;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 8px solid #7c6f4a;
-    opacity: 0.9;
-  }
-}
-
-.media-panel__bottom {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.bottom-tag {
-  color: #7f7d74;
-  font-size: 10px;
-
-  &--right {
-    text-align: right;
-  }
-}
-
-.progress-strip {
+:deep(.empty-box) {
   flex: 1;
-  display: flex;
-  gap: 3px;
-  justify-content: center;
-
-  span {
-    width: 10px;
-    height: 4px;
-    border-radius: 2px;
-    background: #8a6e24;
-  }
-}
-
-.post-card__footer {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 18px;
-  color: #9b958d;
-  font-size: 12px;
-}
-
-.footer-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  &--share {
-    color: var(--plazza-gold);
-    font-weight: 700;
-  }
-}
-
-.footer-icon {
-  font-size: 15px;
-  color: #6e6962;
-}
-
-.footer-icon--share {
-  color: var(--plazza-gold);
-}
-
-.floating-tip {
-  position: fixed;
-  right: 12px;
-  bottom: 16px;
-  min-width: 52px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(223, 190, 91, 0.12);
-  border: 1px solid rgba(223, 190, 91, 0.22);
-  color: var(--plazza-gold);
-  font-size: 11px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
+  height: auto;
+  min-height: 190px;
 }
 </style>

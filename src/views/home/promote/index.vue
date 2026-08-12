@@ -4,12 +4,15 @@ import { useRoute, useRouter } from "vue-router";
 import { getPromoteInfo } from "@/api/common";
 import SubNavbar from "@/components/SubNavbar.vue";
 import PromoteCreateSubordinate from "./pages/PromoteCreateSubordinate.vue";
+import PromoteCommission from "./pages/PromoteCommission.vue";
 import PromoteData from "./pages/PromoteData.vue";
 import PromoteHome from "./pages/PromoteHome.vue";
+import PromotePerformance from "./pages/PromotePerformance.vue";
 import PromoteRebateRatio from "./pages/PromoteRebateRatio.vue";
 import PromoteShare from "./pages/PromoteShare.vue";
 import PromoteSubordinate from "./pages/PromoteSubordinate.vue";
 import PromoteSubordinateBetting from "./pages/PromoteSubordinateBetting.vue";
+import PromoteSubordinateFinance from "./pages/PromoteSubordinateFinance.vue";
 import PromoteSubordinateReceive from "./pages/PromoteSubordinateReceive.vue";
 import type { PromoteInfo } from "./types";
 
@@ -128,7 +131,13 @@ onMounted(() => {
           />
           <promote-subordinate v-else-if="tab.value === 'subordinate'" />
           <promote-data v-else-if="tab.value === 'data'" />
+          <promote-performance v-else-if="tab.value === 'performance'" />
+          <promote-commission
+            v-else-if="tab.value === 'commission'"
+            :info="promoteInfo"
+          />
           <promote-subordinate-betting v-else-if="tab.value === 'subordinateBetting'" />
+          <promote-subordinate-finance v-else-if="tab.value === 'subordinateFinance'" />
           <promote-subordinate-receive v-else-if="tab.value === 'subordinateReceive'" />
           <promote-create-subordinate v-else-if="tab.value === 'createSubordinate'" />
           <promote-rebate-ratio

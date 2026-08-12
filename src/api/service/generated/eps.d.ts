@@ -229,6 +229,16 @@ declare namespace Eps {
 			phone?: string;
 
 		/**
+			 * 邮箱
+			 */
+			email?: string;
+
+		/**
+			 * 邮箱是否验证
+			 */
+			emailVerified?: boolean;
+
+		/**
 			 * 性别
 			 */
 			gender?: number;
@@ -1074,12 +1084,17 @@ declare namespace Eps {
 
 	interface UserInfo {
 		/**
+			 * 更新提现密码
+			 */
+			updatePayPassword(data?: any): Promise<any>;
+
+		/**
 			 * 更新用户密码
 			 */
 			updatePassword(data?: any): Promise<any>;
 
 		/**
-			 * 更新用户密码
+			 * 设置提现密码
 			 */
 			setPayPassword(data?: any): Promise<any>;
 
@@ -1092,6 +1107,11 @@ declare namespace Eps {
 			 * 绑定手机号
 			 */
 			bindPhone(data?: any): Promise<any>;
+
+		/**
+			 * 绑定邮箱
+			 */
+			bindEmail(data?: any): Promise<any>;
 
 		/**
 			 * 绑定小程序手机号
@@ -1111,12 +1131,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { updatePassword: string; setPayPassword: string; updatePerson: string; bindPhone: string; miniPhone: string; person: string; logoff: string; };
+		permission: { updatePayPassword: string; updatePassword: string; setPayPassword: string; updatePerson: string; bindPhone: string; bindEmail: string; miniPhone: string; person: string; logoff: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { updatePassword: boolean; setPayPassword: boolean; updatePerson: boolean; bindPhone: boolean; miniPhone: boolean; person: boolean; logoff: boolean; };
+		_permission: { updatePayPassword: boolean; updatePassword: boolean; setPayPassword: boolean; updatePerson: boolean; bindPhone: boolean; bindEmail: boolean; miniPhone: boolean; person: boolean; logoff: boolean; };
 
 		request: Service["request"];
 	}
@@ -1221,6 +1241,11 @@ declare namespace Eps {
 			subordinateBettingDetail(data?: any): Promise<any>;
 
 		/**
+			 * 代理下级财务统计
+			 */
+			subordinateFinanceInfo(data?: any): Promise<any>;
+
+		/**
 			 * 代理下级领取统计
 			 */
 			subordinateReceiveInfo(data?: any): Promise<any>;
@@ -1231,9 +1256,19 @@ declare namespace Eps {
 			subordinateDetail(data?: any): Promise<any>;
 
 		/**
+			 * 代理我的业绩
+			 */
+			performanceInfo(data?: any): Promise<any>;
+
+		/**
 			 * 代理下级信息
 			 */
 			subordinateInfo(data?: any): Promise<any>;
+
+		/**
+			 * 代理我的佣金
+			 */
+			commissionInfo(data?: any): Promise<any>;
 
 		/**
 			 * 代理推广配置
@@ -1248,12 +1283,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { subordinateBettingDetail: string; subordinateReceiveInfo: string; subordinateDetail: string; subordinateInfo: string; promoteInfo: string; dataInfo: string; };
+		permission: { subordinateBettingDetail: string; subordinateFinanceInfo: string; subordinateReceiveInfo: string; subordinateDetail: string; performanceInfo: string; subordinateInfo: string; commissionInfo: string; promoteInfo: string; dataInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { subordinateBettingDetail: boolean; subordinateReceiveInfo: boolean; subordinateDetail: boolean; subordinateInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
+		_permission: { subordinateBettingDetail: boolean; subordinateFinanceInfo: boolean; subordinateReceiveInfo: boolean; subordinateDetail: boolean; performanceInfo: boolean; subordinateInfo: boolean; commissionInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
 
 		request: Service["request"];
 	}
