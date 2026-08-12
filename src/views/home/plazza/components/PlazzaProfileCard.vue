@@ -2,13 +2,24 @@
 import giftIconUrl from "@/assets/home/moments/icon_moments_gift.avif";
 import adminBadgeUrl from "@/assets/home/moments/cert_3.png";
 import PlazzaLazyImage from "./PlazzaLazyImage.vue";
-import type { PlazzaProfile } from "../types";
+import PlazzaPostList from "../pages/PlazzaPostList.vue";
+import type { PlazzaPost, PlazzaProfile } from "../types";
 
 withDefaults(defineProps<{
   profile: PlazzaProfile;
+  posts?: PlazzaPost[];
+  emptyText?: string;
+  pendingPostActionKeys?: string[];
   isSharing?: boolean;
+  postLoading?: boolean;
+  postErrorText?: string;
 }>(), {
-  isSharing: false
+  posts: () => [],
+  emptyText: "作者还没发帖~",
+  pendingPostActionKeys: () => [],
+  isSharing: false,
+  postLoading: false,
+  postErrorText: ''
 });
 
 defineEmits<{
@@ -16,6 +27,10 @@ defineEmits<{
   (event: "publish"): void;
   (event: "search"): void;
   (event: "share"): void;
+  (event: "toggle-like", postId: number): void;
+  (event: "toggle-favorite", postId: number): void;
+  (event: "share-post", post: PlazzaPost): void;
+  (event: "retry-posts"): void;
 }>();
 
 const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
@@ -26,7 +41,8 @@ function formatAmount(amount: number) {
 </script>
 
 <template>
-  <article class="profile-card">
+  <div class="profile-card-panel">
+    <article class="profile-card">
     <header class="profile-card__header">
       <plazza-lazy-image
         class="profile-card__avatar"
@@ -106,14 +122,39 @@ function formatAmount(amount: number) {
         <strong>{{ formatAmount(profile.rewards.total) }}</strong>
       </p>
     </div>
-  </article>
+    </article>
+
+    <slot name="before-posts" />
+
+    <section class="profile-card-panel__posts" aria-label="我的帖子">
+      <plazza-post-list
+        :posts="posts"
+        :empty-text="emptyText"
+        :pending-post-action-keys="pendingPostActionKeys"
+        :is-sharing="isSharing"
+        :loading="postLoading"
+        :error-text="postErrorText"
+        :show-follow-action="false"
+        @toggle-like="$emit('toggle-like', $event)"
+        @toggle-favorite="$emit('toggle-favorite', $event)"
+        @share="$emit('share-post', $event)"
+        @retry="$emit('retry-posts')"
+      />
+    </section>
+  </div>
 </template>
 
 <style scoped lang="less">
+.profile-card-panel {
+  width: 100%;
+}
+
+.profile-card-panel__posts {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .profile-card {
-  position: sticky;
-  z-index: 1;
-  top: 0;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import PlazzaPostCard from "../components/PlazzaPostCard.vue";
 import type { PlazzaPost } from "../types";
+import UiEmpty from '@/components/UI/empty.vue';
+import UiLoading from '@/components/UI/loading.vue';
 
 withDefaults(defineProps<{
   posts: PlazzaPost[];
@@ -9,11 +11,15 @@ withDefaults(defineProps<{
   pendingFollowIds?: number[];
   pendingPostActionKeys?: string[];
   isSharing?: boolean;
+  loading?: boolean;
+  errorText?: string;
 }>(), {
   showFollowAction: true,
   pendingFollowIds: () => [],
   pendingPostActionKeys: () => [],
-  isSharing: false
+  isSharing: false,
+  loading: false,
+  errorText: ''
 });
 
 defineEmits<{
@@ -21,6 +27,7 @@ defineEmits<{
   (event: "toggle-like", postId: number): void;
   (event: "toggle-favorite", postId: number): void;
   (event: "share", post: PlazzaPost): void;
+  (event: "retry"): void;
 }>();
 </script>
 
@@ -41,6 +48,13 @@ defineEmits<{
       @share="$emit('share', $event)"
     />
   </div>
+  <div v-else-if="loading" class="post-list-state" aria-label="帖子加载中">
+    <ui-loading />
+  </div>
+  <div v-else-if="errorText" class="post-list-state post-list-state--error">
+    <p>{{ errorText }}</p>
+    <button type="button" @click="$emit('retry')">重新加载</button>
+  </div>
   <ui-empty v-else :text="emptyText" />
 </template>
 
@@ -51,5 +65,37 @@ defineEmits<{
   border-radius: 7px;
   background: var(--skin__bg_2);
   box-shadow: 0 1.5px 5px var(--skin__bg-shadow__custom);
+}
+
+.post-list-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 190px;
+}
+
+.post-list-state--error {
+  flex-direction: column;
+  gap: 10px;
+  color: var(--skin__neutral_2);
+  font-size: 12px;
+
+  p {
+    margin: 0;
+  }
+
+  button {
+    min-width: 76px;
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 5px;
+    color: var(--skin__text_primary);
+    font-family: inherit;
+    font-size: 11px;
+    background: var(--skin__primary);
+    cursor: pointer;
+  }
 }
 </style>

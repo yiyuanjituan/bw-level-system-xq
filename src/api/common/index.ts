@@ -92,6 +92,36 @@ export interface MomentsListResponse {
   }>;
   more: boolean;
   nextCursorId: number | null;
+  hasFollowing: boolean;
+  recommendations: MomentsFollowRecommendation[];
+}
+
+export interface MomentsFollowRecommendation {
+  id: number;
+  name: string;
+  avatarUrl: string;
+  followers: number;
+  isAdmin: boolean;
+}
+
+export interface MomentsProfileResponse {
+  id: number;
+  avatarUrl: string;
+  nickname: string;
+  isAdmin: boolean;
+  followers: number;
+  bio: string;
+  following: boolean;
+  isSelf: boolean;
+  statistics: {
+    articles: number;
+    likes: number;
+    favorites: number;
+  };
+  rewards: {
+    today: number;
+    total: number;
+  };
 }
 
 export function getConfig(data?: object): Promise<any> {
@@ -254,8 +284,8 @@ export function getMomentsList(data: MomentsListParams): Promise<MomentsListResp
   });
 }
 
-export function getMomentsProfile(publisherId: number): Promise<any> {
-  return http.request({
+export function getMomentsProfile(publisherId: number): Promise<MomentsProfileResponse> {
+  return http.request<MomentsProfileResponse>({
     url: "/app/v1/moments/profile",
     method: "post",
     data: { publisherId }

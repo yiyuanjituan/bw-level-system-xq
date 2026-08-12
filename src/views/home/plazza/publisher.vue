@@ -240,8 +240,9 @@ async function toggleFollow() {
 
 async function togglePostAction(postId: number, action: "like" | "favorite") {
   const currentPost = posts.value.find(post => post.id === postId);
+  const currentProfile = profile.value;
   const actionKey = `${action}:${postId}`;
-  if (!currentPost || pendingPostActions.has(actionKey)) return;
+  if (!currentPost || !currentProfile || pendingPostActions.has(actionKey)) return;
 
   pendingPostActions.add(actionKey);
 
@@ -249,24 +250,29 @@ async function togglePostAction(postId: number, action: "like" | "favorite") {
     if (action === "like") {
       const previousLiked = currentPost.liked;
       const previousLikes = currentPost.likes;
+      const previousReceivedLikes = currentProfile.statistics.likes;
       const nextLiked = !previousLiked;
       currentPost.liked = nextLiked;
       currentPost.likes = Math.max(0, previousLikes + (nextLiked ? 1 : -1));
+      currentProfile.statistics.likes = Math.max(0, previousReceivedLikes + (nextLiked ? 1 : -1));
 
       try {
         await setMomentsLike(postId, nextLiked);
       } catch {
         currentPost.liked = previousLiked;
         currentPost.likes = previousLikes;
+        currentProfile.statistics.likes = previousReceivedLikes;
       }
       return;
     }
 
     const previousFavorited = currentPost.favorited;
     const previousFavorites = currentPost.favorites;
+    const previousReceivedFavorites = currentProfile.statistics.favorites;
     const nextFavorited = !previousFavorited;
     currentPost.favorited = nextFavorited;
     currentPost.favorites = Math.max(0, previousFavorites + (nextFavorited ? 1 : -1));
+    currentProfile.statistics.favorites = Math.max(0, previousReceivedFavorites + (nextFavorited ? 1 : -1));
 
     try {
       await setMomentsFavorite(postId, nextFavorited);
@@ -274,6 +280,7 @@ async function togglePostAction(postId: number, action: "like" | "favorite") {
     } catch {
       currentPost.favorited = previousFavorited;
       currentPost.favorites = previousFavorites;
+      currentProfile.statistics.favorites = previousReceivedFavorites;
     }
   } finally {
     pendingPostActions.delete(actionKey);

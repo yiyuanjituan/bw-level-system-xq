@@ -17,6 +17,8 @@ import SubNavbar from '@/components/SubNavbar.vue';
 import PlazzaMyProfile from './plazza/pages/PlazzaMyProfile.vue';
 import PlazzaPostList from './plazza/pages/PlazzaPostList.vue';
 import PlazzaProfileSetupDialog from './plazza/components/PlazzaProfileSetupDialog.vue';
+import PlazzaFollowRecommendations from './plazza/components/PlazzaFollowRecommendations.vue';
+import type { MomentsFollowRecommendation } from '@/api/common';
 import type { PlazzaPost, PlazzaProfile, PlazzaRecentGame, PlazzaTabValue } from './plazza/types';
 
 const route = useRoute();
@@ -38,8 +40,13 @@ const activeTab = ref<PlazzaTabValue>(defaultActive);
 const isSearchVisible = ref(false);
 const isRefreshing = ref(false);
 const isLoadingMore = ref(false);
+const isInitialPostLoading = ref(false);
+const postListErrorText = ref('');
 const isProfileSetupVisible = ref(false);
 const isSharing = ref(false);
+const isSubmittingRecommendations = ref(false);
+const isRecommendationDismissed = ref(false);
+const hasFollowing = ref(false);
 const hasMorePosts = ref(true);
 const nextPostCursorId = ref<number | null>(null);
 const searchKeyword = ref('');
@@ -53,6 +60,8 @@ const pendingPostActionKeys = ref<string[]>([]);
 const pendingGameFavoriteIds = ref<string[]>([]);
 const recentGames = ref<PlazzaRecentGame[]>([]);
 const postList = ref<PlazzaPost[]>([]);
+const followRecommendations = ref<MomentsFollowRecommendation[]>([]);
+const selectedRecommendationIds = ref<number[]>([]);
 
 const profile = ref<PlazzaProfile>({
   id: Number(auth.user.id || 0),
@@ -73,14 +82,17 @@ const profile = ref<PlazzaProfile>({
   isSelf: true
 });
 
-const currentEmptyText = computed(() => {
-  if (searchKeyword.value.trim()) return '未搜索到相关内容';
-
-  return plazzaTabs.find(tab => tab.value === activeTab.value)?.emptyText || '暂无内容';
-});
-
 const isPostListFinished = computed(() => {
   return !hasMorePosts.value;
+});
+
+const shouldShowFollowRecommendations = computed(() => {
+  return activeTab.value === 'following'
+    && !postList.value.length
+    && !searchKeyword.value.trim()
+    && !hasFollowing.value
+    && !isRecommendationDismissed.value
+    && followRecommendations.value.length > 0;
 });
 
 function normalizeActive(active: unknown): PlazzaTabValue {
@@ -186,25 +198,32 @@ async function requestMyProfile() {
 
 async function requestPostList(append = false) {
   const currentUserId = Number(auth.user.id || 0);
+  const requestChannel = activeTab.value;
   if (activeTab.value === 'profile' && (!Number.isInteger(currentUserId) || currentUserId <= 0)) {
     postList.value = [];
+    isInitialPostLoading.value = false;
+    postListErrorText.value = '';
     hasMorePosts.value = false;
     nextPostCursorId.value = null;
     return;
   }
 
+  if (!append) {
+    isInitialPostLoading.value = true;
+    postListErrorText.value = '';
+  }
+
   const requestId = ++loadMoreRequestId;
   try {
     const response = await getMomentsList({
-      channel: activeTab.value,
-      publisherId: activeTab.value === 'profile' ? currentUserId : undefined,
+      channel: requestChannel,
+      publisherId: requestChannel === 'profile' ? currentUserId : undefined,
       size: POST_PAGE_SIZE,
       cursorId: append ? nextPostCursorId.value || undefined : undefined,
       keyword: searchKeyword.value.trim() || undefined
     });
     if (requestId !== loadMoreRequestId) return;
 
-    const currentUserId = Number(auth.user.id || 0);
     const nextPosts = Array.isArray(response.list)
       ? response.list.map(post => ({
           ...post,
@@ -223,11 +242,77 @@ async function requestPostList(append = false) {
 
     hasMorePosts.value = Boolean(response.more);
     nextPostCursorId.value = response.nextCursorId ? Number(response.nextCursorId) : null;
-  } catch {
+    if (!append && activeTab.value === 'following') {
+      hasFollowing.value = Boolean(response.hasFollowing);
+      followRecommendations.value = Array.isArray(response.recommendations)
+        ? response.recommendations
+        : [];
+      selectedRecommendationIds.value = followRecommendations.value.map(user => user.id);
+    }
+  } catch (error) {
     if (requestId !== loadMoreRequestId) return;
-    if (!append) postList.value = [];
+    const errorMessage = error instanceof Error ? error.message : '未知异常';
+    console.error('朋友圈帖子列表加载失败', {
+      channel: requestChannel,
+      publisherId: requestChannel === 'profile' ? currentUserId : undefined,
+      errorMessage
+    });
+    if (!append) {
+      postList.value = [];
+      postListErrorText.value = '帖子加载失败，请稍后重试';
+    }
     hasMorePosts.value = false;
     nextPostCursorId.value = null;
+    if (!append && activeTab.value === 'following') {
+      followRecommendations.value = [];
+      selectedRecommendationIds.value = [];
+    }
+  } finally {
+    if (!append && requestId === loadMoreRequestId) {
+      isInitialPostLoading.value = false;
+    }
+  }
+}
+
+function retryPostList() {
+  resetPostPagination();
+  void requestPostList();
+}
+
+function toggleRecommendation(userId: number) {
+  if (isSubmittingRecommendations.value) return;
+
+  selectedRecommendationIds.value = selectedRecommendationIds.value.includes(userId)
+    ? selectedRecommendationIds.value.filter(id => id !== userId)
+    : [...selectedRecommendationIds.value, userId];
+}
+
+function skipRecommendations() {
+  if (isSubmittingRecommendations.value) return;
+  activeTab.value = 'all';
+}
+
+async function followSelectedRecommendations() {
+  if (isSubmittingRecommendations.value || !selectedRecommendationIds.value.length) return;
+
+  isSubmittingRecommendations.value = true;
+  const selectedIds = [...selectedRecommendationIds.value];
+  try {
+    const results = await Promise.allSettled(
+      selectedIds.map(userId => setMomentsFollow(userId, true))
+    );
+    const successCount = results.filter(result => result.status === 'fulfilled').length;
+    if (!successCount) {
+      showCustomToast({ type: 'fail', message: '关注失败，请稍后重试' });
+      return;
+    }
+
+    showCustomToast({ type: 'success', message: `已关注${successCount}位用户` });
+    isRecommendationDismissed.value = true;
+    resetPostPagination();
+    await requestPostList();
+  } finally {
+    isSubmittingRecommendations.value = false;
   }
 }
 
@@ -253,6 +338,8 @@ function resetPostPagination() {
   hasMorePosts.value = true;
   nextPostCursorId.value = null;
   isLoadingMore.value = false;
+  isInitialPostLoading.value = false;
+  postListErrorText.value = '';
 }
 
 async function loadNextPostPage() {
@@ -309,6 +396,7 @@ async function toggleFollow(authorId: number) {
 
 async function togglePostAction(postId: number, action: 'like' | 'favorite') {
   const currentPost = postList.value.find(post => post.id === postId);
+  const currentProfile = profile.value;
   const actionKey = `${action}:${postId}`;
   if (!currentPost || pendingPostActionKeys.value.includes(actionKey)) return;
 
@@ -320,9 +408,13 @@ async function togglePostAction(postId: number, action: 'like' | 'favorite') {
     if (action === 'like') {
       const previousLiked = currentPost.liked;
       const previousLikes = currentPost.likes;
+      const previousReceivedLikes = currentProfile.statistics.likes;
       const nextLiked = !previousLiked;
       currentPost.liked = nextLiked;
       currentPost.likes = Math.max(0, previousLikes + (nextLiked ? 1 : -1));
+      if (currentPost.author.isSelf) {
+        currentProfile.statistics.likes = Math.max(0, previousReceivedLikes + (nextLiked ? 1 : -1));
+      }
 
       try {
         await setMomentsLike(postId, nextLiked);
@@ -333,15 +425,20 @@ async function togglePostAction(postId: number, action: 'like' | 'favorite') {
       } catch {
         currentPost.liked = previousLiked;
         currentPost.likes = previousLikes;
+        if (currentPost.author.isSelf) currentProfile.statistics.likes = previousReceivedLikes;
       }
       return;
     }
 
     const previousFavorited = currentPost.favorited;
     const previousFavorites = currentPost.favorites;
+    const previousReceivedFavorites = currentProfile.statistics.favorites;
     const nextFavorited = !previousFavorited;
     currentPost.favorited = nextFavorited;
     currentPost.favorites = Math.max(0, previousFavorites + (nextFavorited ? 1 : -1));
+    if (currentPost.author.isSelf) {
+      currentProfile.statistics.favorites = Math.max(0, previousReceivedFavorites + (nextFavorited ? 1 : -1));
+    }
 
     try {
       await setMomentsFavorite(postId, nextFavorited);
@@ -352,6 +449,7 @@ async function togglePostAction(postId: number, action: 'like' | 'favorite') {
     } catch {
       currentPost.favorited = previousFavorited;
       currentPost.favorites = previousFavorites;
+      if (currentPost.author.isSelf) currentProfile.statistics.favorites = previousReceivedFavorites;
     }
   } finally {
     pendingPostActionKeys.value = pendingPostActionKeys.value.filter(key => key !== actionKey);
@@ -437,6 +535,10 @@ watch(activeTab, active => {
   searchKeyword.value = '';
   isSearchVisible.value = false;
   postList.value = [];
+  followRecommendations.value = [];
+  selectedRecommendationIds.value = [];
+  hasFollowing.value = false;
+  isRecommendationDismissed.value = false;
   resetPostPagination();
   syncRouteActive(active);
   if (active === 'profile') {
@@ -506,19 +608,6 @@ onBeforeUnmount(() => {
                     </div>
                   </template>
 
-                  <plazza-my-profile
-                    v-if="tab.value === 'profile'"
-                    :profile="profile"
-                    :recent-games="recentGames"
-                    :pending-game-favorite-ids="pendingGameFavoriteIds"
-                    :is-sharing="isSharing"
-                    @edit-profile="router.push('/home/setting')"
-                    @publish="handlePublish"
-                    @search="toggleSearch"
-                    @share="shareContent()"
-                    @select-game="handleUnavailable('游戏功能暂未开放')"
-                    @toggle-favorite="toggleGameFavorite"
-                  />
                   <van-list
                     v-model:loading="isLoadingMore"
                     :finished="isPostListFinished"
@@ -536,18 +625,57 @@ onBeforeUnmount(() => {
                       </div>
                     </template>
 
-                    <plazza-post-list
+                    <plazza-my-profile
+                      v-if="tab.value === 'profile'"
+                      :profile="profile"
+                      :recent-games="recentGames"
                       :posts="postList"
-                      :empty-text="currentEmptyText"
-                      :pending-follow-ids="pendingFollowIds"
+                      :empty-text="searchKeyword.trim() ? '未搜索到相关内容' : tab.emptyText"
+                      :pending-game-favorite-ids="pendingGameFavoriteIds"
                       :pending-post-action-keys="pendingPostActionKeys"
                       :is-sharing="isSharing"
-                      :show-follow-action="activeTab !== 'profile'"
-                      @toggle-follow="toggleFollow"
+                      :post-loading="isInitialPostLoading"
+                      :post-error-text="postListErrorText"
+                      @edit-profile="router.push('/home/setting')"
+                      @publish="handlePublish"
+                      @search="toggleSearch"
+                      @share="shareContent()"
+                      @select-game="handleUnavailable('游戏功能暂未开放')"
+                      @toggle-game-favorite="toggleGameFavorite"
                       @toggle-like="togglePostAction($event, 'like')"
-                      @toggle-favorite="togglePostAction($event, 'favorite')"
-                      @share="shareContent"
+                      @toggle-post-favorite="togglePostAction($event, 'favorite')"
+                      @share-post="shareContent"
+                      @retry-posts="retryPostList"
                     />
+
+                    <template v-else>
+                      <plazza-follow-recommendations
+                        v-if="shouldShowFollowRecommendations"
+                        :users="followRecommendations"
+                        :selected-ids="selectedRecommendationIds"
+                        :submitting="isSubmittingRecommendations"
+                        @toggle="toggleRecommendation"
+                        @skip="skipRecommendations"
+                        @submit="followSelectedRecommendations"
+                      />
+
+                      <plazza-post-list
+                        v-else
+                        :posts="postList"
+                        :empty-text="searchKeyword.trim() ? '未搜索到相关内容' : tab.emptyText"
+                        :pending-follow-ids="pendingFollowIds"
+                        :pending-post-action-keys="pendingPostActionKeys"
+                        :is-sharing="isSharing"
+                        :loading="isInitialPostLoading"
+                        :error-text="postListErrorText"
+                        :show-follow-action="activeTab !== 'profile'"
+                        @toggle-follow="toggleFollow"
+                        @toggle-like="togglePostAction($event, 'like')"
+                        @toggle-favorite="togglePostAction($event, 'favorite')"
+                        @share="shareContent"
+                        @retry="retryPostList"
+                      />
+                    </template>
                   </van-list>
                 </van-pull-refresh>
               </div>
@@ -691,15 +819,29 @@ onBeforeUnmount(() => {
 }
 
 .plazza-pull-refresh {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   min-height: 100%;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
 :deep(.plazza-pull-refresh .van-pull-refresh__track) {
   position: relative;
-  height: 100%;
-  min-height: 100%;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
   transition-property: transform;
+}
+
+:deep(.plazza-pull-refresh .van-list) {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
 }
 
 :deep(.plazza-pull-refresh .van-pull-refresh__head) {
@@ -844,7 +986,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.empty-box) {
-  flex: 1;
+  flex: 1 0 auto;
   height: auto;
   min-height: 190px;
 }
