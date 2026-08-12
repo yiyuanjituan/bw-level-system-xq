@@ -12,12 +12,16 @@ export interface PlazzaRewardSummary {
 }
 
 export interface PlazzaProfile {
+  id?: number;
   avatarUrl: string;
   nickname: string;
+  isAdmin: boolean;
   followers: number;
   bio: string;
   statistics: PlazzaProfileStatistics;
   rewards: PlazzaRewardSummary;
+  following?: boolean;
+  isSelf?: boolean;
 }
 
 export interface PlazzaRecentGame {
@@ -29,10 +33,13 @@ export interface PlazzaRecentGame {
 }
 
 export interface PlazzaPostAuthor {
+  id: number;
   name: string;
   avatarUrl: string;
+  isAdmin: boolean;
   followers: number;
   following: boolean;
+  isSelf?: boolean;
 }
 
 export interface PlazzaPost {

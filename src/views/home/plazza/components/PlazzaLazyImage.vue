@@ -87,7 +87,7 @@ watch(() => [props.src, props.fallbackSrc], resetImage);
     var(--skin__border)
   ) !important;
   background-size: 200% 100% !important;
-  border-radius: 0.04rem;
+  border-radius: 2px;
   opacity: 0.5;
   animation: common_bganimation 0.9s linear infinite;
 }

@@ -189,6 +189,24 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: "plazza/post",
+        name: "PlazzaPost",
+        component: () => import("@/views/home/plazza/post.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
+        path: "plazza/publisher/:id",
+        name: "PlazzaPublisher",
+        component: () => import("@/views/home/plazza/publisher.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
         path: "login",
         name: "LoginPage",
         component: () => import("@/views/home/login.vue"),

@@ -5,22 +5,23 @@ import { updateUserInfo } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import useAuthStore from "@/store/modules/user";
 import router from "@/router";
-import defaultAvatarUrl from "@/assets/setting/default-avatar.avif";
 
 type AvatarGender = "male" | "female";
 
 const AVATAR_COUNT = 25;
 const LOCAL_AVATAR_BASE_PATH = "/siteadmin/default/2D";
+const DEFAULT_AVATAR_URL = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
 const auth = useAuthStore();
 const currentAvatarUrl = String(auth.user.avatarUrl ?? "");
 const activeGender = ref<AvatarGender>(currentAvatarUrl.includes("/img_txn") ? "male" : "female");
-const selectedAvatarUrl = ref(currentAvatarUrl || `${LOCAL_AVATAR_BASE_PATH}/img_ntx1.avif`);
+const selectedAvatarUrl = ref(currentAvatarUrl);
 const isSaving = ref(false);
 
 const avatarList = computed(() => {
   return Array.from({ length: AVATAR_COUNT }, (_, index) => {
     if (activeGender.value === "male") {
-      return `${LOCAL_AVATAR_BASE_PATH}/img_txn${index + 2}.webp`;
+      const avatarNumber = index + 2;
+      return `${LOCAL_AVATAR_BASE_PATH}/img_txn${avatarNumber}.webp`;
     }
 
     const avatarNumber = index + 1;
@@ -54,7 +55,7 @@ function handleImageError(event: Event) {
   if (image.dataset.fallbackApplied) return;
 
   image.dataset.fallbackApplied = "true";
-  image.src = defaultAvatarUrl;
+  image.src = DEFAULT_AVATAR_URL;
 }
 
 async function handleSave() {

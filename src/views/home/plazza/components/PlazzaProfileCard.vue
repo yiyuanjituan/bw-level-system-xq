@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import giftIconUrl from "@/assets/home/moments/icon_moments_gift.avif";
+import adminBadgeUrl from "@/assets/home/moments/cert_3.png";
 import PlazzaLazyImage from "./PlazzaLazyImage.vue";
 import type { PlazzaProfile } from "../types";
 
-defineProps<{
+withDefaults(defineProps<{
   profile: PlazzaProfile;
-}>();
+  isSharing?: boolean;
+}>(), {
+  isSharing: false
+});
 
 defineEmits<{
   (event: "edit-profile"): void;
@@ -33,6 +38,12 @@ function formatAmount(amount: number) {
 
       <div class="profile-card__identity">
         <button type="button" class="profile-card__name" @click="$emit('edit-profile')">
+          <img
+            v-if="profile.isAdmin"
+            class="profile-card__admin-badge"
+            :src="adminBadgeUrl"
+            alt="朋友圈管理员"
+          />
           <span>{{ profile.nickname }}</span>
           <svg-icon name="login_icon_bj" class-name="profile-card__edit-icon" />
         </button>
@@ -43,7 +54,7 @@ function formatAmount(amount: number) {
       </div>
 
       <button type="button" class="profile-card__publish" @click="$emit('publish')">
-        +发布
+        +发帖
       </button>
     </header>
 
@@ -71,17 +82,23 @@ function formatAmount(amount: number) {
         <button type="button" aria-label="搜索我的文章" @click="$emit('search')">
           <svg-icon name="comm_icon_ss" />
         </button>
-        <button type="button" class="profile-card__share" @click="$emit('share')">
+        <button
+          type="button"
+          class="profile-card__share"
+          :disabled="isSharing"
+          :aria-busy="isSharing"
+          @click="$emit('share')"
+        >
           <svg-icon name="promote-share" />
-          <span>分享</span>
+          <span>{{ isSharing ? "分享中..." : "分享" }}</span>
         </button>
       </div>
     </div>
 
     <div class="profile-card__rewards">
       <p>
-        <svg-icon name="promote-gift" class-name="profile-card__gift" />
-        <span>今日打赏收入</span>
+        <img class="profile-card__gift" :src="giftIconUrl" alt="" />
+        <span>近7天打赏收入</span>
         <strong>{{ formatAmount(profile.rewards.today) }}</strong>
       </p>
       <p>
@@ -158,6 +175,14 @@ function formatAmount(amount: number) {
   height: 13px;
   margin-left: 4px;
   color: var(--skin__primary);
+}
+
+.profile-card__admin-badge {
+  flex-shrink: 0;
+  width: 18px;
+  height: 16.5px;
+  margin-right: 5px;
+  object-fit: contain;
 }
 
 .profile-card__followers {
@@ -262,6 +287,17 @@ function formatAmount(amount: number) {
     font-size: 14px;
     background: transparent;
     cursor: pointer;
+    transition: transform 120ms ease, opacity 120ms ease;
+
+    &:not(:disabled):active {
+      transform: scale(0.9);
+      opacity: 0.65;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
   }
 
   .profile-card__share {
@@ -319,5 +355,10 @@ function formatAmount(amount: number) {
   height: 18px;
   margin-right: 4px;
   color: var(--skin__accent_3);
+}
+
+:global([dir="rtl"]) .profile-card__admin-badge {
+  margin-right: 0;
+  margin-left: 5px;
 }
 </style>

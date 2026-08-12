@@ -682,6 +682,52 @@
     ]
   },
   {
+    "prefix": "/app/v1/moments",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/setGameFavorite",
+        "summary": "设置朋友圈游戏收藏状态"
+      },
+      {
+        "method": "post",
+        "path": "/recentGames",
+        "summary": "朋友圈最近游戏"
+      },
+      {
+        "method": "post",
+        "path": "/setFavorite",
+        "summary": "设置朋友圈帖子收藏状态"
+      },
+      {
+        "method": "post",
+        "path": "/setFollow",
+        "summary": "设置朋友圈关注状态"
+      },
+      {
+        "method": "post",
+        "path": "/profile",
+        "summary": "朋友圈个人主页"
+      },
+      {
+        "method": "post",
+        "path": "/publish",
+        "summary": "发布朋友圈帖子"
+      },
+      {
+        "method": "post",
+        "path": "/setLike",
+        "summary": "设置朋友圈点赞状态"
+      },
+      {
+        "method": "post",
+        "path": "/list",
+        "summary": "朋友圈帖子列表"
+      }
+    ]
+  },
+  {
     "prefix": "/app/v1/notice",
     "name": "",
     "api": [

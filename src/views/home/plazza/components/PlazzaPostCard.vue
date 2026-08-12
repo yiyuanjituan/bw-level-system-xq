@@ -1,25 +1,47 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import adminBadgeUrl from "@/assets/home/moments/cert_3.png";
 import PlazzaLazyImage from "./PlazzaLazyImage.vue";
 import type { PlazzaPost } from "../types";
 
-defineProps<{
+const props = withDefaults(defineProps<{
   post: PlazzaPost;
-}>();
+  showFollowAction?: boolean;
+  followPending?: boolean;
+  likePending?: boolean;
+  favoritePending?: boolean;
+  sharePending?: boolean;
+}>(), {
+  showFollowAction: true,
+  followPending: false,
+  likePending: false,
+  favoritePending: false,
+  sharePending: false
+});
 
 const emit = defineEmits<{
-  (event: "toggle-follow", authorName: string): void;
+  (event: "toggle-follow", authorId: number): void;
   (event: "toggle-like", postId: number): void;
   (event: "toggle-favorite", postId: number): void;
   (event: "share", post: PlazzaPost): void;
 }>();
 
 const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
+const router = useRouter();
+const canShowFollowAction = computed(() => props.showFollowAction && !props.post.author.isSelf);
+const canShowFollowMark = computed(() => canShowFollowAction.value && !props.post.author.following);
+
+function openPublisher() {
+  if (!props.post.author.id) return;
+  void router.push(`/home/plazza/publisher/${props.post.author.id}`);
+}
 </script>
 
 <template>
   <article class="post-card">
     <header class="post-card__author">
-      <div class="post-card__avatar-wrap">
+      <button type="button" class="post-card__avatar-wrap" @click="openPublisher">
         <plazza-lazy-image
           class="post-card__avatar"
           :src="post.author.avatarUrl"
@@ -27,13 +49,21 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
           :alt="`${post.author.name}的头像`"
           error-text=""
         />
-        <span class="post-card__follow-mark" aria-hidden="true">
+        <span v-if="canShowFollowMark" class="post-card__follow-mark" aria-hidden="true">
           <svg-icon name="icon_message_fx_gz" class-name="post-card__follow-icon" />
         </span>
-      </div>
+      </button>
 
       <div class="post-card__author-info">
-        <strong>{{ post.author.name }}</strong>
+        <button type="button" class="post-card__author-name" @click="openPublisher">
+          <img
+            v-if="post.author.isAdmin"
+            class="post-card__admin-badge"
+            :src="adminBadgeUrl"
+            alt="朋友圈管理员"
+          />
+          <span>{{ post.author.name }}</span>
+        </button>
         <p>
           <b>{{ post.author.followers }}</b>
           <span>位粉丝</span>
@@ -41,12 +71,15 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
       </div>
 
       <button
+        v-if="canShowFollowAction"
         type="button"
         class="post-card__follow-button"
         :class="{ 'post-card__follow-button--active': post.author.following }"
-        @click="emit('toggle-follow', post.author.name)"
+        :disabled="followPending"
+        :aria-busy="followPending"
+        @click="emit('toggle-follow', post.author.id)"
       >
-        {{ post.author.following ? "已关注" : "+关注" }}
+        {{ followPending ? "处理中..." : post.author.following ? "已关注" : "+关注" }}
       </button>
     </header>
 
@@ -79,11 +112,11 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
         type="button"
         :class="{ 'post-card__action--liked': post.liked }"
         :aria-label="post.liked ? '取消点赞' : '点赞'"
+        :aria-busy="likePending"
+        :disabled="likePending"
         @click="emit('toggle-like', post.id)"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 21s-7.5-4.4-9.6-8.7C.8 9 2.1 5.1 5.8 4.2c2.2-.5 4.4.4 5.7 2.2l.5.7.5-.7c1.3-1.8 3.5-2.7 5.7-2.2C21.9 5.1 23.2 9 21.6 12.3 19.5 16.6 12 21 12 21Z" />
-        </svg>
+        <svg-icon name="moments-like" class-name="post-card__action-icon" />
         <span>{{ post.likes }}</span>
       </button>
 
@@ -91,15 +124,21 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
         type="button"
         :class="{ 'post-card__action--favorited': post.favorited }"
         :aria-label="post.favorited ? '取消收藏' : '收藏'"
+        :aria-busy="favoritePending"
+        :disabled="favoritePending"
         @click="emit('toggle-favorite', post.id)"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9L12 2.7Z" />
-        </svg>
+        <svg-icon name="moments-favorite" class-name="post-card__action-icon" />
         <span>{{ post.favorites }}</span>
       </button>
 
-      <button type="button" class="post-card__action--share" @click="emit('share', post)">
+      <button
+        type="button"
+        class="post-card__action--share"
+        :disabled="sharePending"
+        :aria-busy="sharePending"
+        @click="emit('share', post)"
+      >
         <svg-icon name="promote-share" class-name="post-card__share-icon" />
         <span>分享</span>
       </button>
@@ -129,10 +168,15 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
 
 .post-card__avatar-wrap {
   position: relative;
+  display: block;
   flex-shrink: 0;
   width: 44px;
   height: 44px;
   margin-right: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .post-card__avatar {
@@ -173,7 +217,8 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
   justify-content: center;
   min-width: 0;
 
-  > strong {
+  > strong,
+  .post-card__author-name {
     width: 137.5px;
     overflow: hidden;
     color: var(--skin__lead);
@@ -182,6 +227,25 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
     line-height: 16px;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .post-card__author-name {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    font-family: inherit;
+    text-align: left;
+    background: transparent;
+    cursor: pointer;
+
+    > span {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--skin__lead);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   p {
@@ -197,10 +261,23 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
     font-weight: 700;
   }
 
-  span {
+  p span {
     margin-left: 3px;
     color: var(--skin__neutral_3);
   }
+}
+
+.post-card__admin-badge {
+  flex-shrink: 0;
+  width: 18px;
+  height: 16.5px;
+  margin-right: 5px;
+  object-fit: contain;
+}
+
+:global([dir="rtl"]) .post-card__admin-badge {
+  margin-right: 0;
+  margin-left: 5px;
 }
 
 .post-card__follow-button {
@@ -220,11 +297,21 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
   font-size: 11px;
   background: var(--skin__primary);
   cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
 
   &--active {
     border: var(--lobby__px, 0.5px) solid var(--skin__primary);
     color: var(--skin__primary);
     background: transparent;
+  }
+
+  &:not(:disabled):active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
   }
 }
 
@@ -316,6 +403,17 @@ const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon
     line-height: 1.33;
     background: transparent;
     cursor: pointer;
+    transition: transform 120ms ease, opacity 120ms ease;
+
+    &:not(:disabled):active {
+      transform: scale(0.9);
+      opacity: 0.65;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
   }
 
   button > span {

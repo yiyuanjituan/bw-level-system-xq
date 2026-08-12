@@ -1,95 +1,66 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import useClipboard from 'vue-clipboard3';
+import {
+  getMomentsList,
+  getMomentsProfile,
+  getMomentsRecentGames,
+  setMomentsFavorite,
+  setMomentsFollow,
+  setMomentsGameFavorite,
+  setMomentsLike
+} from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
 import useAuthStore from '@/store/modules/user';
 import SubNavbar from '@/components/SubNavbar.vue';
 import PlazzaMyProfile from './plazza/pages/PlazzaMyProfile.vue';
 import PlazzaPostList from './plazza/pages/PlazzaPostList.vue';
+import PlazzaProfileSetupDialog from './plazza/components/PlazzaProfileSetupDialog.vue';
 import type { PlazzaPost, PlazzaProfile, PlazzaRecentGame, PlazzaTabValue } from './plazza/types';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const { toClipboard } = useClipboard();
 
 const plazzaTabs = [
   { label: '全部', value: 'all', emptyText: '暂无内容' },
   { label: '关注', value: 'following', emptyText: '暂无关注内容' },
   { label: '收藏', value: 'favorites', emptyText: '暂无收藏内容' },
   { label: '点赞', value: 'likes', emptyText: '暂无点赞内容' },
-  { label: '我的主页', value: 'profile', emptyText: '作者还没发布' }
+  { label: '我的主页', value: 'profile', emptyText: '作者还没发帖~' }
 ] as const;
 
 const defaultActive: PlazzaTabValue = 'all';
-const POST_PAGE_SIZE = 2;
+const POST_PAGE_SIZE = 10;
 const activeTab = ref<PlazzaTabValue>(defaultActive);
 const isSearchVisible = ref(false);
 const isRefreshing = ref(false);
 const isLoadingMore = ref(false);
-const currentPostPage = ref(1);
+const isProfileSetupVisible = ref(false);
+const isSharing = ref(false);
+const hasMorePosts = ref(true);
+const nextPostCursorId = ref<number | null>(null);
 const searchKeyword = ref('');
 const searchInputRef = ref<HTMLInputElement | null>(null);
 let loadMoreRequestId = 0;
+let profileRequestId = 0;
 let isLoadMoreRequestPending = false;
-// 当前项目尚未提供广场最近游戏接口，先由容器保留真实数据入口。
-const recentGames: PlazzaRecentGame[] = [];
-// 当前项目尚未提供广场帖子接口，按用户提供的页面内容建立数据入口，后续可直接替换接口结果。
-const postList = ref<PlazzaPost[]>([
-  {
-    id: 1,
-    author: {
-      name: 'Cq9杀手',
-      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn7.avif',
-      followers: 0,
-      following: false
-    },
-    content: '兄弟们3块1拉中彩票了',
-    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/413459514_20260811180747.863.avif'],
-    createdAt: '2026/08/11 18:07:49',
-    liked: false,
-    likes: 1,
-    favorited: false,
-    favorites: 0
-  },
-  {
-    id: 2,
-    author: {
-      name: 'Cq9杀手',
-      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn7.avif',
-      followers: 0,
-      following: false
-    },
-    content: '6900倍',
-    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/413459514_20260811181151.645.avif'],
-    createdAt: '2026/08/11 18:11:54',
-    liked: true,
-    likes: 1,
-    favorited: true,
-    favorites: 1
-  },
-  {
-    id: 3,
-    author: {
-      name: '7',
-      avatarUrl: 'https://146.103.80.124:5001/siteadmin/default/2D/img_txn11.avif',
-      followers: 1,
-      following: false
-    },
-    content: '牛逼星系',
-    imageUrls: ['https://146.103.80.124:5001/publicityplaza/upload/441962317_20260810235756.737.avif'],
-    createdAt: '2026/08/10 23:57:58',
-    liked: false,
-    likes: 1,
-    favorited: false,
-    favorites: 0
-  }
-]);
+let searchRequestTimer: number | undefined;
+const pendingFollowIds = ref<number[]>([]);
+const pendingPostActionKeys = ref<string[]>([]);
+const pendingGameFavoriteIds = ref<string[]>([]);
+const recentGames = ref<PlazzaRecentGame[]>([]);
+const postList = ref<PlazzaPost[]>([]);
 
-const profile = computed<PlazzaProfile>(() => ({
+const profile = ref<PlazzaProfile>({
+  id: Number(auth.user.id || 0),
   avatarUrl: String(auth.user.avatarUrl || ''),
   nickname: String(auth.user.nickName || '请设置昵称'),
+  isAdmin: false,
   followers: 0,
-  bio: '请设置个人介绍',
+  bio: String(auth.user.description || '请设置个人介绍'),
   statistics: {
     articles: 0,
     likes: 0,
@@ -98,8 +69,9 @@ const profile = computed<PlazzaProfile>(() => ({
   rewards: {
     today: 0,
     total: 0
-  }
-}));
+  },
+  isSelf: true
+});
 
 const currentEmptyText = computed(() => {
   if (searchKeyword.value.trim()) return '未搜索到相关内容';
@@ -107,31 +79,8 @@ const currentEmptyText = computed(() => {
   return plazzaTabs.find(tab => tab.value === activeTab.value)?.emptyText || '暂无内容';
 });
 
-const visiblePosts = computed(() => {
-  let matchedPosts = postList.value;
-
-  if (activeTab.value === 'following') {
-    matchedPosts = matchedPosts.filter(post => post.author.following);
-  } else if (activeTab.value === 'favorites') {
-    matchedPosts = matchedPosts.filter(post => post.favorited);
-  } else if (activeTab.value === 'likes') {
-    matchedPosts = matchedPosts.filter(post => post.liked);
-  }
-
-  const keyword = searchKeyword.value.trim().toLowerCase();
-  if (!keyword) return matchedPosts;
-
-  return matchedPosts.filter(post => {
-    return post.content.toLowerCase().includes(keyword) || post.author.name.toLowerCase().includes(keyword);
-  });
-});
-
-const paginatedPosts = computed(() => {
-  return visiblePosts.value.slice(0, currentPostPage.value * POST_PAGE_SIZE);
-});
-
 const isPostListFinished = computed(() => {
-  return paginatedPosts.value.length >= visiblePosts.value.length;
+  return !hasMorePosts.value;
 });
 
 function normalizeActive(active: unknown): PlazzaTabValue {
@@ -167,61 +116,310 @@ function handleUnavailable(message: string) {
   showCustomToast({ type: 'warning', message });
 }
 
-function handleRefresh() {
-  // 广场接口接入后在这里重新请求当前频道，当前先保留下拉刷新的完整交互反馈。
-  window.setTimeout(() => {
+function hasCompletePublishProfile() {
+  return Boolean(
+    String(auth.user.nickName || '').trim()
+    && String(auth.user.avatarUrl || '').trim()
+    && String(auth.user.description || '').trim()
+  );
+}
+
+function handlePublish() {
+  if (!auth.token) {
+    void router.push('/home/login');
+    return;
+  }
+
+  if (!hasCompletePublishProfile()) {
+    isProfileSetupVisible.value = true;
+    return;
+  }
+
+  void router.push('/home/plazza/post');
+}
+
+function handleProfileSetupCompleted() {
+  isProfileSetupVisible.value = false;
+  void router.push('/home/plazza/post');
+}
+
+async function requestMyProfile() {
+  const currentUserId = Number(auth.user.id || 0);
+  if (!Number.isInteger(currentUserId) || currentUserId <= 0) {
+    recentGames.value = [];
+    return;
+  }
+
+  const requestId = ++profileRequestId;
+  try {
+    const [profileResult, recentGameResult] = await Promise.all([
+      getMomentsProfile(currentUserId),
+      getMomentsRecentGames(currentUserId).catch(() => [])
+    ]);
+    if (requestId !== profileRequestId) return;
+
+    profile.value = {
+      ...profileResult,
+      id: Number(profileResult?.id || currentUserId),
+      avatarUrl: String(profileResult?.avatarUrl || auth.user.avatarUrl || ''),
+      nickname: String(profileResult?.nickname || auth.user.nickName || '请设置昵称'),
+      isAdmin: Boolean(profileResult?.isAdmin),
+      followers: Number(profileResult?.followers || 0),
+      bio: String(profileResult?.bio || auth.user.description || '请设置个人介绍'),
+      statistics: {
+        articles: Number(profileResult?.statistics?.articles || 0),
+        likes: Number(profileResult?.statistics?.likes || 0),
+        favorites: Number(profileResult?.statistics?.favorites || 0)
+      },
+      rewards: {
+        today: Number(profileResult?.rewards?.today || 0),
+        total: Number(profileResult?.rewards?.total || 0)
+      },
+      isSelf: true
+    };
+    recentGames.value = Array.isArray(recentGameResult) ? recentGameResult : [];
+  } catch {
+    if (requestId !== profileRequestId) return;
+    recentGames.value = [];
+  }
+}
+
+async function requestPostList(append = false) {
+  const currentUserId = Number(auth.user.id || 0);
+  if (activeTab.value === 'profile' && (!Number.isInteger(currentUserId) || currentUserId <= 0)) {
+    postList.value = [];
+    hasMorePosts.value = false;
+    nextPostCursorId.value = null;
+    return;
+  }
+
+  const requestId = ++loadMoreRequestId;
+  try {
+    const response = await getMomentsList({
+      channel: activeTab.value,
+      publisherId: activeTab.value === 'profile' ? currentUserId : undefined,
+      size: POST_PAGE_SIZE,
+      cursorId: append ? nextPostCursorId.value || undefined : undefined,
+      keyword: searchKeyword.value.trim() || undefined
+    });
+    if (requestId !== loadMoreRequestId) return;
+
+    const currentUserId = Number(auth.user.id || 0);
+    const nextPosts = Array.isArray(response.list)
+      ? response.list.map(post => ({
+          ...post,
+          author: {
+            ...post.author,
+            isSelf: currentUserId > 0 && Number(post.author.id) === currentUserId
+          }
+        }))
+      : [];
+    if (append) {
+      const existingPostIds = new Set(postList.value.map(post => post.id));
+      postList.value.push(...nextPosts.filter(post => !existingPostIds.has(post.id)));
+    } else {
+      postList.value = nextPosts;
+    }
+
+    hasMorePosts.value = Boolean(response.more);
+    nextPostCursorId.value = response.nextCursorId ? Number(response.nextCursorId) : null;
+  } catch {
+    if (requestId !== loadMoreRequestId) return;
+    if (!append) postList.value = [];
+    hasMorePosts.value = false;
+    nextPostCursorId.value = null;
+  }
+}
+
+async function handleRefresh() {
+  try {
+    if (activeTab.value === 'profile') {
+      resetPostPagination();
+      await Promise.all([requestMyProfile(), requestPostList()]);
+      return;
+    }
+
     resetPostPagination();
+    await requestPostList();
+  } finally {
     isRefreshing.value = false;
-  }, 350);
+  }
 }
 
 function resetPostPagination() {
   // 使切换频道或搜索前发起的加载失效，避免旧请求把新列表翻到下一页。
   loadMoreRequestId += 1;
   isLoadMoreRequestPending = false;
-  currentPostPage.value = 1;
+  hasMorePosts.value = true;
+  nextPostCursorId.value = null;
   isLoadingMore.value = false;
 }
 
 async function loadNextPostPage() {
-  if (isLoadMoreRequestPending || isPostListFinished.value) return;
+  if (isLoadMoreRequestPending || isPostListFinished.value || !nextPostCursorId.value) return;
 
-  const requestId = ++loadMoreRequestId;
   isLoadMoreRequestPending = true;
   isLoadingMore.value = true;
 
-  // 当前暂无广场分页接口，保留加载反馈；接入接口后在这里请求并追加下一页数据。
-  await new Promise<void>(resolve => window.setTimeout(resolve, 350));
-  if (requestId !== loadMoreRequestId) return;
-
-  currentPostPage.value += 1;
-  isLoadMoreRequestPending = false;
-  isLoadingMore.value = false;
+  try {
+    await requestPostList(true);
+  } finally {
+    isLoadMoreRequestPending = false;
+    isLoadingMore.value = false;
+  }
 }
 
-function toggleFollow(authorName: string) {
-  const authorPost = postList.value.find(post => post.author.name === authorName);
-  if (!authorPost) return;
+async function toggleFollow(authorId: number) {
+  const authorPost = postList.value.find(post => post.author.id === authorId);
+  if (!authorPost || authorPost.author.isSelf || pendingFollowIds.value.includes(authorId)) return;
 
+  const requestId = loadMoreRequestId;
+  const requestTab = activeTab.value;
+  const authorPosts = postList.value.filter(post => post.author.id === authorId);
+  const previousStates = authorPosts.map(post => ({
+    post,
+    following: post.author.following,
+    followers: post.author.followers
+  }));
   const nextFollowing = !authorPost.author.following;
-  // 同一作者的多条帖子同步关注状态，避免列表中出现互相冲突的按钮。
-  postList.value.forEach(post => {
-    if (post.author.name === authorName) post.author.following = nextFollowing;
+  pendingFollowIds.value.push(authorId);
+
+  // 同一作者的多条帖子同步状态和粉丝数，避免列表中出现互相冲突的数据。
+  authorPosts.forEach(post => {
+    post.author.following = nextFollowing;
+    post.author.followers = Math.max(0, post.author.followers + (nextFollowing ? 1 : -1));
   });
+
+  try {
+    await setMomentsFollow(authorId, nextFollowing);
+    showCustomToast({ type: 'success', message: nextFollowing ? '关注成功' : '已取消关注' });
+
+    if (!nextFollowing && requestTab === 'following' && activeTab.value === requestTab && loadMoreRequestId === requestId) {
+      postList.value = postList.value.filter(post => post.author.id !== authorId);
+    }
+  } catch {
+    previousStates.forEach(state => {
+      state.post.author.following = state.following;
+      state.post.author.followers = state.followers;
+    });
+  } finally {
+    pendingFollowIds.value = pendingFollowIds.value.filter(id => id !== authorId);
+  }
 }
 
-function togglePostAction(postId: number, action: 'like' | 'favorite') {
-  const post = postList.value.find(postItem => postItem.id === postId);
-  if (!post) return;
+async function togglePostAction(postId: number, action: 'like' | 'favorite') {
+  const currentPost = postList.value.find(post => post.id === postId);
+  const actionKey = `${action}:${postId}`;
+  if (!currentPost || pendingPostActionKeys.value.includes(actionKey)) return;
 
-  if (action === 'like') {
-    post.liked = !post.liked;
-    post.likes = Math.max(0, post.likes + (post.liked ? 1 : -1));
+  const requestId = loadMoreRequestId;
+  const requestTab = activeTab.value;
+  pendingPostActionKeys.value.push(actionKey);
+
+  try {
+    if (action === 'like') {
+      const previousLiked = currentPost.liked;
+      const previousLikes = currentPost.likes;
+      const nextLiked = !previousLiked;
+      currentPost.liked = nextLiked;
+      currentPost.likes = Math.max(0, previousLikes + (nextLiked ? 1 : -1));
+
+      try {
+        await setMomentsLike(postId, nextLiked);
+        showCustomToast({ type: 'success', message: nextLiked ? '点赞成功' : '已取消点赞' });
+        if (!nextLiked && requestTab === 'likes' && activeTab.value === requestTab && loadMoreRequestId === requestId) {
+          postList.value = postList.value.filter(post => post.id !== postId);
+        }
+      } catch {
+        currentPost.liked = previousLiked;
+        currentPost.likes = previousLikes;
+      }
+      return;
+    }
+
+    const previousFavorited = currentPost.favorited;
+    const previousFavorites = currentPost.favorites;
+    const nextFavorited = !previousFavorited;
+    currentPost.favorited = nextFavorited;
+    currentPost.favorites = Math.max(0, previousFavorites + (nextFavorited ? 1 : -1));
+
+    try {
+      await setMomentsFavorite(postId, nextFavorited);
+      showCustomToast({ type: 'success', message: nextFavorited ? '收藏成功' : '已取消收藏' });
+      if (!nextFavorited && requestTab === 'favorites' && activeTab.value === requestTab && loadMoreRequestId === requestId) {
+        postList.value = postList.value.filter(post => post.id !== postId);
+      }
+    } catch {
+      currentPost.favorited = previousFavorited;
+      currentPost.favorites = previousFavorites;
+    }
+  } finally {
+    pendingPostActionKeys.value = pendingPostActionKeys.value.filter(key => key !== actionKey);
+  }
+}
+
+function isGameFavoritePending(gameId: string | number) {
+  return pendingGameFavoriteIds.value.includes(String(gameId));
+}
+
+async function toggleGameFavorite(game: PlazzaRecentGame) {
+  const gameId = String(game.id);
+  if (isGameFavoritePending(gameId)) return;
+
+  const previousFavorite = game.favorite;
+  const nextFavorite = !previousFavorite;
+  pendingGameFavoriteIds.value.push(gameId);
+  game.favorite = nextFavorite;
+
+  try {
+    await setMomentsGameFavorite(game.id, nextFavorite);
+    showCustomToast({ type: 'success', message: nextFavorite ? '收藏成功' : '已取消收藏' });
+  } catch {
+    game.favorite = previousFavorite;
+  } finally {
+    pendingGameFavoriteIds.value = pendingGameFavoriteIds.value.filter(id => id !== gameId);
+  }
+}
+
+async function shareContent(post?: PlazzaPost) {
+  if (isSharing.value) return;
+
+  const publisherId = Number(post?.author.id || profile.value.id || auth.user.id || 0);
+  if (!Number.isInteger(publisherId) || publisherId <= 0) {
+    showCustomToast({ type: 'warning', message: '请先登录后再分享' });
     return;
   }
 
-  post.favorited = !post.favorited;
-  post.favorites = Math.max(0, post.favorites + (post.favorited ? 1 : -1));
+  const routeLocation = router.resolve(`/home/plazza/publisher/${publisherId}`);
+  const shareUrl = new URL(routeLocation.href, window.location.href).toString();
+  const publisherName = post?.author.name || profile.value.nickname;
+  const shareTitle = post ? `${publisherName}的动态` : `${publisherName}的主页`;
+  const shareText = post?.content?.trim()
+    ? post.content.trim().slice(0, 100)
+    : `查看${publisherName}的主页`;
+  isSharing.value = true;
+
+  try {
+    if (typeof navigator.share === 'function') {
+      await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+      showCustomToast({ type: 'success', message: '分享成功' });
+      return;
+    }
+
+    await toClipboard(shareUrl);
+    showCustomToast({ type: 'success', message: '链接已复制，可以分享给好友' });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') return;
+
+    try {
+      await toClipboard(shareUrl);
+      showCustomToast({ type: 'success', message: '链接已复制，可以分享给好友' });
+    } catch {
+      showCustomToast({ type: 'fail', message: '分享失败，请稍后重试' });
+    }
+  } finally {
+    isSharing.value = false;
+  }
 }
 
 watch(
@@ -238,11 +436,29 @@ watch(
 watch(activeTab, active => {
   searchKeyword.value = '';
   isSearchVisible.value = false;
+  postList.value = [];
   resetPostPagination();
   syncRouteActive(active);
+  if (active === 'profile') {
+    void Promise.all([requestMyProfile(), requestPostList()]);
+  } else {
+    void requestPostList();
+  }
+}, { immediate: true });
+
+watch(searchKeyword, () => {
+  resetPostPagination();
+  window.clearTimeout(searchRequestTimer);
+  searchRequestTimer = window.setTimeout(() => {
+    void requestPostList();
+  }, 300);
 });
 
-watch(searchKeyword, resetPostPagination);
+onBeforeUnmount(() => {
+  loadMoreRequestId += 1;
+  profileRequestId += 1;
+  window.clearTimeout(searchRequestTimer);
+});
 </script>
 
 <template>
@@ -294,19 +510,19 @@ watch(searchKeyword, resetPostPagination);
                     v-if="tab.value === 'profile'"
                     :profile="profile"
                     :recent-games="recentGames"
-                    :empty-text="currentEmptyText"
+                    :pending-game-favorite-ids="pendingGameFavoriteIds"
+                    :is-sharing="isSharing"
                     @edit-profile="router.push('/home/setting')"
-                    @publish="handleUnavailable('发布功能暂未开放')"
+                    @publish="handlePublish"
                     @search="toggleSearch"
-                    @share="handleUnavailable('分享功能暂未开放')"
+                    @share="shareContent()"
                     @select-game="handleUnavailable('游戏功能暂未开放')"
-                    @toggle-favorite="handleUnavailable('收藏功能暂未开放')"
+                    @toggle-favorite="toggleGameFavorite"
                   />
                   <van-list
-                    v-else
                     v-model:loading="isLoadingMore"
                     :finished="isPostListFinished"
-                    :finished-text="paginatedPosts.length ? '没有更多了' : ''"
+                    :finished-text="postList.length ? '没有更多了' : ''"
                     :immediate-check="false"
                     :offset="30"
                     @load="loadNextPostPage"
@@ -321,12 +537,16 @@ watch(searchKeyword, resetPostPagination);
                     </template>
 
                     <plazza-post-list
-                      :posts="paginatedPosts"
+                      :posts="postList"
                       :empty-text="currentEmptyText"
+                      :pending-follow-ids="pendingFollowIds"
+                      :pending-post-action-keys="pendingPostActionKeys"
+                      :is-sharing="isSharing"
+                      :show-follow-action="activeTab !== 'profile'"
                       @toggle-follow="toggleFollow"
                       @toggle-like="togglePostAction($event, 'like')"
                       @toggle-favorite="togglePostAction($event, 'favorite')"
-                      @share="handleUnavailable('分享功能暂未开放')"
+                      @share="shareContent"
                     />
                   </van-list>
                 </van-pull-refresh>
@@ -340,6 +560,11 @@ watch(searchKeyword, resetPostPagination);
         <svg-icon name="comm_icon_ss" />
       </button>
     </div>
+
+    <plazza-profile-setup-dialog
+      v-model:show="isProfileSetupVisible"
+      @completed="handleProfileSetupCompleted"
+    />
   </main>
 </template>
 

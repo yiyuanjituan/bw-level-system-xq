@@ -1,4 +1,5 @@
 import { http } from "@/utils/http";
+import { ContentTypeEnum } from "@/enums/requestEnum";
 import type {
   PromoteBettingDetailResponse,
   PromoteCommissionParams,
@@ -54,8 +55,44 @@ export interface UpdatePayPasswordPayload extends PayPasswordPayload {
 
 export type UpdateUserInfoPayload = Partial<Pick<
   Eps.UserInfoEntity,
-  "avatarUrl" | "nickName" | "showAccount" | "birthday" | "wechat" | "whatsapp" | "telegram"
+  "avatarUrl" | "nickName" | "description" | "showAccount" | "birthday" | "wechat" | "whatsapp" | "telegram"
 >>;
+
+export interface PublishMomentPayload {
+  content: string;
+  imageUrls: string[];
+}
+
+export interface MomentsListParams {
+  channel: "all" | "following" | "favorites" | "likes" | "profile";
+  size?: number;
+  cursorId?: number;
+  keyword?: string;
+  publisherId?: number;
+}
+
+export interface MomentsListResponse {
+  list: Array<{
+    id: number;
+    author: {
+      id: number;
+      name: string;
+      avatarUrl: string;
+      isAdmin: boolean;
+      followers: number;
+      following: boolean;
+    };
+    content: string;
+    imageUrls: string[];
+    createdAt: string;
+    liked: boolean;
+    likes: number;
+    favorited: boolean;
+    favorites: number;
+  }>;
+  more: boolean;
+  nextCursorId: number | null;
+}
 
 export function getConfig(data?: object): Promise<any> {
   return http.request({
@@ -198,6 +235,88 @@ export function setPayPassword(data: PayPasswordPayload): Promise<void> {
     url: "/app/user/info/setPayPassword",
     method: "post",
     data
+  });
+}
+
+export function publishMoment(data: PublishMomentPayload): Promise<{ id: number }> {
+  return http.request<{ id: number }>({
+    url: "/app/v1/moments/publish",
+    method: "post",
+    data
+  });
+}
+
+export function getMomentsList(data: MomentsListParams): Promise<MomentsListResponse> {
+  return http.request<MomentsListResponse>({
+    url: "/app/v1/moments/list",
+    method: "post",
+    data
+  });
+}
+
+export function getMomentsProfile(publisherId: number): Promise<any> {
+  return http.request({
+    url: "/app/v1/moments/profile",
+    method: "post",
+    data: { publisherId }
+  });
+}
+
+export function getMomentsRecentGames(publisherId: number): Promise<any[]> {
+  return http.request<any[]>({
+    url: "/app/v1/moments/recentGames",
+    method: "post",
+    data: { publisherId }
+  });
+}
+
+export function setMomentsFollow(targetUserId: number, following: boolean): Promise<unknown> {
+  return http.request({
+    url: "/app/v1/moments/setFollow",
+    method: "post",
+    data: { targetUserId, following },
+    headers: { "Content-Type": ContentTypeEnum.JSON }
+  });
+}
+
+export function setMomentsLike(postId: number, liked: boolean): Promise<unknown> {
+  return http.request({
+    url: "/app/v1/moments/setLike",
+    method: "post",
+    data: { postId, liked },
+    headers: { "Content-Type": ContentTypeEnum.JSON }
+  });
+}
+
+export function setMomentsFavorite(postId: number, favorited: boolean): Promise<unknown> {
+  return http.request({
+    url: "/app/v1/moments/setFavorite",
+    method: "post",
+    data: { postId, favorited },
+    headers: { "Content-Type": ContentTypeEnum.JSON }
+  });
+}
+
+export function setMomentsGameFavorite(gameId: string | number, favorite: boolean): Promise<unknown> {
+  return http.request({
+    url: "/app/v1/moments/setGameFavorite",
+    method: "post",
+    data: { gameId, favorited: favorite },
+    headers: { "Content-Type": ContentTypeEnum.JSON }
+  });
+}
+
+export function uploadMomentImage(file: File): Promise<any> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return http.request({
+    url: "/app/base/comm/upload",
+    method: "post",
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
   });
 }
 

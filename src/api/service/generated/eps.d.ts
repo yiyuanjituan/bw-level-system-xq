@@ -1351,6 +1351,60 @@ declare namespace Eps {
 		request: Service["request"];
 	}
 
+	interface V1Moments {
+		/**
+			 * 设置朋友圈游戏收藏状态
+			 */
+			setGameFavorite(data?: any): Promise<any>;
+
+		/**
+			 * 朋友圈最近游戏
+			 */
+			recentGames(data?: any): Promise<any>;
+
+		/**
+			 * 设置朋友圈帖子收藏状态
+			 */
+			setFavorite(data?: any): Promise<any>;
+
+		/**
+			 * 设置朋友圈关注状态
+			 */
+			setFollow(data?: any): Promise<any>;
+
+		/**
+			 * 朋友圈个人主页
+			 */
+			profile(data?: any): Promise<any>;
+
+		/**
+			 * 发布朋友圈帖子
+			 */
+			publish(data?: any): Promise<any>;
+
+		/**
+			 * 设置朋友圈点赞状态
+			 */
+			setLike(data?: any): Promise<any>;
+
+		/**
+			 * 朋友圈帖子列表
+			 */
+			list(data?: any): Promise<any[]>;
+
+		/**
+		 * 权限标识
+		 */
+		permission: { setGameFavorite: string; recentGames: string; setFavorite: string; setFollow: string; profile: string; publish: string; setLike: string; list: string; };
+
+		/**
+		 * 权限状态
+		 */
+		_permission: { setGameFavorite: boolean; recentGames: boolean; setFavorite: boolean; setFollow: boolean; profile: boolean; publish: boolean; setLike: boolean; list: boolean; };
+
+		request: Service["request"];
+	}
+
 	interface V1Notice {
 		/**
 			 * 公告列表
@@ -1569,6 +1623,7 @@ declare namespace Eps {
 			agent: V1Agent;
 			finance: V1Finance;
 			game: V1Game;
+			moments: V1Moments;
 			notice: V1Notice;
 			sse: V1Sse;
 			user: V1User;

@@ -14,7 +14,6 @@ import XSelect from "@/components/X/x-select.vue";
 import wechatIcon from "@/assets/setting/wechat.avif";
 import whatsappIcon from "@/assets/setting/whatsapp.avif";
 import telegramIcon from "@/assets/setting/telegram.avif";
-import defaultAvatarUrl from "@/assets/setting/default-avatar.avif";
 import vipImage from "@/assets/setting/vip.avif";
 import verifiedIcon from "@/assets/setting/verified.avif";
 
@@ -32,6 +31,7 @@ const EMPTY_FORM: SettingForm = {
   telegram: "",
   birthday: ""
 };
+const DEFAULT_AVATAR_URL = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
 
 const auth = useAuthStore();
 const app = useAppStore();
@@ -84,7 +84,7 @@ const displayOptions = computed(() => {
 });
 
 const avatarUrl = computed(() => {
-  return form.avatarUrl && !avatarLoadFailed.value ? form.avatarUrl : defaultAvatarUrl;
+  return form.avatarUrl && !avatarLoadFailed.value ? form.avatarUrl : DEFAULT_AVATAR_URL;
 });
 
 const maximumBirthday = computed(() => {
@@ -258,18 +258,23 @@ onMounted(() => {
             <div class="nickname-field">
               <span class="nickname-label">昵称:</span>
               <x-form-item prop="nickName" class="nickname-content nickname-form-item">
-                <button
+                <div
                   v-if="!isNicknameEditing"
-                  type="button"
                   class="nickname-display"
                   :class="{ 'has-nickname': form.nickName }"
-                  @click="isNicknameEditing = true"
                 >
                   <span>{{ form.nickName || "请输入昵称" }}</span>
-                  <svg-icon name="login_icon_bj" class-name="nickname-edit-icon" />
-                </button>
+                  <button
+                    type="button"
+                    class="nickname-edit-trigger"
+                    aria-label="编辑昵称"
+                    @click="isNicknameEditing = true"
+                  >
+                    <svg-icon name="login_icon_bj" class-name="nickname-edit-icon" />
+                  </button>
+                </div>
                 <x-input
-                  v-elseq
+                  v-else
                   v-model="form.nickName"
                   class="nickname-input"
                   :maxlength="20"
@@ -528,7 +533,7 @@ onMounted(() => {
     font-size: 12px;
     line-height: 1;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
 
     &.has-nickname {
       color: var(--skin__lead);
@@ -539,6 +544,21 @@ onMounted(() => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+
+  .nickname-edit-trigger {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 25px;
+    margin-left: 1px;
+    padding: 0;
+    border: 0;
+    color: var(--skin__primary);
+    background: transparent;
+    cursor: pointer;
   }
 
   :deep(.nickname-input.x-input-wrapper) {
@@ -554,7 +574,7 @@ onMounted(() => {
     flex-shrink: 0;
     width: 12px;
     height: 12px;
-    margin-left: 5px;
+    margin-left: 0;
     color: var(--skin__primary);
   }
 

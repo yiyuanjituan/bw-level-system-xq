@@ -2,13 +2,22 @@
 import PlazzaPostCard from "../components/PlazzaPostCard.vue";
 import type { PlazzaPost } from "../types";
 
-defineProps<{
+withDefaults(defineProps<{
   posts: PlazzaPost[];
   emptyText: string;
-}>();
+  showFollowAction?: boolean;
+  pendingFollowIds?: number[];
+  pendingPostActionKeys?: string[];
+  isSharing?: boolean;
+}>(), {
+  showFollowAction: true,
+  pendingFollowIds: () => [],
+  pendingPostActionKeys: () => [],
+  isSharing: false
+});
 
 defineEmits<{
-  (event: "toggle-follow", authorName: string): void;
+  (event: "toggle-follow", authorId: number): void;
   (event: "toggle-like", postId: number): void;
   (event: "toggle-favorite", postId: number): void;
   (event: "share", post: PlazzaPost): void;
@@ -21,6 +30,11 @@ defineEmits<{
       v-for="post in posts"
       :key="post.id"
       :post="post"
+      :show-follow-action="showFollowAction"
+      :follow-pending="pendingFollowIds.includes(post.author.id)"
+      :like-pending="pendingPostActionKeys.includes(`like:${post.id}`)"
+      :favorite-pending="pendingPostActionKeys.includes(`favorite:${post.id}`)"
+      :share-pending="isSharing"
       @toggle-follow="$emit('toggle-follow', $event)"
       @toggle-like="$emit('toggle-like', $event)"
       @toggle-favorite="$emit('toggle-favorite', $event)"

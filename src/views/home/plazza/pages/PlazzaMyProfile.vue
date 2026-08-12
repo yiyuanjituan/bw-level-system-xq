@@ -6,7 +6,8 @@ import type { PlazzaProfile, PlazzaRecentGame } from "../types";
 defineProps<{
   profile: PlazzaProfile;
   recentGames: PlazzaRecentGame[];
-  emptyText: string;
+  pendingGameFavoriteIds?: string[];
+  isSharing?: boolean;
 }>();
 
 defineEmits<{
@@ -23,6 +24,7 @@ defineEmits<{
   <div class="my-profile">
     <plazza-profile-card
       :profile="profile"
+      :is-sharing="isSharing"
       @edit-profile="$emit('edit-profile')"
       @publish="$emit('publish')"
       @search="$emit('search')"
@@ -31,25 +33,17 @@ defineEmits<{
 
     <plazza-recent-games
       :games="recentGames"
+      :pending-favorite-ids="pendingGameFavoriteIds"
       @select-game="$emit('select-game', $event)"
       @toggle-favorite="$emit('toggle-favorite', $event)"
     />
-
-    <ui-empty :text="emptyText" />
   </div>
 </template>
 
 <style scoped lang="less">
 .my-profile {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  min-height: 0;
-}
-
-:deep(.empty-box) {
-  flex: 1;
-  height: auto;
-  min-height: 190px;
+  width: 100%;
 }
 </style>

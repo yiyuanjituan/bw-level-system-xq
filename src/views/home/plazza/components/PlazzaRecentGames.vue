@@ -1,10 +1,23 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import favoriteOffUrl from "@/assets/home/btn_sc_off_2.avif";
+import favoriteOnUrl from "@/assets/home/btn_sc_on_2.avif";
+import recommendUrl from "@/assets/home/moments/img_game_tj1_zj.avif";
 import PlazzaLazyImage from "./PlazzaLazyImage.vue";
 import type { PlazzaRecentGame } from "../types";
 
-defineProps<{
+const props = withDefaults(defineProps<{
   games: PlazzaRecentGame[];
-}>();
+  pendingFavoriteIds?: string[];
+}>(), {
+  pendingFavoriteIds: () => []
+});
+
+const visibleGames = computed(() => props.games.slice(0, 4));
+
+function isFavoritePending(gameId: string | number) {
+  return props.pendingFavoriteIds.includes(String(gameId));
+}
 
 const emit = defineEmits<{
   (event: "select-game", game: PlazzaRecentGame): void;
@@ -13,43 +26,45 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="recent-games">
+  <section v-if="visibleGames.length" class="recent-games">
     <header class="recent-games__header">
       <h2>最近在玩</h2>
     </header>
 
-    <div v-if="games.length" class="recent-games__list">
-      <div
-        v-for="game in games"
+    <div class="recent-games__list">
+      <article
+        v-for="game in visibleGames"
         :key="game.id"
         class="recent-games__card"
-        role="button"
-        tabindex="0"
-        @click="emit('select-game', game)"
-        @keydown.enter="emit('select-game', game)"
       >
-        <plazza-lazy-image
-          class="recent-games__cover"
-          :src="game.coverUrl"
-          :alt="game.name"
-          error-text=""
-        />
-        <span class="recent-games__shade"></span>
-        <strong>{{ game.name }}</strong>
-        <span v-if="game.recommended" class="recent-games__recommend">推荐</span>
+        <button
+          type="button"
+          class="recent-games__launch"
+          :aria-label="`进入${game.name}`"
+          @click="emit('select-game', game)"
+        >
+          <plazza-lazy-image
+            class="recent-games__cover"
+            :src="game.coverUrl"
+            :alt="game.name"
+            error-text=""
+          />
+          <span class="recent-games__name"><strong>{{ game.name }}</strong></span>
+          <img v-if="game.recommended" class="recent-games__recommend" :src="recommendUrl" alt="推荐" />
+        </button>
         <button
           type="button"
           class="recent-games__favorite"
-          :class="{ 'recent-games__favorite--active': game.favorite }"
           :aria-label="game.favorite ? '取消收藏' : '收藏游戏'"
+          :aria-busy="isFavoritePending(game.id)"
+          :disabled="isFavoritePending(game.id)"
           @click.stop="emit('toggle-favorite', game)"
         >
-          ★
+          <img :src="game.favorite ? favoriteOnUrl : favoriteOffUrl" alt="" />
         </button>
-      </div>
+      </article>
     </div>
 
-    <p v-else class="recent-games__empty">暂无最近游戏</p>
   </section>
 </template>
 
@@ -59,9 +74,7 @@ const emit = defineEmits<{
   width: 100%;
   box-sizing: border-box;
   margin-top: 10px;
-  padding: 10px;
-  border-radius: 7px;
-  background: var(--skin__bg_2);
+  padding: 10px 0 0;
 }
 
 .recent-games__header {
@@ -69,6 +82,7 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  padding: 0 10px;
 
   h2 {
     margin: 0;
@@ -80,89 +94,133 @@ const emit = defineEmits<{
 }
 
 .recent-games__list {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  display: flex;
+  width: 100%;
+  height: 106.5px;
+  column-gap: 11.5px;
+  overflow: hidden;
 }
 
 .recent-games__card {
   position: relative;
-  aspect-ratio: 1 / 1.2;
-  min-width: 0;
+  flex: 0 0 80px;
+  width: 80px;
+  height: 106.4px;
+  overflow: hidden;
+  border-radius: 10px;
+  color: white;
+}
+
+.recent-games__launch {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 7px;
-  color: white;
-  background: var(--skin__bg_1);
+  border-radius: inherit;
+  color: inherit;
+  font-family: inherit;
+  background: transparent;
   cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
 
-  .recent-games__cover {
-    width: 100%;
-    height: 100%;
-  }
-
-  strong {
-    position: absolute;
-    right: 5px;
-    bottom: 5px;
-    left: 5px;
-    overflow: hidden;
-    font-size: 10px;
-    font-weight: 400;
-    line-height: 14px;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  &:active {
+    transform: scale(0.9);
+    opacity: 0.75;
   }
 }
 
-.recent-games__shade {
+.recent-games__cover {
   position: absolute;
-  inset: 42% 0 0;
-  background: linear-gradient(transparent, rgb(0 0 0 / 78%));
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.recent-games__name {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 26px;
+  padding: 0 3px 3px;
+  box-sizing: border-box;
+  background: linear-gradient(to bottom, transparent, rgb(0 0 0 / 72%));
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+
+  strong {
+    display: -webkit-box;
+    width: 100%;
+    overflow: hidden;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }
 
 .recent-games__recommend {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  padding: 2px 4px;
-  border-radius: 3px;
-  color: var(--skin__text_primary);
-  font-size: 9px;
-  line-height: 12px;
-  background: var(--skin__primary);
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 25.5px;
+  height: 20.7px;
+  object-fit: fill;
 }
 
 .recent-games__favorite {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 0;
+  right: 0;
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
+  width: 23px;
+  height: 23px;
+  padding: 3px;
   border: 0;
-  border-radius: 50%;
-  color: rgb(255 255 255 / 70%);
-  font-size: 10px;
-  background: rgb(0 0 0 / 48%);
+  background: transparent;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
 
-  &--active {
-    color: var(--skin__primary);
+  &:not(:disabled):active {
+    transform: scale(0.82);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+
+  img {
+    display: block;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
   }
 }
 
-.recent-games__empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 56px;
-  margin: 0;
-  color: var(--skin__neutral_2);
-  font-size: 11px;
+:global([dir="rtl"]) .recent-games__recommend {
+  right: 0;
+  left: auto;
+}
+
+:global([dir="rtl"]) .recent-games__favorite {
+  right: auto;
+  left: 0;
 }
 </style>
