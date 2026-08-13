@@ -398,6 +398,17 @@
     ]
   },
   {
+    "prefix": "/open/telegram/bot",
+    "name": "",
+    "api": [
+      {
+        "method": "post",
+        "path": "/webhook",
+        "summary": "接收 Telegram 机器人消息"
+      }
+    ]
+  },
+  {
     "prefix": "/app/user/address",
     "name": "UserAddressEntity",
     "api": [
