@@ -184,6 +184,18 @@ export function userTelegramLoginComplete(data: {
   });
 }
 
+export function userTelegramWebAppComplete(data: {
+  startParam: string;
+  initData: string;
+  deviceInfo?: Record<string, unknown>;
+}): Promise<any> {
+  return http.request({
+    url: "/app/user/login/telegram/web-app/complete",
+    method: "post",
+    data
+  });
+}
+
 export function getUserInfo(data?: object): Promise<Eps.UserInfoEntity> {
   return http.request<Eps.UserInfoEntity>({
     url: "/app/user/info/person",

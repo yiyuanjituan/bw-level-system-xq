@@ -527,6 +527,11 @@
     "name": "",
     "api": [
       {
+        "method": "post",
+        "path": "/telegram/web-app/complete",
+        "summary": "完成 Telegram Web App 登录"
+      },
+      {
         "method": "get",
         "path": "/telegram/callback",
         "summary": "Telegram OIDC回调"

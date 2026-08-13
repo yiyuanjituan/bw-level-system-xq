@@ -1,8 +1,4 @@
-import {
-  createRouter,
-  createWebHashHistory,
-  type RouteLocationNormalized
-} from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory, type RouteLocationNormalized } from 'vue-router';
 import routes from "./routes";
 import { useCachedViewStoreHook } from "@/store/modules/cachedView";
 import NProgress from "@/utils/progress";
@@ -10,7 +6,7 @@ import { autoCalculateTransitionName, setSystemName } from "@/hooks/useTransitio
 import { bus } from "@/utils/mitt";
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes
 });
 

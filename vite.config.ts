@@ -66,6 +66,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: true,
+      allowedHosts: [
+        '31a5-2a13-edc0-18-32c-00-a.ngrok-free.app',
+      ],
       // 仅在 proxy 中配置的代理前缀， mock-dev-server 才会拦截并 mock
       // doc: https://github.com/pengzhanbo/vite-plugin-mock-dev-server
       proxy: {

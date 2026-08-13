@@ -34,12 +34,14 @@ import { useRefs } from '@/hooks/useRefs';
 import { useRoute } from 'vue-router';
 import { connectSse, disconnectSse } from '@/utils/sse';
 import { startVersionUpdateCheck } from '@/utils/versionUpdate';
+import { useTelegramWebAppStart } from '@/hooks/useTelegramWebAppStart';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
 const auth = useAuthStore();
 const appData = useDataStore();
 const route = useRoute();
+const { handleTelegramWebAppStart } = useTelegramWebAppStart();
 const popupRefMap = {
   find_us: 'findUs',
   popup_notice: 'dialogTipRef',
@@ -143,9 +145,10 @@ function checkPopupTip() {
   }, 1500);
 }
 
-onMounted(() => {
+onMounted(async () => {
   stopVersionUpdateCheck = startVersionUpdateCheck();
   busListen();
+  await handleTelegramWebAppStart();
   app.refreshData();
   app.updateDownloadBtn(true);
 

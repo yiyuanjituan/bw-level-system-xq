@@ -7,11 +7,14 @@ import { setPayPassword, updatePayPassword } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import { handleBack } from "@/utils/common";
 import useAuthStore from "@/store/modules/user";
+import { useRoute } from "vue-router";
+import router from "@/router";
 
 type PasswordField = "password" | "passwordConfirmation";
 type UpdateStep = "edit" | "verify";
 
 const auth = useAuthStore();
+const route = useRoute();
 const form = reactive({
   password: "",
   passwordConfirmation: "",
@@ -97,7 +100,14 @@ async function handleSubmit() {
       type: "success",
       message: submitMode === "update" ? "提现密码更新成功" : "提现密码设置成功"
     });
-    handleBack();
+    if (
+      submitMode === "create" &&
+      String(route.query.redirect || "") === "/home/withdraw"
+    ) {
+      await router.replace("/home/withdraw");
+    } else {
+      handleBack();
+    }
   } catch {
     return;
   } finally {
