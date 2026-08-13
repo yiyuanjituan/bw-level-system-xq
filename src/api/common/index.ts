@@ -165,6 +165,25 @@ export function userPhoneLogin(data?: object): Promise<any> {
   });
 }
 
+export function userTelegramLoginStart(data: { returnUrl: string }): Promise<{ authorizationUrl: string }> {
+  return http.request({
+    url: "/app/user/login/telegram/start",
+    method: "post",
+    data
+  });
+}
+
+export function userTelegramLoginComplete(data: {
+  loginTicket: string;
+  deviceInfo?: Record<string, unknown>;
+}): Promise<any> {
+  return http.request({
+    url: "/app/user/login/telegram/complete",
+    method: "post",
+    data
+  });
+}
+
 export function getUserInfo(data?: object): Promise<Eps.UserInfoEntity> {
   return http.request<Eps.UserInfoEntity>({
     url: "/app/user/info/person",

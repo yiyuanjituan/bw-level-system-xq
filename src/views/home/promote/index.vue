@@ -144,7 +144,6 @@ onMounted(() => {
             v-else-if="tab.value === 'rebateRatio'"
             :info="promoteInfo"
           />
-          <span v-else class="promote-placeholder">{{ tab.label }}内容</span>
         </section>
       </van-tab>
     </van-tabs>
@@ -220,7 +219,4 @@ onMounted(() => {
   -webkit-overflow-scrolling: touch;
 }
 
-.promote-placeholder {
-  margin: auto;
-}
 </style>

@@ -299,6 +299,11 @@ declare namespace Eps {
 			telegram?: string;
 
 		/**
+			 * Telegram用户ID
+			 */
+			telegramUserId?: string;
+
+		/**
 			 * 用户标签
 			 */
 			user_tag?: string;
@@ -1143,6 +1148,21 @@ declare namespace Eps {
 
 	interface UserLogin {
 		/**
+			 * Telegram OIDC回调
+			 */
+			callback(data?: any): Promise<any>;
+
+		/**
+			 * 完成Telegram OIDC登录
+			 */
+			complete(data?: any): Promise<any>;
+
+		/**
+			 * 发起Telegram OIDC登录
+			 */
+			start(data?: any): Promise<any>;
+
+		/**
 			 * 手机验证码登录
 			 */
 			phoneVerifyCode(data?: any): Promise<any>;
@@ -1175,12 +1195,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { phoneVerifyCode: string; refreshToken: string; register: string; password: string; captcha: string; smsCode: string; };
+		permission: { callback: string; complete: string; start: string; phoneVerifyCode: string; refreshToken: string; register: string; password: string; captcha: string; smsCode: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { phoneVerifyCode: boolean; refreshToken: boolean; register: boolean; password: boolean; captcha: boolean; smsCode: boolean; };
+		_permission: { callback: boolean; complete: boolean; start: boolean; phoneVerifyCode: boolean; refreshToken: boolean; register: boolean; password: boolean; captcha: boolean; smsCode: boolean; };
 
 		request: Service["request"];
 	}

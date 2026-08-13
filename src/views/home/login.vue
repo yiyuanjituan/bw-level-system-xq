@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { handleBack } from '@/utils/common';
 import RegisterPopup from '@/components/Common/Register.vue';
-import { onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import UiCheckbox from '@/components/UI/checkbox.vue';
 import policy from '@/components/Common/policy.vue';
 import UiButton from '@/components/Common/Button.vue';
 import { loginProps, registerProps } from '@/enums/props';
 import { showCustomDialog, showCustomToast } from '@/hooks/useCommon';
-import { userLogin, userPhoneLogin, userRegister } from '@/api/common';
+import { userLogin, userPhoneLogin, userRegister, userTelegramLoginComplete, userTelegramLoginStart } from '@/api/common';
 import useAuthStore from '@/store/modules/user';
 import LoginPopup from '@/components/Common/Login.vue';
 import { useRoute } from 'vue-router';
@@ -15,6 +15,9 @@ import useAppStore from '@/store/modules/app';
 import type { FormExpose } from '@/components/UI/form-context';
 import router from '@/router';
 import { bus } from '@/utils/mitt';
+import noWalletLoginIcon from '@/assets/common/quick-login/nowallet.avif';
+import googleLoginIcon from '@/assets/common/quick-login/google.avif';
+import telegramLoginIcon from '@/assets/common/quick-login/telegram.avif';
 
 const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
@@ -36,6 +39,12 @@ const isAgreeAccept = ref(true); // 是否同意政策
 const openAccept = () => policyRef.value.open();
 const geeTestRef = ref();
 const auth = useAuthStore();
+const telegramLoginLoading = ref(false);
+const quickLoginOptions = computed(() => [
+  // { name: 'NoWallet', icon: noWalletLoginIcon },
+  // { name: 'Google', icon: googleLoginIcon },
+  ...(app.appInfo?.telegramLogin?.enabled ? [{ name: 'Telegram', icon: telegramLoginIcon }] : [])
+]);
 
 function getTabByPath(path: string) {
   return path.includes('/home/login') ? 1 : 0;
@@ -62,6 +71,146 @@ function handleTabChange(tab: number | string) {
 
 function jumpToService() {
   router.push('/home/notice');
+}
+
+function handleQuickLogin(name: string) {
+  if (name === 'Telegram') {
+    openTelegramLogin();
+    return;
+  }
+
+  showCustomToast({
+    type: 'warning',
+    message: `${name}快捷登录暂未开放`
+  });
+}
+
+async function openTelegramLogin() {
+  const telegramConfig = app.appInfo?.telegramLogin;
+  if (!telegramConfig?.enabled) {
+    showCustomToast({ type: 'warning', message: '当前站点未开启Telegram快捷登录' });
+    return;
+  }
+
+  let loginDomain: URL;
+  try {
+    loginDomain = new URL(String(telegramConfig.domain || ''));
+  } catch {
+    showCustomToast({ type: 'fail', message: 'Telegram登录Domain配置无效' });
+    return;
+  }
+  if (!['http:', 'https:'].includes(loginDomain.protocol)) {
+    showCustomToast({ type: 'fail', message: 'Telegram登录Domain只支持HTTP或HTTPS' });
+    return;
+  }
+
+  if (telegramLoginLoading.value) return;
+
+  telegramLoginLoading.value = true;
+  try {
+    const returnUrl = new URL(window.location.href);
+    returnUrl.searchParams.delete('telegramTicket');
+    returnUrl.searchParams.delete('telegramError');
+    returnUrl.searchParams.delete('telegramAutoStart');
+    returnUrl.searchParams.delete('telegramAuthorizationUrl');
+    const result = await userTelegramLoginStart({
+      returnUrl: returnUrl.toString()
+    });
+    const authorizationUrl = new URL(result?.authorizationUrl || '');
+    if (authorizationUrl.origin !== 'https://oauth.telegram.org') {
+      throw new Error('Telegram授权地址无效');
+    }
+
+    if (loginDomain.origin.toLowerCase() !== window.location.origin.toLowerCase()) {
+      // 原始回跳地址由API保存在state中，跨域时只传递Telegram授权地址。
+      const gatewayUrl = new URL(
+        `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`,
+        loginDomain.origin
+      );
+      gatewayUrl.searchParams.set('telegramAutoStart', '1');
+      gatewayUrl.searchParams.set(
+        'telegramAuthorizationUrl',
+        authorizationUrl.toString()
+      );
+      window.location.assign(gatewayUrl.toString());
+      return;
+    }
+
+    window.location.assign(authorizationUrl.toString());
+  } finally {
+    telegramLoginLoading.value = false;
+  }
+}
+
+async function handleTelegramGateway() {
+  const currentUrl = new URL(window.location.href);
+  const shouldAutoStart = currentUrl.searchParams.get('telegramAutoStart') === '1';
+  const authorizationUrlText = currentUrl.searchParams.get('telegramAuthorizationUrl');
+  if (!shouldAutoStart || !authorizationUrlText) return;
+
+  let telegramOrigin = '';
+  try {
+    telegramOrigin = new URL(
+      String(app.appInfo?.telegramLogin?.domain || '')
+    ).origin.toLowerCase();
+  } catch {
+    showCustomToast({ type: 'fail', message: 'Telegram登录Domain配置无效' });
+    return;
+  }
+  if (telegramOrigin !== currentUrl.origin.toLowerCase()) {
+    showCustomToast({ type: 'fail', message: '当前页面不是Telegram统一登录Domain' });
+    return;
+  }
+
+  let authorizationUrl: URL;
+  try {
+    authorizationUrl = new URL(authorizationUrlText);
+  } catch {
+    showCustomToast({ type: 'fail', message: 'Telegram授权地址无效' });
+    return;
+  }
+  if (authorizationUrl.origin !== 'https://oauth.telegram.org') {
+    showCustomToast({ type: 'fail', message: 'Telegram授权地址无效' });
+    return;
+  }
+
+  window.location.replace(authorizationUrl.toString());
+}
+
+async function handleTelegramCallback() {
+  const currentUrl = new URL(window.location.href);
+  const loginTicket = currentUrl.searchParams.get('telegramTicket');
+  const loginError = currentUrl.searchParams.get('telegramError');
+  if (!loginTicket && !loginError) return;
+
+  currentUrl.searchParams.delete('telegramTicket');
+  currentUrl.searchParams.delete('telegramError');
+  window.history.replaceState(
+    window.history.state,
+    '',
+    `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+  );
+
+  if (loginError) {
+    showCustomToast({
+      type: 'fail',
+      message: loginError === 'authorization_denied' ? '已取消Telegram授权' : 'Telegram授权失败，请重试'
+    });
+    return;
+  }
+
+  telegramLoginLoading.value = true;
+  try {
+    const result = await userTelegramLoginComplete({
+      loginTicket: String(loginTicket),
+      deviceInfo: { loginType: 'H5' }
+    });
+    auth.setToken(result?.token);
+    await auth.updateInfo();
+    handleBack();
+  } finally {
+    telegramLoginLoading.value = false;
+  }
 }
 
 function handleQuery() {
@@ -120,8 +269,10 @@ function handleExec() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   height.value = `${window.innerHeight}px`;
+  await handleTelegramCallback();
+  await handleTelegramGateway();
 });
 
 watch(
@@ -196,6 +347,21 @@ watch(
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">联系客服</div>
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">忘记密码</div>
         </div>
+        <section v-if="activeTabs == 1 && quickLoginOptions.length" class="quick-login">
+          <div class="quick-login__title"><span>快捷登录</span></div>
+          <div class="quick-login__list">
+            <button
+              v-for="option in quickLoginOptions"
+              :key="option.name"
+              type="button"
+              class="quick-login__button"
+              :aria-label="`${option.name}快捷登录`"
+              @click="handleQuickLogin(option.name)"
+            >
+              <img :src="option.icon" :alt="option.name" class="quick-login__icon" />
+            </button>
+          </div>
+        </section>
       </div>
     </div>
     <policy ref="policyRef" />
@@ -384,11 +550,68 @@ watch(
           }
         }
       }
+
+      .quick-login {
+        margin-top: 22px;
+
+        &__title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: var(--skin__neutral_2);
+          font-size: 11px;
+
+          &::before,
+          &::after {
+            height: 0.5px;
+            background: var(--skin__border);
+            content: '';
+            flex: 1;
+          }
+
+          span {
+            flex-shrink: 0;
+          }
+        }
+
+        &__list {
+          display: flex;
+          justify-content: center;
+          gap: 28px;
+          margin-top: 14px;
+        }
+
+        &__button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          padding: 0;
+          border: 0;
+          border-radius: 50%;
+          background: transparent;
+          cursor: pointer;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+
+          &:active {
+            opacity: 0.75;
+            transform: scale(0.94);
+          }
+        }
+
+        &__icon {
+          display: block;
+          width: 44px;
+          height: 44px;
+          object-fit: contain;
+        }
+      }
     }
   }
 }
-</style>
 
+</style>
 
 <style>
 @keyframes scale-btn {

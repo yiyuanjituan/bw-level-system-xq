@@ -516,6 +516,21 @@
     "name": "",
     "api": [
       {
+        "method": "get",
+        "path": "/telegram/callback",
+        "summary": "Telegram OIDC回调"
+      },
+      {
+        "method": "post",
+        "path": "/telegram/complete",
+        "summary": "完成Telegram OIDC登录"
+      },
+      {
+        "method": "post",
+        "path": "/telegram/start",
+        "summary": "发起Telegram OIDC登录"
+      },
+      {
         "method": "post",
         "path": "/phoneVerifyCode",
         "summary": "手机验证码登录"
