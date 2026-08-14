@@ -5,6 +5,7 @@ import router from "@/router";
 import UiButton from "@/components/Common/Button.vue";
 import HomeDrawer from "@/components/Home/Drawer.vue";
 import useAppStore from "@/store/modules/app";
+import { showCustomToast } from "@/hooks/useCommon";
 
 defineOptions({
   name: "HomeNavBar"
@@ -37,6 +38,26 @@ const updateWallet = () => {
     walletIsLoading.value = false;
   }, 2000);
 };
+
+function handleWithdraw() {
+  isShowMore.value = false;
+
+  if (!auth.user.hasPayPassword) {
+    showCustomToast({
+      type: "warning",
+      message: "为了资金安全，需先设置提现密码哦！"
+    });
+    router.push("/home/security?active=5");
+    return;
+  }
+
+  router.push("/home/withdraw");
+}
+
+function handleInterest() {
+  isShowMore.value = false;
+  router.push("/home/yuebao");
+}
 </script>
 
 <template>
@@ -125,8 +146,8 @@ const updateWallet = () => {
           </ui-button>
           <div class="popover-content" v-if="isShowMore">
             <div class="content-box">
-              <div>提现</div>
-              <div>利息宝</div>
+              <div @click="handleWithdraw">提现</div>
+              <div @click="handleInterest">利息宝</div>
             </div>
           </div>
         </div>

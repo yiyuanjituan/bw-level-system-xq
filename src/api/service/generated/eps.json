@@ -960,6 +960,11 @@
       },
       {
         "method": "get",
+        "path": "/pullOmgData",
+        "summary": "抓取OMG游戏记录"
+      },
+      {
+        "method": "get",
         "path": "/pullXhData",
         "summary": "抓取星汇游戏记录"
       }

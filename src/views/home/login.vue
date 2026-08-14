@@ -18,6 +18,7 @@ import { bus } from '@/utils/mitt';
 import noWalletLoginIcon from '@/assets/common/quick-login/nowallet.avif';
 import googleLoginIcon from '@/assets/common/quick-login/google.avif';
 import telegramLoginIcon from '@/assets/common/quick-login/telegram.avif';
+import { clearStoredInviteCode, getStoredInviteCode } from '@/utils/inviteCode';
 
 const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
@@ -26,7 +27,10 @@ const height = ref('0px');
 const route = useRoute();
 const activeTabs = ref(getTabByPath(route.path));
 const showLoading = ref(false);
-const registerForm = ref<registerProps>({ type: 'password' } as registerProps);
+const registerForm = ref<registerProps>({
+  type: 'password',
+  invite_code: getStoredInviteCode()
+} as registerProps);
 const registerFormRef = useTemplateRef<{ form: FormExpose }>('registerFormRef');
 const app = useAppStore();
 
@@ -229,6 +233,7 @@ function handleRegister() {
   userRegister(registerForm.value)
     .then(result => {
       auth.setToken(result?.token);
+      clearStoredInviteCode();
       auth.updateInfo();
       showLoading.value = false;
       handleBack();

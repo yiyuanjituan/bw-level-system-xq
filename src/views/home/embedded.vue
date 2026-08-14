@@ -4,12 +4,18 @@ import { onMounted, ref } from "vue";
 import router from "@/router";
 import { getGameUrl } from "@/api/common";
 import { isFullscreen, toggleFullScreen } from "@/utils/site";
-import { handleBack } from "@/utils/common";
 
 const appData = useDataStore();
 const showLoading = ref<boolean>(true);
 const url = ref<any>("");
 const offset = ref({ x: 1.5, y: 1.5 });
+const isMobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+const isMobileDevice = isMobileUserAgent || hasCoarsePointer;
+const floatingBubbleStyle = {
+  "--van-floating-bubble-size": "48px",
+  fontSize: "10px"
+};
 
 const replaceToHome = () => {
   if (isFullscreen()) {
@@ -27,7 +33,11 @@ onMounted(() => {
     .then(res => {
       url.value = res.url;
       showLoading.value = false;
-      toggleFullScreen();
+
+      // 手机端使用页面自身的全视口布局，避免原生全屏触发系统自动横屏
+      if (!isMobileDevice && !isFullscreen()) {
+        toggleFullScreen();
+      }
     })
     .catch(e => {
       if (e.status === 401) return false;
@@ -51,11 +61,18 @@ onMounted(() => {
           :src="url"
         ></iframe>
       </div>
-      <van-floating-bubble axis="xy" :gap="0" @click="replaceToHome" v-model:offset="offset">
+      <van-floating-bubble
+        axis="xy"
+        :gap="0"
+        class="embedded-floating-bubble"
+        :style="floatingBubbleStyle"
+        @click="replaceToHome"
+        v-model:offset="offset"
+      >
         <template #default>
           <div class="dragger-box">
-            <svg-icon name="game_2_style_1_zk" class-name="text-[20px]" />
-            <div class="text-[10px] text">首页</div>
+            <svg-icon name="game_2_style_1_zk" class-name="dragger-box__icon" />
+            <div class="dragger-box__text">首页</div>
           </div>
         </template>
       </van-floating-bubble>
@@ -97,6 +114,32 @@ onMounted(() => {
       align-items: center;
       background-color: #000;
     }
+  }
+}
+</style>
+
+<style lang="less">
+// van-floating-bubble 会挂载到 body，使用页面唯一类保证 Teleport 后仍能命中样式
+.embedded-floating-bubble {
+  --van-floating-bubble-background: transparent;
+  --van-floating-bubble-z-index: 1999;
+
+  .dragger-box {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border-width: 0.1em;
+    box-shadow: 0 0.15em 0.3em rgba(0, 0, 0, 0.16);
+  }
+
+  .dragger-box__icon {
+    font-size: 2em;
+  }
+
+  .dragger-box__text {
+    margin-top: 0.1em;
+    font-size: 1em;
+    line-height: 1.4;
   }
 }
 </style>

@@ -1,4 +1,5 @@
 import { showCustomDialog } from "@/hooks/useCommon";
+import router from "@/router";
 
 const VERSION_CHECK_INTERVAL = 60 * 1000;
 
@@ -62,7 +63,9 @@ export function startVersionUpdateCheck(): () => void {
 
       showCustomDialog({
         title: "温馨提示",
-        message: "检测到新版本，请刷新页面后继续使用。",
+        message: "当前页面已更新，点击刷新体验最新内容，若有问题请联系客服。",
+        showCancelButton: true,
+        cancelButtonText: "联系客服",
         confirmButtonText: "立即刷新",
         width: 300,
         closeOnClickOverlay: false,
@@ -71,7 +74,13 @@ export function startVersionUpdateCheck(): () => void {
       }).then((result) => {
         if (result) {
           window.location.reload();
+          return;
         }
+
+        void router.push({
+          path: "/home/notice",
+          query: { noticeType: 4 }
+        });
       });
     } catch {
       // 断网或服务器暂时不可用时跳过本次检测，避免影响正常业务。

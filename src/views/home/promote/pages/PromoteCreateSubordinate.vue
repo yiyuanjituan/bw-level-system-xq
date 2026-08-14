@@ -1,45 +1,61 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import PasswordPower from "@/components/Common/PasswordPower.vue";
+import { userRegister } from "@/api/common";
+import { showCustomToast } from "@/hooks/useCommon";
+import type { FormExpose, FormRules } from "@/components/UI/form-context";
 
 defineOptions({
   name: "PromoteCreateSubordinate"
 });
 
-interface CreateSubordinatePayload {
+const props = withDefaults(defineProps<{
+  inviteCode?: string;
+}>(), {
+  inviteCode: ""
+});
+
+interface CreateSubordinateForm {
   account: string;
   password: string;
 }
 
-interface FormInstance {
-  validate: () => Promise<void>;
-}
-
-const emit = defineEmits<{
-  create: [payload: CreateSubordinatePayload];
-}>();
-
 const createType = ref("single");
-const formRef = ref<FormInstance>();
-const formModel = reactive<CreateSubordinatePayload>({
+const creating = ref(false);
+const formRef = ref<FormExpose>();
+const formModel = reactive<CreateSubordinateForm>({
   account: "",
   password: ""
 });
 
-const formRules = {
-  account: {
-    required: true,
-    message: "请输入会员账号",
-    trigger: ["blur", "change"]
-  },
-  password: {
-    required: true,
-    message: "请输入登录密码",
-    trigger: ["blur", "change"]
-  }
+const formRules: FormRules = {
+  account: [
+    { required: true, message: "请输入会员账号", trigger: ["blur", "change"] },
+    {
+      pattern: /^[a-zA-Z0-9]{4,16}$/,
+      message: "账号格式错误，请输入4-16位英文/数字",
+      trigger: ["blur", "change"]
+    }
+  ],
+  password: [
+    { required: true, message: "请输入登录密码", trigger: ["blur", "change"] },
+    {
+      min: 6,
+      max: 16,
+      message: "6-16位，至少包含英文/数字/符号中的两种",
+      trigger: ["blur", "change"]
+    },
+    {
+      pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/,
+      message: "6-16位，至少包含英文/数字/符号中的两种",
+      trigger: ["blur", "change"]
+    }
+  ]
 };
 
 async function handleCreate() {
+  if (creating.value) return;
+
   try {
     await formRef.value?.validate();
   }
@@ -47,10 +63,41 @@ async function handleCreate() {
     return;
   }
 
-  emit("create", {
-    account: formModel.account.trim(),
-    password: formModel.password
-  });
+  const inviteCode = props.inviteCode.trim();
+  if (!inviteCode) {
+    showCustomToast({
+      type: "fail",
+      message: "邀请码获取失败，请刷新页面后重试"
+    });
+    return;
+  }
+
+  creating.value = true;
+  try {
+    await userRegister({
+      account: formModel.account.trim(),
+      type: "password",
+      password: formModel.password,
+      two_password: formModel.password,
+      invite_code: inviteCode,
+      sms_code: "",
+      currency: ""
+    });
+
+    formModel.account = "";
+    formModel.password = "";
+    formRef.value?.clearValidate();
+    showCustomToast({
+      type: "success",
+      message: "创建成功"
+    });
+  }
+  catch {
+    // 失败原因由统一请求层展示，这里仅结束当前提交状态
+  }
+  finally {
+    creating.value = false;
+  }
 }
 </script>
 
@@ -105,7 +152,7 @@ async function handleCreate() {
       </div>
 
       <div class="create-subordinate__submit">
-        <x-button type="primary" block @click="handleCreate">
+        <x-button type="primary" block :loading="creating" @click="handleCreate">
           创建直属下级
         </x-button>
       </div>

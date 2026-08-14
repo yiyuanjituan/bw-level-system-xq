@@ -139,7 +139,10 @@ onMounted(() => {
           <promote-subordinate-betting v-else-if="tab.value === 'subordinateBetting'" />
           <promote-subordinate-finance v-else-if="tab.value === 'subordinateFinance'" />
           <promote-subordinate-receive v-else-if="tab.value === 'subordinateReceive'" />
-          <promote-create-subordinate v-else-if="tab.value === 'createSubordinate'" />
+          <promote-create-subordinate
+            v-else-if="tab.value === 'createSubordinate'"
+            :invite-code="promoteInfo?.user?.inviteCode || ''"
+          />
           <promote-rebate-ratio
             v-else-if="tab.value === 'rebateRatio'"
             :info="promoteInfo"

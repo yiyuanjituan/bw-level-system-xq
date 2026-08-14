@@ -853,6 +853,11 @@ declare namespace Eps {
 			generateVipGift(data?: any): Promise<any>;
 
 		/**
+			 * 抓取OMG游戏记录
+			 */
+			pullOmgData(data?: any): Promise<any>;
+
+		/**
 			 * 抓取星汇游戏记录
 			 */
 			pullXhData(data?: any): Promise<any>;
@@ -860,12 +865,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { clearVitalityByNow: string; clearOnlineSession: string; refreshAgentData: string; generateVipGift: string; pullXhData: string; };
+		permission: { clearVitalityByNow: string; clearOnlineSession: string; refreshAgentData: string; generateVipGift: string; pullOmgData: string; pullXhData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { clearVitalityByNow: boolean; clearOnlineSession: boolean; refreshAgentData: boolean; generateVipGift: boolean; pullXhData: boolean; };
+		_permission: { clearVitalityByNow: boolean; clearOnlineSession: boolean; refreshAgentData: boolean; generateVipGift: boolean; pullOmgData: boolean; pullXhData: boolean; };
 
 		request: Service["request"];
 	}
