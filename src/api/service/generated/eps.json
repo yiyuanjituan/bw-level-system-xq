@@ -887,6 +887,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/getTrialGameList",
+        "summary": "根据场馆和分类获取试玩游戏列表"
+      },
+      {
+        "method": "post",
         "path": "/getGameById",
         "summary": "根据场馆获取游戏的列表"
       }

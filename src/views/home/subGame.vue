@@ -8,7 +8,7 @@ import UiLoading from "@/components/UI/loading.vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
-import { getGameListById } from "@/api/common";
+import { getGameListById, getTrialGameList } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -21,6 +21,7 @@ const app = useAppStore();
 const appData = useDataStore();
 const gameTypeVenueList = ref<any[]>([]);
 const gameTypeVenueId = ref<string | number>(0);
+const TRIAL_GAME_TYPE = "20";
 const enum // 使用枚举定义
 RightKeyEnum {
   ALL = "all",
@@ -29,7 +30,7 @@ RightKeyEnum {
   COLLECT = "collect"
 }
 interface RightItem {
-  key: RightKeyEnum;
+  key: string;
   name: string;
 }
 const rightList = ref<RightItem[]>([
@@ -38,9 +39,20 @@ const rightList = ref<RightItem[]>([
   { key: RightKeyEnum.LAST, name: "最近" },
   { key: RightKeyEnum.COLLECT, name: "收藏" }
 ]);
-const rightKey: Ref<RightKeyEnum> = ref(RightKeyEnum.ALL);
+const trialClassifyList: RightItem[] = [
+  { key: "0", name: "全部" },
+  { key: "6", name: "棋牌" },
+  { key: "2", name: "捕鱼" },
+  { key: "3", name: "电子" },
+  { key: "1", name: "真人" },
+  { key: "4", name: "彩票" },
+  { key: "5", name: "体育" },
+  { key: "7", name: "电竞" }
+];
+const rightKey: Ref<string> = ref(RightKeyEnum.ALL);
 const auth = useAuthStore();
 const isLoading = ref<boolean>(false);
+const isTrialPage = computed(() => route.query?.type == TRIAL_GAME_TYPE);
 const gameList = computed(() => {
   const id = Number(gameTypeVenueId.value);
   const info = app.gameList.find(v => v.id == id);
@@ -59,6 +71,10 @@ function showTip() {
 
 function updateActiveKey(key: any) {
   rightKey.value = key;
+  if (isTrialPage.value) {
+    loadGameListData();
+    return;
+  }
   handleChangeTab({ id: 0 });
 }
 
@@ -72,6 +88,7 @@ const typeData = computed(() => {
   if (type == "5") return { name: "体育", image: "game-icon_dtfl_ty_0" };
   if (type == "6") return { name: "棋牌", image: "game-icon_dtfl_qp_0" };
   if (type == "7") return { name: "电竞", image: "game-icon_dtfl_dianjing_0" };
+  if (type == TRIAL_GAME_TYPE) return { name: "试玩", image: "game-icon_dtfl_sw_0" };
   if (type == "100") return { name: "最近" };
   if (type == "101") return { name: "收藏" };
   return {};
@@ -82,6 +99,14 @@ function init() {
   gameTypeVenueList.value = app.venueList.filter(v => v.type == type);
   // 设置激活的按钮
   gameTypeVenueId.value = Number(route.query?.platformId);
+  if (isTrialPage.value) {
+    rightList.value = trialClassifyList;
+    if (!trialClassifyList.some(item => item.key === rightKey.value)) {
+      rightKey.value = "0";
+    }
+    loadGameListData();
+    return;
+  }
   // 设置rightList
   if (gameTypeVenueId.value === 0) {
     rightList.value = [
@@ -104,6 +129,18 @@ function init() {
 
 function loadGameListData() {
   isLoading.value = true;
+  if (isTrialPage.value) {
+    getTrialGameList({
+      venueId: Number(gameTypeVenueId.value),
+      gameClassify: Number(rightKey.value)
+    })
+      .finally(() => (isLoading.value = false))
+      .then(res => {
+        gameTypeVenueList.value = res.venueList ?? [];
+        app.setGameList(Number(gameTypeVenueId.value), res.gameList ?? []);
+      });
+    return;
+  }
   const params = {
     id: gameTypeVenueId.value,
     type: route.query?.type,
@@ -117,6 +154,14 @@ function loadGameListData() {
 }
 
 async function handleChangeTab(record: any) {
+  const venueId = Number(record.id);
+  if (isTrialPage.value && venueId === 0) {
+    rightKey.value = "0";
+  }
+  if (Number(route.query?.platformId) === venueId) {
+    loadGameListData();
+    return;
+  }
   await router.replace({ path: route.path, query: { ...route.query, platformId: record.id } });
   // 强制重新渲染
   await nextTick();
@@ -125,7 +170,7 @@ async function handleChangeTab(record: any) {
 watch(() => route.fullPath,(newVal, oldVal) => init());
 
 function enterGame(record: any) {
-  appData.setEnterInfo(record.venueId, record.id);
+  appData.setEnterInfo(record.venueId, record.id, isTrialPage.value ? 1 : undefined);
   auth.updateInfo();
   router.push({ path: "/home/embedded" });
 }

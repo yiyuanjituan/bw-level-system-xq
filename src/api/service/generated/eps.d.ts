@@ -756,6 +756,11 @@ declare namespace Eps {
 
 	interface OpenV1Game {
 		/**
+			 * 根据场馆和分类获取试玩游戏列表
+			 */
+			getTrialGameList(data?: any): Promise<any>;
+
+		/**
 			 * 根据场馆获取游戏的列表
 			 */
 			getGameById(data?: any): Promise<any>;
@@ -763,12 +768,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { getGameById: string; };
+		permission: { getTrialGameList: string; getGameById: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { getGameById: boolean; };
+		_permission: { getTrialGameList: boolean; getGameById: boolean; };
 
 		request: Service["request"];
 	}

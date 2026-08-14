@@ -228,6 +228,24 @@ export function getGameListById(data: any): Promise<any> {
   });
 }
 
+export interface TrialGameListParams {
+  venueId: number;
+  gameClassify: number;
+}
+
+export interface TrialGameListResponse {
+  venueList: any[];
+  gameList: any[];
+}
+
+export function getTrialGameList(data: TrialGameListParams): Promise<TrialGameListResponse> {
+  return http.request<TrialGameListResponse>({
+    url: "/open/v1/game/getTrialGameList",
+    method: "post",
+    data
+  });
+}
+
 export function getGameUrl(data: any): Promise<any> {
   return http.request({
     url: "/app/v1/game/getGameUrl",
