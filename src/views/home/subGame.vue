@@ -8,7 +8,7 @@ import UiLoading from "@/components/UI/loading.vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
-import { getGameListById, getTrialGameList } from "@/api/common";
+import { getGameListById, getTrialGameList, type TrialGameListResponse } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -22,6 +22,10 @@ const appData = useDataStore();
 const gameTypeVenueList = ref<any[]>([]);
 const gameTypeVenueId = ref<string | number>(0);
 const TRIAL_GAME_TYPE = "20";
+const PAGE_SIZE = 30;
+const currentPage = ref(1);
+const trialGameList = ref<TrialGameListResponse["gameList"]>([]);
+const trialGameCache = new Map<string, TrialGameListResponse>();
 const enum // 使用枚举定义
 RightKeyEnum {
   ALL = "all",
@@ -54,9 +58,15 @@ const auth = useAuthStore();
 const isLoading = ref<boolean>(false);
 const isTrialPage = computed(() => route.query?.type == TRIAL_GAME_TYPE);
 const gameList = computed(() => {
+  if (isTrialPage.value) return trialGameList.value;
   const id = Number(gameTypeVenueId.value);
   const info = app.gameList.find(v => v.id == id);
   return info?.children ?? [];
+});
+const totalPages = computed(() => Math.ceil(gameList.value.length / PAGE_SIZE));
+const paginatedGameList = computed(() => {
+  const startIndex = (currentPage.value - 1) * PAGE_SIZE;
+  return gameList.value.slice(startIndex, startIndex + PAGE_SIZE);
 });
 
 function handleScroll(e) {
@@ -71,6 +81,7 @@ function showTip() {
 
 function updateActiveKey(key: any) {
   rightKey.value = key;
+  currentPage.value = 1;
   if (isTrialPage.value) {
     loadGameListData();
     return;
@@ -96,9 +107,9 @@ const typeData = computed(() => {
 
 function init() {
   const type = route.query?.type;
-  gameTypeVenueList.value = app.venueList.filter(v => v.type == type);
   // 设置激活的按钮
   gameTypeVenueId.value = Number(route.query?.platformId);
+  currentPage.value = 1;
   if (isTrialPage.value) {
     rightList.value = trialClassifyList;
     if (!trialClassifyList.some(item => item.key === rightKey.value)) {
@@ -107,6 +118,7 @@ function init() {
     loadGameListData();
     return;
   }
+  gameTypeVenueList.value = app.venueList.filter(v => v.type == type);
   // 设置rightList
   if (gameTypeVenueId.value === 0) {
     rightList.value = [
@@ -128,19 +140,43 @@ function init() {
 }
 
 function loadGameListData() {
-  isLoading.value = true;
   if (isTrialPage.value) {
-    getTrialGameList({
-      venueId: Number(gameTypeVenueId.value),
-      gameClassify: Number(rightKey.value)
-    })
-      .finally(() => (isLoading.value = false))
-      .then(res => {
-        gameTypeVenueList.value = res.venueList ?? [];
-        app.setGameList(Number(gameTypeVenueId.value), res.gameList ?? []);
+    const venueId = Number(gameTypeVenueId.value);
+    const gameClassify = Number(rightKey.value);
+    const cacheKey = `${venueId}:${gameClassify}`;
+    const cachedTrialData = trialGameCache.get(cacheKey);
+
+    if (cachedTrialData) {
+      gameTypeVenueList.value = cachedTrialData.venueList;
+      trialGameList.value = cachedTrialData.gameList;
+      isLoading.value = false;
+      return;
+    }
+
+    isLoading.value = true;
+    getTrialGameList({ venueId, gameClassify })
+      .then(response => {
+        const trialData = {
+          venueList: response.venueList ?? [],
+          gameList: response.gameList ?? []
+        };
+        trialGameCache.set(cacheKey, trialData);
+
+        // 快速切换筛选条件时，只允许当前条件的请求更新页面。
+        const currentCacheKey = `${Number(gameTypeVenueId.value)}:${Number(rightKey.value)}`;
+        if (!isTrialPage.value || currentCacheKey !== cacheKey) return;
+        gameTypeVenueList.value = trialData.venueList;
+        trialGameList.value = trialData.gameList;
+      })
+      .finally(() => {
+        const currentCacheKey = `${Number(gameTypeVenueId.value)}:${Number(rightKey.value)}`;
+        if (isTrialPage.value && currentCacheKey === cacheKey) {
+          isLoading.value = false;
+        }
       });
     return;
   }
+  isLoading.value = true;
   const params = {
     id: gameTypeVenueId.value,
     type: route.query?.type,
@@ -155,6 +191,7 @@ function loadGameListData() {
 
 async function handleChangeTab(record: any) {
   const venueId = Number(record.id);
+  currentPage.value = 1;
   if (isTrialPage.value && venueId === 0) {
     rightKey.value = "0";
   }
@@ -171,7 +208,9 @@ watch(() => route.fullPath,(newVal, oldVal) => init());
 
 function enterGame(record: any) {
   appData.setEnterInfo(record.venueId, record.id, isTrialPage.value ? 1 : undefined);
-  auth.updateInfo();
+  if (!isTrialPage.value) {
+    auth.updateInfo();
+  }
   router.push({ path: "/home/embedded" });
 }
 
@@ -256,7 +295,7 @@ onMounted(() => {
                 <ui-empty v-if="!isLoading && gameList.length == 0" />
                 <div class="scroll-box" v-if="gameList.length > 0">
                   <div class="grid-box">
-                    <template v-for="item in gameList" :key="item.id">
+                    <template v-for="item in paginatedGameList" :key="item.id">
                       <div
                         class="card-item w-[80px] h-[107px]"
                         :style="{ '--bg-img': `url(${item.image})` }"
@@ -278,8 +317,8 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
-              <div class="footer" v-if="!isLoading && gameList.length > 30">
-                <ui-pagination />
+              <div class="footer" v-if="!isLoading && totalPages > 1">
+                <ui-pagination v-model="currentPage" :total="gameList.length" :page-size="PAGE_SIZE" />
               </div>
             </div>
           </div>

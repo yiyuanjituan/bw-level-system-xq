@@ -77,6 +77,10 @@ function jumpToService() {
   router.push('/home/notice');
 }
 
+function freeTrialGame() {
+  router.push({ path: '/home/subGame', query: { type: '20', platformId: 0 } });
+}
+
 function handleQuickLogin(name: string) {
   if (name === 'Telegram') {
     openTelegramLogin();
@@ -350,6 +354,7 @@ watch(
         </section>
         <div class="mt-[10px] flex items-center justify-center">
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">联系客服</div>
+          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="freeTrialGame">免费试玩</div>
           <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">忘记密码</div>
         </div>
         <section v-if="activeTabs == 1 && quickLoginOptions.length" class="quick-login">
