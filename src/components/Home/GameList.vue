@@ -206,7 +206,8 @@ function showDisabledTip() {
 function clickGameItem(record: any) {
   if (record.gameMode == "venue") {
     // 点击的场馆
-    router.push({ path: `/home/subGame`, query: { type: record.type, platformId: record.id } });
+    const platformId = ["4", "5"].includes(String(record.type)) ? 0 : record.id;
+    router.push({ path: `/home/subGame`, query: { type: record.type, platformId } });
   } else {
     // 点击的游戏
     appData.setEnterInfo(record.venueId, record.id);

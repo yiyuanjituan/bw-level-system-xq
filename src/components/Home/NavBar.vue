@@ -6,6 +6,7 @@ import UiButton from "@/components/Common/Button.vue";
 import HomeDrawer from "@/components/Home/Drawer.vue";
 import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
+import { bus } from "@/utils/mitt";
 
 defineOptions({
   name: "HomeNavBar"
@@ -38,6 +39,11 @@ const updateWallet = () => {
     walletIsLoading.value = false;
   }, 2000);
 };
+
+function handleRecharge() {
+  isShowMore.value = false;
+  bus.emit("showRecharge");
+}
 
 function handleWithdraw() {
   isShowMore.value = false;
@@ -127,7 +133,7 @@ function handleInterest() {
         <div class="menu-button !mr-[5px]">
           <ui-button class="!w-[80px] !h-[27px] !p-[0px] !rounded-[5px] !mr-[0px]" style="border-width: 0">
             <div class="flex w-full h-full items-center relative">
-              <div class="w-[58.5px] text-[11px] text-[#874404]">存 款</div>
+              <div class="w-[58.5px] text-[11px] text-[#874404]" @click="handleRecharge">存 款</div>
               <div class="popover" @click="isShowMore = !isShowMore">
                 <i
                   class="inline-flex justify-center items-center text-[#874404]"

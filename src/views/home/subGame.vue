@@ -57,6 +57,8 @@ const rightKey: Ref<string> = ref(RightKeyEnum.ALL);
 const auth = useAuthStore();
 const isLoading = ref<boolean>(false);
 const isTrialPage = computed(() => route.query?.type == TRIAL_GAME_TYPE);
+const isLotteryOrSportsPage = computed(() => ["4", "5"].includes(String(route.query?.type)));
+const showVenueSidebar = computed(() => !isLotteryOrSportsPage.value);
 const gameList = computed(() => {
   if (isTrialPage.value) return trialGameList.value;
   const id = Number(gameTypeVenueId.value);
@@ -107,6 +109,10 @@ const typeData = computed(() => {
 
 function init() {
   const type = route.query?.type;
+  if (isLotteryOrSportsPage.value && Number(route.query?.platformId) !== 0) {
+    router.replace({ path: route.path, query: { ...route.query, platformId: 0 } });
+    return;
+  }
   // 设置激活的按钮
   gameTypeVenueId.value = Number(route.query?.platformId);
   currentPage.value = 1;
@@ -119,6 +125,18 @@ function init() {
     return;
   }
   gameTypeVenueList.value = app.venueList.filter(v => v.type == type);
+  if (isLotteryOrSportsPage.value) {
+    rightList.value = [
+      { key: RightKeyEnum.ALL, name: "全部" },
+      { key: RightKeyEnum.LAST, name: "最近" },
+      { key: RightKeyEnum.COLLECT, name: "收藏" }
+    ];
+    if (!rightList.value.some(filterOption => filterOption.key === rightKey.value)) {
+      rightKey.value = RightKeyEnum.ALL;
+    }
+    loadGameListData();
+    return;
+  }
   // 设置rightList
   if (gameTypeVenueId.value === 0) {
     rightList.value = [
@@ -242,8 +260,8 @@ onMounted(() => {
           </div>
         </div>
         <div class="content-layout">
-          <div class="inner-box">
-            <div class="slider-box">
+          <div class="inner-box" :class="{ 'inner-box--without-sidebar': !showVenueSidebar }">
+            <div class="slider-box" v-if="showVenueSidebar">
               <div class="tabs">
                 <div class="tabs__wrap">
                   <div class="scroll-box" @scroll="handleScroll">
@@ -301,7 +319,7 @@ onMounted(() => {
                         :style="{ '--bg-img': `url(${item.image})` }"
                         @click="enterGame(item)"
                       >
-                        <section class="card-title">
+                        <section class="card-title" v-if="!isLotteryOrSportsPage">
                           <h4 class="name-inner">{{ item.name }}</h4>
                         </section>
                         <div class="thumb-icon" v-if="false"></div>
@@ -368,6 +386,14 @@ onMounted(() => {
       .inner-box {
         display: flex;
         height: 100%;
+        &.inner-box--without-sidebar {
+          .right-box .grid-game-col .scroll-box .grid-box {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 80px);
+            justify-content: space-between;
+          }
+        }
         .slider-box {
           flex-shrink: 0;
           flex-grow: 0;
