@@ -2,6 +2,8 @@
 import { computed, ref, watch } from "vue";
 import QRCode from "qrcode";
 import Copy from "@/components/Common/Copy.vue";
+import { showCustomToast } from "@/hooks/useCommon";
+import invitePoster from "@/assets/home/event/invite/invite-poster.png";
 import douyinIcon from "@/assets/home/promote/social-douyin.avif";
 import facebookIcon from "@/assets/home/promote/social-facebook.png";
 import kuaishouIcon from "@/assets/home/promote/social-kuaishou.avif";
@@ -21,13 +23,15 @@ const props = withDefaults(
     inviteLink?: string;
     inviteLinks?: string[];
     qrCode?: string;
+    embedded?: boolean;
   }>(),
   {
     showInviteCode: true,
     inviteCode: "",
     inviteLink: "",
     inviteLinks: () => [],
-    qrCode: ""
+    qrCode: "",
+    embedded: false
   }
 );
 
@@ -105,6 +109,72 @@ watch(
 
 const displayedQrCode = computed(() => generatedQrCode.value || props.qrCode);
 
+function loadImage(source: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("图片加载失败"));
+    image.src = source;
+  });
+}
+
+async function handleSaveQrCode() {
+  if (!displayedQrCode.value) {
+    showCustomToast({ type: "warning", message: "暂无可保存的邀请码" });
+    return;
+  }
+
+  try {
+    const [posterImage, qrCodeImage] = await Promise.all([
+      loadImage(invitePoster),
+      loadImage(displayedQrCode.value)
+    ]);
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("生成邀请码图片失败");
+
+    canvas.width = 450;
+    canvas.height = 800;
+
+    // 海报按 cover 方式绘制，保持与参考页面的预览裁切一致。
+    const posterScale = Math.max(
+      canvas.width / posterImage.width,
+      canvas.height / posterImage.height
+    );
+    const posterWidth = posterImage.width * posterScale;
+    const posterHeight = posterImage.height * posterScale;
+    context.drawImage(
+      posterImage,
+      (canvas.width - posterWidth) / 2,
+      (canvas.height - posterHeight) / 2,
+      posterWidth,
+      posterHeight
+    );
+
+    const qrCodeSize = 360;
+    const qrCodePosition = (canvas.width - qrCodeSize) / 2;
+    context.fillStyle = "#fff";
+    context.fillRect(qrCodePosition, (canvas.height - qrCodeSize) / 2, qrCodeSize, qrCodeSize);
+    context.drawImage(
+      qrCodeImage,
+      qrCodePosition,
+      (canvas.height - qrCodeSize) / 2,
+      qrCodeSize,
+      qrCodeSize
+    );
+
+    const downloadLink = document.createElement("a");
+    downloadLink.download = `邀请码-${props.inviteCode || "推广"}.png`;
+    downloadLink.href = canvas.toDataURL("image/png");
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    emit("saveQrCode");
+  } catch {
+    showCustomToast({ type: "fail", message: "邀请码图片保存失败，请稍后重试" });
+  }
+}
+
 const socialMedia = [
   { label: "微信", value: "wechat", icon: wechatIcon },
   { label: "朋友圈", value: "moments", icon: momentsIcon },
@@ -121,7 +191,7 @@ const socialMedia = [
 </script>
 
 <template>
-  <section class="invite-share">
+  <section class="invite-share" :class="{ 'invite-share--embedded': embedded }">
     <header v-if="showInviteCode" class="invite-share__header">
       <p>邀请好友</p>
       <div class="invite-share__code">
@@ -135,12 +205,12 @@ const socialMedia = [
       <div class="invite-share__qr-wrap">
         <div class="invite-share__qr">
           <img v-if="displayedQrCode" :src="displayedQrCode" alt="推广二维码" />
-          <span v-else aria-label="推广二维码占位图" />
+          <span v-else>暂无二维码</span>
         </div>
         <x-button
           type="primary"
           class="invite-share__save-button"
-          @click="emit('saveQrCode')"
+          @click="handleSaveQrCode"
         >
           保存邀请码
         </x-button>
@@ -201,6 +271,13 @@ const socialMedia = [
   border-radius: 7px;
   background: var(--skin__bg_2);
   box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.08);
+}
+
+.invite-share--embedded {
+  margin: 0 -10px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .invite-share__header {
@@ -274,10 +351,13 @@ const socialMedia = [
   }
 
   span {
-    background:
-      linear-gradient(90deg, #111 12%, transparent 12% 24%, #111 24% 36%, transparent 36% 48%, #111 48% 60%, transparent 60% 72%, #111 72% 84%, transparent 84%),
-      linear-gradient(#111 12%, transparent 12% 24%, #111 24% 36%, transparent 36% 48%, #111 48% 60%, transparent 60% 72%, #111 72% 84%, transparent 84%);
-    background-size: 13px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 9px;
+    text-align: center;
+    background: #fff;
   }
 }
 

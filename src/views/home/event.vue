@@ -27,7 +27,14 @@ function handleCategoryChange(categoryId: number) {
 
 function handleJump(record: any) {
   if (record.jumpMode == 1) {
-    router.push(`/home/event/detail?eventId=${record.id}`);
+    router.push({
+      path: "/home/event/detail",
+      query: {
+        current: record.type,
+        eventId: record.id,
+        template: Number(record.specialActivity) || 1
+      }
+    });
   } else if (record.jumpMode == 2) {
     router.push(record.url)
   } else {

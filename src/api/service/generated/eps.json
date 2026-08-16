@@ -5,8 +5,18 @@
     "api": [
       {
         "method": "post",
+        "path": "/receiveSpecialInviteReward",
+        "summary": "领取邀请红包"
+      },
+      {
+        "method": "post",
         "path": "/vitalityRecordList",
         "summary": "活跃度记录列表"
+      },
+      {
+        "method": "post",
+        "path": "/specialInviteData",
+        "summary": "邀请红包活动数据"
       },
       {
         "method": "post",

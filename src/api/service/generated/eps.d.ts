@@ -326,9 +326,19 @@ declare namespace Eps {
 
 	interface ActivityData {
 		/**
+			 * 领取邀请红包
+			 */
+			receiveSpecialInviteReward(data?: any): Promise<any>;
+
+		/**
 			 * 活跃度记录列表
 			 */
 			vitalityRecordList(data?: any): Promise<any>;
+
+		/**
+			 * 邀请红包活动数据
+			 */
+			specialInviteData(data?: any): Promise<any>;
 
 		/**
 			 * 任务配置信息
@@ -353,12 +363,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { vitalityRecordList: string; taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
+		permission: { receiveSpecialInviteReward: string; vitalityRecordList: string; specialInviteData: string; taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { vitalityRecordList: boolean; taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
+		_permission: { receiveSpecialInviteReward: boolean; vitalityRecordList: boolean; specialInviteData: boolean; taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
 
 		request: Service["request"];
 	}

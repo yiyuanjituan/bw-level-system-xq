@@ -1,33 +1,38 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
-const activeId = ref<number>(4)
-
 interface Props {
-  list: any,
-  id: any
+  list: any[];
+  id: number;
 }
 const props = withDefaults(defineProps<Props>(), {
-  list: () => ([]),
+  list: () => [],
   id: 1
 });
-const emits = defineEmits(['change'])
-watch(() => props.id, () => activeId.value = props.id)
+const activeId = ref<number>(props.id);
+const emits = defineEmits(["change"]);
+
+watch(
+  () => props.id,
+  id => {
+    activeId.value = id;
+  },
+  { immediate: true }
+);
 
 function handleChange() {
-  const selectedActivity = props.list.find((activity: any) => activity.id == activeId.value)
+  const selectedActivity = props.list.find(activity => activity.id == activeId.value);
 
   if (selectedActivity) {
-    emits('change', selectedActivity)
+    emits("change", selectedActivity);
   }
 }
-
 </script>
 
 <template>
   <div class="scroll-tab-box">
     <van-tabs shrink v-model:active="activeId" @change="handleChange">
-      <van-tab v-for="(item, index) in props.list" :name="item.id" :key="index">
+      <van-tab v-for="item in props.list" :key="item.id" :name="item.id">
         <template #title>
           <div class="w-[90px] h-[60px]">
             <div class="img-layout">
@@ -38,7 +43,7 @@ function handleChange() {
                 </div>
               </div>
               <div class="nav-item-inner">
-                <img :src="item.image" alt="" srcset="">
+                <img :src="item.image" :alt="item.title || '活动图片'">
               </div>
             </div>
             <div class="active-name" dir="ltr">{{ item.title }}</div>

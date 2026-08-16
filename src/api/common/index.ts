@@ -278,6 +278,53 @@ export function getEventInfo(data: any): Promise<any> {
   });
 }
 
+export interface SpecialInviteReward {
+  id: number;
+  amount: number;
+  status: 1 | 2;
+  receiveTime?: string | null;
+  autoReceived?: number;
+}
+
+export interface SpecialInviteRule {
+  id: number;
+  inviteCount: number;
+  displayMaxAmount: number;
+  minAmount?: number;
+  maxAmount?: number;
+  reward: SpecialInviteReward | null;
+}
+
+export interface SpecialInviteData {
+  config: {
+    activityId: number;
+    rechargeAmount: number;
+    validBetAmount: number;
+    rechargeDays: number;
+    description?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    showRewardRange: number;
+  };
+  validInviteCount: number;
+  rules: SpecialInviteRule[];
+}
+
+export function getSpecialInviteData(): Promise<SpecialInviteData> {
+  return http.request<SpecialInviteData>({
+    url: "/app/activity/data/specialInviteData",
+    method: "post"
+  });
+}
+
+export function receiveSpecialInviteReward(rewardId: number): Promise<{ amount: number }> {
+  return http.request<{ amount: number }>({
+    url: "/app/activity/data/receiveSpecialInviteReward",
+    method: "post",
+    data: { rewardId }
+  });
+}
+
 export function getActivityRecords(data: any): Promise<any> {
   return http.request({
     url: "/app/v1/activity/records",
