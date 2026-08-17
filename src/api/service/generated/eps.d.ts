@@ -2,7 +2,60 @@ declare namespace Eps {
 	type json = any;
 
 	interface DemoGoodsEntity {
+		/**
+			 * ID
+			 */
+			id?: number;
 
+		/**
+			 * 标题
+			 */
+			title?: string;
+
+		/**
+			 * 价格
+			 */
+			price?: number;
+
+		/**
+			 * 描述
+			 */
+			description?: string;
+
+		/**
+			 * 主图
+			 */
+			mainImage?: string;
+
+		/**
+			 * 分类
+			 */
+			type?: number;
+
+		/**
+			 * 状态
+			 */
+			status?: number;
+
+		/**
+			 * 示例图
+			 */
+			exampleImages?: json;
+
+		/**
+			 * 库存
+			 */
+			stock?: number;
+
+		/**
+			 * 创建时间
+			 */
+			createTime?: string;
+
+		/**
+			 * 更新时间
+			 */
+			updateTime?: string;
 
 		/**
 		 * 任意键值
@@ -11,7 +64,55 @@ declare namespace Eps {
 	}
 
 	interface ServiceInfoEntity {
+		/**
+			 * ID
+			 */
+			id?: number;
 
+		/**
+			 * 提现类型
+			 */
+			type?: number;
+
+		/**
+			 * 客服图标
+			 */
+			icon?: string;
+
+		/**
+			 * 客服昵称
+			 */
+			name?: string;
+
+		/**
+			 * 客服账号
+			 */
+			account?: string;
+
+		/**
+			 * 在线时间
+			 */
+			time?: string;
+
+		/**
+			 * 跳转链接
+			 */
+			url?: string;
+
+		/**
+			 * 排序
+			 */
+			weigh?: number;
+
+		/**
+			 * 创建时间
+			 */
+			createTime?: string;
+
+		/**
+			 * 更新时间
+			 */
+			updateTime?: string;
 
 		/**
 		 * 任意键值
@@ -20,7 +121,60 @@ declare namespace Eps {
 	}
 
 	interface UserAddressEntity {
+		/**
+			 * ID
+			 */
+			id?: number;
 
+		/**
+			 * 用户ID
+			 */
+			userId?: number;
+
+		/**
+			 * 联系人
+			 */
+			contact?: string;
+
+		/**
+			 * 手机号
+			 */
+			phone?: string;
+
+		/**
+			 * 省
+			 */
+			province?: string;
+
+		/**
+			 * 市
+			 */
+			city?: string;
+
+		/**
+			 * 区
+			 */
+			district?: string;
+
+		/**
+			 * 地址
+			 */
+			address?: string;
+
+		/**
+			 * 是否默认
+			 */
+			isDefault?: boolean;
+
+		/**
+			 * 创建时间
+			 */
+			createTime?: string;
+
+		/**
+			 * 更新时间
+			 */
+			updateTime?: string;
 
 		/**
 		 * 任意键值
@@ -29,7 +183,140 @@ declare namespace Eps {
 	}
 
 	interface UserInfoEntity {
+		/**
+			 * ID
+			 */
+			id?: number;
 
+		/**
+			 * 登录唯一ID
+			 */
+			unionid?: string;
+
+		/**
+			 * 用户账号
+			 */
+			account?: string;
+
+		/**
+			 * 头像
+			 */
+			avatarUrl?: string;
+
+		/**
+			 * 昵称
+			 */
+			nickName?: string;
+
+		/**
+			 * 真实姓名
+			 */
+			realName?: string;
+
+		/**
+			 * 币种ID
+			 */
+			currencyId?: number;
+
+		/**
+			 * 余额
+			 */
+			money?: number;
+
+		/**
+			 * 手机号
+			 */
+			phone?: string;
+
+		/**
+			 * 邮箱
+			 */
+			email?: string;
+
+		/**
+			 * 邮箱是否验证
+			 */
+			emailVerified?: boolean;
+
+		/**
+			 * 性别
+			 */
+			gender?: number;
+
+		/**
+			 * 状态
+			 */
+			status?: number;
+
+		/**
+			 * 登录方式
+			 */
+			loginType?: number;
+
+		/**
+			 * 密码
+			 */
+			password?: string;
+
+		/**
+			 * 支付密码
+			 */
+			pay_password?: string;
+
+		/**
+			 * 邀请码
+			 */
+			invite_code?: string;
+
+		/**
+			 * 介绍
+			 */
+			description?: string;
+
+		/**
+			 * 展示类型
+			 */
+			showAccount?: number;
+
+		/**
+			 * 生日
+			 */
+			birthday?: string;
+
+		/**
+			 * 微信号
+			 */
+			wechat?: string;
+
+		/**
+			 * WhatsApp账号
+			 */
+			whatsapp?: string;
+
+		/**
+			 * Telegram账号
+			 */
+			telegram?: string;
+
+		/**
+			 * Telegram用户ID
+			 */
+			telegramUserId?: string;
+
+		/**
+			 * 用户标签
+			 */
+			user_tag?: string;
+
+		/**
+			 * 创建时间
+			 */
+			createTime?: string;
+
+		/**
+			 * 更新时间
+			 */
+			updateTime?: string;
 
 		/**
 		 * 任意键值
@@ -1415,5 +1702,5 @@ declare namespace Eps {
 		};
 	};
 
-	type DictKey = string;
+	type DictKey = "brand" | "occupation" | "smsApi" | "gameApi" | "gameClassify" | "specialActivity" | "recharge_channel" | "site_wallet_keyword" | "activityTaskType" | "withdraw_channel";
 }
