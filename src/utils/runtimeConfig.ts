@@ -9,3 +9,9 @@ export function getRuntimeBaseURL() {
 
   return import.meta.env.VITE_BASE_API || "";
 }
+
+export function getAppContainerConfig() {
+  if (typeof window === "undefined") return undefined;
+
+  return window.__APP_RUNTIME_CONFIG__?.appContainer;
+}
