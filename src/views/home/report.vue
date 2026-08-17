@@ -120,7 +120,7 @@ watch(activeCurrent, value => {
 
 <style scoped lang="less">
 .report-page {
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--skin__bg_1);

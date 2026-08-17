@@ -31,7 +31,6 @@ const TELEGRAM_APP_RESUME_PARAM = 'telegramAppResume';
 
 const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
-const height = ref('0px');
 
 const route = useRoute();
 const activeTabs = ref(getTabByPath(route.path));
@@ -333,7 +332,6 @@ function handleExec() {
 }
 
 onMounted(async () => {
-  height.value = `${window.innerHeight}px`;
   await handleTelegramCallback();
   await handleTelegramGateway();
 });
@@ -442,14 +440,15 @@ watch(
 
 <style scoped lang="less">
 .common-container {
-  --max-height: v-bind(height);
+  --max-height: 100%;
   --other-space: 90px;
   --container-space: 0;
   font-size: 12px;
 
   background: var(--skin__bg_2);
   position: relative;
-  min-height: v-bind(height);
+  height: 100%;
+  min-height: 0;
 
   .app-container-return-mask {
     position: fixed;

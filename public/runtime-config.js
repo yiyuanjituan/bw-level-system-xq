@@ -13,6 +13,19 @@
           openInBrowserMethod: "openInBrowser",
           loadTimeout: 2000
         },
+        statusBar: {
+          enabled: true,
+          setMethod: "setStatusBar",
+          getMethod: "getStatusBar",
+          heightProperty: "height",
+          callbackTimeout: 1500,
+          fallbackHeight: 24,
+          options: {
+            visible: true,
+            contentStyle: "default",
+            overlays: true
+          }
+        },
         launch: {
           scheme: "ltapp459991",
           path: "app",

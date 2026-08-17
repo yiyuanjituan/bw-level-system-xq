@@ -12,6 +12,15 @@ interface AppContainerRuntimeConfig {
 	enabled?: boolean;
 	userAgentPattern?: string;
 	bridge?: AppContainerBridgeConfig;
+	statusBar?: {
+		enabled?: boolean;
+		setMethod?: string;
+		getMethod?: string;
+		heightProperty?: string;
+		callbackTimeout?: number;
+		fallbackHeight?: number;
+		options?: Record<string, unknown>;
+	};
 	launch?: {
 		scheme?: string;
 		path?: string;
