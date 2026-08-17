@@ -7,7 +7,7 @@ import { bus } from "@/utils/mitt";
 import { saveInviteCode } from "@/utils/inviteCode";
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 });
 
