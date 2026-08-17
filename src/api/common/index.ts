@@ -310,9 +310,27 @@ export interface SpecialInviteData {
   rules: SpecialInviteRule[];
 }
 
+export interface SpecialInviteSummary {
+  available: boolean;
+  activityId: number;
+  activityType: number;
+  specialActivity: number;
+  activityTitle: string;
+  totalReward: number;
+  validInviteCount: number;
+  unclaimedReward: number;
+}
+
 export function getSpecialInviteData(): Promise<SpecialInviteData> {
   return http.request<SpecialInviteData>({
     url: "/app/activity/data/specialInviteData",
+    method: "post"
+  });
+}
+
+export function getSpecialInviteSummary(): Promise<SpecialInviteSummary> {
+  return http.request<SpecialInviteSummary>({
+    url: "/app/activity/data/specialInviteSummary",
     method: "post"
   });
 }

@@ -10,6 +10,11 @@
       },
       {
         "method": "post",
+        "path": "/specialInviteSummary",
+        "summary": "邀请红包活动累计奖励"
+      },
+      {
+        "method": "post",
         "path": "/vitalityRecordList",
         "summary": "活跃度记录列表"
       },

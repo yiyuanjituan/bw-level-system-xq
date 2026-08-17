@@ -1,16 +1,22 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
+    activityTitle?: string;
     totalReward?: string;
     validInvites?: string;
     unclaimedReward?: string;
   }>(),
   {
+    activityTitle: "邀请红包活动",
     totalReward: "0.00",
     validInvites: "0",
     unclaimedReward: "0.00"
   }
 );
+
+const emit = defineEmits<{
+  openActivity: [];
+}>();
 </script>
 
 <template>
@@ -22,14 +28,21 @@ withDefaults(
 
     <div class="activity-reward__tab">
       <svg-icon name="promote-gift" class-name="activity-reward__gift" aria-hidden="true" />
-      <span>推广盛宴 下级存款立享888元</span>
+      <span>{{ activityTitle }}</span>
     </div>
 
     <div class="activity-reward__row">
       <span><label>邀请有效人数</label><strong>{{ validInvites }}</strong></span>
       <span><label>待领取</label><strong class="activity-reward__amount">{{ unclaimedReward }}</strong></span>
-      <button type="button" disabled>领 取</button>
-      <svg-icon name="arrow-back" class-name="activity-reward__arrow" aria-hidden="true" />
+      <button type="button" class="activity-reward__claim" disabled>领 取</button>
+      <button
+        type="button"
+        class="activity-reward__link"
+        aria-label="查看活动详情"
+        @click="emit('openActivity')"
+      >
+        <svg-icon name="arrow-back" class-name="activity-reward__arrow" aria-hidden="true" />
+      </button>
     </div>
   </section>
 </template>
@@ -155,7 +168,7 @@ withDefaults(
     font-weight: 400;
   }
 
-  button {
+  .activity-reward__claim {
     width: 50px;
     height: 20px;
     border: 0;
@@ -170,10 +183,26 @@ withDefaults(
   }
 }
 
-:deep(.activity-reward__arrow) {
+.activity-reward__link {
+  display: flex;
+  align-items: center;
   flex: none;
-  margin-left: 10px;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
   color: var(--skin__neutral_2);
+  cursor: pointer;
+  background: transparent;
+
+}
+
+:deep(.activity-reward__arrow) {
+  width: 9px;
+  height: 9px;
+  color: currentColor;
   font-size: 9px;
   transform: rotate(180deg);
 }

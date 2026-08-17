@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { getSpecialInviteSummary, type SpecialInviteSummary } from "@/api/common";
 import goldLevelTwoIcon from "@/assets/home/promote/level-gold-2.avif";
 import goldLevelIcon from "@/assets/home/promote/level-gold.avif";
 import silverLevelIcon from "@/assets/home/promote/level-silver.avif";
@@ -14,6 +16,8 @@ const props = defineProps<{
   info: PromoteInfo | null;
 }>();
 
+const router = useRouter();
+
 defineEmits<{
   selectTab: [active: "createSubordinate" | "rebateRatio"];
 }>();
@@ -25,6 +29,54 @@ interface PromoteBroadcastItem {
 }
 
 const isLoggedIn = computed(() => Boolean(props.info?.user?.account));
+const emptyActivityReward = (): SpecialInviteSummary => ({
+  available: false,
+  activityId: 0,
+  activityType: 0,
+  specialActivity: 15,
+  activityTitle: "邀请红包活动",
+  totalReward: 0,
+  validInviteCount: 0,
+  unclaimedReward: 0
+});
+const activityReward = ref<SpecialInviteSummary>(emptyActivityReward());
+
+function formatMoney(value: unknown) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount.toFixed(2) : "0.00";
+}
+
+function openActivityDetail() {
+  if (!activityReward.value.available || activityReward.value.activityId <= 0) return;
+
+  void router.push({
+    path: "/home/event/detail",
+    query: {
+      current: activityReward.value.activityType,
+      eventId: activityReward.value.activityId,
+      template: activityReward.value.specialActivity || 1
+    }
+  });
+}
+
+watch(
+  isLoggedIn,
+  loggedIn => {
+    if (!loggedIn) {
+      activityReward.value = emptyActivityReward();
+      return;
+    }
+
+    void getSpecialInviteSummary()
+      .then(summary => {
+        activityReward.value = summary?.available ? summary : emptyActivityReward();
+      })
+      .catch(() => {
+        activityReward.value = emptyActivityReward();
+      });
+  },
+  { immediate: true }
+);
 
 const leadingBroadcastItems: PromoteBroadcastItem[] = [
   { account: "43****573", commission: "1,994.51", levelIcon: goldLevelIcon },
@@ -62,7 +114,14 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       :show-create-subordinate="isLoggedIn"
       @select-tab="$emit('selectTab', $event)"
     />
-    <promote-activity-reward v-if="isLoggedIn" />
+    <promote-activity-reward
+      v-if="isLoggedIn && activityReward.available"
+      :activity-title="activityReward.activityTitle"
+      :total-reward="formatMoney(activityReward.totalReward)"
+      :valid-invites="String(activityReward.validInviteCount)"
+      :unclaimed-reward="formatMoney(activityReward.unclaimedReward)"
+      @open-activity="openActivityDetail"
+    />
   </div>
 </template>
 
