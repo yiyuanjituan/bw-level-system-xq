@@ -19,11 +19,8 @@ import { tabbarTransitionName } from "@/hooks/useTransition";
 <style scoped>
 .main-layout {
   height: 100vh;
-  height: 100dvh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  padding-top: var(--skin__safe-area-inset-top, 0px);
   background: rgb(28, 30, 35);
   color: white;
   overflow: hidden;

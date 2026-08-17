@@ -19,18 +19,10 @@ import noWalletLoginIcon from '@/assets/common/quick-login/nowallet.avif';
 import googleLoginIcon from '@/assets/common/quick-login/google.avif';
 import telegramLoginIcon from '@/assets/common/quick-login/telegram.avif';
 import { clearStoredInviteCode, getStoredInviteCode } from '@/utils/inviteCode';
-import {
-  appendAppContainerBrowserFallback,
-  createAppContainerLaunchUrl,
-  isAppContainer,
-  openAppContainerSystemBrowser
-} from '@/utils/appContainer';
-
-const TELEGRAM_APP_CALLBACK_PARAM = 'telegramAppCallback';
-const TELEGRAM_APP_RESUME_PARAM = 'telegramAppResume';
 
 const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
 const richText = ref(``);
+const height = ref('0px');
 
 const route = useRoute();
 const activeTabs = ref(getTabByPath(route.path));
@@ -52,7 +44,6 @@ const openAccept = () => policyRef.value.open();
 const geeTestRef = ref();
 const auth = useAuthStore();
 const telegramLoginLoading = ref(false);
-const appContainerLaunchUrl = ref('');
 const quickLoginOptions = computed(() => [
   // { name: 'NoWallet', icon: noWalletLoginIcon },
   // { name: 'Google', icon: googleLoginIcon },
@@ -125,39 +116,17 @@ async function openTelegramLogin() {
 
   telegramLoginLoading.value = true;
   try {
-    const isAppContainerLogin = isAppContainer();
     const returnUrl = new URL(window.location.href);
     returnUrl.searchParams.delete('telegramTicket');
     returnUrl.searchParams.delete('telegramError');
     returnUrl.searchParams.delete('telegramAutoStart');
     returnUrl.searchParams.delete('telegramAuthorizationUrl');
-    returnUrl.searchParams.delete(TELEGRAM_APP_CALLBACK_PARAM);
-    returnUrl.searchParams.delete(TELEGRAM_APP_RESUME_PARAM);
-    if (isAppContainerLogin) {
-      returnUrl.searchParams.set(TELEGRAM_APP_CALLBACK_PARAM, '1');
-    }
     const result = await userTelegramLoginStart({
       returnUrl: returnUrl.toString()
     });
     const authorizationUrl = new URL(result?.authorizationUrl || '');
     if (authorizationUrl.origin !== 'https://oauth.telegram.org') {
       throw new Error('Telegram授权地址无效');
-    }
-
-    if (isAppContainerLogin) {
-      // 统一通过站点中转页进入系统浏览器，避免给第三方授权地址附加容器控制参数。
-      const gatewayUrl = new URL(
-        `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`,
-        loginDomain.origin
-      );
-      gatewayUrl.searchParams.set('telegramAutoStart', '1');
-      gatewayUrl.searchParams.set('telegramAuthorizationUrl', authorizationUrl.toString());
-
-      const openedInBrowser = await openAppContainerSystemBrowser(gatewayUrl.toString());
-      if (!openedInBrowser) {
-        window.location.assign(appendAppContainerBrowserFallback(gatewayUrl.toString()));
-      }
-      return;
     }
 
     if (loginDomain.origin.toLowerCase() !== window.location.origin.toLowerCase()) {
@@ -222,24 +191,8 @@ async function handleTelegramCallback() {
   const loginError = currentUrl.searchParams.get('telegramError');
   if (!loginTicket && !loginError) return;
 
-  const shouldReturnToAppContainer = currentUrl.searchParams.get(TELEGRAM_APP_CALLBACK_PARAM) === '1';
-  if (shouldReturnToAppContainer && !isAppContainer()) {
-    const appReturnUrl = new URL(currentUrl);
-    appReturnUrl.searchParams.delete(TELEGRAM_APP_CALLBACK_PARAM);
-    appReturnUrl.searchParams.set(TELEGRAM_APP_RESUME_PARAM, '1');
-    appContainerLaunchUrl.value = createAppContainerLaunchUrl(appReturnUrl.toString());
-    if (!appContainerLaunchUrl.value) {
-      showCustomToast({ type: 'fail', message: 'App容器返回地址配置无效' });
-      return;
-    }
-    window.location.href = appContainerLaunchUrl.value;
-    return;
-  }
-
   currentUrl.searchParams.delete('telegramTicket');
   currentUrl.searchParams.delete('telegramError');
-  currentUrl.searchParams.delete(TELEGRAM_APP_CALLBACK_PARAM);
-  currentUrl.searchParams.delete(TELEGRAM_APP_RESUME_PARAM);
   window.history.replaceState(
     window.history.state,
     '',
@@ -266,12 +219,6 @@ async function handleTelegramCallback() {
   } finally {
     telegramLoginLoading.value = false;
   }
-}
-
-function returnToAppContainer() {
-  if (!appContainerLaunchUrl.value) return;
-
-  window.location.href = appContainerLaunchUrl.value;
 }
 
 function handleQuery() {
@@ -332,6 +279,7 @@ function handleExec() {
 }
 
 onMounted(async () => {
+  height.value = `${window.innerHeight}px`;
   await handleTelegramCallback();
   await handleTelegramGateway();
 });
@@ -350,13 +298,6 @@ watch(
 
 <template>
   <div class="common-container">
-    <div v-if="appContainerLaunchUrl" class="app-container-return-mask">
-      <div class="app-container-return-dialog">
-        <div class="app-container-return-dialog__title">Telegram授权已完成</div>
-        <div class="app-container-return-dialog__description">请返回App继续完成登录</div>
-        <x-button class="!w-[100%]" @click="returnToAppContainer">返回App</x-button>
-      </div>
-    </div>
     <img src="@/assets/common/img_login_bg_style1_yd.avif" alt="." class="bg-img" />
     <div class="header">
       <div class="back-icon" @click="handleBack">
@@ -440,47 +381,14 @@ watch(
 
 <style scoped lang="less">
 .common-container {
-  --max-height: 100%;
+  --max-height: v-bind(height);
   --other-space: 90px;
   --container-space: 0;
   font-size: 12px;
 
   background: var(--skin__bg_2);
   position: relative;
-  height: 100%;
-  min-height: 0;
-
-  .app-container-return-mask {
-    position: fixed;
-    inset: 0;
-    z-index: 1100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgb(0 0 0 / 65%);
-  }
-
-  .app-container-return-dialog {
-    width: min(320px, 100%);
-    padding: 20px;
-    border-radius: 8px;
-    background: var(--skin__bg_2);
-    color: var(--skin__neutral_1);
-
-    &__title {
-      font-size: 16px;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    &__description {
-      margin: 10px 0 18px;
-      color: var(--skin__neutral_2);
-      font-size: 13px;
-      text-align: center;
-    }
-  }
+  min-height: v-bind(height);
 
   .bg-img {
     pointer-events: none;
