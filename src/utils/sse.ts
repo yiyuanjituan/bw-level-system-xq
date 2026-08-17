@@ -2,6 +2,7 @@ import { bus } from "@/utils/mitt";
 import { showCustomToast } from "@/hooks/useCommon";
 import useFinanceStore from "@/store/modules/finance";
 import { formatMoney } from "@/utils/common";
+import { getRuntimeBaseURL } from "@/utils/runtimeConfig";
 
 export interface SseMessage<T = any> {
   type: string;
@@ -42,7 +43,7 @@ function closeSource() {
 }
 
 function buildSseUrl(token: string) {
-  const baseUrl = (import.meta.env.VITE_BASE_API || "").replace(/\/$/, "");
+  const baseUrl = getRuntimeBaseURL().replace(/\/$/, "");
   return `${baseUrl}${SSE_PATH}?token=${encodeURIComponent(token)}`;
 }
 

@@ -10,8 +10,8 @@ import "vant/es/toast/style";
 import { $locale } from "@/locales";
 import { showCustomToast } from "@/hooks/useCommon";
 import { decrypt } from "@/utils/crypto";
-import useAuthStore from "@/store/modules/user";
 import { bus } from "@/utils/mitt";
+import { getRuntimeBaseURL } from "@/utils/runtimeConfig";
 
 // 默认 axios 实例请求配置
 const configDefault = {
@@ -19,7 +19,7 @@ const configDefault = {
     "Content-Type": ContentTypeEnum.FORM_URLENCODED
   },
   timeout: 0,
-  baseURL: import.meta.env.VITE_BASE_API,
+  baseURL: getRuntimeBaseURL(),
   data: {}
 };
 
@@ -33,6 +33,8 @@ class Http {
   private httpInterceptorsRequest(): void {
     Http.axiosInstance.interceptors.request.use(
       config => {
+        // 每次请求读取运行时配置，支持部署后注入新地址而无需重新打包
+        config.baseURL = getRuntimeBaseURL();
         // 发送请求前，可在此携带 token
         config.headers["siteId"] = import.meta.env.VITE_SITE_ID;
         config.headers["language"] = $locale.value;
