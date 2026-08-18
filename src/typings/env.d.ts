@@ -6,6 +6,26 @@ interface Window {
 	};
 }
 
+declare module "ym-jsbridge" {
+	interface YmJsBridge {
+		inApp: boolean;
+		ready(callback: () => void): void;
+		getStatusBar(callback: (success: boolean, statusBar: unknown) => void): void;
+		setStatusBar(
+			options: {
+				visible?: boolean;
+				contentStyle?: "default" | "light" | "dark";
+				backgroundColor?: string;
+				overlays?: boolean;
+			},
+			callback?: (success: boolean, result: unknown) => void
+		): void;
+	}
+
+	const jsBridge: YmJsBridge;
+	export default jsBridge;
+}
+
 declare module "*.vue" {
 	import type { DefineComponent } from "vue";
 

@@ -86,6 +86,9 @@ importers:
       vue3-geetest:
         specifier: ^1.0.21
         version: 1.0.21(vue@3.5.41(typescript@5.2.2))
+      ym-jsbridge:
+        specifier: ^26.7.27
+        version: 26.7.27
     devDependencies:
       '@commitlint/config-conventional':
         specifier: ^17.8.1
@@ -5164,6 +5167,9 @@ packages:
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
+
+  ym-jsbridge@26.7.27:
+    resolution: {integrity: sha512-TuIrrSqjAEjKiKpkbNZ2sih4/RGj1Py1EXbFsubYa1gIKgp4AqT27gvIsx+1q6XJbPEK/1E8wN3zbsQuzJ3LTA==}
 
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
@@ -10801,6 +10807,8 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  ym-jsbridge@26.7.27: {}
 
   yn@3.1.1: {}
 

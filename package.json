@@ -49,7 +49,8 @@
     "vue-clipboard3": "^2.0.0",
     "vue-i18n": "9",
     "vue-router": "^4.2.5",
-    "vue3-geetest": "^1.0.21"
+    "vue3-geetest": "^1.0.21",
+    "ym-jsbridge": "^26.7.27"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.8.1",
