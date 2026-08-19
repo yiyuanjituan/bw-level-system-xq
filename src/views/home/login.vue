@@ -4,7 +4,6 @@ import RegisterPopup from '@/components/Common/Register.vue';
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import UiCheckbox from '@/components/UI/checkbox.vue';
 import policy from '@/components/Common/policy.vue';
-import UiButton from '@/components/Common/Button.vue';
 import { loginProps, registerProps } from '@/enums/props';
 import { showCustomDialog, showCustomToast } from '@/hooks/useCommon';
 import { userLogin, userPhoneLogin, userRegister, userTelegramLoginComplete, userTelegramLoginStart } from '@/api/common';
@@ -15,13 +14,9 @@ import useAppStore from '@/store/modules/app';
 import type { FormExpose } from '@/components/UI/form-context';
 import router from '@/router';
 import { bus } from '@/utils/mitt';
-import noWalletLoginIcon from '@/assets/common/quick-login/nowallet.avif';
-import googleLoginIcon from '@/assets/common/quick-login/google.avif';
 import telegramLoginIcon from '@/assets/common/quick-login/telegram.avif';
 import { clearStoredInviteCode, getStoredInviteCode } from '@/utils/inviteCode';
 
-const url = 'https://146.103.80.124:5001/siteadmin/upload/img/1915368201952493569.avif';
-const richText = ref(``);
 const height = ref('0px');
 
 const route = useRoute();
@@ -131,15 +126,9 @@ async function openTelegramLogin() {
 
     if (loginDomain.origin.toLowerCase() !== window.location.origin.toLowerCase()) {
       // 原始回跳地址由API保存在state中，跨域时只传递Telegram授权地址。
-      const gatewayUrl = new URL(
-        `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`,
-        loginDomain.origin
-      );
+      const gatewayUrl = new URL(`${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`, loginDomain.origin);
       gatewayUrl.searchParams.set('telegramAutoStart', '1');
-      gatewayUrl.searchParams.set(
-        'telegramAuthorizationUrl',
-        authorizationUrl.toString()
-      );
+      gatewayUrl.searchParams.set('telegramAuthorizationUrl', authorizationUrl.toString());
       window.location.assign(gatewayUrl.toString());
       return;
     }
@@ -158,9 +147,7 @@ async function handleTelegramGateway() {
 
   let telegramOrigin = '';
   try {
-    telegramOrigin = new URL(
-      String(app.appInfo?.telegramLogin?.domain || '')
-    ).origin.toLowerCase();
+    telegramOrigin = new URL(String(app.appInfo?.telegramLogin?.domain || '')).origin.toLowerCase();
   } catch {
     showCustomToast({ type: 'fail', message: 'Telegram登录Domain配置无效' });
     return;
@@ -193,11 +180,7 @@ async function handleTelegramCallback() {
 
   currentUrl.searchParams.delete('telegramTicket');
   currentUrl.searchParams.delete('telegramError');
-  window.history.replaceState(
-    window.history.state,
-    '',
-    `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
-  );
+  window.history.replaceState(window.history.state, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
 
   if (loginError) {
     showCustomToast({
@@ -249,7 +232,7 @@ function handleRegister() {
           titleColor: '#04be02'
         };
         showCustomDialog(params).then(res => {
-          bus.emit('showRecharge')
+          bus.emit('showRecharge');
         });
       }, 100);
     })
@@ -413,6 +396,8 @@ watch(
       align-items: center;
       width: 45px;
       font-size: 12px;
+      margin-top: var(--status-bar-height);
+
     }
 
     .logo-box {
@@ -448,6 +433,8 @@ watch(
   }
 
   .main {
+    margin-top: var(--status-bar-height);
+
     :deep(.x-tab) {
       color: var(--skin__neutral_2);
     }
@@ -543,7 +530,7 @@ watch(
             border-radius: inherit;
             transform: translate(-50%, -50%);
             opacity: 0;
-            content: " ";
+            content: ' ';
           }
           &::after {
             position: absolute;
@@ -553,7 +540,7 @@ watch(
             height: 100%;
             background: transparent;
             border: inherit;
-            content: "";
+            content: '';
             border-radius: inherit;
             animation: var(--submit-button__animation--shadow);
             transition: inherit;
@@ -620,7 +607,6 @@ watch(
     }
   }
 }
-
 </style>
 
 <style>
