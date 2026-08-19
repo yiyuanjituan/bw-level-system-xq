@@ -1,5 +1,5 @@
 <script setup lang="ts" name="HomeNavBar">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import useAuthStore from "@/store/modules/user";
 import router from "@/router";
 import UiButton from "@/components/Common/Button.vue";
@@ -7,7 +7,7 @@ import HomeDrawer from "@/components/Home/Drawer.vue";
 import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import { bus } from "@/utils/mitt";
-import jsBridge from "ym-jsbridge";
+import { isYimenApp } from "@/utils/yimenApp";
 
 defineOptions({
   name: "HomeNavBar"
@@ -17,8 +17,8 @@ const isShowMore = ref(false);
 const auth = useAuthStore();
 const isShowNav = ref(false);
 const app = useAppStore();
-const isYimenApp = jsBridge.inApp;
-const showDownloadApp = computed(() => app.isShowDownload && !isYimenApp);
+const inApp = isYimenApp();
+const showDownloadApp = computed(() => app.isShowDownload && !inApp);
 const currencyInfo = computed(() => {
   return app.appInfo.countryList.find(v => v.id == auth.user.currencyId);
 });
@@ -67,35 +67,12 @@ function handleInterest() {
   isShowMore.value = false;
   router.push("/home/yuebao");
 }
-
-onMounted(() => {
-  if (!isYimenApp) return;
-
-  jsBridge.setStatusBar({
-    //可见性, true 显示, false 隐藏
-    visible: true,
-    //文字/图标, default 默认, light 浅色, dark 深色
-    //iOS 当状态栏沉浸式显示时此参数才有效，否则深底色时自动显示为浅色，浅底色时自动显示为深色
-    contentStyle: "default",
-    //背景色
-    //iOS 当标题栏可见时始终显示为标题栏背景色
-    backgroundColor: "#FF0000",
-    //沉浸式覆盖
-    //true  沉浸式（状态栏覆盖到网页上）
-    //false 非沉浸式
-    overlays: true
-  }, function(success, res) {
-    if (!success) {
-      alert(`失败\n${JSON.stringify(res)}`);
-    }
-  });
-})
 </script>
 
 <template>
   <header class="home-header">
     <div class="safe-area-inset-top" :class="{ 'is-tip-download': showDownloadApp }"></div>
-    <div v-if="!isYimenApp" class="download-app" :class="{ '!h-[0px]': !showDownloadApp }">
+    <div v-if="!inApp" class="download-app" :class="{ '!h-[0px]': !showDownloadApp }">
       <span
         class="text-[10px] text-[#B9B55CFF] px-[10px] flex w-30px items-center justify-center"
         @click="app.updateDownloadBtn(false)"

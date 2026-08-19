@@ -129,7 +129,8 @@ watch(activeCurrent, value => {
     position: relative;
     display: flex;
     align-items: center;
-    height: 45px;
+    padding-top: var(--status-bar-height);
+    height: calc(45px + var(--status-bar-height));
     background: var(--skin__bg_2);
     border-bottom: 1px solid var(--skin__border);
 

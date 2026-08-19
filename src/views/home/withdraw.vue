@@ -48,6 +48,10 @@ watch(
   { immediate: true }
 );
 
+function jumpToService() {
+  router.push('/home/notice?noticeType=4')
+}
+
 watch(active, value => {
   syncRouteQuery(value);
 });
@@ -61,7 +65,7 @@ watch(active, value => {
       </div>
       <div class="title" />
       <div class="actions">
-        <svg-icon name="icon_sys_menu_service"></svg-icon>
+        <svg-icon name="icon_sys_menu_service" @click="jumpToService"></svg-icon>
       </div>
     </div>
 
@@ -93,7 +97,8 @@ watch(active, value => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 45px;
+    padding-top: var(--status-bar-height);
+    height: calc(45px + var(--status-bar-height));
     background-color: #191919;
     border-bottom: 1px solid #242424;
     width: 100%;
@@ -129,7 +134,7 @@ watch(active, value => {
     --van-padding-xs: 15px;
 
     position: absolute;
-    top: 0;
+    top: var(--status-bar-height);
     left: 0;
     right: 0;
     bottom: 0;

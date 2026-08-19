@@ -36,8 +36,9 @@ const props = withDefaults(defineProps<Props>(), {
   flex-shrink: 0;
   justify-content: space-between;
   align-items: center;
-  height: 45px;
-  min-height: 45px;
+  padding-top: var(--status-bar-height);
+  height: calc(var(--status-bar-height) + 45px);
+  min-height: calc(var(--status-bar-height) + 45px);
   background-color: #191919;
   border-bottom: 1px solid #242424;
   box-sizing: border-box;
