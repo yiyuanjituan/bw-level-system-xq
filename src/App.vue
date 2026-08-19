@@ -35,6 +35,7 @@ import { useRoute } from 'vue-router';
 import { connectSse, disconnectSse } from '@/utils/sse';
 import { startVersionUpdateCheck } from '@/utils/versionUpdate';
 import { useTelegramWebAppStart } from '@/hooks/useTelegramWebAppStart';
+import { isYimenApp } from '@/utils/yimenApp';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -82,7 +83,7 @@ function stopPopupQueueListener() {
 }
 
 function openPopupByKey(popupKey: HomePopupKey) {
-  if (popupKey === 'download_tip' && route.name !== 'Index') {
+  if (popupKey === 'download_tip' && (route.name !== 'Index' || isYimenApp())) {
     return false;
   }
 
