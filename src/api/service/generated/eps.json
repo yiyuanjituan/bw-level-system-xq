@@ -928,6 +928,11 @@
       },
       {
         "method": "post",
+        "path": "/appConfig",
+        "summary": "获取APP状态栏配置"
+      },
+      {
+        "method": "post",
         "path": "/pageData",
         "summary": "首页的数据"
       },

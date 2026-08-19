@@ -17,7 +17,7 @@ import { Dialog } from "vant";
 import { Geetest } from "vue3-geetest";
 import "vant/lib/index.css";
 import { initApp } from "@/utils/site";
-import { initializeStatusBarHeight } from "@/utils/statusBar";
+import { initializeStatusBarHeight } from "@/utils/yimenApp";
 
 initializeStatusBarHeight();
 
