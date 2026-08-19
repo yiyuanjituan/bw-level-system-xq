@@ -167,7 +167,9 @@ onMounted(loadMessageCount);
 .mine-container {
   color: white;
   overflow: auto;
+  background: #202329;
   .back-icon {
+    margin-top: var(--status-bar-height);
     width: 30px;
     height: 32px;
     display: flex;
@@ -193,6 +195,7 @@ onMounted(loadMessageCount);
         color: #adb6c3;
       }
       .row-user-card {
+        padding-top: var(--status-bar-height);
         background-image: url("@/assets/mine/style_2_topbg_yd.avif");
         background-size: 100%;
         position: relative;
