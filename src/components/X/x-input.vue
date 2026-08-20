@@ -400,7 +400,7 @@ watch(
 }
 
 .x-input__field::placeholder {
-  color: var(--skin__neutral_2);
+  color: var(--skin__neutral_3);
 }
 
 .x-input__textarea {

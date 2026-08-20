@@ -74,6 +74,14 @@ const list = ref([
     url: "/home/promote"
   },
   {
+    key: "claim",
+    icon_1: "comm_icon_dblp_1",
+    icon_2: "comm_icon_dblp_2",
+    icon_3: "comm_icon_gou",
+    name: "担保理赔",
+    url: "/home/claim"
+  },
+  {
     key: "pyq",
     icon_1: "style_2_icon_list_pyq",
     icon_2: "style_2_icon_list_pyq2",
@@ -158,13 +166,16 @@ const onTapItem = (item: any) => {
     <div class="grid-row">
       <div
         class="grid-item-box"
-        v-for="(i, idx) in displayList"
+        v-for="(i) in displayList"
         :key="i.key"
         @click="onTapItem(i)"
       >
         <div class="icon-box">
           <svg-icon :name="i.icon_1" class="svg-icon text-[#68707B]" />
           <svg-icon :name="i.icon_2" class="svg-icon text-[#F0C059]" />
+          <div v-if="i.icon_3" class="flex items-center w-[100%] h-[6.5px] justify-center pt-[7px] pl-[2px]">
+            <svg-icon :name="i.icon_3" class="svg-icon !text-[6.5px] text-white" />
+          </div>
         </div>
         <div class="item-text">{{ i.name }}</div>
       </div>

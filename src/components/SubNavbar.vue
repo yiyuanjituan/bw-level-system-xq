@@ -23,6 +23,9 @@ const props = withDefaults(defineProps<Props>(), {
         <div class="title-inner">{{ props.title }}</div>
       </template>
     </div>
+    <div v-if="$slots.right" class="right">
+      <slot name="right"></slot>
+    </div>
   </header>
 </template>
 
@@ -79,6 +82,14 @@ const props = withDefaults(defineProps<Props>(), {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
+  }
+  .right {
+    position: absolute;
+    right: 10px;
+    top: var(--status-bar-height);
+    display: flex;
+    align-items: center;
+    height: 45px;
   }
 }
 </style>

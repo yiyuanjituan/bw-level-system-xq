@@ -358,7 +358,7 @@ onBeforeUnmount(() => {
 
 <style scoped lang="less">
 .x-select {
-  border: var(--lobby__px) solid var(--skin__border);
+  border: var(--lobby__px) solid var(--skin__neutral_3);
   height: 35px;
   width: 100%;
   border-radius: 5px;

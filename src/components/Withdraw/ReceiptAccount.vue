@@ -225,7 +225,7 @@ onMounted(() => updateWallet())
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border: thin solid var(--skin__border);
+        border: var(--lobby__px, 0.5px) solid var(--skin__neutral_3);
         border-radius: 7px;
         padding: 4px 10px 3px;
         margin-top: 10px;
@@ -328,7 +328,7 @@ onMounted(() => updateWallet())
     }
     .cell {
       color: var(--skin__lead);
-      border: thin solid var(--skin__border);
+      border: var(--lobby__px, 0.5px) solid var(--skin__neutral_3);
       border-radius: 7px;
       padding: 4px 10px;
 

@@ -341,6 +341,24 @@ const routes: Array<RouteRecordRaw> = [
           pageTransition: "page-slide-forward"
         }
       },
+      {
+        path: "claim",
+        name: "HomeClaim",
+        component: () => import("@/views/home/claim.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
+        path: "apply-claim",
+        name: "HomeApplyClaim",
+        component: () => import("@/views/home/apply-claim.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
     ]
   }
 ];
