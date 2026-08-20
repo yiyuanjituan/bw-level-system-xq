@@ -18,6 +18,7 @@ import { Geetest } from "vue3-geetest";
 import "vant/lib/index.css";
 import { initApp } from "@/utils/site";
 import { initializeStatusBarHeight } from "@/utils/yimenApp";
+import useHomeDataStore from "@/store/modules/home";
 
 initializeStatusBarHeight();
 
@@ -32,4 +33,8 @@ app.use(Geetest, {
   captchaId: "c7f7181c75483c121ad718b7a636f0d0"
 });
 
-initApp().finally(() => app.mount("#app"));
+initApp().finally(() => {
+  // 先读取持久化缓存完成首屏渲染，再在应用启动时后台刷新轮播数据。
+  void useHomeDataStore(store).loadBanner();
+  app.mount("#app");
+});

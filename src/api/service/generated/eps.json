@@ -923,6 +923,11 @@
       },
       {
         "method": "post",
+        "path": "/loadBanner",
+        "summary": "获取全局的轮播图"
+      },
+      {
+        "method": "post",
         "path": "/floatData",
         "summary": "获取浮窗数据"
       },

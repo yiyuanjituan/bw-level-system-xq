@@ -800,6 +800,11 @@ declare namespace Eps {
 			footballData(data?: any): Promise<any>;
 
 		/**
+			 * 获取全局的轮播图
+			 */
+			loadBanner(data?: any): Promise<any>;
+
+		/**
 			 * 获取浮窗数据
 			 */
 			floatData(data?: any): Promise<any>;
@@ -822,12 +827,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { footballData: string; floatData: string; appConfig: string; pageData: string; helpData: string; };
+		permission: { footballData: string; loadBanner: string; floatData: string; appConfig: string; pageData: string; helpData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { footballData: boolean; floatData: boolean; appConfig: boolean; pageData: boolean; helpData: boolean; };
+		_permission: { footballData: boolean; loadBanner: boolean; floatData: boolean; appConfig: boolean; pageData: boolean; helpData: boolean; };
 
 		request: Service["request"];
 	}
@@ -1707,5 +1712,5 @@ declare namespace Eps {
 		};
 	};
 
-	type DictKey = "brand" | "occupation" | "smsApi" | "gameApi" | "gameClassify" | "specialActivity" | "recharge_channel" | "site_wallet_keyword" | "activityTaskType" | "withdraw_channel";
+	type DictKey = "brand" | "occupation" | "smsApi" | "gameApi" | "gameClassify" | "specialActivity" | "recharge_channel" | "site_wallet_keyword" | "activityTaskType" | "withdraw_channel" | "frontJump";
 }

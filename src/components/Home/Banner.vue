@@ -1,16 +1,36 @@
 <script setup lang="ts">
+import router from '@/router';
+import useHomeDataStore, { type BannerItem } from '@/store/modules/home';
+
 defineOptions({
   name: "HomeBanner"
 });
+
+const home = useHomeDataStore();
+
+function handleBannerClick(item: BannerItem) {
+  if (item.jumpMode === 0 || !item.url) return;
+
+  if (item.jumpMode === 1) {
+    void router.push(item.url);
+    return;
+  }
+
+  window.open(item.url, '_blank');
+}
 </script>
 
 <template>
-  <div class="banner-box">
+  <div v-if="home.homeBannerList.length" class="banner-box">
     <van-swipe class="my-swipe" :autoplay="30000" indicator-color="white">
-      <van-swipe-item v-for="i in 6" :key="i">
+      <van-swipe-item
+        v-for="item in home.homeBannerList"
+        :key="item.id"
+        @click="handleBannerClick(item)"
+      >
         <img
-          src="https://146.103.80.124:5001/siteadmin/upload/img/1915843484696023041.avif"
-          alt="."
+          :src="item.image"
+          alt=""
           class="swiper-bg"
         />
       </van-swipe-item>
@@ -41,8 +61,10 @@ defineOptions({
       width: 12px !important;
     }
     .swiper-bg {
+      display: block;
       width: 100%;
       height: 100%;
+      object-fit: cover;
     }
   }
 }
