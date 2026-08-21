@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
-import { getPromoteCommission } from "@/api/common";
+import { showFailToast, showSuccessToast } from "vant";
+import { getPromoteCommission, receivePromoteCommission } from "@/api/common";
 import DateRangePicker from "@/components/Common/DateRangePicker.vue";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
@@ -36,6 +37,7 @@ const finished = ref(false);
 const requestFailed = ref(false);
 const nextCursorId = ref<number | null>(null);
 const latestRequestId = ref(0);
+const receivingId = ref(0);
 const nowTimestamp = ref(Date.now());
 let countdownTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -82,7 +84,10 @@ function normalizeResponse(response: PromoteCommissionResponse | unknown): Promo
       directCommission: Number(record?.directCommission) || 0,
       otherCommission: Number(record?.otherCommission) || 0,
       commission: Number(record?.commission) || 0,
-      receivedCommission: Number(record?.receivedCommission) || 0
+      receivedCommission: Number(record?.receivedCommission) || 0,
+      status: ([1, 2, 3].includes(Number(record?.status)) ? Number(record.status) : 1) as 1 | 2 | 3,
+      canReceive: Boolean(record?.canReceive),
+      receiveTime: Number(record?.receiveTime) || 0
     })),
     pageSize: Math.max(Math.trunc(Number((source as any).pageSize) || DEFAULT_PAGE_SIZE), 1),
     more: Boolean((source as any).more),
@@ -93,6 +98,24 @@ function normalizeResponse(response: PromoteCommissionResponse | unknown): Promo
     startTime: Number((source as any).startTime) || 0,
     endTime: Number((source as any).endTime) || 0
   };
+}
+
+async function handleReceive(record: PromoteCommissionRecord) {
+  if (!record.canReceive || receivingId.value) return;
+
+  receivingId.value = record.id;
+  try {
+    const response: any = await receivePromoteCommission(record.id);
+    const result = response?.data ?? response ?? {};
+    record.receivedCommission = Number(result.receivedCommission) || record.commission;
+    record.status = 3;
+    record.canReceive = false;
+    showSuccessToast({ message: result.duplicated ? "该佣金已领取" : "佣金领取成功" });
+  } catch (error: any) {
+    showFailToast({ message: String(error?.message || "佣金领取失败，请稍后重试") });
+  } finally {
+    receivingId.value = 0;
+  }
 }
 
 async function loadCommission(reset = false) {
@@ -219,6 +242,15 @@ onBeforeUnmount(() => {
             <div class="commission-record__row">
               <span><label>本期佣金</label><strong>{{ formatMoney(record.commission) }}</strong></span>
               <span><label>实发佣金</label><strong>{{ formatMoney(record.receivedCommission) }}</strong></span>
+            </div>
+            <div v-if="record.commission > 0" class="commission-record__action">
+              <button
+                type="button"
+                :disabled="!record.canReceive || Boolean(receivingId)"
+                @click="handleReceive(record)"
+              >
+                {{ record.status === 3 ? "已领取" : receivingId === record.id ? "领取中..." : "领取佣金" }}
+              </button>
             </div>
           </article>
           <button v-if="requestFailed" class="commission-load-error" type="button" @click="handleRetry">
@@ -376,6 +408,25 @@ onBeforeUnmount(() => {
   strong {
     color: var(--skin__lead);
     font-weight: 400;
+  }
+}
+
+.commission-record__action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+
+  button {
+    min-width: 70px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    color: var(--skin__text_primary);
+    background: var(--skin__primary);
+
+    &:disabled {
+      color: var(--skin__neutral_2);
+      background: var(--skin__neutral_3);
+    }
   }
 }
 

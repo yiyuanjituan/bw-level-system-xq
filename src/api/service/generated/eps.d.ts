@@ -1330,6 +1330,11 @@ declare namespace Eps {
 			subordinateReceiveInfo(data?: any): Promise<any>;
 
 		/**
+			 * 领取代理佣金
+			 */
+			receiveCommission(data?: any): Promise<any>;
+
+		/**
 			 * 代理下级会员详情
 			 */
 			subordinateDetail(data?: any): Promise<any>;
@@ -1362,12 +1367,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { subordinateBettingDetail: string; subordinateFinanceInfo: string; subordinateReceiveInfo: string; subordinateDetail: string; performanceInfo: string; subordinateInfo: string; commissionInfo: string; promoteInfo: string; dataInfo: string; };
+		permission: { subordinateBettingDetail: string; subordinateFinanceInfo: string; subordinateReceiveInfo: string; receiveCommission: string; subordinateDetail: string; performanceInfo: string; subordinateInfo: string; commissionInfo: string; promoteInfo: string; dataInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { subordinateBettingDetail: boolean; subordinateFinanceInfo: boolean; subordinateReceiveInfo: boolean; subordinateDetail: boolean; performanceInfo: boolean; subordinateInfo: boolean; commissionInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
+		_permission: { subordinateBettingDetail: boolean; subordinateFinanceInfo: boolean; subordinateReceiveInfo: boolean; receiveCommission: boolean; subordinateDetail: boolean; performanceInfo: boolean; subordinateInfo: boolean; commissionInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
 
 		request: Service["request"];
 	}

@@ -22,6 +22,7 @@ export interface PromoteInfo {
     agentMode: number;
     agentModeName: string;
     auditMultiplier: number;
+    crossLevelRate: number;
     settlementCycle: number;
     settlementCycleName: string;
     nextSettlementTimestamp: number;
@@ -43,6 +44,9 @@ export interface PromoteCommissionRecord {
   otherCommission: number;
   commission: number;
   receivedCommission: number;
+  status: 1 | 2 | 3;
+  canReceive: boolean;
+  receiveTime: number;
 }
 
 export interface PromoteCommissionParams {

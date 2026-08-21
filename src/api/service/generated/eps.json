@@ -655,6 +655,11 @@
       },
       {
         "method": "post",
+        "path": "/receiveCommission",
+        "summary": "领取代理佣金"
+      },
+      {
+        "method": "post",
         "path": "/subordinateDetail",
         "summary": "代理下级会员详情"
       },

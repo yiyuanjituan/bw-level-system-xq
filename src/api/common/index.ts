@@ -600,6 +600,16 @@ export function getPromoteCommission(
   });
 }
 
+export function receivePromoteCommission(
+  settlementId: number
+): Promise<{ settlementId: number; receivedCommission: number; duplicated: boolean }> {
+  return http.request({
+    url: "/app/v1/agent/receiveCommission",
+    method: "post",
+    data: { settlementId }
+  });
+}
+
 export function getPromotePerformance(
   data: PromotePerformanceParams
 ): Promise<PromotePerformanceResponse> {

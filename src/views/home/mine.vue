@@ -2,7 +2,6 @@
 import { handleBack } from "@/utils/common";
 import UiBadge from "@/components/UI/badge.vue";
 import useAuthStore from "@/store/modules/user";
-import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
 import { bus } from '@/utils/mitt';
@@ -10,8 +9,8 @@ import { service } from "@/api/service";
 import { onMounted, ref } from "vue";
 
 const auth = useAuthStore();
-const app = useAppStore();
 const messageCount = ref(0);
+const interestRateText = ref("");
 
 function jumpToService() {
   router.push({
@@ -42,6 +41,21 @@ async function loadMessageCount() {
   }
 }
 
+async function loadInterestRate() {
+  if (!auth.token) return;
+
+  try {
+    const response = await service.v1.activity.interestInfo();
+    const yearRateText = response?.display?.year_rate_text;
+    const yearScale = Number(response?.config?.year_scale);
+
+    interestRateText.value = yearRateText || (Number.isFinite(yearScale) ? `${yearScale}%` : "");
+  } catch (error) {
+    interestRateText.value = "";
+    console.error("获取利息宝年利率失败，失败原因：", error);
+  }
+}
+
 function handleWithdraw() {
   if (!auth.token || !auth.user?.id) {
     router.push("/home/login");
@@ -66,7 +80,10 @@ function handleLxb() {
   router.push("/home/yuebao");
 }
 
-onMounted(loadMessageCount);
+onMounted(() => {
+  void loadMessageCount();
+  void loadInterestRate();
+});
 </script>
 
 <template>
@@ -143,7 +160,7 @@ onMounted(loadMessageCount);
               <div class="label">存款</div>
             </div>
             <div class="nav-item" @click="handleLxb()">
-              <ui-badge content="80%">
+              <ui-badge :content="interestRateText">
                 <div class="icon">
                   <svg-icon name="style_2_icon_mid_lxb" class="svg-icon" />
                   <svg-icon
