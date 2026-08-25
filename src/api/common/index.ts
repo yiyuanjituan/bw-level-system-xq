@@ -132,6 +132,13 @@ export function getConfig(data?: object): Promise<any> {
   });
 }
 
+export function getThemeConfig(): Promise<{ preset: string; variables: Record<string, string> }> {
+  return http.request({
+    url: "/open/v1/home/themeConfig",
+    method: "post"
+  });
+}
+
 export function sendSms(data?: object): Promise<any> {
   return http.request({
     url: "/app/user/login/smsCode",

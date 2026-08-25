@@ -800,6 +800,11 @@ declare namespace Eps {
 			footballData(data?: any): Promise<any>;
 
 		/**
+			 * 获取前台主题配置
+			 */
+			themeConfig(data?: any): Promise<any>;
+
+		/**
 			 * 获取全局的轮播图
 			 */
 			loadBanner(data?: any): Promise<any>;
@@ -808,11 +813,6 @@ declare namespace Eps {
 			 * 获取浮窗数据
 			 */
 			floatData(data?: any): Promise<any>;
-
-		/**
-			 * 获取APP状态栏配置
-			 */
-			appConfig(data?: any): Promise<any>;
 
 		/**
 			 * 首页的数据
@@ -827,12 +827,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { footballData: string; loadBanner: string; floatData: string; appConfig: string; pageData: string; helpData: string; };
+		permission: { footballData: string; themeConfig: string; loadBanner: string; floatData: string; pageData: string; helpData: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { footballData: boolean; loadBanner: boolean; floatData: boolean; appConfig: boolean; pageData: boolean; helpData: boolean; };
+		_permission: { footballData: boolean; themeConfig: boolean; loadBanner: boolean; floatData: boolean; pageData: boolean; helpData: boolean; };
 
 		request: Service["request"];
 	}

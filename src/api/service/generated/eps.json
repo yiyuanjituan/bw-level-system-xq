@@ -928,6 +928,11 @@
       },
       {
         "method": "post",
+        "path": "/themeConfig",
+        "summary": "获取前台主题配置"
+      },
+      {
+        "method": "post",
         "path": "/loadBanner",
         "summary": "获取全局的轮播图"
       },
@@ -935,11 +940,6 @@
         "method": "post",
         "path": "/floatData",
         "summary": "获取浮窗数据"
-      },
-      {
-        "method": "post",
-        "path": "/appConfig",
-        "summary": "获取APP状态栏配置"
       },
       {
         "method": "post",
