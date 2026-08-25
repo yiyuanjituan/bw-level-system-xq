@@ -16,13 +16,13 @@ const jumpTo = (url: string) => {
       <div class="login-box">
         <div class="bg-box" @click="jumpTo('/home/login')">
           <svg-icon name="style_2_btn_dl" class="text-[40px] text-[#F0C059]" />
-          <span>登 录</span>
+          <span>{{ $t("登 录") }}</span>
         </div>
       </div>
       <div class="register-box">
         <div class="bg-box" @click="jumpTo('/home/register')">
           <svg-icon name="style_2_btn_zc" class="text-[40px] text-[#F0C059]" />
-          <span class="text-[#F0C059]">注 册</span>
+          <span class="text-[#F0C059]">{{ $t("注 册") }}</span>
         </div>
       </div>
     </div>

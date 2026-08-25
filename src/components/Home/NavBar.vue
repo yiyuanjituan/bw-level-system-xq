@@ -1,4 +1,5 @@
 <script setup lang="ts" name="HomeNavBar">
+import { $t } from "@/locales";
 import { computed, ref } from "vue";
 import useAuthStore from "@/store/modules/user";
 import router from "@/router";
@@ -54,7 +55,7 @@ function handleWithdraw() {
   if (!auth.user.hasPayPassword) {
     showCustomToast({
       type: "warning",
-      message: "为了资金安全，需先设置提现密码哦！"
+      message: $t("为了资金安全，需先设置提现密码哦！")
     });
     router.push("/home/security?active=5");
     return;
@@ -121,7 +122,7 @@ function handleInterest() {
           </div>
           <div class="currency-content-wrap">
             <div class="count" v-if="!walletIsLoading">{{ auth.user.money }}</div>
-            <span class="loading-text" v-if="walletIsLoading">加载中</span>
+            <span class="loading-text" v-if="walletIsLoading">{{ $t("加载中") }}</span>
           </div>
           <div
             class="refresh-icon"
@@ -137,7 +138,7 @@ function handleInterest() {
         <div class="menu-button !mr-[5px]">
           <ui-button class="!w-[80px] !h-[27px] !p-[0px] !rounded-[5px] !mr-[0px]" style="border-width: 0">
             <div class="flex w-full h-full items-center relative">
-              <div class="w-[58.5px] text-[11px] text-[#874404]" @click="handleRecharge">存 款</div>
+              <div class="w-[58.5px] text-[11px] text-[#874404]" @click="handleRecharge">{{ $t("存 款") }}</div>
               <div class="popover" @click="isShowMore = !isShowMore">
                 <i
                   class="inline-flex justify-center items-center text-[#874404]"
@@ -156,8 +157,8 @@ function handleInterest() {
           </ui-button>
           <div class="popover-content" v-if="isShowMore">
             <div class="content-box">
-              <div @click="handleWithdraw">提现</div>
-              <div @click="handleInterest">利息宝</div>
+              <div @click="handleWithdraw">{{ $t("提现") }}</div>
+              <div @click="handleInterest">{{ $t("利息宝") }}</div>
             </div>
           </div>
         </div>

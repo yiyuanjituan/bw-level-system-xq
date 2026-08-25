@@ -209,7 +209,7 @@ onMounted(() => init());
           <input
             v-model="formInfo.keyword"
             class="search-input"
-            placeholder="搜索"
+            :placeholder="$t('搜索')"
           />
         </div>
         <div class="pl-[10px] flex items-center">
@@ -262,7 +262,7 @@ onMounted(() => init());
         </div>
       </div>
     </div>
-    <empty text="暂无消息" v-if="!filteredList.length" />
+    <empty :text="$t('暂无消息')" v-if="!filteredList.length" />
     <div class="pagination-box" v-if="filteredList.length > PAGE_SIZE">
       <van-pagination
         v-model="currentPage"

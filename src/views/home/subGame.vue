@@ -252,7 +252,7 @@ onMounted(() => {
       <div class="page-body">
         <div class="search-layout">
           <div class="search-bar">
-            <ui-input placeholder="搜索游戏">
+            <ui-input :placeholder="$t('搜索游戏')">
               <template #suffix>
                 <svg-icon name="comm_icon_ss" color="#dfbe5b"></svg-icon>
               </template>

@@ -144,7 +144,7 @@ watch(selectedType, () => {
 <template>
   <van-dialog
     :show="show"
-    title="投注明细"
+    :title="$t('投注明细')"
     :width="350"
     :z-index="2020"
     :show-confirm-button="false"
@@ -269,7 +269,7 @@ watch(selectedType, () => {
 
     <template #footer>
       <div class="footer-box">
-        <div class="close-icon" role="button" tabindex="0" aria-label="关闭" @click="closeDialog" @keydown.enter="closeDialog">
+        <div class="close-icon" role="button" tabindex="0" :aria-label="$t('关闭')" @click="closeDialog" @keydown.enter="closeDialog">
           <svg-icon name="close" color="white" />
         </div>
       </div>

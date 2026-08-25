@@ -260,7 +260,7 @@ onMounted(() => {
       </div>
 
       <div v-else class="content-state content-state--placeholder">
-        <span class="content-state__tip">当前筛选下暂无明细</span>
+        <span class="content-state__tip">{{ $t("当前筛选下暂无明细") }}</span>
       </div>
     </section>
 

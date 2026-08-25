@@ -45,5 +45,5 @@ declare namespace I18nType {
       : K
     : never;
 
-  type I18nKey = GetI18nKey<Schema>;
+  type I18nKey = GetI18nKey<Schema> | (string & {});
 }

@@ -65,7 +65,7 @@ const broadcastItems = computed(() =>
 </script>
 
 <template>
-  <div class="promote-broadcast" aria-label="佣金播报">
+  <div class="promote-broadcast" :aria-label="$t('佣金播报')">
     <div
       class="promote-broadcast__track"
       :style="{ '--promote-broadcast-duration': `${duration}s` }"

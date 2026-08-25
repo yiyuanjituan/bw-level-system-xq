@@ -67,7 +67,7 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
         'rebate-ratio__content--net-profit': !isUnlimitedMode,
       }"
     >
-      <nav v-if="isUnlimitedMode" class="rebate-ratio__groups" aria-label="游戏分类">
+      <nav v-if="isUnlimitedMode" class="rebate-ratio__groups" :aria-label="$t('游戏分类')">
         <button
           v-for="group in ruleGroups"
           :key="group.key"
@@ -99,7 +99,7 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
                 <button
                   type="button"
                   class="rebate-ratio__tooltip"
-                  aria-label="查看有效人数统计要求"
+                  :aria-label="$t('查看有效人数统计要求')"
                 >
                   ?
                 </button>

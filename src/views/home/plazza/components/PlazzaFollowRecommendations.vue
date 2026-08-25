@@ -53,7 +53,7 @@ function formatFollowers(count: number) {
 
         <div class="follow-recommendations__info">
           <p class="follow-recommendations__name">
-            <img v-if="user.isAdmin" :src="adminBadgeUrl" alt="朋友圈管理员" />
+            <img v-if="user.isAdmin" :src="adminBadgeUrl" :alt="$t('朋友圈管理员')" />
             <span>{{ user.name }}</span>
           </p>
           <p class="follow-recommendations__fans">

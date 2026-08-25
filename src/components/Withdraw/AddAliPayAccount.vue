@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, inject, Ref, ref, useTemplateRef } from 'vue';
 import UiForm from '@/components/UI/form.vue';
 import UiFormItem from '@/components/UI/form-item.vue';
@@ -27,13 +28,13 @@ const auth = useAuthStore();
 const modelValue = ref<any>();
 const formRules = ref<FormRules>({
   realname: [
-    { required: true, message: '真实姓名不能为空', trigger: 'blur' },
+    { required: true, message: $t("真实姓名不能为空"), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         const validators = [
           {
             pattern: /^[a-zA-Z\u4e00-\u9fa5]+(?:[·\-][a-zA-Z\u4e00-\u9fa5]+)*$/,
-            message: '姓名格式错误'
+            message: $t("姓名格式错误")
           }
         ];
         // 只要有一个验证通过就返回成功
@@ -50,17 +51,17 @@ const formRules = ref<FormRules>({
     }
   ],
   bank_number: [
-    { required: true, message: '支付宝账号不能为空', trigger: 'blur' },
+    { required: true, message: $t("支付宝账号不能为空"), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         const validators = [
           {
             pattern: /^1[3-9]\d{9}$/,
-            message: '支付宝账号不合法,必须为手机或邮箱'
+            message: $t("支付宝账号不合法,必须为手机或邮箱")
           },
           {
             pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-            message: '支付宝账号不合法,必须为手机或邮箱'
+            message: $t("支付宝账号不合法,必须为手机或邮箱")
           }
         ];
         // 只要有一个验证通过就返回成功
@@ -106,7 +107,7 @@ function handleSubmit() {
       .finally(() => (isLoading.value = false))
       .then(res => {
         close();
-        showCustomToast({ type: 'success', message: '绑定成功！' });
+        showCustomToast({ type: 'success', message: $t("绑定成功！") });
         emits('refresh');
       });
   });
@@ -129,25 +130,25 @@ defineExpose({
       <div class="dialog-container">
         <div class="dialog-body">
           <div class="header-box">
-            <span>添加支付宝</span>
+            <span>{{ $t("添加支付宝") }}</span>
           </div>
           <div class="content-box">
             <x-form :rule="formRules" :model="modelValue" ref="form">
               <x-form-item prop="realname">
-                <x-input placeholder="请填写真实姓名" prefix="input_icon_zsxm1" v-model="modelValue.realname" type="text" />
+                <x-input :placeholder="$t('请填写真实姓名')" prefix="input_icon_zsxm1" v-model="modelValue.realname" type="text" />
               </x-form-item>
               <x-form-item prop="bank_number">
-                <x-input placeholder="手机号或邮箱" v-model="modelValue.bank_number" type="text">
+                <x-input :placeholder="$t('手机号或邮箱')" v-model="modelValue.bank_number" type="text">
                   <template #prefix>
                     <img :src="aliPayInfo.bank_icon" alt="" srcset="" class="w-[15px] h-[15px]" />
                   </template>
                   <template #suffix>
-                    <span class="main-text" @click="copyToBankNumber">粘贴</span>
+                    <span class="main-text" @click="copyToBankNumber">{{ $t("粘贴") }}</span>
                   </template>
                 </x-input>
               </x-form-item>
-              <div class="mark">请认真核对，否则将无法到账。</div>
-              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">确 定</x-button>
+              <div class="mark">{{ $t("请认真核对，否则将无法到账。") }}</div>
+              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">{{ $t("确 定") }}</x-button>
             </x-form>
           </div>
         </div>

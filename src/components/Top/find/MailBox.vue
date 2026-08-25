@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import useClipboard from "vue-clipboard3";
@@ -12,13 +13,13 @@ const captureIgnoreClassName = "capture-ignore";
 
 function copyFun(text: string) {
   toClipboard(text).then(() => {
-    showCustomToast({ type: "success", message: "复制成功" });
+    showCustomToast({ type: "success", message: $t("复制成功") });
   });
 }
 
 async function saveToImg() {
   if (!saveImageRef.value) {
-    showCustomToast({ type: "fail", message: "保存图片失败，请稍后重试" });
+    showCustomToast({ type: "fail", message: $t("保存图片失败，请稍后重试") });
     return;
   }
 
@@ -32,7 +33,7 @@ async function saveToImg() {
     a.setAttribute("download", `${num}.png`);
     a.click();
   } catch {
-    showCustomToast({ type: "fail", message: "保存图片失败，请稍后重试" });
+    showCustomToast({ type: "fail", message: $t("保存图片失败，请稍后重试") });
   }
 }
 </script>
@@ -60,7 +61,7 @@ async function saveToImg() {
         />
       </div>
       <div class="h-[35px] capture-ignore">
-        <x-button class="mt-[10px] !w-[100%]" @click="saveToImg">保存图片</x-button>
+        <x-button class="mt-[10px] !w-[100%]" @click="saveToImg">{{ $t("保存图片") }}</x-button>
       </div>
     </div>
   </div>

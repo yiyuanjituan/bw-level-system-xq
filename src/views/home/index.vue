@@ -43,7 +43,7 @@ onBeforeUnmount(() => {
     </div>
     <van-back-top target="#scroll-box" class="page-home-custom-back-top">
       <svg-icon name="comm_icon_top"></svg-icon>
-      <div class="span">返回顶部</div>
+      <div class="span">{{ $t("返回顶部") }}</div>
     </van-back-top>
     <home-float :is-put="isHomeScrolling" />
   </div>

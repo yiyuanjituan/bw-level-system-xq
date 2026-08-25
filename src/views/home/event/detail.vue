@@ -122,12 +122,12 @@ onMounted(() => {
     <main class="event-detail-page__content">
       <div v-if="isLoading && !info" class="event-detail-page__state">
         <svg-icon name="loading" class-name="event-detail-page__loading" />
-        <span>活动详情加载中</span>
+        <span>{{ $t("活动详情加载中") }}</span>
       </div>
 
       <div v-else-if="loadFailed" class="event-detail-page__state">
-        <span>活动详情加载失败</span>
-        <x-button type="primary" @click="loadEventInfo">重新加载</x-button>
+        <span>{{ $t("活动详情加载失败") }}</span>
+        <x-button type="primary" @click="loadEventInfo">{{ $t("重新加载") }}</x-button>
       </div>
 
       <template v-else-if="info">

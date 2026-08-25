@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import UiForm from "@/components/UI/form.vue";
 import UiFormItem from "@/components/UI/form-item.vue";
 import UiInput from "@/components/UI/input.vue";
@@ -30,12 +31,12 @@ const modelValue = defineModel<loginProps>({
 
 const formRules = ref({
   account: [
-    { required: true, message: "请输入手机号码/账号", trigger: "blur" },
+    { required: true, message: $t("请输入手机号码/账号"), trigger: "blur" },
     {
       validator: (rule, value, callback) => {
         const validators = [
-          { pattern: /^[a-zA-Z0-9]{4,16}$/, message: "账号格式错误，请输入4-16位英文/数字" },
-          { pattern: /^(?:(?:\+|00)86)?1[3-9]\d{9}$/, message: "区号 +86 支持11位手机号，请重新输入" }
+          { pattern: /^[a-zA-Z0-9]{4,16}$/, message: $t("账号格式错误，请输入4-16位英文/数字") },
+          { pattern: /^(?:(?:\+|00)86)?1[3-9]\d{9}$/, message: $t("区号 +86 支持11位手机号，请重新输入") }
         ];
 
         // 只要有一个验证通过就返回成功
@@ -53,15 +54,15 @@ const formRules = ref({
     }
   ],
   sms_code: [
-    { required: true, message: "请输入验证码", trigger: "blur" },
-    { min: 4, max: 6, message: "请输入正确验证码", trigger: "blur" }
+    { required: true, message: $t("请输入验证码"), trigger: "blur" },
+    { min: 4, max: 6, message: $t("请输入正确验证码"), trigger: "blur" }
   ],
   password: [
-    { required: true, message: "密码不能为空", trigger: "input" },
-    { min: 6, max: 16, message: "6-16位，至少包含英文/数字/符号中的两种", trigger: "input" },
+    { required: true, message: $t("密码不能为空"), trigger: "input" },
+    { min: 6, max: 16, message: $t("6-16位，至少包含英文/数字/符号中的两种"), trigger: "input" },
     {
       pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/,
-      message: "6-16位，至少包含英文/数字/符号中的两种",
+      message: $t("6-16位，至少包含英文/数字/符号中的两种"),
       trigger: "change"
     }
   ]
@@ -79,7 +80,7 @@ function getSmsCode() {
   sendSms({ phone: modelValue.value.account, captchaId: "", code: "" })
     .then(_res => {
       showCustomToast({
-        message: "验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。",
+        message: $t("验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。"),
         type: "success"
       });
       smsTime.value = 60;
@@ -125,7 +126,7 @@ defineExpose({
         <login-mode v-model="modelValue.type" v-if="modelValue.accountType == 'phone'" />
       </template>
       <x-form-item prop="sms_code" v-if="modelValue.accountType == 'phone' && modelValue.type == 'sms'">
-        <x-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
+        <x-input prefix="sms" required :placeholder="$t('请输入手机验证码')" v-model="modelValue.sms_code">
           <template #suffix>
             <span
               class="inline-flex items-center"
@@ -139,7 +140,7 @@ defineExpose({
         </x-input>
       </x-form-item>
       <x-form-item prop="password" v-if="!(modelValue.accountType == 'phone' && modelValue.type == 'sms')">
-        <x-input prefix="lock" required placeholder="请输入密码" v-model="modelValue.password" show-eye />
+        <x-input prefix="lock" required :placeholder="$t('请输入密码')" v-model="modelValue.password" show-eye />
       </x-form-item>
     </x-form>
   </div>

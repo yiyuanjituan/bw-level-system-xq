@@ -45,7 +45,7 @@ function changePage(page: number) {
         type="button"
         class="flex items-center justify-center text-[10px] pl-[1px]"
         :disabled="modelValue <= 1"
-        aria-label="上一页"
+        :aria-label="$t('上一页')"
         @click="changePage(modelValue - 1)"
       >
         <svg-icon name="arrow-back"></svg-icon>
@@ -70,7 +70,7 @@ function changePage(page: number) {
         type="button"
         class="flex items-center justify-center text-[10px] pl-[1px] rotate-180"
         :disabled="modelValue >= pageCount"
-        aria-label="下一页"
+        :aria-label="$t('下一页')"
         @click="changePage(modelValue + 1)"
       >
         <svg-icon name="arrow-back"></svg-icon>

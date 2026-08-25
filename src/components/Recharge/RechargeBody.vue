@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from 'vue';
 import { createNoWalletUser, createOrder, getSiteWalletInfo } from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
@@ -276,15 +277,15 @@ function handleSubmit() {
   const submitAmount = orderAmount.value;
 
   if (!channelId) {
-    return showCustomToast({ type: 'warning', message: '订单创建错误' });
+    return showCustomToast({ type: 'warning', message: $t("订单创建错误") });
   }
 
   if (!amount) {
-    return showCustomToast({ type: 'fail', message: '请输入支付金额' });
+    return showCustomToast({ type: 'fail', message: $t("请输入支付金额") });
   }
 
   if (!submitAmount) {
-    return showCustomToast({ type: 'fail', message: '金额换算错误' });
+    return showCustomToast({ type: 'fail', message: $t("金额换算错误") });
   }
 
   isLoading.value = true;
@@ -292,7 +293,7 @@ function handleSubmit() {
     .then(res => {
       const url = res?.url;
       if (!url) {
-        return showCustomToast({ type: 'warning', message: '订单创建错误' });
+        return showCustomToast({ type: 'warning', message: $t("订单创建错误") });
       }
       // 站内支付跳转的模式内部跳转
       if (res.mode == 'inner') {
@@ -528,26 +529,26 @@ watch(
         </div>
       </div>
 
-      <x-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">立即存款</x-button>
+      <x-button @click="handleSubmit" class="button" type="primary" :loading="isLoading">{{ $t("立即存款") }}</x-button>
     </template>
 
     <template v-if="showBindActions">
       <div class="bind-container">
         <div class="bindTips">
-          <p>已有账号，可登录绑定</p>
-          <p>首次使用，只需设置支付密码</p>
+          <p>{{ $t("已有账号，可登录绑定") }}</p>
+          <p>{{ $t("首次使用，只需设置支付密码") }}</p>
         </div>
         <div class="content">
           <div class="bind">
-            <x-button type="primary" plain @click="handleBindNoWallet">立即绑定</x-button>
+            <x-button type="primary" plain @click="handleBindNoWallet">{{ $t("立即绑定") }}</x-button>
           </div>
           <div class="setting">
-            <x-button type="primary" @click="createBindUserByNo">立即设置</x-button>
+            <x-button type="primary" @click="createBindUserByNo">{{ $t("立即设置") }}</x-button>
           </div>
         </div>
         <div class="no-poster">
           <p>
-            <span style="font-family: 'Segoe UI'">用NO钱包，赚积分，抽大奖，最高</span>
+            <span style="font-family: 'Segoe UI'">{{ $t("用NO钱包，赚积分，抽大奖，最高") }}</span>
             <span style="color: #e67e23">88888.88</span>
           </p>
         </div>

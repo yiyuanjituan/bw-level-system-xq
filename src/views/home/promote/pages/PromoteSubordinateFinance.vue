@@ -229,14 +229,14 @@ watch(
           :class="{ 'is-focused': searchFocused }"
           type="search"
           inputmode="numeric"
-          placeholder="会员ID"
-          aria-label="会员ID"
+          :placeholder="$t('会员ID')"
+          :aria-label="$t('会员ID')"
           @focus="searchFocused = true"
           @blur="searchFocused = false"
           @keydown.enter.prevent="handleSearch"
         >
           <template #suffix>
-            <button class="icon-button" type="button" aria-label="搜索会员" @click.stop="handleSearch">
+            <button class="icon-button" type="button" :aria-label="$t('搜索会员')" @click.stop="handleSearch">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M10.5 3a7.5 7.5 0 1 0 4.72 13.33l4.22 4.22 1.06-1.06-4.22-4.22A7.5 7.5 0 0 0 10.5 3Zm0 1.5a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z" />
               </svg>
@@ -255,7 +255,7 @@ watch(
         <template #text="{ text }">
           <span class="empty-text">
             <span>{{ text }}</span>
-            <button class="icon-button retry" type="button" aria-label="重新加载" @click="handleRetry">
+            <button class="icon-button retry" type="button" :aria-label="$t('重新加载')" @click="handleRetry">
               <svg viewBox="0 0 28 28" aria-hidden="true">
                 <path d="M0 18.97l9.55-.16-2.4 3.42a10.75 10.75 0 1 0-4.05-8.4c0 .31.01.62.04.92H.06c-.02-.3-.03-.61-.03-.92A13.83 13.83 0 1 1 5.39 24.76L3.11 28Z" />
               </svg>

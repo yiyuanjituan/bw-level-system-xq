@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteSubordinateDetail } from "@/api/common";
@@ -40,9 +41,9 @@ const detail = ref<PromoteSubordinateDetail | null>(null);
 let latestRequestId = 0;
 
 const sections = computed(() => [
-  { title: "今日数据", value: detail.value?.today },
-  { title: "昨日数据", value: detail.value?.yesterday },
-  { title: "累计数据", value: detail.value?.total }
+  { title: $t("今日数据"), value: detail.value?.today },
+  { title: $t("昨日数据"), value: detail.value?.yesterday },
+  { title: $t("累计数据"), value: detail.value?.total }
 ]);
 
 function formatMoney(value: unknown) {
@@ -137,7 +138,7 @@ watch(
 <template>
   <van-dialog
     :show="show"
-    title="会员详情"
+    :title="$t('会员详情')"
     :width="350"
     :z-index="zIndex ?? 2019"
     :show-confirm-button="false"
@@ -233,7 +234,7 @@ watch(
 
     <template #footer>
       <div class="footer-box">
-        <div class="close-icon" role="button" tabindex="0" aria-label="关闭" @click="closeDialog" @keydown.enter="closeDialog">
+        <div class="close-icon" role="button" tabindex="0" :aria-label="$t('关闭')" @click="closeDialog" @keydown.enter="closeDialog">
           <svg-icon name="close" color="white" />
         </div>
       </div>

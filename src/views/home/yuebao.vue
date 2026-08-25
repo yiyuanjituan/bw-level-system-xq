@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import UiBadge from "@/components/UI/badge.vue";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
@@ -23,7 +24,7 @@ async function loadInterestInfo() {
 
 function refreshInfo() {
   loadInterestInfo().then(() => {
-    showCustomToast({ message: "刷新成功", type: "success" });
+    showCustomToast({ message: $t("刷新成功"), type: "success" });
   });
 }
 
@@ -208,7 +209,7 @@ function handleInterestRecordScroll(event: Event) {
 
 function handleGetMoney() {
   service.v1.activity.interestClaim().then(() => {
-    showCustomToast({ message: "领取成功", type: "success" });
+    showCustomToast({ message: $t("领取成功"), type: "success" });
     loadInterestInfo();
     refreshInterestRecords();
   });
@@ -229,7 +230,7 @@ function handleTransOut() {
     .interestTransferOut()
     .finally(() => (transOutLoading.value = false))
     .then(() => {
-      showCustomToast({ message: "取出成功", type: "success" });
+      showCustomToast({ message: $t("取出成功"), type: "success" });
       setTimeout(() => {
         loadInterestInfo();
         void refreshInterestRecords();
@@ -281,7 +282,7 @@ onMounted(() => {
           <div class="curIncomeItem !mb-[0px]">
             <div class="mg">
               待领取<span class="strong">{{ formatMoney(Math.max(interestInfo.deposit?.await_get, 0)) }}</span>
-              （已领取
+              {{ $t("（已领取") }}
               {{ formatMoney(Number(interestInfo.deposit?.total_get) - Number(interestInfo.deposit?.await_get)) }}）
               <svg-icon name="refresh" class-name="text-[#DFBE5B]" @click="refreshInfo" />
             </div>
@@ -301,7 +302,7 @@ onMounted(() => {
     </div>
     <div class="container-tab-page">
       <van-tabs shrink class="tabs-component">
-        <van-tab title="利息规则" class="ml-0 h-[100%]">
+        <van-tab :title="$t('利息规则')" class="ml-0 h-[100%]">
           <div class="radius-box">
             <div class="inner-box">
               <div class="absolute top-0">
@@ -310,7 +311,7 @@ onMounted(() => {
             </div>
           </div>
         </van-tab>
-        <van-tab title="记录明细" class="ml-0 h-[100%]">
+        <van-tab :title="$t('记录明细')" class="ml-0 h-[100%]">
           <div class="radius-box">
             <div class="header-row-box">
               <div class="flex gap-[10px]">
@@ -350,9 +351,9 @@ onMounted(() => {
                 <div v-if="interestRecordsLoadingMore" class="listStatus">
                   <ui-loading />
                 </div>
-                <div v-else-if="interestRecordsFinished" class="listStatus">没有更多了</div>
+                <div v-else-if="interestRecordsFinished" class="listStatus">{{ $t("没有更多了") }}</div>
               </div>
-              <ui-empty v-else text="暂无记录" />
+              <ui-empty v-else :text="$t('暂无记录')" />
             </div>
           </div>
         </van-tab>

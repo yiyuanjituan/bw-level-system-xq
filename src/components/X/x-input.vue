@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, inject, nextTick, ref, watch } from "vue";
 import { X_FORM_CONTEXT_KEY, X_FORM_ITEM_PROP_KEY } from "./x-form-context";
 
@@ -45,7 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   type: "text",
   size: "default",
-  placeholder: "请输入",
+  placeholder: $t("请输入"),
   maxlength: 255,
   minlength: 0,
   clearable: false,

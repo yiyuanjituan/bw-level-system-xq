@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import UiInput from "@/components/UI/input.vue";
 import UiForm from "@/components/UI/form.vue";
 import UiFormItem from "@/components/UI/form-item.vue";
@@ -41,12 +42,12 @@ const formRef = useTemplateRef<FormExpose>('form')
 
 const formRules = ref<FormRules>({
   account: [
-    { required: true, message: '请输入手机号码/账号', trigger: 'blur' },
+    { required: true, message: $t("请输入手机号码/账号"), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         const validators = [
-          { pattern: /^[a-zA-Z0-9]{4,16}$/, message: "账号格式错误，请输入4-16位英文/数字" },
-          { pattern: /^(?:(?:\+|00)86)?1[3-9]\d{9}$/, message: "区号 +86 支持11位手机号，请重新输入" }
+          { pattern: /^[a-zA-Z0-9]{4,16}$/, message: $t("账号格式错误，请输入4-16位英文/数字") },
+          { pattern: /^(?:(?:\+|00)86)?1[3-9]\d{9}$/, message: $t("区号 +86 支持11位手机号，请重新输入") }
         ];
 
         // 只要有一个验证通过就返回成功
@@ -66,17 +67,17 @@ const formRules = ref<FormRules>({
   sms_code:
     (checkInputIsPhone.value && modelValue.value.type == "sms")
       ? [
-        { required: true, message: "请输入验证码", trigger: "blur" },
-        { min: 4, max: 6, message: "请输入正确验证码", trigger: "blur" }
+        { required: true, message: $t("请输入验证码"), trigger: "blur" },
+        { min: 4, max: 6, message: $t("请输入正确验证码"), trigger: "blur" }
       ]
       : [],
   password: [
-    { required: true, message: '密码不能为空', trigger: 'input' },
-    { min: 6, max: 16, message: '6-16位，至少包含英文/数字/符号中的两种', trigger: 'input' },
-    { pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/, message: "6-16位，至少包含英文/数字/符号中的两种", trigger: "change" },
+    { required: true, message: $t("密码不能为空"), trigger: 'input' },
+    { min: 6, max: 16, message: $t("6-16位，至少包含英文/数字/符号中的两种"), trigger: 'input' },
+    { pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/, message: $t("6-16位，至少包含英文/数字/符号中的两种"), trigger: "change" },
   ],
   two_password: [
-    { required: true, message: '确认密码不能为空', trigger: 'input' },
+    { required: true, message: $t("确认密码不能为空"), trigger: 'input' },
     {
       validator: (rule, value, callback) => {
         if (value == modelValue.value.password) {
@@ -88,7 +89,7 @@ const formRules = ref<FormRules>({
     }
   ],
   invite_code: [
-    { required: false, message: '请输入邀请码', trigger: 'blur' },
+    { required: false, message: $t("请输入邀请码"), trigger: 'blur' },
   ],
 })
 
@@ -103,7 +104,7 @@ function getSmsCode() {
   }
   smsLoading.value = true;
   sendSms({ phone: modelValue.value.account, captchaId: '', code: '' }).then((_res) => {
-    showCustomToast({ message: "验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。", type: "success" });
+    showCustomToast({ message: $t("验证码已发送，请查看短信，若未收到验证码，请仔细核对手机号码是否正确后再试。"), type: "success" });
     smsTime.value = 60
     smsTimer = setInterval(() => {
       smsTime.value = smsTime.value - 1
@@ -126,7 +127,7 @@ defineExpose({
     </section>
     <x-form :rule="formRules" :model="modelValue" ref="form">
       <x-form-item prop="account">
-        <x-input prefix="user" required placeholder="请输入手机号码/账号" :class="{ '!pl-[0px]': checkInputIsPhone }" v-model="modelValue.account">
+        <x-input prefix="user" required :placeholder="$t('请输入手机号码/账号')" :class="{ '!pl-[0px]': checkInputIsPhone }" v-model="modelValue.account">
           <template #prefix v-if="checkInputIsPhone">
             <div class="country-icon">
               <img src="@/assets/common/ChineseMainland.png" alt="." class="w-[18px] h-auto" />
@@ -137,7 +138,7 @@ defineExpose({
       </x-form-item>
       <change-mode v-if="modelValue.type == 'password' && app.appInfo?.openSms" @change="modelValue.type = 'sms'" />
       <x-form-item prop="sms_code" v-if="checkInputIsPhone && modelValue.type == 'sms'">
-        <x-input prefix="sms" required placeholder="请输入手机验证码" v-model="modelValue.sms_code">
+        <x-input prefix="sms" required :placeholder="$t('请输入手机验证码')" v-model="modelValue.sms_code">
           <template #suffix>
             <span class="inline-flex items-center" @click.stop="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'text-[#F0C059]']">
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
@@ -147,19 +148,19 @@ defineExpose({
         </x-input>
       </x-form-item>
       <x-form-item prop="password">
-        <x-input prefix="lock" required placeholder="请输入密码" v-model="modelValue.password" show-eye />
+        <x-input prefix="lock" required :placeholder="$t('请输入密码')" v-model="modelValue.password" show-eye />
       </x-form-item>
       <password-power :text="modelValue.password" />
       <x-form-item prop="two_password">
-        <x-input prefix="lock" v-model="modelValue.two_password" required placeholder="请再次输入密码" show-eye />
+        <x-input prefix="lock" v-model="modelValue.two_password" required :placeholder="$t('请再次输入密码')" show-eye />
       </x-form-item>
       <x-form-item prop="currency" v-if="false">
-        <x-select required placeholder="请输入密码" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
+        <x-select required :placeholder="$t('请输入密码')" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
       </x-form-item>
       <x-form-item prop="invite_code">
-        <x-input prefix="invite_code" v-model="modelValue.invite_code" placeholder="请输入您的邀请码">
+        <x-input prefix="invite_code" v-model="modelValue.invite_code" :placeholder="$t('请输入您的邀请码')">
           <template #suffix>
-            <span class="text-[#F0C059] text-[11px] cursor-pointer" @click="copyToForm">粘贴</span>
+            <span class="text-[#F0C059] text-[11px] cursor-pointer" @click="copyToForm">{{ $t("粘贴") }}</span>
           </template>
         </x-input>
       </x-form-item>

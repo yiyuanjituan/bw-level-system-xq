@@ -195,13 +195,13 @@ defineExpose({
         <div class="flex-1"></div>
         <div class="footer">
           <div class="btns">
-            <div class="btn btn-plain" v-if="false">查看订单</div>
-            <div class="btn" @click="handleContinue" v-if="[-1, 3, 4].includes(orderInfo?.pay_status) || orderInfo?.content?.url?.startsWith('inner')">继续存款</div>
-            <div class="btn" @click="handleJumpUrl" v-if="orderInfo?.content?.url && [1,2].includes(orderInfo?.pay_status) && orderInfo?.content?.url?.startsWith('http')">跳转三方</div>
+            <div class="btn btn-plain" v-if="false">{{ $t("查看订单") }}</div>
+            <div class="btn" @click="handleContinue" v-if="[-1, 3, 4].includes(orderInfo?.pay_status) || orderInfo?.content?.url?.startsWith('inner')">{{ $t("继续存款") }}</div>
+            <div class="btn" @click="handleJumpUrl" v-if="orderInfo?.content?.url && [1,2].includes(orderInfo?.pay_status) && orderInfo?.content?.url?.startsWith('http')">{{ $t("跳转三方") }}</div>
           </div>
           <div class="tips">
-            <span>若存款过程遇到问题，请随时</span>
-            <span class="main-text" @click="callToService">联系客服</span>
+            <span>{{ $t("若存款过程遇到问题，请随时") }}</span>
+            <span class="main-text" @click="callToService">{{ $t("联系客服") }}</span>
           </div>
         </div>
       </div>

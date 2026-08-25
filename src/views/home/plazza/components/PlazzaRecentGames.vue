@@ -50,7 +50,7 @@ const emit = defineEmits<{
             error-text=""
           />
           <span class="recent-games__name"><strong>{{ game.name }}</strong></span>
-          <img v-if="game.recommended" class="recent-games__recommend" :src="recommendUrl" alt="推荐" />
+          <img v-if="game.recommended" class="recent-games__recommend" :src="recommendUrl" :alt="$t('推荐')" />
         </button>
         <button
           type="button"

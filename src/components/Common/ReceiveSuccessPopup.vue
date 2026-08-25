@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div v-if="isRendered" class="fixed top-[120px] left-0 right-0 flex justify-center z-50" style="pointer-events: none;">
     <div
       :key="contentKey"
@@ -6,7 +6,7 @@
       :class="{ 'receive-success-popup-wrap--active': isActive }"
     >
       <div class="receive-success-popup" :data-skin-bg="skinBg">
-        <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" alt="领取成功" />
+        <img class="receive-success-popup__icon-img" src="@/assets/web/animated/img_emoji_tada.png" :alt="$t('领取成功')" />
 
         <div class="receive-success-popup__text" v-html="messageText" />
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { handleBack } from "@/utils/common";
 import UiBadge from "@/components/UI/badge.vue";
 import useAuthStore from "@/store/modules/user";
@@ -65,7 +66,7 @@ function handleWithdraw() {
     router.push("/home/security?active=5");
     return showCustomToast({
       type: "warning",
-      message: "为了资金安全，需先设置提现密码哦！"
+      message: $t("为了资金安全，需先设置提现密码哦！")
     });
   } else {
     router.push("/home/withdraw");
@@ -135,7 +136,7 @@ onMounted(() => {
                   class="svg-icon text-[#04BE02]"
                 />
               </div>
-              <div class="label">提现</div>
+              <div class="label">{{ $t("提现") }}</div>
             </div>
             <div class="nav-item" @click="handleRecharge()">
               <div class="icon">
@@ -157,7 +158,7 @@ onMounted(() => {
                   />
                 </picture>
               </div>
-              <div class="label">存款</div>
+              <div class="label">{{ $t("存款") }}</div>
             </div>
             <div class="nav-item" @click="handleLxb()">
               <ui-badge :content="interestRateText">
@@ -169,7 +170,7 @@ onMounted(() => {
                   />
                 </div>
               </ui-badge>
-              <div class="label">利息宝</div>
+              <div class="label">{{ $t("利息宝") }}</div>
             </div>
           </div>
         </div>

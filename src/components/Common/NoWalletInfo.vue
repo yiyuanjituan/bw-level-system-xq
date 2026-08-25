@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { nextTick, onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import UiLoading from '@/components/UI/loading.vue';
@@ -29,7 +30,7 @@ const formModel = ref<any>({
 });
 const formRules = ref<XFormRules>({
   bindWithdrawNum: [
-    { required: true, message: '提现金额不能为空', trigger: ['input', 'blur'] },
+    { required: true, message: $t("提现金额不能为空"), trigger: ['input', 'blur'] },
     {
       validator: (_rule, value, callback) => {
         if (value === '' || value === null || value === undefined) {
@@ -39,7 +40,7 @@ const formRules = ref<XFormRules>({
 
         const amount = Number(value);
         if (!/^\d+$/.test(String(value))) {
-          callback(new Error('提现金额只能为整数'));
+          callback(new Error($t("提现金额只能为整数")));
           return;
         }
         if (!Number.isInteger(amount) || amount < Number(props.walletData.noWalletInfo?.min)) {
@@ -76,7 +77,7 @@ function init() {
 
 function handleBindNoWallet() {
   if (!walletInfo.value.bindUrl) {
-    showCustomToast({ type: 'warning', message: '暂未获取NO钱包绑定地址' });
+    showCustomToast({ type: 'warning', message: $t("暂未获取NO钱包绑定地址") });
     return;
   }
 
@@ -85,7 +86,7 @@ function handleBindNoWallet() {
 
 async function createBindUserByNo() {
   if (!walletInfo.value.id) {
-    showCustomToast({ type: 'warning', message: '暂未获取NO钱包配置信息' });
+    showCustomToast({ type: 'warning', message: $t("暂未获取NO钱包配置信息") });
     return;
   }
 
@@ -95,7 +96,7 @@ async function createBindUserByNo() {
     const result = await createNoWalletUser({ id: walletInfo.value.id });
 
     if (!result?.buyUrl) {
-      showCustomToast({ type: 'warning', message: '暂未获取NO钱包设置地址' });
+      showCustomToast({ type: 'warning', message: $t("暂未获取NO钱包设置地址") });
       return;
     }
 
@@ -136,7 +137,7 @@ async function handleSubmit() {
       })
       .finally(() => (withdrawLoading.value = false))
       .then(() => {
-        showCustomToast({ type: 'success', message: '提现成功, 请等待审核' });
+        showCustomToast({ type: 'success', message: $t("提现成功, 请等待审核") });
         formModel.value.bindWithdrawNum = void 0;
         auth.updateInfo();
         setTimeout(() => {
@@ -200,7 +201,7 @@ onMounted(() => init());
       <div class="amountInputWrapper">
         <x-form-item prop="bindWithdrawNum">
           <span class="item__label" style="width: auto">
-            <span class="item__label-text">提现金额</span>
+            <span class="item__label-text">{{ $t("提现金额") }}</span>
           </span>
           <x-input
             :placeholder="`最低${Number(walletData.noWalletInfo?.min)}，最高${Number(walletData.noWalletInfo?.max)}`"
@@ -211,7 +212,7 @@ onMounted(() => init());
               <div class="prefix-box">￥</div>
             </template>
             <template #suffix>
-              <div class="suffix-box" @click.stop="selectAll">全部</div>
+              <div class="suffix-box" @click.stop="selectAll">{{ $t("全部") }}</div>
             </template>
           </x-input>
         </x-form-item>
@@ -219,17 +220,17 @@ onMounted(() => init());
       <div class="bindAccountSplitLine"></div>
       <x-form-item>
         <span class="item__label" style="width: auto">
-          <span class="item__label-text">验证提现密码</span>
+          <span class="item__label-text">{{ $t("验证提现密码") }}</span>
         </span>
         <div class="password-input">
           <van-password-input :mask="!showPassword" :value="withdrawPassword" :focused="showKeyboard" @focus="handleShowPassword" />
         </div>
       </x-form-item>
       <div class="btn-group">
-        <x-badge class="flex-1" content="年利率88%" position="top-left" :translate-x="false" bg-color="var(--skin__accent_1)">
-          <x-button plain class="!w-[100%]" type="primary" @click="jumpToLiXiBao">赚取利息</x-button>
+        <x-badge class="flex-1" :content="$t('年利率88%')" position="top-left" :translate-x="false" bg-color="var(--skin__accent_1)">
+          <x-button plain class="!w-[100%]" type="primary" @click="jumpToLiXiBao">{{ $t("赚取利息") }}</x-button>
         </x-badge>
-        <x-button @click="handleSubmit" :loading="withdrawLoading">确定提现</x-button>
+        <x-button @click="handleSubmit" :loading="withdrawLoading">{{ $t("确定提现") }}</x-button>
       </div>
     </x-form>
     <teleport to="body">

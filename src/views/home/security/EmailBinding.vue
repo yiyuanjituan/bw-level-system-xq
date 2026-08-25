@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, ref } from "vue";
 import SubNavbar from "@/components/SubNavbar.vue";
 import XInput from "@/components/X/x-input.vue";
@@ -132,12 +133,12 @@ async function handleSubmit() {
   const normalizedEmail = email.value.trim();
 
   if (!normalizedEmail) {
-    showCustomToast({ type: "fail", message: "请输入邮箱地址" });
+    showCustomToast({ type: "fail", message: $t("请输入邮箱地址") });
     return;
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-    showCustomToast({ type: "fail", message: "邮箱格式不正确" });
+    showCustomToast({ type: "fail", message: $t("邮箱格式不正确") });
     return;
   }
 
@@ -148,7 +149,7 @@ async function handleSubmit() {
   try {
     await bindEmail({ email: normalizedEmail });
     await auth.updateInfo();
-    showCustomToast({ type: "success", message: "邮箱绑定成功" });
+    showCustomToast({ type: "success", message: $t("邮箱绑定成功") });
     handleBack();
   } catch {
     return;
@@ -162,7 +163,7 @@ onBeforeUnmount(clearBlurTimer);
 
 <template>
   <div class="email-binding-page">
-    <sub-navbar title="邮箱" />
+    <sub-navbar :title="$t('邮箱')" />
 
     <main class="email-binding-page__main">
       <div class="email-binding-page__content">
@@ -173,7 +174,7 @@ onBeforeUnmount(clearBlurTimer);
             type="email"
             name="email"
             :maxlength="100"
-            placeholder="请输入邮箱地址"
+            :placeholder="$t('请输入邮箱地址')"
             autocomplete="off"
             role="combobox"
             :aria-expanded="showEmailSuggestions"
@@ -213,7 +214,7 @@ onBeforeUnmount(clearBlurTimer);
       </div>
 
       <footer class="email-binding-page__footer">
-        <x-button type="primary" block :loading="isSubmitting" @click="handleSubmit">确 定</x-button>
+        <x-button type="primary" block :loading="isSubmitting" @click="handleSubmit">{{ $t("确 定") }}</x-button>
       </footer>
     </main>
   </div>

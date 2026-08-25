@@ -48,14 +48,14 @@ watch(activePath, (value) => {
 
 <template>
   <div class="notice-page-container">
-    <sub-navbar title="消息中心" back-class-name="!text-[12px]"></sub-navbar>
+    <sub-navbar :title="$t('消息中心')" back-class-name="!text-[12px]"></sub-navbar>
     <div class="tabs-container">
       <van-tabs shrink v-model:active="activePath">
-        <van-tab title="客服" name="4"><NoticeService /></van-tab>
-        <van-tab title="公告" name="2"><NoticeInfo /></van-tab>
-        <van-tab title="通知" name="1"><NoticeNotify /></van-tab>
-        <van-tab title="跑马灯" name="3"><NoticeMarquee /></van-tab>
-        <van-tab title="有奖反馈" name="5"><RewardFeedback /></van-tab>
+        <van-tab :title="$t('客服')" name="4"><NoticeService /></van-tab>
+        <van-tab :title="$t('公告')" name="2"><NoticeInfo /></van-tab>
+        <van-tab :title="$t('通知')" name="1"><NoticeNotify /></van-tab>
+        <van-tab :title="$t('跑马灯')" name="3"><NoticeMarquee /></van-tab>
+        <van-tab :title="$t('有奖反馈')" name="5"><RewardFeedback /></van-tab>
       </van-tabs>
     </div>
     <router-view></router-view>

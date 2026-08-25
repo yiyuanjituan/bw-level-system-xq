@@ -53,7 +53,7 @@ watch(show, (value, oldValue) => {
                 srcset=""
                 class="w-[19px] h-[19px] mr-[9px]"
               />
-              <div>找到我们</div>
+              <div>{{ $t("找到我们") }}</div>
             </div>
             <div class="main-scroll-box">
               <div class="rich-text">
@@ -64,7 +64,7 @@ watch(show, (value, oldValue) => {
                     alt=""
                   />
                   <span class="text-[12px] font-bold">
-                    为了防止网站打不开，请保存我们的网址或邮箱，以免找不到回家路！
+                    {{ $t("为了防止网站打不开，请保存我们的网址或邮箱，以免找不到回家路！") }}
                   </span>
                 </div>
               </div>

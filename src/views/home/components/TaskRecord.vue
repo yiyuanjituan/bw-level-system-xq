@@ -247,13 +247,13 @@ defineExpose({
                     </div>
                   </div>
 
-                  <ui-empty v-else text="暂无记录">
+                  <ui-empty v-else :text="$t('暂无记录')">
                     <template #text>
                       <div class="empty-state__text">
                         <span>{{ emptyStateText }}</span>
                         <template v-if="shouldShowSeeMore">
-                          <span>，可</span>
-                          <span class="empty-state__link" @click="handleSeeMore">查看更多</span>
+                          <span>{{ $t("，可") }}</span>
+                          <span class="empty-state__link" @click="handleSeeMore">{{ $t("查看更多") }}</span>
                         </template>
                       </div>
                     </template>

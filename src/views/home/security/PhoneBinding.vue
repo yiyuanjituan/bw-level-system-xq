@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, ref } from "vue";
 import SubNavbar from "@/components/SubNavbar.vue";
 import XInput from "@/components/X/x-input.vue";
@@ -45,7 +46,7 @@ function startCountdown() {
 
 async function handleSendCode() {
   if (!isValidPhone.value) {
-    showCustomToast({ type: "fail", message: "请输入正确的手机号" });
+    showCustomToast({ type: "fail", message: $t("请输入正确的手机号") });
     return;
   }
 
@@ -57,7 +58,7 @@ async function handleSendCode() {
     startCountdown();
     showCustomToast({
       type: "success",
-      message: "验证码已发送，请查看短信，若未收到验证码，请核对手机号码后重试"
+      message: $t("验证码已发送，请查看短信，若未收到验证码，请核对手机号码后重试")
     });
   } catch {
     return;
@@ -68,12 +69,12 @@ async function handleSendCode() {
 
 async function handleSubmit() {
   if (!isValidPhone.value) {
-    showCustomToast({ type: "fail", message: "请输入正确的手机号" });
+    showCustomToast({ type: "fail", message: $t("请输入正确的手机号") });
     return;
   }
 
   if (!/^\d{4,6}$/.test(verificationCode.value)) {
-    showCustomToast({ type: "fail", message: "请输入正确的手机验证码" });
+    showCustomToast({ type: "fail", message: $t("请输入正确的手机验证码") });
     return;
   }
 
@@ -84,7 +85,7 @@ async function handleSubmit() {
       code: verificationCode.value
     });
     await auth.updateInfo();
-    showCustomToast({ type: "success", message: "手机号绑定成功" });
+    showCustomToast({ type: "success", message: $t("手机号绑定成功") });
     handleBack();
   } catch {
     return;
@@ -100,7 +101,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="phone-binding-page">
-    <sub-navbar title="手机" />
+    <sub-navbar :title="$t('手机')" />
 
     <main class="phone-binding-page__main">
       <div class="phone-binding-page__content">
@@ -112,13 +113,13 @@ onBeforeUnmount(() => {
           type="tel"
           name="phone"
           :maxlength="11"
-          placeholder="请输入手机号"
+          :placeholder="$t('请输入手机号')"
           autocomplete="tel"
           @input="normalizePhone"
         >
           <template #prefix>
             <span class="phone-binding-page__area-code">
-              <img :src="mainlandFlag" alt="中国大陆" />
+              <img :src="mainlandFlag" :alt="$t('中国大陆')" />
               <span>+86</span>
             </span>
           </template>
@@ -130,7 +131,7 @@ onBeforeUnmount(() => {
           type="tel"
           name="phoneCode"
           :maxlength="6"
-          placeholder="请输入手机验证码"
+          :placeholder="$t('请输入手机验证码')"
           autocomplete="one-time-code"
           @input="normalizeVerificationCode"
           @keydown.enter.prevent="handleSubmit"
@@ -154,7 +155,7 @@ onBeforeUnmount(() => {
       </div>
 
       <footer class="phone-binding-page__footer">
-        <x-button type="primary" block :loading="isSubmitting" @click="handleSubmit">确 定</x-button>
+        <x-button type="primary" block :loading="isSubmitting" @click="handleSubmit">{{ $t("确 定") }}</x-button>
       </footer>
     </main>
   </div>

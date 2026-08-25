@@ -33,7 +33,7 @@ watch(() => props.modelValue, (val: any) => {
             <svg-icon name="password_register" class-name="check-icon-gou" />
           </div>
         </template>
-        密码登录
+        {{ $t("密码登录") }}
       </van-radio>
       <van-radio name="sms" checked-color="#F0C059" style="color: #874404">
         <template #icon="props">
@@ -41,7 +41,7 @@ watch(() => props.modelValue, (val: any) => {
             <svg-icon name="sms_register" class-name="check-icon-sms" />
           </div>
         </template>
-        验证码登录
+        {{ $t("验证码登录") }}
       </van-radio>
     </van-radio-group>
   </div>

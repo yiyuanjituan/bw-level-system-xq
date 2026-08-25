@@ -48,12 +48,12 @@ defineEmits<{
       @share="$emit('share', $event)"
     />
   </div>
-  <div v-else-if="loading" class="post-list-state" aria-label="帖子加载中">
+  <div v-else-if="loading" class="post-list-state" :aria-label="$t('帖子加载中')">
     <ui-loading />
   </div>
   <div v-else-if="errorText" class="post-list-state post-list-state--error">
     <p>{{ errorText }}</p>
-    <button type="button" @click="$emit('retry')">重新加载</button>
+    <button type="button" @click="$emit('retry')">{{ $t("重新加载") }}</button>
   </div>
   <ui-empty v-else :text="emptyText" />
 </template>

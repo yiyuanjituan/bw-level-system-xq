@@ -7,12 +7,12 @@ import UiButton from "@/components/Common/Button.vue";
     <div class="absolute top-0 left-0 w-full">
       <div class="level-box">
         <div class="sticky-box">
-          <div class="table-th w-[65px] flex-none">等级</div>
+          <div class="table-th w-[65px] flex-none">{{ $t("等级") }}</div>
           <div class="table-th flex-1">
-            晋级再投注
+            {{ $t("晋级再投注") }}
             <span class="tooltip">?</span>
           </div>
-          <div class="table-th flex-1">晋级奖金</div>
+          <div class="table-th flex-1">{{ $t("晋级奖金") }}</div>
           <div class="table-th flex-1"></div>
         </div>
         <div class="vip_list">
@@ -37,7 +37,7 @@ import UiButton from "@/components/Common/Button.vue";
               </div>
             </div>
             <div class="cell-item !w-[103px]">
-              <x-button size="small">一键领取</x-button>
+              <x-button size="small">{{ $t("一键领取") }}</x-button>
             </div>
           </div>
         </div>

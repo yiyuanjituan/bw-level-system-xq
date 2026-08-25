@@ -18,13 +18,13 @@ defineEmits<{
 </script>
 
 <template>
-  <nav class="quick-actions" aria-label="推广快捷入口">
+  <nav class="quick-actions" :aria-label="$t('推广快捷入口')">
     <button v-if="showCreateSubordinate" type="button" class="quick-actions__item quick-actions__item--primary" @click="$emit('selectTab', 'createSubordinate')">
-      <span class="quick-actions__text-wrap"><img :src="createIcon" alt="" /><span class="quick-actions__title">创建下级</span></span>
+      <span class="quick-actions__text-wrap"><img :src="createIcon" alt="" /><span class="quick-actions__title">{{ $t("创建下级") }}</span></span>
       <svg-icon name="arrow-back" class-name="quick-actions__arrow" aria-hidden="true" />
     </button>
     <button type="button" class="quick-actions__item quick-actions__item--accent" @click="$emit('selectTab', 'rebateRatio')">
-      <span class="quick-actions__text-wrap"><img :src="rebateIcon" alt="" /><span class="quick-actions__title">返佣比例</span></span>
+      <span class="quick-actions__text-wrap"><img :src="rebateIcon" alt="" /><span class="quick-actions__title">{{ $t("返佣比例") }}</span></span>
       <svg-icon name="arrow-back" class-name="quick-actions__arrow" aria-hidden="true" />
     </button>
   </nav>

@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
               <button
                 class="commission-retry"
                 type="button"
-                aria-label="重新加载"
+                :aria-label="$t('重新加载')"
                 @click="handleRetry"
               >
                 <svg viewBox="0 0 28 28" aria-hidden="true">
@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
             </div>
           </article>
           <button v-if="requestFailed" class="commission-load-error" type="button" @click="handleRetry">
-            加载失败，点击重试
+            {{ $t("加载失败，点击重试") }}
           </button>
         </van-list>
       </div>

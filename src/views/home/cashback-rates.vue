@@ -87,7 +87,7 @@ onMounted(() => init());
 
 <template>
   <div class="cashback-rates-page">
-    <sub-navbar title="返水比例" />
+    <sub-navbar :title="$t('返水比例')" />
 
     <div class="body-box">
       <div class="search-header">
@@ -126,7 +126,7 @@ onMounted(() => init());
       </div>
 
       <div class="loading-box" v-if="!isPageLoading && detailList.length == 0">
-        <ui-empty text="数据为空" />
+        <ui-empty :text="$t('数据为空')" />
       </div>
 
       <div class="scroll-box" v-if="!isPageLoading && detailList.length > 0">

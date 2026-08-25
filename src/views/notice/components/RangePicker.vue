@@ -216,14 +216,14 @@ watch(
                 type="button"
                 @click="handleCancel"
               >
-                取消
+                {{ $t("取消") }}
               </button>
               <button
                 class="range-picker__action range-picker__action--primary"
                 type="button"
                 @click="handleConfirm"
               >
-                确认
+                {{ $t("确认") }}
               </button>
             </div>
           </div>

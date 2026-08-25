@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { onMounted, provide, ref } from "vue";
 import useAuthStore from "@/store/modules/user";
 import UiBadge from "@/components/UI/badge.vue";
@@ -65,7 +66,7 @@ function handleSetDefault(record) {
   if (record.is_default) return;
   setDefault({ id: record.id }).then(() => {
     updateWallet()
-    showCustomToast({ type: 'success', message: '设置成功！' })
+    showCustomToast({ type: 'success', message: $t("设置成功！") })
   })
 }
 
@@ -113,10 +114,10 @@ onMounted(() => updateWallet())
           <div class="cell-container">
             <div class="left">
               <img src="/siteadmin/pay-icon/icon_bank_nromal.png" alt="." class="w-[25px] h-[25px] mr-[7px]" />
-              <div class="typeName">银行卡转账</div>
+              <div class="typeName">{{ $t("银行卡转账") }}</div>
             </div>
             <div class="right" @click="handleAddCard('bank')">
-              <span class="right-text">添加</span>
+              <span class="right-text">{{ $t("添加") }}</span>
               <svg-icon name="comm_icon_fh" class-name="arrow-icon rotate-[180deg] ml-[7.5px] text-[13px]" />
             </div>
           </div>
@@ -127,10 +128,10 @@ onMounted(() => updateWallet())
           <div class="cell-container">
             <div class="left">
               <img src="/siteadmin/pay-icon/icon_normal_zfb.png" alt="." class="w-[25px] h-[25px] mr-[7px]" />
-              <div class="typeName">支付宝</div>
+              <div class="typeName">{{ $t("支付宝") }}</div>
             </div>
             <div class="right" @click="handleAddCard('alipayAccount')">
-              <span class="right-text">添加</span>
+              <span class="right-text">{{ $t("添加") }}</span>
               <svg-icon name="comm_icon_fh" class-name="arrow-icon rotate-[180deg] ml-[7.5px] text-[13px]" />
             </div>
           </div>
@@ -141,10 +142,10 @@ onMounted(() => updateWallet())
           <div class="cell-container">
             <div class="left">
               <img src="/siteadmin/pay-icon/icon_wallet_normal.png" alt="." class="w-[25px] h-[25px] mr-[7px]" />
-              <div class="typeName">三方钱包</div>
+              <div class="typeName">{{ $t("三方钱包") }}</div>
             </div>
             <div class="right" @click="handleAddCard('thirdWallet')">
-              <span class="right-text">添加</span>
+              <span class="right-text">{{ $t("添加") }}</span>
               <svg-icon name="comm_icon_fh" class-name="arrow-icon rotate-[180deg] ml-[7.5px] text-[13px]" />
             </div>
           </div>
@@ -155,10 +156,10 @@ onMounted(() => updateWallet())
           <div class="cell-container">
             <div class="left">
               <img src="/siteadmin/pay-icon/icon_szhb_xnb.png" alt="." class="w-[25px] h-[25px] mr-[7px]" />
-              <div class="typeName">数字货币</div>
+              <div class="typeName">{{ $t("数字货币") }}</div>
             </div>
             <div class="right" @click="handleAddCard('number')">
-              <span class="right-text">添加</span>
+              <span class="right-text">{{ $t("添加") }}</span>
               <svg-icon name="comm_icon_fh" class-name="arrow-icon rotate-[180deg] ml-[7.5px] text-[13px]" />
             </div>
           </div>

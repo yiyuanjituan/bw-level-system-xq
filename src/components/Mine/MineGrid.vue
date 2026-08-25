@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref } from "vue";
 import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
 import useAuthStore from "@/store/modules/user";
@@ -14,63 +15,63 @@ const list = ref([
     key: "forget",
     icon_1: "style_2_icon_list_zhye",
     icon_2: "style_2_icon_list_zhye2",
-    name: "找回余额",
+    name: $t("找回余额"),
     url: "/home/report?reportCurrent=4"
   },
   {
     key: "zhmx",
     icon_1: "style_2_icon_list_zhmx",
     icon_2: "style_2_icon_list_zhmx2",
-    name: "账户明细",
+    name: $t("账户明细"),
     url: "/home/report?reportCurrent=3"
   },
   {
     key: "tzjl",
     icon_1: "style_2_icon_list_tzjl",
     icon_2: "style_2_icon_list_tzjl2",
-    name: "投注记录",
+    name: $t("投注记录"),
     url: "/home/report?reportCurrent=2"
   },
   {
     key: "txgl",
     icon_1: "style_2_icon_list_txgl",
     icon_2: "style_2_icon_list_txgl2",
-    name: "提现管理",
+    name: $t("提现管理"),
     url: "/home/withdraw?active=10"
   },
   {
     key: "grbb",
     icon_1: "style_2_icon_list_grbb",
     icon_2: "style_2_icon_list_grbb2",
-    name: "个人报表",
+    name: $t("个人报表"),
     url: "/home/report?reportCurrent=1"
   },
   {
     key: "vip",
     icon_1: "style_2_icon_list_vip",
     icon_2: "style_2_icon_list_vip2",
-    name: "VIP中心",
+    name: $t("VIP中心"),
     url: "/home/vip"
   },
   {
     key: "aqzx",
     icon_1: "style_2_icon_list_aqzx",
     icon_2: "style_2_icon_list_aqzx2",
-    name: "安全中心",
+    name: $t("安全中心"),
     url: "/home/security"
   },
   {
     key: "zdwm",
     icon_1: "style_2_icon_list_zdwm",
     icon_2: "style_2_icon_list_zdwm2",
-    name: "找到我们",
+    name: $t("找到我们"),
     url: "账户明细"
   },
   {
     key: "fxzq",
     icon_1: "style_2_icon_list_fxzq",
     icon_2: "style_2_icon_list_fxzq2",
-    name: "分享赚钱",
+    name: $t("分享赚钱"),
     url: "/home/promote"
   },
   {
@@ -78,42 +79,42 @@ const list = ref([
     icon_1: "comm_icon_dblp_1",
     icon_2: "comm_icon_dblp_2",
     icon_3: "comm_icon_gou",
-    name: "担保理赔",
+    name: $t("担保理赔"),
     url: "/home/claim"
   },
   {
     key: "pyq",
     icon_1: "style_2_icon_list_pyq",
     icon_2: "style_2_icon_list_pyq2",
-    name: "发现",
+    name: $t("发现"),
     url: "/home/plazza"
   },
   {
     key: "cjwt",
     icon_1: "style_2_icon_list_cjwt",
     icon_2: "style_2_icon_list_cjwt2",
-    name: "常见问题",
+    name: $t("常见问题"),
     url: "/home/notice?noticeType=4"
   },
   {
     key: "yjfk",
     icon_1: "style_2_icon_list_yjfk",
     icon_2: "style_2_icon_list_yjfk2",
-    name: "有奖反馈",
+    name: $t("有奖反馈"),
     url: "/home/notice?noticeType=5"
   },
   {
     key: "dlsb",
     icon_1: "style_2_icon_list_dlsb",
     icon_2: "style_2_icon_list_dlsb2",
-    name: "登录设备",
+    name: $t("登录设备"),
     url: "/home/device"
   },
   {
     key: "aqtc",
     icon_1: "style_2_icon_list_aqtc",
     icon_2: "style_2_icon_list_aqtc2",
-    name: "安全退出",
+    name: $t("安全退出"),
     url: "账户明细"
   },
 ]);
@@ -132,8 +133,8 @@ function safeLogOut() {
   }
 
   const options = {
-    title: '温馨提示',
-    message: '是否退出当前账号?',
+    title: $t("温馨提示"),
+    message: $t("是否退出当前账号?"),
     showCancelButton: true,
     confirmButtonText: '确认退出',
     cancelButtonText: '我点错了',
@@ -143,7 +144,7 @@ function safeLogOut() {
   showCustomDialog(options).then((result) => {
     if (result) {
       auth.logout()
-      showCustomToast({ type: 'success', message: "退出成功" })
+      showCustomToast({ type: 'success', message: $t("退出成功") })
       setTimeout(() => {
         router.replace('/')
       }, 500)

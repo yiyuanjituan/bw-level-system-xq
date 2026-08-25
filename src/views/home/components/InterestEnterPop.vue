@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, ref } from "vue";
 import { useWindowSize } from "@vant/use";
 import dayjs from "dayjs";
@@ -65,7 +66,7 @@ function handleEnter() {
     .then(() => {
       auth.updateInfo();
       close();
-      showCustomToast({ type: "success", message: "存入成功" });
+      showCustomToast({ type: "success", message: $t("存入成功") });
       emit("success");
     })
     .finally(() => (isLoading.value = false));
@@ -143,7 +144,7 @@ onBeforeUnmount(stopClock);
             <x-button class="!w-[100%]" :disabled="!inputEnterValue" :loading="isLoading" @click="handleEnter"
               >确认转入</x-button
             >
-            <div class="tips">本次转入后首次产生利息的时间：{{ openTime }}</div>
+            <div class="tips">{{ $t("本次转入后首次产生利息的时间：") }}{{ openTime }}</div>
           </div>
         </div>
       </template>

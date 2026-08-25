@@ -148,8 +148,8 @@ onMounted(() => getData());
                   </div>
                 </div>
                 <div>
-                  <span class="upgradeVip" v-if="item.nextLevel == item.level">当前反水比例{{ item.nextScale }}%</span>
-                  <span class="upgradeVip" v-if="item.nextLevel != item.level">升级到VIP{{ item.nextLevel }}可{{ item.nextScale }}%</span>
+                  <span class="upgradeVip" v-if="item.nextLevel == item.level">{{ $t("当前反水比例") }}{{ item.nextScale }}%</span>
+                  <span class="upgradeVip" v-if="item.nextLevel != item.level">{{ $t("升级到VIP") }}{{ item.nextLevel }}{{ $t("可") }}{{ item.nextScale }}%</span>
                   <p>
                     <label>可领取</label><span class="receiveAmt">{{ formatMoney(item.amount) }}</span>
                   </p>

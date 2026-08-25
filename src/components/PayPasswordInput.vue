@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { reactive, ref } from "vue";
 import { verifyWithdrawalPassword } from "@/api/common";
 import { showCustomDialog } from "@/hooks/useCommon";
@@ -42,8 +43,8 @@ const handleNext = () => {
 
 function handleForgetPassword() {
   showCustomDialog({
-    title: "温馨提示",
-    message: "请联系客服找回密码！\n",
+    title: $t("温馨提示"),
+    message: $t("请联系客服找回密码！\n"),
     showClose: true,
     showCancelButton: true,
     confirmButtonText: "客服",
@@ -74,11 +75,11 @@ defineExpose({
       <div class="dialog-container">
         <div class="dialog-body">
           <div class="header-box">
-            <span>输入密码</span>
+            <span>{{ $t("输入密码") }}</span>
           </div>
           <div class="content-box">
             <div class="tip-box">
-              <span>提现密码</span>
+              <span>{{ $t("提现密码") }}</span>
               <svg-icon
                 name="comm_icon_hide"
                 class-name="eye-icon text-[18px] text-[#242424]"
@@ -104,13 +105,13 @@ defineExpose({
               <div class="error-icon">
                 <svg-icon name="comm_icon_tip3" />
               </div>
-              <span class="text">6位纯数字</span>
+              <span class="text">{{ $t("6位纯数字") }}</span>
             </div>
             <div class="remark">
-              <span>为了您的账户安全，请输入提现密码</span>
-              <span class="active" @click="handleForgetPassword">忘记密码?</span>
+              <span>{{ $t("为了您的账户安全，请输入提现密码") }}</span>
+              <span class="active" @click="handleForgetPassword">{{ $t("忘记密码?") }}</span>
             </div>
-            <van-button native-type="submit" class="button" @click="handleNext">下一步</van-button>
+            <van-button native-type="submit" class="button" @click="handleNext">{{ $t("下一步") }}</van-button>
           </div>
         </div>
       </div>

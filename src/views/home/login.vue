@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { handleBack } from '@/utils/common';
 import RegisterPopup from '@/components/Common/Register.vue';
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
@@ -91,7 +92,7 @@ function handleQuickLogin(name: string) {
 async function openTelegramLogin() {
   const telegramConfig = app.appInfo?.telegramLogin;
   if (!telegramConfig?.enabled) {
-    showCustomToast({ type: 'warning', message: '当前站点未开启Telegram快捷登录' });
+    showCustomToast({ type: 'warning', message: $t("当前站点未开启Telegram快捷登录") });
     return;
   }
 
@@ -99,11 +100,11 @@ async function openTelegramLogin() {
   try {
     loginDomain = new URL(String(telegramConfig.domain || ''));
   } catch {
-    showCustomToast({ type: 'fail', message: 'Telegram登录Domain配置无效' });
+    showCustomToast({ type: 'fail', message: $t("Telegram登录Domain配置无效") });
     return;
   }
   if (!['http:', 'https:'].includes(loginDomain.protocol)) {
-    showCustomToast({ type: 'fail', message: 'Telegram登录Domain只支持HTTP或HTTPS' });
+    showCustomToast({ type: 'fail', message: $t("Telegram登录Domain只支持HTTP或HTTPS") });
     return;
   }
 
@@ -121,7 +122,7 @@ async function openTelegramLogin() {
     });
     const authorizationUrl = new URL(result?.authorizationUrl || '');
     if (authorizationUrl.origin !== 'https://oauth.telegram.org') {
-      throw new Error('Telegram授权地址无效');
+      throw new Error($t("Telegram授权地址无效"));
     }
 
     if (loginDomain.origin.toLowerCase() !== window.location.origin.toLowerCase()) {
@@ -149,11 +150,11 @@ async function handleTelegramGateway() {
   try {
     telegramOrigin = new URL(String(app.appInfo?.telegramLogin?.domain || '')).origin.toLowerCase();
   } catch {
-    showCustomToast({ type: 'fail', message: 'Telegram登录Domain配置无效' });
+    showCustomToast({ type: 'fail', message: $t("Telegram登录Domain配置无效") });
     return;
   }
   if (telegramOrigin !== currentUrl.origin.toLowerCase()) {
-    showCustomToast({ type: 'fail', message: '当前页面不是Telegram统一登录Domain' });
+    showCustomToast({ type: 'fail', message: $t("当前页面不是Telegram统一登录Domain") });
     return;
   }
 
@@ -161,11 +162,11 @@ async function handleTelegramGateway() {
   try {
     authorizationUrl = new URL(authorizationUrlText);
   } catch {
-    showCustomToast({ type: 'fail', message: 'Telegram授权地址无效' });
+    showCustomToast({ type: 'fail', message: $t("Telegram授权地址无效") });
     return;
   }
   if (authorizationUrl.origin !== 'https://oauth.telegram.org') {
-    showCustomToast({ type: 'fail', message: 'Telegram授权地址无效' });
+    showCustomToast({ type: 'fail', message: $t("Telegram授权地址无效") });
     return;
   }
 
@@ -226,8 +227,8 @@ function handleRegister() {
       handleBack();
       setTimeout(() => {
         const params = {
-          title: '注册成功',
-          message: '👉恭喜您注册成功! 赶紧玩一局吧~',
+          title: $t("注册成功"),
+          message: $t("👉恭喜您注册成功! 赶紧玩一局吧~"),
           confirmButtonText: '立即存款',
           titleColor: '#04be02'
         };
@@ -336,12 +337,12 @@ watch(
           </x-button>
         </section>
         <div class="mt-[10px] flex items-center justify-center">
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">联系客服</div>
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="freeTrialGame">免费试玩</div>
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">忘记密码</div>
+          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">{{ $t("联系客服") }}</div>
+          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="freeTrialGame">{{ $t("免费试玩") }}</div>
+          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">{{ $t("忘记密码") }}</div>
         </div>
         <section v-if="activeTabs == 1 && quickLoginOptions.length" class="quick-login">
-          <div class="quick-login__title"><span>快捷登录</span></div>
+          <div class="quick-login__title"><span>{{ $t("快捷登录") }}</span></div>
           <div class="quick-login__list">
             <button
               v-for="option in quickLoginOptions"

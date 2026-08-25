@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
@@ -58,7 +59,7 @@ async function loadData(showSuccessMessage = false) {
     }
     inviteData.value = inviteResult.value;
     if (showSuccessMessage) {
-      showCustomToast({ type: "success", message: "刷新成功" });
+      showCustomToast({ type: "success", message: $t("刷新成功") });
     }
   } catch {
     loadFailed.value = true;
@@ -133,7 +134,7 @@ onMounted(() => {
               type="button"
               class="invite-template__refresh"
               :disabled="isLoading"
-              title="刷新有效下级"
+              :title="$t('刷新有效下级')"
               @click="loadData(true)"
             >
               <svg-icon
@@ -166,7 +167,7 @@ onMounted(() => {
           :receiving-reward-id="receivingRewardId"
           @receive="handleReceive"
         />
-        <div v-else class="invite-template__rules-empty">暂无奖励档位</div>
+        <div v-else class="invite-template__rules-empty">{{ $t("暂无奖励档位") }}</div>
       </section>
 
       <section v-if="inviteData.config.description" class="invite-template__description">
@@ -176,7 +177,7 @@ onMounted(() => {
             :src="rulesDecorationImage"
             alt=""
           />
-          <h2 class="invite-template__description-title-text">活动说明</h2>
+          <h2 class="invite-template__description-title-text">{{ $t("活动说明") }}</h2>
           <img
             class="invite-template__rules-decoration invite-template__rules-decoration--right"
             :src="rulesDecorationImage"

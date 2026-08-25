@@ -13,7 +13,7 @@ withDefaults(
   <section class="base-template">
     <div class="base-template__texture base-template__texture--top" />
     <div v-if="content" class="base-template__content" v-html="content" />
-    <div v-else class="base-template__empty">暂无活动详情</div>
+    <div v-else class="base-template__empty">{{ $t("暂无活动详情") }}</div>
     <div class="base-template__texture base-template__texture--bottom" />
   </section>
 </template>

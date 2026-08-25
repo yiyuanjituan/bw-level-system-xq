@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { handleBack } from "@/utils/common";
 import { ref } from "vue";
 import { showCustomToast } from "@/hooks/useCommon";
@@ -9,7 +10,7 @@ function handleLoading() {
   isLoading.value = true;
   setTimeout(() => {
     isLoading.value = false;
-    showCustomToast({ message: '刷新成功', type: 'success' })
+    showCustomToast({ message: $t("刷新成功"), type: 'success' })
   }, 500)
 }
 </script>
@@ -17,15 +18,15 @@ function handleLoading() {
 <template>
   <div class="event-bottom-box">
     <div class="receiveTimes">
-      剩余申请次数：<span class="text-white">0</span>
+      {{ $t("剩余申请次数：") }}<span class="text-white">0</span>
       <div class="refresh-box" @click="handleLoading">
         <svg-icon name="comm_icon_retry" class-name="text-[#DFBE5B]" :class="{ loading: isLoading }" />
-        <span class="event-refresh-btn-text">刷新次数</span>
+        <span class="event-refresh-btn-text">{{ $t("刷新次数") }}</span>
       </div>
     </div>
     <div class="btn-wrap">
-      <van-button type="primary" plain @click="handleBack">返 回</van-button>
-      <van-button type="primary" color="#999">优惠申请</van-button>
+      <van-button type="primary" plain @click="handleBack">{{ $t("返 回") }}</van-button>
+      <van-button type="primary" color="#999">{{ $t("优惠申请") }}</van-button>
     </div>
   </div>
 </template>

@@ -36,14 +36,14 @@ defineExpose({
   >
     <div class="body-container">
       <div class="search-box">
-        <span class="text">搜索游戏</span>
+        <span class="text">{{ $t("搜索游戏") }}</span>
         <svg-icon name="comm_icon_ss" class="text-[11px] text-[#ADB6C3] mr-[9px]" />
       </div>
 
-      <div class="colos text-white" v-for="i in 100">萨队</div>
-      <div class="colos text-white">萨队</div>
-      <div class="colos text-white">萨队</div>
-      <div class="colos text-white">萨队</div>
+      <div class="colos text-white" v-for="i in 100">{{ $t("萨队") }}</div>
+      <div class="colos text-white">{{ $t("萨队") }}</div>
+      <div class="colos text-white">{{ $t("萨队") }}</div>
+      <div class="colos text-white">{{ $t("萨队") }}</div>
     </div>
   </van-popup>
 </template>

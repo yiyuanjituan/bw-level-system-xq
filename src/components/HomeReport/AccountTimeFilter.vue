@@ -153,22 +153,22 @@ watch(
           :class="{ 'time-panel__quick-item--active': draftMode === 'today' }"
           @click="selectQuickMode('today')"
         >
-          今日
+          {{ $t("今日") }}
         </button>
         <button
           class="time-panel__quick-item"
           :class="{ 'time-panel__quick-item--active': draftMode === 'yesterday' }"
           @click="selectQuickMode('yesterday')"
         >
-          昨日
+          {{ $t("昨日") }}
         </button>
       </div>
 
-      <div class="time-panel__title">自定义</div>
+      <div class="time-panel__title">{{ $t("自定义") }}</div>
 
       <div class="time-panel__picker-header">
-        <span>开始日期</span>
-        <span>结束日期</span>
+        <span>{{ $t("开始日期") }}</span>
+        <span>{{ $t("结束日期") }}</span>
       </div>
 
       <div class="time-panel__picker-row">
@@ -198,8 +198,8 @@ watch(
       </div>
 
       <div class="time-panel__actions">
-        <x-button class="flex-1 !h-[40px]" plain type="primary" @click="handleCancel">取消</x-button>
-        <x-button class="flex-1 !h-[40px]" @click="handleConfirm">确认</x-button>
+        <x-button class="flex-1 !h-[40px]" plain type="primary" @click="handleCancel">{{ $t("取消") }}</x-button>
+        <x-button class="flex-1 !h-[40px]" @click="handleConfirm">{{ $t("确认") }}</x-button>
       </div>
     </div>
   </van-popover>

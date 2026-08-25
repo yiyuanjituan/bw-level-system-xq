@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
     <div class="agent-summary__card" :class="{ 'agent-summary__card--guest': !loggedIn }">
       <div class="agent-summary__identity">
         <div v-if="loggedIn" class="agent-summary__level">
-          <img :src="levelIcon" alt="当前代理等级" />
+          <img :src="levelIcon" :alt="$t('当前代理等级')" />
           <span>?</span>
         </div>
 

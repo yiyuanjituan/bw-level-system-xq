@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import AccountTimeFilter from "@/components/HomeReport/AccountTimeFilter.vue";
@@ -159,7 +160,7 @@ function handleRefreshBalance() {
   auth
     .updateInfo()
     .then(() => {
-      showCustomToast({ type: "success", message: "余额刷新成功" });
+      showCustomToast({ type: "success", message: $t("余额刷新成功") });
     })
     .finally(() => {
       isWalletLoading.value = false;

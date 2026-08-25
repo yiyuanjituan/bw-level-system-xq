@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { publishMoment, uploadMomentImage } from "@/api/common";
 import SubNavbar from "@/components/SubNavbar.vue";
@@ -49,18 +50,18 @@ async function handleUploadImage(file: File) {
   const imageUrl = typeof response === "string"
     ? response
     : response?.url || response?.data?.url || response?.path || response?.data?.path;
-  if (!imageUrl) throw new Error("图片上传结果缺少地址");
+  if (!imageUrl) throw new Error($t("图片上传结果缺少地址"));
   return { url: String(imageUrl) };
 }
 
 function validateImage(file: File) {
   if (ALLOWED_IMAGE_TYPES.includes(file.type)) return true;
-  showCustomToast({ type: "warning", message: "仅支持PNG、JPG或JPEG图片" });
+  showCustomToast({ type: "warning", message: $t("仅支持PNG、JPG或JPEG图片") });
   return false;
 }
 
 function handleUploadOversize() {
-  showCustomToast({ type: "warning", message: "单张图片不能超过10MB" });
+  showCustomToast({ type: "warning", message: $t("单张图片不能超过10MB") });
 }
 
 function handleUploadExceed() {
@@ -68,7 +69,7 @@ function handleUploadExceed() {
 }
 
 function handleUploadError() {
-  showCustomToast({ type: "fail", message: "图片上传失败，请重新选择" });
+  showCustomToast({ type: "fail", message: $t("图片上传失败，请重新选择") });
 }
 
 async function insertEmoji(emoji: string) {
@@ -92,7 +93,7 @@ async function handlePublish() {
     .map(file => String(file.url));
 
   if (!normalizedContent && !imageUrls.length) {
-    showCustomToast({ type: "warning", message: "请输入帖子内容或上传图片" });
+    showCustomToast({ type: "warning", message: $t("请输入帖子内容或上传图片") });
     return;
   }
   if (normalizedContent.length > MAX_CONTENT_LENGTH) {
@@ -100,18 +101,18 @@ async function handlePublish() {
     return;
   }
   if (isUploading.value) {
-    showCustomToast({ type: "warning", message: "图片正在上传，请稍后发布" });
+    showCustomToast({ type: "warning", message: $t("图片正在上传，请稍后发布") });
     return;
   }
   if (hasUploadError) {
-    showCustomToast({ type: "warning", message: "请移除上传失败的图片后再发布" });
+    showCustomToast({ type: "warning", message: $t("请移除上传失败的图片后再发布") });
     return;
   }
 
   isPublishing.value = true;
   try {
     await publishMoment({ content: normalizedContent, imageUrls });
-    showCustomToast({ type: "success", message: "发布成功" });
+    showCustomToast({ type: "success", message: $t("发布成功") });
     await router.replace("/home/plazza?active=profile");
   } catch {
     return;
@@ -133,7 +134,7 @@ onMounted(async () => {
   }
 
   if (!hasCompletePublishProfile()) {
-    showCustomToast({ type: "warning", message: "请先完善头像、昵称和个人介绍" });
+    showCustomToast({ type: "warning", message: $t("请先完善头像、昵称和个人介绍") });
     await router.replace("/home/plazza?active=profile");
   }
 });
@@ -141,7 +142,7 @@ onMounted(async () => {
 
 <template>
   <main class="moment-post-page">
-    <sub-navbar title="发帖" />
+    <sub-navbar :title="$t('发帖')" />
 
     <section class="moment-post-page__content">
       <form class="moment-post-form" novalidate @submit.prevent="handlePublish">
@@ -150,7 +151,7 @@ onMounted(async () => {
             <button
               type="button"
               :class="{ 'moment-post-editor__tool--active': isColorPickerVisible }"
-              aria-label="选择文字颜色"
+              :aria-label="$t('选择文字颜色')"
               :aria-expanded="isColorPickerVisible"
               @click="isColorPickerVisible = !isColorPickerVisible; isEmojiPickerVisible = false"
             >
@@ -159,7 +160,7 @@ onMounted(async () => {
             <button
               type="button"
               :class="{ 'moment-post-editor__tool--active': isEmojiPickerVisible }"
-              aria-label="选择表情"
+              :aria-label="$t('选择表情')"
               :aria-expanded="isEmojiPickerVisible"
               @click="isEmojiPickerVisible = !isEmojiPickerVisible; isColorPickerVisible = false"
             >
@@ -173,7 +174,7 @@ onMounted(async () => {
             :style="{ color: textColor || undefined }"
             :maxlength="MAX_CONTENT_LENGTH"
             autofocus
-            placeholder="这一刻的想法..."
+            :placeholder="$t('这一刻的想法...')"
           ></textarea>
           <div class="moment-post-editor__count">{{ content.length }} / {{ MAX_CONTENT_LENGTH }}</div>
           <plazza-color-picker
@@ -207,8 +208,8 @@ onMounted(async () => {
     </section>
 
     <footer class="moment-post-footer">
-      <x-button plain type="primary" :disabled="isPublishing" @click="router.back()">取 消</x-button>
-      <x-button type="primary" :loading="isPublishing" @click="handlePublish">发 布</x-button>
+      <x-button plain type="primary" :disabled="isPublishing" @click="router.back()">{{ $t("取 消") }}</x-button>
+      <x-button type="primary" :loading="isPublishing" @click="handlePublish">{{ $t("发 布") }}</x-button>
     </footer>
   </main>
 </template>

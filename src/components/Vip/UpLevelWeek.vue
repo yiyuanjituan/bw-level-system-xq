@@ -8,9 +8,9 @@ import UiButton from "@/components/Common/Button.vue";
     <div class="absolute top-0 left-0 w-full">
       <div class="level-box">
         <div class="sticky-box">
-          <div class="table-th w-[65px] flex-none">等级</div>
-          <div class="table-th flex-1">当周投注</div>
-          <div class="table-th flex-1">周俸禄奖金</div>
+          <div class="table-th w-[65px] flex-none">{{ $t("等级") }}</div>
+          <div class="table-th flex-1">{{ $t("当周投注") }}</div>
+          <div class="table-th flex-1">{{ $t("周俸禄奖金") }}</div>
         </div>
         <div class="vip_list">
           <div class="cell-box" v-for="i in 20">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { showCustomToast } from "@/hooks/useCommon";
 import { computed, onBeforeUnmount, ref } from "vue";
 import useClipboard from "vue-clipboard3";
@@ -41,7 +42,7 @@ function startResetTimer() {
 function handleCopyText(text: string) {
   toClipboard(text).then(() => {
     isShowCopy.value = false;
-    showCustomToast({ type: "success", message: "复制成功" });
+    showCustomToast({ type: "success", message: $t("复制成功") });
     startResetTimer();
   });
 }

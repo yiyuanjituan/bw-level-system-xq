@@ -142,21 +142,21 @@ watch(
           :class="{ 'is-active': draftMode === 'today' }"
           @click="selectQuickMode('today')"
         >
-          今日
+          {{ $t("今日") }}
         </button>
         <button
           type="button"
           :class="{ 'is-active': draftMode === 'yesterday' }"
           @click="selectQuickMode('yesterday')"
         >
-          昨日
+          {{ $t("昨日") }}
         </button>
       </div>
 
-      <div class="claim-date-range__title">自定义</div>
+      <div class="claim-date-range__title">{{ $t("自定义") }}</div>
       <div class="claim-date-range__picker-heading">
-        <span>开始日期</span>
-        <span>结束日期</span>
+        <span>{{ $t("开始日期") }}</span>
+        <span>{{ $t("结束日期") }}</span>
       </div>
       <div class="claim-date-range__picker-row">
         <van-date-picker
@@ -182,8 +182,8 @@ watch(
         />
       </div>
       <div class="claim-date-range__actions">
-        <x-button plain type="primary" @click="handleCancel">取消</x-button>
-        <x-button type="primary" @click="handleConfirm">确认</x-button>
+        <x-button plain type="primary" @click="handleCancel">{{ $t("取消") }}</x-button>
+        <x-button type="primary" @click="handleConfirm">{{ $t("确认") }}</x-button>
       </div>
     </div>
   </van-popover>

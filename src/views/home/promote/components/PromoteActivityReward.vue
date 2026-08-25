@@ -34,11 +34,11 @@ const emit = defineEmits<{
     <div class="activity-reward__row">
       <span><label>邀请有效人数</label><strong>{{ validInvites }}</strong></span>
       <span><label>待领取</label><strong class="activity-reward__amount">{{ unclaimedReward }}</strong></span>
-      <button type="button" class="activity-reward__claim" disabled>领 取</button>
+      <button type="button" class="activity-reward__claim" disabled>{{ $t("领 取") }}</button>
       <button
         type="button"
         class="activity-reward__link"
-        aria-label="查看活动详情"
+        :aria-label="$t('查看活动详情')"
         @click="emit('openActivity')"
       >
         <svg-icon name="arrow-back" class-name="activity-reward__arrow" aria-hidden="true" />

@@ -84,7 +84,7 @@ onMounted(() => loadData());
               </span>
             </div>
             <div class="receive-btn-box">
-              <x-button size="small" type="primary" @click="handleGo(reward.source)">前 往</x-button>
+              <x-button size="small" type="primary" @click="handleGo(reward.source)">{{ $t("前 往") }}</x-button>
             </div>
           </div>
         </div>

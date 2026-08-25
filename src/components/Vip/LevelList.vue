@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import { useRefs } from '@/hooks/useRefs';
@@ -31,7 +32,7 @@ function onRefresh() {
   isLoading.value = true;
   setTimeout(() => {
     isLoading.value = false;
-    showCustomToast({ type: 'success', message: '刷新成功' });
+    showCustomToast({ type: 'success', message: $t("刷新成功") });
   }, 1200);
 }
 
@@ -60,7 +61,7 @@ function handleGetUpLevelReward(record: any, type = 0) {
   service.v1.user
     .getVipReward({ type: type, level: record.level })
     .then(res => {
-      showCustomToast({ type: 'success', message: '领取成功' });
+      showCustomToast({ type: 'success', message: $t("领取成功") });
       service.v1.user.vipList().then(res => {
         vipListData.value = res.list;
         userLevel.value = res.level;

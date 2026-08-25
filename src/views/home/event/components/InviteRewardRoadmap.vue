@@ -120,7 +120,7 @@ function isRowArrowActive(rowIndex: number) {
               <span
                 class="reward-roadmap__people"
                 :class="{ 'reward-roadmap__people--received': rule.reward?.status === 2 }"
-              >推广{{ rule.inviteCount }}人</span>
+              >{{ $t("推广") }}{{ rule.inviteCount }}人</span>
             </span>
             <span class="reward-roadmap__amount">
               {{ receivingRewardId === rule.reward?.id ? "领取中" : getRewardText(rule) }}

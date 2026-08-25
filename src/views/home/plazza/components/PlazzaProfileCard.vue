@@ -48,7 +48,7 @@ function formatAmount(amount: number) {
         class="profile-card__avatar"
         :src="profile.avatarUrl"
         :fallback-src="defaultAvatarUrl"
-        alt="用户头像"
+        :alt="$t('用户头像')"
         error-text=""
       />
 
@@ -58,7 +58,7 @@ function formatAmount(amount: number) {
             v-if="profile.isAdmin"
             class="profile-card__admin-badge"
             :src="adminBadgeUrl"
-            alt="朋友圈管理员"
+            :alt="$t('朋友圈管理员')"
           />
           <span>{{ profile.nickname }}</span>
           <svg-icon name="login_icon_bj" class-name="profile-card__edit-icon" />
@@ -95,7 +95,7 @@ function formatAmount(amount: number) {
       </dl>
 
       <div class="profile-card__actions">
-        <button type="button" aria-label="搜索我的文章" @click="$emit('search')">
+        <button type="button" :aria-label="$t('搜索我的文章')" @click="$emit('search')">
           <svg-icon name="comm_icon_ss" />
         </button>
         <button
@@ -126,7 +126,7 @@ function formatAmount(amount: number) {
 
     <slot name="before-posts" />
 
-    <section class="profile-card-panel__posts" aria-label="我的帖子">
+    <section class="profile-card-panel__posts" :aria-label="$t('我的帖子')">
       <plazza-post-list
         :posts="posts"
         :empty-text="emptyText"

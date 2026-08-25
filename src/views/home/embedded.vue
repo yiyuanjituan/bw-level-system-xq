@@ -72,7 +72,7 @@ onMounted(() => {
         <template #default>
           <div class="dragger-box">
             <svg-icon name="game_2_style_1_zk" class-name="dragger-box__icon" />
-            <div class="dragger-box__text">首页</div>
+            <div class="dragger-box__text">{{ $t("首页") }}</div>
           </div>
         </template>
       </van-floating-bubble>

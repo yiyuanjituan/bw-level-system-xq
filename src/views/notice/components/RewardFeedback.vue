@@ -9,16 +9,16 @@ const activePage = ref<1 | 2>(1)
 <template>
   <div class="reward-container">
     <div class="nav-box">
-      <div class="nav-item" :class="{ 'nav-item-active': activePage == 1 }" @click="activePage = 1">创建反馈</div>
-      <div class="nav-item" :class="{ 'nav-item-active': activePage == 2 }" @click="activePage = 2">我的反馈</div>
+      <div class="nav-item" :class="{ 'nav-item-active': activePage == 1 }" @click="activePage = 1">{{ $t("创建反馈") }}</div>
+      <div class="nav-item" :class="{ 'nav-item-active': activePage == 2 }" @click="activePage = 2">{{ $t("我的反馈") }}</div>
       <div class="wrapper-receive" v-if="activePage == 2">
         <div class="inner-wrapper-receive">
           <div class="column">
-            <div class="literal">待领取</div>
+            <div class="literal">{{ $t("待领取") }}</div>
             <div class="amount"><span>0.00</span></div>
           </div>
         </div>
-        <x-button disabled type="success" size="normal" class="button">一键领取</x-button>
+        <x-button disabled type="success" size="normal" class="button">{{ $t("一键领取") }}</x-button>
       </div>
     </div>
     <reward-submit v-if="activePage == 1" />

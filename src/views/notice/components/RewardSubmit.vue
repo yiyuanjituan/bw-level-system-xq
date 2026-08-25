@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { reactive, ref } from "vue";
 import { service } from "@/api/service";
 import { showCustomToast } from "@/hooks/useCommon";
@@ -41,7 +42,7 @@ async function handleSubmit() {
 
   try {
     service.v1.notice.feedbackSubmit({ title: formModel.questionType, content: formModel.content }).then(res => {
-      showCustomToast({ type: 'success', message: '提交成功' })
+      showCustomToast({ type: 'success', message: $t("提交成功") })
       formModel.questionType = ''
       formModel.content = ''
       formRef.value.clearValidate?.()
@@ -57,28 +58,28 @@ async function handleSubmit() {
     <div class="flex-1">
       <div class="send-feedback">
         <x-form ref="formRef" :model="formModel">
-          <label class="label">反馈类型 <span class="required">*</span></label>
+          <label class="label">{{ $t("反馈类型") }} <span class="required">*</span></label>
           <x-form-item prop="questionType">
             <x-select
               v-model="formModel.questionType"
               :options="questionTypeOptions"
-              placeholder="请选择反馈类型"
+              :placeholder="$t('请选择反馈类型')"
             />
           </x-form-item>
 
-          <label class="label">反馈内容 <span class="required">*</span></label>
+          <label class="label">{{ $t("反馈内容") }} <span class="required">*</span></label>
           <x-form-item prop="content">
             <x-input
               type="textarea"
               v-model="formModel.content"
-              placeholder="您的任何意见对我们都很重要，凡是有价值意见都将被采纳，一旦采纳将视重要程度给予不同现金奖励，欢迎您畅所欲言！"
+              :placeholder="$t('您的任何意见对我们都很重要，凡是有价值意见都将被采纳，一旦采纳将视重要程度给予不同现金奖励，欢迎您畅所欲言！')"
               clearable
               rows="6"
             />
           </x-form-item>
 
-          <label class="label">奖励规则 <span class="required">*</span></label>
-          <div class="content-text">我们已经设置巨额奖金，专门收集反馈意见，以便我们优化系统和功能，给您带来更好的体验！一旦被采纳，将根据重要程度给予奖励（未采纳除外）。</div>
+          <label class="label">{{ $t("奖励规则") }} <span class="required">*</span></label>
+          <div class="content-text">{{ $t("我们已经设置巨额奖金，专门收集反馈意见，以便我们优化系统和功能，给您带来更好的体验！一旦被采纳，将根据重要程度给予奖励（未采纳除外）。") }}</div>
         </x-form>
       </div>
     </div>
@@ -91,7 +92,7 @@ async function handleSubmit() {
         :loading="isLoading"
         @click="handleSubmit"
       >
-        提交反馈
+        {{ $t("提交反馈") }}
       </x-button>
     </div>
   </div>

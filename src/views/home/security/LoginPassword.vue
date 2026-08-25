@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { reactive, ref } from "vue";
 import SubNavbar from "@/components/SubNavbar.vue";
 import XInput from "@/components/X/x-input.vue";
@@ -17,25 +18,25 @@ const isSubmitting = ref(false);
 
 async function handleSubmit() {
   if (!form.password) {
-    showCustomToast({ type: "fail", message: "请输入新登录密码" });
+    showCustomToast({ type: "fail", message: $t("请输入新登录密码") });
     return;
   }
 
   if (/\s/.test(form.password) || !passwordPattern.test(form.password)) {
     showCustomToast({
       type: "fail",
-      message: "密码需为6-16位，至少包含英文、数字、符号中的两种"
+      message: $t("密码需为6-16位，至少包含英文、数字、符号中的两种")
     });
     return;
   }
 
   if (!form.confirmPassword) {
-    showCustomToast({ type: "fail", message: "请再次输入新登录密码" });
+    showCustomToast({ type: "fail", message: $t("请再次输入新登录密码") });
     return;
   }
 
   if (form.password !== form.confirmPassword) {
-    showCustomToast({ type: "fail", message: "两次密码输入不一致，请重新输入" });
+    showCustomToast({ type: "fail", message: $t("两次密码输入不一致，请重新输入") });
     return;
   }
 
@@ -46,7 +47,7 @@ async function handleSubmit() {
     await updateLoginPassword({ password: form.password });
     form.password = "";
     form.confirmPassword = "";
-    showCustomToast({ type: "success", message: "登录密码修改成功" });
+    showCustomToast({ type: "success", message: $t("登录密码修改成功") });
     handleBack();
   } catch {
     return;
@@ -58,11 +59,11 @@ async function handleSubmit() {
 
 <template>
   <div class="login-password-page">
-    <sub-navbar title="登录密码" />
+    <sub-navbar :title="$t('登录密码')" />
 
     <main class="login-password-page__main">
       <div class="login-password-page__content">
-        <div class="login-password-page__label">修改登录密码</div>
+        <div class="login-password-page__label">{{ $t("修改登录密码") }}</div>
         <x-input
           v-model="form.password"
           prefix="lock"
@@ -70,13 +71,13 @@ async function handleSubmit() {
           :maxlength="16"
           name="loginPass"
           autocomplete="new-password"
-          placeholder="请输入新登录密码"
+          :placeholder="$t('请输入新登录密码')"
           @keydown.enter.prevent="handleSubmit"
         />
 
         <password-power class="login-password-page__strength" :text="form.password" />
 
-        <div class="login-password-page__label">二次确认新密码</div>
+        <div class="login-password-page__label">{{ $t("二次确认新密码") }}</div>
         <x-input
           v-model="form.confirmPassword"
           prefix="lock"
@@ -84,14 +85,14 @@ async function handleSubmit() {
           :maxlength="16"
           name="confirmLoginPass"
           autocomplete="new-password"
-          placeholder="请再次输入新登录密码"
+          :placeholder="$t('请再次输入新登录密码')"
           @keydown.enter.prevent="handleSubmit"
         />
       </div>
 
       <footer class="login-password-page__footer">
         <x-button type="primary" block :loading="isSubmitting" @click="handleSubmit">
-          确 定
+          {{ $t("确 定") }}
         </x-button>
       </footer>
     </main>

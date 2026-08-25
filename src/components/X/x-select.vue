@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { X_FORM_CONTEXT_KEY, X_FORM_ITEM_PROP_KEY } from "./x-form-context";
 import XPopover from "./x-popover.vue";
@@ -42,7 +43,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
-  placeholder: "请选择",
+  placeholder: $t("请选择"),
   prefix: "",
   suffix: "",
   suffixColor: "",

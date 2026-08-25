@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import UiBadge from "@/components/UI/badge.vue";
 import { computed, onMounted, ref } from "vue";
 import { getEventData } from "@/api/common";
@@ -46,7 +47,7 @@ function handleLoading() {
   init();
   setTimeout(() => {
     isLoading.value = false;
-    showCustomToast({ message: "刷新成功", type: "success" });
+    showCustomToast({ message: $t("刷新成功"), type: "success" });
   }, 500);
 }
 
@@ -110,13 +111,13 @@ onMounted(() => {
           @click="router.push('/home/records')"
         >
           <div class="lh-[100%] text-[#F0C059] pt-[2px]">
-            <span class="text">领取记录</span>
+            <span class="text">{{ $t("领取记录") }}</span>
           </div>
         </div>
         <div type="button" class="btn-small ui-button mt-[10px] bg-transparent" @click="handleLoading">
           <div class="lh-[100%] text-[#F0C059] pt-[2px] flex">
             <svg-icon name="refresh" color="#F0C059" class="!w-[11px] !h-[11px]" :class="{ loading: isLoading }" />
-            <span class="ml-[2px] text-[9px]">刷新奖励</span>
+            <span class="ml-[2px] text-[9px]">{{ $t("刷新奖励") }}</span>
           </div>
         </div>
       </div>

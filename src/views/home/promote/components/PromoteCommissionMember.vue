@@ -39,9 +39,9 @@ withDefaults(
     </x-badge>
 
     <div class="commission-member__content" :data-connector-id="connectorId">
-      <p>净盈利 {{ netProfit }}</p>
+      <p>{{ $t("净盈利") }} {{ netProfit }}</p>
       <p>
-        <span>给{{ recipient }}佣金</span>
+        <span>{{ $t("给") }}{{ recipient }}佣金</span>
         <span>{{ formula }}=<em>{{ commission }}</em></span>
       </p>
     </div>

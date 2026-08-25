@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import useClipboard from "vue-clipboard3";
@@ -89,7 +90,7 @@ async function requestPosts(append = false) {
 
 async function loadPublisher() {
   if (!Number.isInteger(publisherId.value) || publisherId.value <= 0) {
-    showCustomToast({ type: "warning", message: "发布者ID异常" });
+    showCustomToast({ type: "warning", message: $t("发布者ID异常") });
     await router.replace("/home/plazza");
     return;
   }
@@ -124,7 +125,7 @@ async function loadPublisher() {
     const isStaleRequest = currentRequestId !== publisherRequestId || currentPublisherId !== publisherId.value;
     if (isStaleRequest) return;
     if (!profileResult || typeof profileResult !== "object") {
-      throw new Error("发布者信息为空");
+      throw new Error($t("发布者信息为空"));
     }
 
     profile.value = {
@@ -326,20 +327,20 @@ async function sharePublisher(post?: PlazzaPost) {
   try {
     if (typeof navigator.share === "function") {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      showCustomToast({ type: "success", message: "分享成功" });
+      showCustomToast({ type: "success", message: $t("分享成功") });
       return;
     }
 
     await toClipboard(shareUrl);
-    showCustomToast({ type: "success", message: "链接已复制，可以分享给好友" });
+    showCustomToast({ type: "success", message: $t("链接已复制，可以分享给好友") });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return;
 
     try {
       await toClipboard(shareUrl);
-      showCustomToast({ type: "success", message: "链接已复制，可以分享给好友" });
+      showCustomToast({ type: "success", message: $t("链接已复制，可以分享给好友") });
     } catch {
-      showCustomToast({ type: "fail", message: "分享失败，请稍后重试" });
+      showCustomToast({ type: "fail", message: $t("分享失败，请稍后重试") });
     }
   } finally {
     isSharing.value = false;
@@ -391,7 +392,7 @@ onBeforeUnmount(() => {
           v-model.trim="searchKeyword"
           type="search"
           maxlength="30"
-          placeholder="搜索发布者文章"
+          :placeholder="$t('搜索发布者文章')"
           autofocus
         />
         <button type="button" @click="toggleSearch">取消</button>
@@ -401,9 +402,9 @@ onBeforeUnmount(() => {
         v-model="isRefreshing"
         class="publisher-pull-refresh"
         :head-height="32"
-        pulling-text="下拉即可刷新"
-        loosing-text="释放即可刷新"
-        success-text="刷新成功"
+        :pulling-text="$t('下拉即可刷新')"
+        :loosing-text="$t('释放即可刷新')"
+        :success-text="$t('刷新成功')"
         @refresh="handleRefresh"
       >
         <template #loading>
@@ -416,7 +417,7 @@ onBeforeUnmount(() => {
         </template>
 
         <div v-if="isInitialLoading" class="publisher-state">加载中...</div>
-        <ui-empty v-else-if="isProfileLoadFailed" text="发布者信息加载失败" />
+        <ui-empty v-else-if="isProfileLoadFailed" :text="$t('发布者信息加载失败')" />
 
         <template v-else-if="profile">
           <article class="publisher-profile">
@@ -444,7 +445,7 @@ onBeforeUnmount(() => {
                     v-if="profile.isAdmin"
                     class="publisher-profile__admin-badge"
                     :src="adminBadgeUrl"
-                    alt="朋友圈管理员"
+                    :alt="$t('朋友圈管理员')"
                   />
                   <strong>{{ profile.nickname }}</strong>
                 </div>
@@ -486,7 +487,7 @@ onBeforeUnmount(() => {
               </dl>
 
               <div class="publisher-profile__actions">
-                <button type="button" aria-label="搜索文章" @click="toggleSearch">
+                <button type="button" :aria-label="$t('搜索文章')" @click="toggleSearch">
                   <svg-icon name="comm_icon_ss" />
                 </button>
                 <button
@@ -533,7 +534,7 @@ onBeforeUnmount(() => {
                     v-if="game.recommended"
                     class="publisher-recent-games__recommend"
                     :src="recommendUrl"
-                    alt="推荐"
+                    :alt="$t('推荐')"
                   />
                 </button>
 
@@ -565,14 +566,14 @@ onBeforeUnmount(() => {
                 <span class="publisher-pull-refresh__spinning" aria-hidden="true">
                   <i class="publisher-pull-refresh__loader"></i>
                 </span>
-                <span>加载下一页...</span>
+                <span>{{ $t("加载下一页...") }}</span>
               </div>
             </template>
 
             <plazza-post-list
               :posts="posts"
               :show-follow-action="false"
-              empty-text="作者还没发布"
+              :empty-text="$t('作者还没发布')"
               @toggle-like="togglePostAction($event, 'like')"
               @toggle-favorite="togglePostAction($event, 'favorite')"
               @share="sharePublisher"

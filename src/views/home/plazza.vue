@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import useClipboard from 'vue-clipboard3';
@@ -26,13 +27,15 @@ const router = useRouter();
 const auth = useAuthStore();
 const { toClipboard } = useClipboard();
 
-const plazzaTabs = [
-  { label: '全部', value: 'all', emptyText: '暂无内容' },
-  { label: '关注', value: 'following', emptyText: '暂无关注内容' },
-  { label: '收藏', value: 'favorites', emptyText: '暂无收藏内容' },
-  { label: '点赞', value: 'likes', emptyText: '暂无点赞内容' },
-  { label: '我的主页', value: 'profile', emptyText: '作者还没发帖~' }
-] as const;
+const plazzaTabs = computed(() => {
+  return [
+    { label: $t("全部"), value: "all", emptyText: $t("暂无内容") },
+    { label: $t("关注"), value: "following", emptyText: $t("暂无关注内容") },
+    { label: $t("收藏"), value: "favorites", emptyText: $t("暂无收藏内容") },
+    { label: $t("点赞"), value: "likes", emptyText: $t("暂无点赞内容") },
+    { label: $t("我的主页"), value: "profile", emptyText: $t("作者还没发帖~") }
+  ] as const;
+});
 
 const defaultActive: PlazzaTabValue = 'all';
 const POST_PAGE_SIZE = 10;
@@ -97,7 +100,7 @@ const shouldShowFollowRecommendations = computed(() => {
 
 function normalizeActive(active: unknown): PlazzaTabValue {
   const activeValue = String(Array.isArray(active) ? active[0] : active ?? defaultActive);
-  return plazzaTabs.some(tab => tab.value === activeValue) ? (activeValue as PlazzaTabValue) : defaultActive;
+  return plazzaTabs.value.some(tab => tab.value === activeValue) ? (activeValue as PlazzaTabValue) : defaultActive;
 }
 
 function syncRouteActive(active: PlazzaTabValue) {
@@ -251,7 +254,7 @@ async function requestPostList(append = false) {
     }
   } catch (error) {
     if (requestId !== loadMoreRequestId) return;
-    const errorMessage = error instanceof Error ? error.message : '未知异常';
+    const errorMessage = error instanceof Error ? error.message : $t("未知异常");
     console.error('朋友圈帖子列表加载失败', {
       channel: requestChannel,
       publisherId: requestChannel === 'profile' ? currentUserId : undefined,
@@ -303,7 +306,7 @@ async function followSelectedRecommendations() {
     );
     const successCount = results.filter(result => result.status === 'fulfilled').length;
     if (!successCount) {
-      showCustomToast({ type: 'fail', message: '关注失败，请稍后重试' });
+      showCustomToast({ type: 'fail', message: $t("关注失败，请稍后重试") });
       return;
     }
 
@@ -484,7 +487,7 @@ async function shareContent(post?: PlazzaPost) {
 
   const publisherId = Number(post?.author.id || profile.value.id || auth.user.id || 0);
   if (!Number.isInteger(publisherId) || publisherId <= 0) {
-    showCustomToast({ type: 'warning', message: '请先登录后再分享' });
+    showCustomToast({ type: 'warning', message: $t("请先登录后再分享") });
     return;
   }
 
@@ -500,20 +503,20 @@ async function shareContent(post?: PlazzaPost) {
   try {
     if (typeof navigator.share === 'function') {
       await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
-      showCustomToast({ type: 'success', message: '分享成功' });
+      showCustomToast({ type: 'success', message: $t("分享成功") });
       return;
     }
 
     await toClipboard(shareUrl);
-    showCustomToast({ type: 'success', message: '链接已复制，可以分享给好友' });
+    showCustomToast({ type: 'success', message: $t("链接已复制，可以分享给好友") });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') return;
 
     try {
       await toClipboard(shareUrl);
-      showCustomToast({ type: 'success', message: '链接已复制，可以分享给好友' });
+      showCustomToast({ type: 'success', message: $t("链接已复制，可以分享给好友") });
     } catch {
-      showCustomToast({ type: 'fail', message: '分享失败，请稍后重试' });
+      showCustomToast({ type: 'fail', message: $t("分享失败，请稍后重试") });
     }
   } finally {
     isSharing.value = false;
@@ -565,7 +568,7 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="plazza-page">
-    <sub-navbar title="发现" />
+    <sub-navbar :title="$t('发现')" />
 
     <div class="plazza-tabs-wrap">
       <van-tabs v-model:active="activeTab" class="plazza-tabs" shrink animated>
@@ -581,11 +584,11 @@ onBeforeUnmount(() => {
                   :placeholder="activeTab === 'profile' ? '搜索我的文章' : '搜索广场内容'"
                   maxlength="30"
                 />
-                <button v-if="searchKeyword" type="button" class="plazza-search__clear" aria-label="清空搜索内容" @click="searchKeyword = ''">
+                <button v-if="searchKeyword" type="button" class="plazza-search__clear" :aria-label="$t('清空搜索内容')" @click="searchKeyword = ''">
                   ×
                 </button>
               </label>
-              <button type="button" class="plazza-search__cancel" @click="toggleSearch">取消</button>
+              <button type="button" class="plazza-search__cancel" @click="toggleSearch">{{ $t("取消") }}</button>
             </div>
 
             <div class="plazza-list-container">
@@ -594,9 +597,9 @@ onBeforeUnmount(() => {
                   v-model="isRefreshing"
                   class="plazza-pull-refresh"
                   :head-height="32"
-                  pulling-text="下拉即可刷新"
-                  loosing-text="释放即可刷新"
-                  success-text="刷新成功"
+                  :pulling-text="$t('下拉即可刷新')"
+                  :loosing-text="$t('释放即可刷新')"
+                  :success-text="$t('刷新成功')"
                   @refresh="handleRefresh"
                 >
                   <template #loading>
@@ -604,7 +607,7 @@ onBeforeUnmount(() => {
                       <span class="plazza-pull-refresh__spinning" aria-hidden="true">
                         <i class="plazza-pull-refresh__loader"></i>
                       </span>
-                      <span class="plazza-pull-refresh__loading-text">加载中...</span>
+                      <span class="plazza-pull-refresh__loading-text">{{ $t("加载中...") }}</span>
                     </div>
                   </template>
 
@@ -621,7 +624,7 @@ onBeforeUnmount(() => {
                         <span class="plazza-pull-refresh__spinning" aria-hidden="true">
                           <i class="plazza-pull-refresh__loader"></i>
                         </span>
-                        <span>加载下一页...</span>
+                        <span>{{ $t("加载下一页...") }}</span>
                       </div>
                     </template>
 
@@ -684,7 +687,7 @@ onBeforeUnmount(() => {
         </van-tab>
       </van-tabs>
 
-      <button type="button" class="plazza-tabs__search" aria-label="搜索" :aria-expanded="isSearchVisible" @click="toggleSearch">
+      <button type="button" class="plazza-tabs__search" :aria-label="$t('搜索')" :aria-expanded="isSearchVisible" @click="toggleSearch">
         <svg-icon name="comm_icon_ss" />
       </button>
     </div>

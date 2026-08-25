@@ -1,4 +1,5 @@
 <script setup lang="ts" name="mine-card">
+import { $t } from "@/locales";
 import useAuthStore from "@/store/modules/user";
 import { computed, ref, watch } from "vue";
 import * as _ from "lodash-es";
@@ -33,7 +34,7 @@ watch(
 
 function copyAccount(text) {
   toClipboard(text).then(() => {
-    showCustomToast({ type: "success", message: "复制成功" });
+    showCustomToast({ type: "success", message: $t("复制成功") });
   });
 }
 
@@ -120,7 +121,7 @@ const updateWallet = () => {
           <div class="currency-info">
             <div class="currency-count" :style="{ borderBottom: `${walletIsLoading ? 0 : 1}px solid white` }">
               <span style="line-height: 17px" v-if="!walletIsLoading">{{ auth.user.money }}</span>
-              <span style="line-height: 12px" v-if="walletIsLoading" class="text-[#F0C059] text-[12px] mx-[1px]">加载中</span>
+              <span style="line-height: 12px" v-if="walletIsLoading" class="text-[#F0C059] text-[12px] mx-[1px]">{{ $t("加载中") }}</span>
             </div>
             <div
               class="refresh-icon"

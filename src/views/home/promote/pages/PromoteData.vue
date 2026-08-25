@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import { getPromoteData } from "@/api/common";
 import type { PromoteDataResponse } from "../types";
@@ -81,13 +82,13 @@ const allDataCards = computed<DataCard[]>(() => {
   const response = currentData.value;
   return [
     {
-      title: "总新增人数",
+      title: $t("总新增人数"),
       totalValue: formatCount(response?.timeNewAddTotalMember),
       directValue: formatCount(response?.timeNewAddDirectMember),
       otherValue: formatCount(response?.timeNewAddOtherMember),
     },
     {
-      title: "总充值",
+      title: $t("总充值"),
       unit: "人次",
       totalValue: formatMoney(response?.timeTotalDeposit),
       totalCount: formatCount(response?.timeTotalDepositPerson),
@@ -97,7 +98,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherDepositPerson),
     },
     {
-      title: "总首充",
+      title: $t("总首充"),
       unit: "人数",
       totalValue: formatMoney(response?.timeTotalFirstDeposit),
       totalCount: formatCount(response?.timeTotalFirstDepositPerson),
@@ -107,7 +108,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherFirstDepositPerson),
     },
     {
-      title: "当天注册首充",
+      title: $t("当天注册首充"),
       unit: "人数",
       totalValue: formatMoney(response?.timeTotalRegisterDeposit),
       totalCount: formatCount(response?.timeTotalRegisterDepositPerson),
@@ -117,7 +118,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherRegisterDepositPerson),
     },
     {
-      title: "总提现",
+      title: $t("总提现"),
       unit: "次数",
       totalValue: formatMoney(response?.timeTotalWithdraw),
       totalCount: formatCount(response?.timeTotalWithdrawPerson),
@@ -127,7 +128,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherWithdrawPerson),
     },
     {
-      title: "领取总奖励",
+      title: $t("领取总奖励"),
       unit: "人次",
       totalValue: formatMoney(response?.timeTotalDiscount),
       totalCount: formatCount(response?.timeTotalDiscountPerson),
@@ -137,7 +138,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherDiscountPerson),
     },
     {
-      title: "总有效投注",
+      title: $t("总有效投注"),
       unit: "人次",
       totalValue: formatMoney(response?.timeTotalValidBet),
       totalCount: formatCount(response?.timeTotalValidBetPerson),
@@ -147,7 +148,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherValidBetPerson),
     },
     {
-      title: "总业绩",
+      title: $t("总业绩"),
       unit: "人次",
       totalValue: formatMoney(response?.timeTotalPerformance),
       totalCount: formatCount(response?.timeTotalContribute),
@@ -157,7 +158,7 @@ const allDataCards = computed<DataCard[]>(() => {
       otherCount: formatCount(response?.timeOtherContribute),
     },
     {
-      title: "总输赢",
+      title: $t("总输赢"),
       unit: "人次",
       totalValue: formatMoney(response?.timeTotalProfitLose),
       winLoss: true,

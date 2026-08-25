@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { inject, ref, useTemplateRef } from 'vue';
 import UiForm from '@/components/UI/form.vue';
 import UiFormItem from '@/components/UI/form-item.vue';
@@ -23,10 +24,10 @@ const auth = useAuthStore();
 const modelValue = ref<any>();
 const formRules = ref<FormRules>({
   realname: [
-    { required: true, message: '真实姓名不能为空', trigger: 'blur' },
+    { required: true, message: $t("真实姓名不能为空"), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
-        const validators = [{ pattern: /^[a-zA-Z\u4e00-\u9fa5]+(?:[·\-][a-zA-Z\u4e00-\u9fa5]+)*$/, message: '姓名格式错误' }];
+        const validators = [{ pattern: /^[a-zA-Z\u4e00-\u9fa5]+(?:[·\-][a-zA-Z\u4e00-\u9fa5]+)*$/, message: $t("姓名格式错误") }];
         // 只要有一个验证通过就返回成功
         for (const validator of validators) {
           if (validator.pattern.test(value)) {
@@ -41,10 +42,10 @@ const formRules = ref<FormRules>({
     }
   ],
   bank_number: [
-    { required: true, message: '需输入银行卡号', trigger: 'blur' },
+    { required: true, message: $t("需输入银行卡号"), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
-        const validators = [{ pattern: /^(62|4|5)\d{14,17}$/, message: '错误的银行卡号' }];
+        const validators = [{ pattern: /^(62|4|5)\d{14,17}$/, message: $t("错误的银行卡号") }];
         // 只要有一个验证通过就返回成功
         for (const validator of validators) {
           if (validator.pattern.test(value)) {
@@ -93,7 +94,7 @@ function handleSubmit() {
       .finally(() => (isLoading.value = false))
       .then(res => {
         close();
-        showCustomToast({ type: 'success', message: '绑定成功！' });
+        showCustomToast({ type: 'success', message: $t("绑定成功！") });
         emits('refresh');
       });
   });
@@ -116,17 +117,17 @@ defineExpose({
       <div class="dialog-container">
         <div class="dialog-body">
           <div class="header-box">
-            <span>添加银行卡</span>
+            <span>{{ $t("添加银行卡") }}</span>
           </div>
           <div class="content-box">
             <x-form :rule="formRules" :model="modelValue" ref="form">
               <x-form-item prop="realname">
-                <x-input placeholder="请填写真实姓名" prefix="input_icon_zsxm1" v-model="modelValue.realname" type="text" />
+                <x-input :placeholder="$t('请填写真实姓名')" prefix="input_icon_zsxm1" v-model="modelValue.realname" type="text" />
               </x-form-item>
               <x-form-item prop="bank_number">
-                <x-input placeholder="请输入银行卡号" prefix="input_icon_card" v-model="modelValue.bank_number">
+                <x-input :placeholder="$t('请输入银行卡号')" prefix="input_icon_card" v-model="modelValue.bank_number">
                   <template #suffix>
-                    <span class="main-text" @click="copyToBankNumber">粘贴</span>
+                    <span class="main-text" @click="copyToBankNumber">{{ $t("粘贴") }}</span>
                   </template>
                 </x-input>
               </x-form-item>
@@ -138,18 +139,18 @@ defineExpose({
                   label-key="bank_name"
                   icon-key="bank_icon"
                   v-model="modelValue.bank_id"
-                  placeholder="请选择发卡银行"
+                  :placeholder="$t('请选择发卡银行')"
                 ></x-select>
               </x-form-item>
               <x-form-item prop="address">
-                <x-input placeholder="请填写发卡地址" prefix="input_icon_dz" v-model="modelValue.address">
+                <x-input :placeholder="$t('请填写发卡地址')" prefix="input_icon_dz" v-model="modelValue.address">
                   <template #suffix>
-                    <span class="main-text" @click="copyToBankAddress">粘贴</span>
+                    <span class="main-text" @click="copyToBankAddress">{{ $t("粘贴") }}</span>
                   </template>
                 </x-input>
               </x-form-item>
-              <div class="mark">请认真核对姓名和卡号，否则将无法到账。</div>
-              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">确 定</x-button>
+              <div class="mark">{{ $t("请认真核对姓名和卡号，否则将无法到账。") }}</div>
+              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">{{ $t("确 定") }}</x-button>
             </x-form>
           </div>
         </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, reactive, ref } from "vue";
 import SubNavbar from "@/components/SubNavbar.vue";
 import XButton from "@/components/X/x-button.vue";
@@ -44,23 +45,23 @@ function hideKeyboard() {
 }
 
 function handleOtherVerification() {
-  showCustomToast({ type: "warning", message: "其他验证方式暂未开放" });
+  showCustomToast({ type: "warning", message: $t("其他验证方式暂未开放") });
 }
 
 async function handleSubmit() {
   if (!isVerifyingUpdate.value) {
     if (!/^\d{6}$/.test(form.password)) {
-      showCustomToast({ type: "fail", message: "请输入6位数字提现密码" });
+      showCustomToast({ type: "fail", message: $t("请输入6位数字提现密码") });
       return;
     }
 
     if (!/^\d{6}$/.test(form.passwordConfirmation)) {
-      showCustomToast({ type: "fail", message: "请输入6位数字确认密码" });
+      showCustomToast({ type: "fail", message: $t("请输入6位数字确认密码") });
       return;
     }
 
     if (form.password !== form.passwordConfirmation) {
-      showCustomToast({ type: "fail", message: "两次提现密码输入不一致" });
+      showCustomToast({ type: "fail", message: $t("两次提现密码输入不一致") });
       return;
     }
 
@@ -72,7 +73,7 @@ async function handleSubmit() {
   }
 
   if (isVerifyingUpdate.value && !form.loginPassword) {
-    showCustomToast({ type: "fail", message: "请输入登录密码" });
+    showCustomToast({ type: "fail", message: $t("请输入登录密码") });
     return;
   }
 
@@ -118,7 +119,7 @@ async function handleSubmit() {
 
 <template>
   <div class="pay-password-page">
-    <sub-navbar title="提现密码" />
+    <sub-navbar :title="$t('提现密码')" />
 
     <main class="pay-password-page__main">
       <section class="pay-password-page__content">
@@ -191,7 +192,7 @@ async function handleSubmit() {
             :maxlength="16"
             name="loginPass"
             autocomplete="current-password"
-            placeholder="请输入登录密码"
+            :placeholder="$t('请输入登录密码')"
             @keydown.enter.prevent="handleSubmit"
           />
           <button

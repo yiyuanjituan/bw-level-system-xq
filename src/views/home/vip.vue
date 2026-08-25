@@ -64,17 +64,17 @@ onMounted(() => init());
       <div class="h-[100%] mt-[10px] flex flex-col bg2">
         <div class="title-box">
           <svg-icon name="common-event-icon_vip_ms2" class-name="text-[21px] icon-box" />
-          <span class="title-text">VIP奖励列表</span>
+          <span class="title-text">{{ $t("VIP奖励列表") }}</span>
           <svg-icon name="common-event-icon_vip_ms2" class-name="text-[21px] icon-box scale-x-[-1]" />
         </div>
         <div class="tab-list flex-1 overflow-auto">
           <x-tabs line-width="50px" line-height="3px">
-            <x-tab title="VIP奖励">
+            <x-tab :title="$t('VIP奖励')">
               <div class="absolute top-0 bottom-0 overflow-auto w-full">
                 <level-list :info="vipInfo" @refresh="handleRefreshInfo" />
               </div>
             </x-tab>
-            <x-tab title="规则说明">
+            <x-tab :title="$t('规则说明')">
               <div class="absolute top-0 bottom-0 overflow-auto left-0 w-full">
                 <vip-level-rule />
               </div>

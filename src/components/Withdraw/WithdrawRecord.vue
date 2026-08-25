@@ -227,7 +227,7 @@ onMounted(() => {
                 <div class="logo-box">
                   <img v-if="item.bank_icon" :src="item.bank_icon" alt="" srcset="" />
                   <div class="desc">
-                    <span class="withdraw-record-account-name">提现到{{ item.bank_name }}</span>
+                    <span class="withdraw-record-account-name">{{ $t("提现到") }}{{ item.bank_name }}</span>
                     <span dir="ltr">({{ desensitizeWithLodash(item.bank_number) }})</span>
                   </div>
                 </div>
@@ -264,8 +264,8 @@ onMounted(() => {
           <div class="empty-state__text">
             <span>{{ emptyStateText }}</span>
             <template v-if="timeRange.mode === 'today'">
-              <span>，可</span>
-              <span class="empty-state__link" @click="handleSeeMore">查看更多</span>
+              <span>{{ $t("，可") }}</span>
+              <span class="empty-state__link" @click="handleSeeMore">{{ $t("查看更多") }}</span>
             </template>
           </div>
         </template>

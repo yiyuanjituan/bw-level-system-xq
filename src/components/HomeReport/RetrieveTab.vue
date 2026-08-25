@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref, watch } from "vue";
 import { service } from "@/api/service";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -65,7 +66,7 @@ function jumpToService() {
 }
 
 function totalMoneyBack() {
-  service.v1.user.totalMoneyIn({}).then(() => showCustomToast({ type: "success", message: "已回归余额" }));
+  service.v1.user.totalMoneyIn({}).then(() => showCustomToast({ type: "success", message: $t("已回归余额") }));
 }
 
 onMounted(() => {
@@ -106,7 +107,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="wallet-search" v-if="item.value == 'all'">
-            <x-input v-model="keyword" placeholder="平台搜索">
+            <x-input v-model="keyword" :placeholder="$t('平台搜索')">
               <template #suffix>
                 <svg-icon name="comm_icon_ss" color="var(--skin__primary)"></svg-icon>
               </template>
@@ -124,7 +125,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          <ui-empty v-if="filteredList.length == 0" text="暂无数据" />
+          <ui-empty v-if="filteredList.length == 0" :text="$t('暂无数据')" />
         </x-tab>
       </x-tabs>
     </div>

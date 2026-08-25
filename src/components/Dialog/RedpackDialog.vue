@@ -46,9 +46,9 @@ function handleClosed() {
         <div class="pocket">
           <div class="bg-box"></div>
           <div class="container">
-            <div class="title" dir="ltr"><span>APP狂抢红包</span></div>
+            <div class="title" dir="ltr"><span>{{ $t("APP狂抢红包") }}</span></div>
             <a class="redpocket-collet-btn animate__animated animate__heartBeat animate__infinite" style="cursor: pointer; --animate-duration: 0.7s"
-              ><div class="redpocket-collet-normal">开</div></a
+              ><div class="redpocket-collet-normal">{{ $t("开") }}</div></a
             >
           </div>
         </div>

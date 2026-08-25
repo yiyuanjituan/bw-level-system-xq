@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { ref, watch } from 'vue';
 import { showCustomToast } from '@/hooks/useCommon';
 import { bus } from '@/utils/mitt';
@@ -8,7 +9,7 @@ const handleShow = ref(false);
 const app = useAppStore();
 
 function handleAddTask() {
-  showCustomToast({ type: 'success', message: '敬请期待' });
+  showCustomToast({ type: 'success', message: $t("敬请期待") });
 }
 
 function open() {
@@ -47,12 +48,12 @@ defineExpose({
         <img :src="app.appInfo.logo" alt="" />
         <div class="title">
           <div class="">
-            <p><strong>下载APP，可参与领取更多优惠！</strong></p>
+            <p><strong>{{ $t("下载APP，可参与领取更多优惠！") }}</strong></p>
           </div>
         </div>
       </div>
       <div class="btn-list">
-        <x-button type="primary" plain class="!w-[100%]" @click="handleAddTask">添加桌面快捷方式</x-button>
+        <x-button type="primary" plain class="!w-[100%]" @click="handleAddTask">{{ $t("添加桌面快捷方式") }}</x-button>
       </div>
     </div>
   </x-popup>

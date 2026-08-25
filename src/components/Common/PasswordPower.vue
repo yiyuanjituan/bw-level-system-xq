@@ -38,7 +38,7 @@ const colors = computed(() => {
 
 <template>
   <div class="password-power">
-    <span class="mr-[5px]">密码强度</span>
+    <span class="mr-[5px]">{{ $t("密码强度") }}</span>
     <span class="colorLump" :style="{ background: colors[0] }"></span>
     <span class="colorLump" :style="{ background: colors[1] }"></span>
     <span class="colorLump" :style="{ background: colors[2] }"></span>

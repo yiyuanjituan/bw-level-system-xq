@@ -105,7 +105,7 @@ onMounted(() => {
 
 <template>
   <main class="promote-page">
-    <sub-navbar title="分享赚钱" />
+    <sub-navbar :title="$t('分享赚钱')" />
 
     <van-tabs
       v-model:active="activeTab"

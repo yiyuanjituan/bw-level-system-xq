@@ -31,7 +31,7 @@ function onRefresh() {
           <span>{{ auth.user.money }}</span>
         </div>
       </div>
-      <div class="gaming" v-if="isRefresh">加载中</div>
+      <div class="gaming" v-if="isRefresh">{{ $t("加载中") }}</div>
       <div
         class="refresh-icon"
         @click="onRefresh"

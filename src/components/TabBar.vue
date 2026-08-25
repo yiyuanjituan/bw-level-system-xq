@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import router from "@/router";
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { setSystemName, setTabBarName } from "@/hooks/useTransition";
+import { setTabBarName } from "@/hooks/useTransition";
 import routes from "@/router/routes";
 import { flattenRoutes } from "@/utils/common";
 import { bus } from "@/utils/mitt";
@@ -14,9 +15,9 @@ function getTabBarOrder(meta?: { order?: number; tabBarOrder?: number }) {
   return meta?.tabBarOrder ?? meta?.order ?? 0;
 }
 
-const tabBar = ref<any[]>([
+const tabBar = computed<any[]>(() => [
   {
-    name: "首页",
+    name: $t("首页"),
     path: "/index",
     light_prefix: "icon_btm_sy",
     active_icon: "icon_btm_sy1",
@@ -24,7 +25,7 @@ const tabBar = ref<any[]>([
     isTabBar: true
   },
   {
-    name: "优惠",
+    name: $t("优惠"),
     path: "/home/event",
     light_prefix: "icon_btm_yh",
     active_icon: "icon_btm_yh1",
@@ -32,7 +33,7 @@ const tabBar = ref<any[]>([
     isTabBar: true
   },
   {
-    name: "存款",
+    name: $t("存款"),
     path: "/recharge",
     light_prefix: "icon_btm_cz",
     active_icon: "icon_btm_cz1",
@@ -40,7 +41,7 @@ const tabBar = ref<any[]>([
     isTabBar: true
   },
   {
-    name: "客服",
+    name: $t("客服"),
     path: "/home/notice",
     light_prefix: "icon_btm_kf",
     active_icon: "icon_btm_kf1",
@@ -48,7 +49,7 @@ const tabBar = ref<any[]>([
     isTabBar: false
   },
   {
-    name: "我的",
+    name: $t("我的"),
     path: "/home/mine",
     light_prefix: "icon_btm_wd",
     active_icon: "icon_btm_wd1",

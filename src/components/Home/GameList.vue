@@ -10,20 +10,20 @@ import useDataStore from "@/store/modules/data";
 import useAuthStore from "@/store/modules/user";
 
 const home = useHomeDataStore();
-const localList = ref([
+const localList = computed(() => [
   {
     img: "./siteadmin/skin/lobby_asset/icon_dtfl_rm_1.avif",
-    name: "热门",
+    name: $t("热门"),
     pageShowNum: 9,
     children: home.suggestList
   },
   {
     img: "https://146.103.80.124:5001/siteadmin/skin/lobby_asset/2-1-common/common/_sprite/icon_dtfl_zj_1.avif",
-    name: "最近"
+    name: $t("最近")
   },
   {
     img: "https://146.103.80.124:5001/siteadmin/skin/lobby_asset/2-1-common/common/_sprite/icon_dtfl_sc_1.avif",
-    name: "收藏"
+    name: $t("收藏")
   }
 ]);
 
@@ -228,7 +228,7 @@ onMounted(() => getHomeData());
             <div class="game-headline">
               <div class="title">
                 <img :src="row.img" alt="" class="mr-[2.5px] w-[26px] text-[26px]" />
-                <span class="text-[15px]">{{ row.name }}游戏</span>
+                <span class="text-[15px]">{{ row.name }}{{ $t("游戏") }}</span>
               </div>
               <div class="switch-pagination-box">
                 <div class="switch-pagination">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -40,28 +41,28 @@ interface BetPageData {
   list: GameRecordItem[];
 }
 
-const statusOptions: BetFilterOption[] = [
-  { label: "全部状态", value: "all" },
-  { label: "已结算", value: 1 },
-  { label: "未结算", value: 2 },
-  { label: "无效注单", value: 3 },
-  { label: "已退款", value: 4 }
-];
+const statusOptions = computed<BetFilterOption[]>(() => [
+  { label: $t("全部状态"), value: "all" },
+  { label: $t("已结算"), value: 1 },
+  { label: $t("未结算"), value: 2 },
+  { label: $t("无效注单"), value: 3 },
+  { label: $t("已退款"), value: 4 }
+]);
 
-const typeOptions: (BetFilterOption & { image?: string })[] = [
-  { label: "全部类型", value: "all" },
-  { label: "真人", value: 1, image: "game-icon_dtfl_zr_0" },
-  { label: "捕鱼", value: 2, image: "game-icon_dtfl_by_0" },
-  { label: "电子", value: 3, image: "game-icon_dtfl_dz_0" },
-  { label: "彩票", value: 4, image: "game-icon_dtfl_cp_0" },
-  { label: "体育", value: 5, image: "game-icon_dtfl_ty_0" },
-  { label: "棋牌", value: 6, image: "game-icon_dtfl_qp_0" },
-  { label: "电竞", value: 7, image: "game-icon_dtfl_dianjing_0" }
-];
+const typeOptions = computed<(BetFilterOption & { image?: string })[]>(() => [
+  { label: $t("全部类型"), value: "all" },
+  { label: $t("真人"), value: 1, image: "game-icon_dtfl_zr_0" },
+  { label: $t("捕鱼"), value: 2, image: "game-icon_dtfl_by_0" },
+  { label: $t("电子"), value: 3, image: "game-icon_dtfl_dz_0" },
+  { label: $t("彩票"), value: 4, image: "game-icon_dtfl_cp_0" },
+  { label: $t("体育"), value: 5, image: "game-icon_dtfl_ty_0" },
+  { label: $t("棋牌"), value: 6, image: "game-icon_dtfl_qp_0" },
+  { label: $t("电竞"), value: 7, image: "game-icon_dtfl_dianjing_0" }
+]);
 
 const platformOptions: BetFilterOption[] = [{ label: "全部平台", value: "all" }];
-const statusFilterValue = ref<number | string>(statusOptions[0]?.value ?? "all");
-const typeFilterValue = ref<number | string>(typeOptions[0]?.value ?? "all");
+const statusFilterValue = ref<number | string>("all");
+const typeFilterValue = ref<number | string>("all");
 const platformFilterValue = ref(platformOptions[0]?.value ?? "all");
 const timeRange = ref<AccountTimeRange>(createTodayRange());
 const pageData = ref<BetPageData>(createDefaultPageData());
@@ -107,10 +108,10 @@ function formatRecordTime(value: string | Date | undefined) {
 }
 
 function getStatusLabel(status: BetStatus) {
-  if (status === 2) return "未结算";
-  if (status === 3) return "无效注单";
-  if (status === 4) return "已退款";
-  return "已结算";
+  if (status === 2) return $t("未结算");
+  if (status === 3) return $t("无效注单");
+  if (status === 4) return $t("已退款");
+  return $t("已结算");
 }
 
 function getWinLossClass(value: number) {
@@ -318,7 +319,7 @@ onMounted(() => {
           </div>
         </article>
 
-        <div v-if="isLoadingMore" class="list-footer">加载中...</div>
+        <div v-if="isLoadingMore" class="list-footer">{{ $t("加载中...") }}</div>
       </div>
     </section>
   </div>

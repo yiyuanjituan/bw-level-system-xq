@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch, type Component } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { showCustomToast } from "@/hooks/useCommon";
@@ -68,7 +69,7 @@ function refreshBalance() {
 
   auth.updateInfo()
     .then(() => {
-      showCustomToast({ type: "success", message: "余额刷新成功" });
+      showCustomToast({ type: "success", message: $t("余额刷新成功") });
     })
     .finally(() => {
       walletIsLoading.value = false;

@@ -64,7 +64,7 @@ const detailRows = computed(() => [
 
 <template>
   <div class="account-detail-page">
-    <SubNavbar title="详情" />
+    <SubNavbar :title="$t('详情')" />
 
     <div class="detail-scroll">
       <section class="detail-card">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import QRCode from "qrcode";
 import Copy from "@/components/Common/Copy.vue";
@@ -113,14 +114,14 @@ function loadImage(source: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("图片加载失败"));
+    image.onerror = () => reject(new Error($t("图片加载失败")));
     image.src = source;
   });
 }
 
 async function handleSaveQrCode() {
   if (!displayedQrCode.value) {
-    showCustomToast({ type: "warning", message: "暂无可保存的邀请码" });
+    showCustomToast({ type: "warning", message: $t("暂无可保存的邀请码") });
     return;
   }
 
@@ -131,7 +132,7 @@ async function handleSaveQrCode() {
     ]);
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("生成邀请码图片失败");
+    if (!context) throw new Error($t("生成邀请码图片失败"));
 
     canvas.width = 450;
     canvas.height = 800;
@@ -171,7 +172,7 @@ async function handleSaveQrCode() {
     downloadLink.remove();
     emit("saveQrCode");
   } catch {
-    showCustomToast({ type: "fail", message: "邀请码图片保存失败，请稍后重试" });
+    showCustomToast({ type: "fail", message: $t("邀请码图片保存失败，请稍后重试") });
   }
 }
 
@@ -204,7 +205,7 @@ const socialMedia = [
     <div class="invite-share__content">
       <div class="invite-share__qr-wrap">
         <div class="invite-share__qr">
-          <img v-if="displayedQrCode" :src="displayedQrCode" alt="推广二维码" />
+          <img v-if="displayedQrCode" :src="displayedQrCode" :alt="$t('推广二维码')" />
           <span v-else>暂无二维码</span>
         </div>
         <x-button

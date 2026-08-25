@@ -230,7 +230,7 @@ async function saveToImg() {
 
 <template>
   <div ref="saveImageRef" class="device-container">
-    <sub-navbar title="登录设备" />
+    <sub-navbar :title="$t('登录设备')" />
     <div class="main">
       <div class="user-and-siteInfo">
         <div class="container">
@@ -304,7 +304,7 @@ async function saveToImg() {
         </template>
       </div>
       <div v-if="deviceList.length" class="saveImgBtn" @click="saveToImg">
-        <x-button type="primary" class="!w-[100%]">保存图片</x-button>
+        <x-button type="primary" class="!w-[100%]">{{ $t("保存图片") }}</x-button>
       </div>
     </div>
   </div>

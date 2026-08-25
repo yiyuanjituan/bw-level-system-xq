@@ -48,7 +48,7 @@ defineExpose({
         <div class="back-icon" @click="show = false">
           <svg-icon name="arrow-back" class-name="ml-[-7.5px]"></svg-icon>
         </div>
-        <p class="title">存款</p>
+        <p class="title">{{ $t("存款") }}</p>
         <div class="actions">
           <div class="kf-ico" @click="handleCallToService"><svg-icon name="comm_icon_cz_kf" /></div>
           <ui-badge :content="0" :size="[5, 5]">
@@ -58,7 +58,7 @@ defineExpose({
       </div>
       <div class="body-container">
         <div class="recharge-header">
-          <span class="title">支付方式</span>
+          <span class="title">{{ $t("支付方式") }}</span>
           <my-wallet />
         </div>
         <van-tabs shrink>
@@ -66,7 +66,7 @@ defineExpose({
             <template #title>
               <recharge-badge>
                 <svg-icon name="icon_cz_zxcz1" style="color: var(--skin__primary)" class-name="text-[19px]" />
-                <span class="pl-[5px]">在线存款</span>
+                <span class="pl-[5px]">{{ $t("在线存款") }}</span>
               </recharge-badge>
             </template>
             <recharge-body :listData="listData.filter(v => v.type == 1)" @close="show = false" />
@@ -75,7 +75,7 @@ defineExpose({
             <template #title>
               <recharge-badge>
                 <svg-icon name="icon_cz_xnhb" style="color: var(--skin__primary)" class-name="text-[19px]" />
-                <span class="pl-[5px]">数字货币</span>
+                <span class="pl-[5px]">{{ $t("数字货币") }}</span>
               </recharge-badge>
             </template>
             <recharge-body :listData="listData.filter(v => v.type == 2)" @close="show = false" />

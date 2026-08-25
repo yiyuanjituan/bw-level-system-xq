@@ -280,14 +280,14 @@ watch(
           :class="{ 'is-focused': searchFocused }"
           type="search"
           inputmode="numeric"
-          placeholder="会员ID"
-          aria-label="会员ID"
+          :placeholder="$t('会员ID')"
+          :aria-label="$t('会员ID')"
           @focus="searchFocused = true"
           @blur="searchFocused = false"
           @keydown.enter.prevent="handleSearch"
         >
           <template #suffix>
-            <button class="icon-button" type="button" aria-label="搜索会员" @click.stop="handleSearch">
+            <button class="icon-button" type="button" :aria-label="$t('搜索会员')" @click.stop="handleSearch">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.72 13.33l4.22 4.22 1.06-1.06-4.22-4.22A7.5 7.5 0 0 0 10.5 3Zm0 1.5a6 6 0 1 1 0 12 6 6 0 0 1 0-12Z" /></svg>
             </button>
           </template>
@@ -301,7 +301,7 @@ watch(
         <template #text="{ text }">
           <span class="empty-text">
             <span>{{ text }}</span>
-            <button class="icon-button retry" type="button" aria-label="重新加载" @click="handleRetry">
+            <button class="icon-button retry" type="button" :aria-label="$t('重新加载')" @click="handleRetry">
               <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M0 18.97l9.55-.16-2.4 3.42a10.75 10.75 0 1 0-4.05-8.4c0 .31.01.62.04.92H.06c-.02-.3-.03-.61-.03-.92A13.83 13.83 0 1 1 5.39 24.76L3.11 28Z" /></svg>
             </button>
           </span>
@@ -353,19 +353,19 @@ watch(
     >
       <template #title>
         <div class="dialog-title">
-          <button v-if="childStack.length > 1" type="button" class="back-button" aria-label="返回上一级" @click="goBackChild">‹</button>
+          <button v-if="childStack.length > 1" type="button" class="back-button" :aria-label="$t('返回上一级')" @click="goBackChild">‹</button>
           <span>{{ currentParent?.userIdx }}的下级</span>
         </div>
       </template>
       <div class="child-content">
-        <div class="dialog-date">日期 {{ selectedTimeRange.startDate }} - {{ selectedTimeRange.endDate }}</div>
+        <div class="dialog-date">{{ $t("日期") }} {{ selectedTimeRange.startDate }} - {{ selectedTimeRange.endDate }}</div>
         <div class="child-list">
           <div v-if="childLoading && childMembers.length === 0" class="dialog-state"><ui-loading /></div>
           <ui-empty v-else-if="childMembers.length === 0" :text="childFailed ? '加载失败，请重试' : '暂无内容'">
             <template #text="{ text }">
               <span class="empty-text">
                 <span>{{ text }}</span>
-                <button v-if="childFailed" class="icon-button retry" type="button" aria-label="重新加载" @click="loadChildMembers(true)">
+                <button v-if="childFailed" class="icon-button retry" type="button" :aria-label="$t('重新加载')" @click="loadChildMembers(true)">
                   <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M0 18.97l9.55-.16-2.4 3.42a10.75 10.75 0 1 0-4.05-8.4c0 .31.01.62.04.92H.06c-.02-.3-.03-.61-.03-.92A13.83 13.83 0 1 1 5.39 24.76L3.11 28Z" /></svg>
                 </button>
               </span>
@@ -393,14 +393,14 @@ watch(
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <button type="button" class="close-button" aria-label="关闭" @click="updateChildDialog(false)"><svg-icon name="close" color="white" /></button>
+          <button type="button" class="close-button" :aria-label="$t('关闭')" @click="updateChildDialog(false)"><svg-icon name="close" color="white" /></button>
         </div>
       </template>
     </van-dialog>
 
     <van-dialog
       v-model:show="otherDialogVisible"
-      title="其他汇总明细"
+      :title="$t('其他汇总明细')"
       :width="350"
       :z-index="2021"
       :show-confirm-button="false"
@@ -418,7 +418,7 @@ watch(
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <button type="button" class="close-button" aria-label="关闭" @click="otherDialogVisible = false"><svg-icon name="close" color="white" /></button>
+          <button type="button" class="close-button" :aria-label="$t('关闭')" @click="otherDialogVisible = false"><svg-icon name="close" color="white" /></button>
         </div>
       </template>
     </van-dialog>

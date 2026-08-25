@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref } from "vue";
 
 defineOptions({
@@ -24,8 +25,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
-  title: "选择日期",
-  placeholder: "年 / 月 / 日",
+  title: $t("选择日期"),
+  placeholder: $t("年 / 月 / 日"),
   suffixIcon: "",
   suffixIconName: "",
   minDate: () => new Date(1900, 0, 1),
@@ -149,8 +150,8 @@ function handleClosed() {
       <van-date-picker
         v-model="pickerValue"
         :title="title"
-        cancel-button-text="取消"
-        confirm-button-text="确定"
+        :cancel-button-text="$t('取消')"
+        :confirm-button-text="$t('确定')"
         :columns-type="['year', 'month', 'day']"
         :min-date="minDate"
         :max-date="maxDate"

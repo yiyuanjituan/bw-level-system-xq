@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { inject, ref, useTemplateRef, Ref } from "vue";
 import UiForm from "@/components/UI/form.vue";
 import UiFormItem from "@/components/UI/form-item.vue";
@@ -23,7 +24,7 @@ const auth = useAuthStore()
 const modelValue = ref<any>();
 const formRules = ref<FormRules>({
   bank_number: [
-    { required: true, message: "地址不能为空", trigger: "blur" },
+    { required: true, message: $t("地址不能为空"), trigger: "blur" },
   ],
 });
 const copyToBankNumber = async () => {
@@ -53,7 +54,7 @@ function handleSubmit() {
     // 处理绑卡的事情
     bindCard(modelValue.value).finally(() => isLoading.value = false).then(res => {
       close()
-      showCustomToast({ type: 'success', message: '绑定成功！' })
+      showCustomToast({ type: 'success', message: $t("绑定成功！") })
       emits('refresh')
     })
   })
@@ -76,7 +77,7 @@ defineExpose({
       <div class="dialog-container">
         <div class="dialog-body">
           <div class="header-box">
-            <span>添加数字货币</span>
+            <span>{{ $t("添加数字货币") }}</span>
           </div>
           <div class="content-box">
             <x-form :rule="formRules" :model="modelValue" ref="form">
@@ -87,14 +88,14 @@ defineExpose({
                 <x-input placeholder="" v-model="modelValue.wallet_bank" type="text" prefix="input_icon_bzbh" disabled></x-input>
               </x-form-item>
               <x-form-item prop="bank_number">
-                <x-input placeholder="请输入货币地址" v-model="modelValue.bank_number" type="text">
+                <x-input :placeholder="$t('请输入货币地址')" v-model="modelValue.bank_number" type="text">
                   <template #suffix>
-                    <span class="main-text" @click="copyToBankNumber">粘贴</span>
+                    <span class="main-text" @click="copyToBankNumber">{{ $t("粘贴") }}</span>
                   </template>
                 </x-input>
               </x-form-item>
-              <div class="mark">请确认币种、协议与地址匹配，否则无法到账</div>
-              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">确 定</x-button>
+              <div class="mark">{{ $t("请确认币种、协议与地址匹配，否则无法到账") }}</div>
+              <x-button class="button" :loading="isLoading" type="primary" @click="handleSubmit">{{ $t("确 定") }}</x-button>
             </x-form>
           </div>
         </div>

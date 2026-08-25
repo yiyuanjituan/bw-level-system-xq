@@ -178,7 +178,7 @@ watch(validityFilter, () => {
 <template>
   <van-dialog
     :show="show"
-    title="我的推广"
+    :title="$t('我的推广')"
     :width="355"
     :z-index="2006"
     :show-confirm-button="false"
@@ -197,7 +197,7 @@ watch(validityFilter, () => {
             :options="validityOptions"
             value-key="value"
             label-key="label"
-            placeholder="是否有效"
+            :placeholder="$t('是否有效')"
             placement="bottom"
           />
         </span>
@@ -207,11 +207,11 @@ watch(validityFilter, () => {
           type="number"
           size="mini"
           :maxlength="16"
-          placeholder="会员ID"
+          :placeholder="$t('会员ID')"
           @keydown.enter.prevent="handleSearch"
         >
           <template #suffix>
-            <button type="button" class="invite-member-dialog__search-button" aria-label="搜索会员" @click.stop="handleSearch">
+            <button type="button" class="invite-member-dialog__search-button" :aria-label="$t('搜索会员')" @click.stop="handleSearch">
               <svg-icon name="comm_icon_ss" class-name="invite-member-dialog__search-icon" />
             </button>
           </template>
@@ -250,13 +250,13 @@ watch(validityFilter, () => {
               </div>
             </div>
             <button type="button" class="invite-member-dialog__detail" @click="openMemberDetail(member.userIdx)">
-              <span>详情</span>
+              <span>{{ $t("详情") }}</span>
               <svg-icon name="img_scroll_jt" class-name="invite-member-dialog__detail-icon" />
             </button>
           </article>
 
           <div v-if="requestFailed && members.length" class="invite-member-dialog__load-error" @click="handleRetry">
-            加载失败，点击重试
+            {{ $t("加载失败，点击重试") }}
           </div>
         </van-list>
       </div>
@@ -264,7 +264,7 @@ watch(validityFilter, () => {
 
     <template #footer>
       <div class="invite-member-dialog__footer">
-        <button type="button" class="invite-member-dialog__close" aria-label="关闭" @click="closeDialog">
+        <button type="button" class="invite-member-dialog__close" :aria-label="$t('关闭')" @click="closeDialog">
           <svg-icon name="close" class-name="invite-member-dialog__close-icon" />
         </button>
       </div>

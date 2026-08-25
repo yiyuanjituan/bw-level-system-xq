@@ -131,7 +131,7 @@ defineExpose({
   <div class="football-dialog">
     <van-floating-bubble v-if="!showDialog" v-model:offset="btnPosition" class="football-dialog__bubble" :gap="0">
       <button class="football-dialog__trigger" type="button" @click="open">
-        <img :src="(imgData?.id && imgData.icon) ? imgData.icon : DEFAULT_TRIGGER_IMAGE" class="football-dialog__trigger-image" alt="直播入口" />
+        <img :src="(imgData?.id && imgData.icon) ? imgData.icon : DEFAULT_TRIGGER_IMAGE" class="football-dialog__trigger-image" :alt="$t('直播入口')" />
       </button>
     </van-floating-bubble>
 

@@ -69,7 +69,7 @@ defineExpose({
           </div>
         </div>
         <div class="footer">
-          <x-button class="!w-[100%]" @click="handleClose">知道了</x-button>
+          <x-button class="!w-[100%]" @click="handleClose">{{ $t("知道了") }}</x-button>
         </div>
       </div>
     </template>

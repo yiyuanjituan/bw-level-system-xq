@@ -72,9 +72,9 @@ watch(active, value => {
     <!-- 内容区域 -->
     <div class="content-box">
       <van-tabs v-model:active="active" shrink swipeable>
-        <van-tab title="申请提现" name="20"><apply-withdraw /></van-tab>
-        <van-tab title="收款账户" name="10"><receipt-account /></van-tab>
-        <van-tab title="提现记录" name="3"><withdraw-record /></van-tab>
+        <van-tab :title="$t('申请提现')" name="20"><apply-withdraw /></van-tab>
+        <van-tab :title="$t('收款账户')" name="10"><receipt-account /></van-tab>
+        <van-tab :title="$t('提现记录')" name="3"><withdraw-record /></van-tab>
       </van-tabs>
     </div>
   </div>

@@ -420,7 +420,7 @@ onBeforeUnmount(() => {
           <span class="match-info__time">{{ dayjs((activeMatchInfo.startTime || 0) * 1000).format('HH:mm') }}</span>
           <span class="match-info__live">
             <img class="live-badge" src="/siteadmin/live/apng_live_2.webp" alt="." />
-            <span class="live-status">直播中</span>
+            <span class="live-status">{{ $t("直播中") }}</span>
           </span>
         </div>
       </div>
@@ -445,14 +445,14 @@ onBeforeUnmount(() => {
             @touchcancel.stop
           >
             <div class="switcher-btn" @click.stop="toggleSwitcherPanel">
-              <span class="btn-text">高清</span>
+              <span class="btn-text">{{ $t("高清") }}</span>
               <span class="switcher-arrow">
                 <svg-icon name="live-icon_sszb_arrow1" />
               </span>
             </div>
             <div v-show="isSwitcherPanelVisible" class="switcher-panel" @click.stop>
               <div class="line-item active" @click.stop="closeSwitcherPanel">
-                <span>高清</span>
+                <span>{{ $t("高清") }}</span>
                 <div class="check-circle">
                   <svg-icon name="live-comm_btn_dx3" class-name="check-icon text-[15px]" />
                 </div>

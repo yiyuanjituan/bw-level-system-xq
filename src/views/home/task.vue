@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { onMounted, ref } from "vue";
 import { padStart } from "lodash-es";
 import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
@@ -26,7 +27,7 @@ function handleLoading() {
     .finally(() => (isLoading.value = false))
     .then(() => {
       isLoading.value = false;
-      showCustomToast({ message: "刷新成功", type: "success" });
+      showCustomToast({ message: $t("刷新成功"), type: "success" });
     });
 }
 
@@ -82,7 +83,7 @@ function handleTapGo(type: any) {
   if (type == 0) {
     router.push("/home/register");
   } else if (type == 1) {
-    showCustomToast({ type: "success", message: "下载APP的操作" });
+    showCustomToast({ type: "success", message: $t("下载APP的操作") });
   } else if (type == 2) {
     bus.emit("showRecharge");
   } else if (type == 3) {
@@ -94,7 +95,7 @@ function handleTapGo(type: any) {
   } else if (type == 6) {
     router.push("/home/withdraw");
   } else if (type == 7) {
-    showCustomToast({ type: "success", message: "修改社交信息" });
+    showCustomToast({ type: "success", message: $t("修改社交信息") });
   } else if (type == 8) {
     bus.emit("switchTab", "/index");
   } else if (type == 9) {
@@ -110,7 +111,7 @@ function handleGetReward(record: any) {
     .getTaskReward({ taskId: record.id })
     .finally(() => (record.isLoading = false))
     .then(() => {
-      showCustomToast({ message: "领取成功", type: "success" });
+      showCustomToast({ message: $t("领取成功"), type: "success" });
       init();
       auth.updateInfo();
     });
@@ -151,7 +152,7 @@ function jumpToRecord() {
 function handleGetBox(record: any) {
   showCustomDialog({
     width: 300,
-    title: "活跃度兑换",
+    title: $t("活跃度兑换"),
     message: `将使用${record?.vitality}活跃度兑换宝箱`,
     confirmButtonText: "立即兑换",
     showCancelButton: true,
@@ -163,7 +164,7 @@ function handleGetBox(record: any) {
         init();
         showCustomDialog({
           width: 300,
-          title: "兑换成功",
+          title: $t("兑换成功"),
           message: `您已获得${res.val}彩金`,
           confirmButtonText: "去游戏",
           showCancelButton: true,
@@ -286,7 +287,7 @@ onMounted(() => init());
                 <div class="description-primary">{{ item.name }}</div>
                 <div class="more-limit" v-if="item.desc">
                   <span class="text">
-                    <span class="text-inner">仅限：{{ item.desc }}</span>
+                    <span class="text-inner">{{ $t("仅限：") }}{{ item.desc }}</span>
                   </span>
                   <span
                     class="btn-more"
@@ -333,7 +334,7 @@ onMounted(() => init());
                     v-if="getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) && !item.isOver && !item.isOverGet"
                     @click="handleTapGo(item.taskDetailType)"
                   >
-                    前&nbsp;往
+                    {{ $t("前 往") }}
                   </x-button>
                   <x-button
                     :loading="item.isLoading"
@@ -342,9 +343,9 @@ onMounted(() => init());
                     v-if="item.isOver && !item.isOverGet"
                     @click="handleGetReward(item)"
                   >
-                    领&nbsp;取
+                    {{ $t("领 取") }}
                   </x-button>
-                  <x-button disabled type="warning" class="!w-[75px] !h-[30px] text-[11px]" v-if="item.isOver && item.isOverGet"> 已领取 </x-button>
+                  <x-button disabled type="warning" class="!w-[75px] !h-[30px] text-[11px]" v-if="item.isOver && item.isOverGet"> {{ $t("已领取") }} </x-button>
                 </div>
               </div>
             </div>

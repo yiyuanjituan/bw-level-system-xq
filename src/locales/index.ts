@@ -1,5 +1,7 @@
 import { createI18n } from "vue-i18n";
 import type { TranslateOptions } from "vue-i18n";
+import zhCN from "vant/es/locale/lang/zh-CN.mjs";
+import enUS from "vant/es/locale/lang/en-US.mjs";
 import messages from "./locales";
 import { getCookie, setCookie } from "@/utils/auth";
 
@@ -50,6 +52,10 @@ interface T {
 
 export const $t = i18n.global.t as T;
 export const $locale = i18n.global.locale;
+export const vantLocales = {
+  "zh-cn": zhCN,
+  en: enUS
+};
 
 function getDefaultLanguage(): I18nType.LangType {
   const locales = Object.keys(messages);

@@ -70,7 +70,7 @@ function selectCategory(categoryName: string | number) {
 </script>
 
 <template>
-  <section class="emoji-picker" aria-label="表情选择">
+  <section class="emoji-picker" :aria-label="$t('表情选择')">
     <x-tabs
       class="emoji-picker__tabs"
       v-model="activeCategory"

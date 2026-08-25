@@ -120,7 +120,7 @@ function handleMenuItem(menuItem: SecurityMenuItem) {
   <pay-password v-else-if="isPayPasswordView" />
 
   <div v-else class="security-page">
-    <sub-navbar title="安全中心" />
+    <sub-navbar :title="$t('安全中心')" />
 
     <main class="security-page__content">
       <ul v-for="(menuGroup, groupIndex) in securityMenuGroups" :key="groupIndex" class="security-menu">

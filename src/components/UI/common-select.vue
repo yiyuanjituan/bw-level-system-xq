@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { inject, ref, computed } from "vue";
 
 defineOptions({
@@ -52,7 +53,7 @@ const modelValue = defineModel({ type: [String, Number, Object], default: "" });
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
-  placeholder: "请选择",
+  placeholder: $t("请选择"),
   prefix: "",
   suffix: "",
   suffix_color: "",

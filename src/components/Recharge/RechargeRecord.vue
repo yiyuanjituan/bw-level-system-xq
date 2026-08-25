@@ -236,7 +236,7 @@ defineExpose({
               </div>
             </div>
 
-            <div v-if="isLoadingMore" class="list-footer">加载中...</div>
+            <div v-if="isLoadingMore" class="list-footer">{{ $t("加载中...") }}</div>
           </div>
           <ui-empty v-else :text="emptyStateText" />
         </div>

@@ -516,7 +516,7 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
                 class="commission-tutorial__main-badge"
               >
                 <span class="commission-tutorial__main-avatar">
-                  <img :src="agentAAvatar" alt="A代理头像" />
+                  <img :src="agentAAvatar" :alt="$t('A代理头像')" />
                 </span>
               </x-badge>
 
@@ -567,7 +567,7 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
                 class="commission-tutorial__main-badge"
               >
                 <span class="commission-tutorial__main-avatar">
-                  <img :src="agentBAvatar" alt="B1代理头像" />
+                  <img :src="agentBAvatar" :alt="$t('B1代理头像')" />
                 </span>
               </x-badge>
 
@@ -625,7 +625,7 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
               <div class="commission-tutorial__main-content">
                 <p>直属业绩=<em>{{ simpleTutorials[tab.value].performance }}</em></p>
                 <p>
-                  直属佣金={{ simpleTutorials[tab.value].performance }}*<bdi>10%</bdi>=<em>{{
+                  {{ $t("直属佣金=") }}{{ simpleTutorials[tab.value].performance }}*<bdi>10%</bdi>=<em>{{
                     simpleTutorials[tab.value].directCommission
                   }}</em>
                 </p>
@@ -643,26 +643,26 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
             </div>
           </canvas-connector>
 
-          <van-empty v-else description="暂无教程内容" image-size="80px" />
+          <van-empty v-else :description="$t('暂无教程内容')" image-size="80px" />
         </x-tab>
       </x-tabs>
     </div>
 
     <article class="commission-tutorial__detail">
-      <p class="commission-tutorial__no-indent"><strong>举例说明如下：</strong></p>
-      <p>假设当前净盈利的返佣比例为10%(即来自直属下级)，跨级部分额外佣金为站长额外固定赠送，赠送比例为30%。A是第一个发现商机的，马上发展了B1和B2；B1又往下发展了C1和C2；B2往下发展了C3，C1往下发展了D1。第三天B1的净盈利为-500，B2的净盈利为-3000，C1的净盈利为1000，C2的净盈利为-2000，C3的净盈利为-20000，D1的净盈利为-3000，其中A的上期结余为-600(即上期结算时平台亏损的金额)，B1、B2、C1的上期结余为0(即上期结算时平台无亏损)。</p>
-      <p class="commission-tutorial__no-indent">那么他们之间的收益计算方式如下：</p>
-      <p class="commission-tutorial__no-indent"><strong>1、什么是净盈利？</strong></p>
-      <p>净盈利=会员本期输赢+领取奖励+充值手续费+提现手续费+三方游戏成本</p>
-      <p><strong>(1)以B1为例：</strong>假设B1在本期结算期间输赢-700(即B1亏损700)，且期间B1从平台中领取100奖励，B1的充值让平台消耗15手续费，B1的提现让平台消耗5手续费，B1进入第三方游戏让平台消耗80成本，则B1的净盈利=-700+100+15+5+80=-500，即B1给A贡献业绩是500；</p>
-      <p><strong>(2)以C1为例：</strong>假设C1在本期结算期间输赢800(即C1盈利800)，且期间C1从平台中领取100奖励，C1的充值让平台消耗15手续费，C1的提现让平台消耗5手续费，C1进入第三方游戏让平台消耗80成本，则C1的净盈利=800+100+15+5+80=1000，即C1给B1贡献业绩是-1000。</p>
-      <p class="commission-tutorial__no-indent"><strong>2、A的收益计算方式如下：</strong></p>
-      <p>A的佣金来源除了直属下级B1和B2贡献，还有来自其他下级C1、C2和C3以及D1的贡献；</p>
-      <p><strong>(1)A的直属业绩：</strong>直属业绩=-(B1净盈利+B2净盈利)=-(-500-3000)=3500；</p>
-      <p><strong>(2)A的本期业绩：</strong>本期业绩=直属业绩+上期结余=3500-600=2900；</p>
-      <p><strong>(3)A的直属佣金：</strong>直属佣金=本期业绩*返佣比例=2900*10%=<em>290</em>；</p>
-      <p><strong>(4)A的其他佣金：</strong>其他佣金=-(C1净盈利+C2净盈利+C3净盈利+D1净盈利)*返佣比例*赠送比例=-(1000-2000-20000-3000)*10%*30%=<em>720</em>；</p>
-      <p><strong>(5)A的本期佣金：</strong>本期佣金=直属佣金+其他佣金=<em>290</em>+<em>720</em>=<em>1010</em>。</p>
+      <p class="commission-tutorial__no-indent"><strong>{{ $t("举例说明如下：") }}</strong></p>
+      <p>{{ $t("假设当前净盈利的返佣比例为10%(即来自直属下级)，跨级部分额外佣金为站长额外固定赠送，赠送比例为30%。A是第一个发现商机的，马上发展了B1和B2；B1又往下发展了C1和C2；B2往下发展了C3，C1往下发展了D1。第三天B1的净盈利为-500，B2的净盈利为-3000，C1的净盈利为1000，C2的净盈利为-2000，C3的净盈利为-20000，D1的净盈利为-3000，其中A的上期结余为-600(即上期结算时平台亏损的金额)，B1、B2、C1的上期结余为0(即上期结算时平台无亏损)。") }}</p>
+      <p class="commission-tutorial__no-indent">{{ $t("那么他们之间的收益计算方式如下：") }}</p>
+      <p class="commission-tutorial__no-indent"><strong>{{ $t("1、什么是净盈利？") }}</strong></p>
+      <p>{{ $t("净盈利=会员本期输赢+领取奖励+充值手续费+提现手续费+三方游戏成本") }}</p>
+      <p><strong>{{ $t("(1)以B1为例：") }}</strong>{{ $t("假设B1在本期结算期间输赢-700(即B1亏损700)，且期间B1从平台中领取100奖励，B1的充值让平台消耗15手续费，B1的提现让平台消耗5手续费，B1进入第三方游戏让平台消耗80成本，则B1的净盈利=-700+100+15+5+80=-500，即B1给A贡献业绩是500；") }}</p>
+      <p><strong>{{ $t("(2)以C1为例：") }}</strong>{{ $t("假设C1在本期结算期间输赢800(即C1盈利800)，且期间C1从平台中领取100奖励，C1的充值让平台消耗15手续费，C1的提现让平台消耗5手续费，C1进入第三方游戏让平台消耗80成本，则C1的净盈利=800+100+15+5+80=1000，即C1给B1贡献业绩是-1000。") }}</p>
+      <p class="commission-tutorial__no-indent"><strong>{{ $t("2、A的收益计算方式如下：") }}</strong></p>
+      <p>{{ $t("A的佣金来源除了直属下级B1和B2贡献，还有来自其他下级C1、C2和C3以及D1的贡献；") }}</p>
+      <p><strong>{{ $t("(1)A的直属业绩：") }}</strong>{{ $t("直属业绩=-(B1净盈利+B2净盈利)=-(-500-3000)=3500；") }}</p>
+      <p><strong>{{ $t("(2)A的本期业绩：") }}</strong>{{ $t("本期业绩=直属业绩+上期结余=3500-600=2900；") }}</p>
+      <p><strong>{{ $t("(3)A的直属佣金：") }}</strong>{{ $t("直属佣金=本期业绩*返佣比例=2900*10%=") }}<em>290</em>；</p>
+      <p><strong>{{ $t("(4)A的其他佣金：") }}</strong>{{ $t("其他佣金=-(C1净盈利+C2净盈利+C3净盈利+D1净盈利)*返佣比例*赠送比例=-(1000-2000-20000-3000)*10%*30%=") }}<em>720</em>；</p>
+      <p><strong>{{ $t("(5)A的本期佣金：") }}</strong>{{ $t("本期佣金=直属佣金+其他佣金=") }}<em>290</em>+<em>720</em>=<em>1010</em>。</p>
     </article>
   </section>
 </template>

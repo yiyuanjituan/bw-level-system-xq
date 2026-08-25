@@ -9,11 +9,11 @@ const handleChange = () => {
   <div class="list">
     <div class="item mr-[10px] active">
       <span class="svg-border"><svg-icon name="password_register" class-name="!w-[15px] !h-[15px]" /></span>
-      <span>密码注册</span>
+      <span>{{ $t("密码注册") }}</span>
     </div>
     <div class="item" @click="handleChange">
       <span class="svg-border"><svg-icon name="sms_register" class-name="!w-[15px] !h-[15px]" /></span>
-      <span>验证码注册</span>
+      <span>{{ $t("验证码注册") }}</span>
     </div>
   </div>
 </template>

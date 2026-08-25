@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { reactive, ref } from "vue";
 import PasswordPower from "@/components/Common/PasswordPower.vue";
 import { userRegister } from "@/api/common";
@@ -30,24 +31,24 @@ const formModel = reactive<CreateSubordinateForm>({
 
 const formRules: FormRules = {
   account: [
-    { required: true, message: "请输入会员账号", trigger: ["blur", "change"] },
+    { required: true, message: $t("请输入会员账号"), trigger: ["blur", "change"] },
     {
       pattern: /^[a-zA-Z0-9]{4,16}$/,
-      message: "账号格式错误，请输入4-16位英文/数字",
+      message: $t("账号格式错误，请输入4-16位英文/数字"),
       trigger: ["blur", "change"]
     }
   ],
   password: [
-    { required: true, message: "请输入登录密码", trigger: ["blur", "change"] },
+    { required: true, message: $t("请输入登录密码"), trigger: ["blur", "change"] },
     {
       min: 6,
       max: 16,
-      message: "6-16位，至少包含英文/数字/符号中的两种",
+      message: $t("6-16位，至少包含英文/数字/符号中的两种"),
       trigger: ["blur", "change"]
     },
     {
       pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/,
-      message: "6-16位，至少包含英文/数字/符号中的两种",
+      message: $t("6-16位，至少包含英文/数字/符号中的两种"),
       trigger: ["blur", "change"]
     }
   ]
@@ -67,7 +68,7 @@ async function handleCreate() {
   if (!inviteCode) {
     showCustomToast({
       type: "fail",
-      message: "邀请码获取失败，请刷新页面后重试"
+      message: $t("邀请码获取失败，请刷新页面后重试")
     });
     return;
   }
@@ -89,7 +90,7 @@ async function handleCreate() {
     formRef.value?.clearValidate();
     showCustomToast({
       type: "success",
-      message: "创建成功"
+      message: $t("创建成功")
     });
   }
   catch {
@@ -110,7 +111,7 @@ async function handleCreate() {
         shrink
         :show-nav-arrows="false"
       >
-        <x-tab name="single" title="单一创建" />
+        <x-tab name="single" :title="$t('单一创建')" />
       </x-tabs>
     </div>
 
@@ -120,13 +121,13 @@ async function handleCreate() {
           <x-form-item prop="account" class="create-subordinate__form-item">
             <label class="create-subordinate__label" for="promote-subordinate-account">
               <span class="create-subordinate__required">*</span>
-              <span>会员账号</span>
+              <span>{{ $t("会员账号") }}</span>
             </label>
             <x-input
               id="promote-subordinate-account"
               v-model="formModel.account"
               prefix="user"
-              placeholder="请输入账号"
+              :placeholder="$t('请输入账号')"
               autocomplete="username"
             />
           </x-form-item>
@@ -134,13 +135,13 @@ async function handleCreate() {
           <x-form-item prop="password" class="create-subordinate__form-item create-subordinate__password-item">
             <label class="create-subordinate__label" for="promote-subordinate-password">
               <span class="create-subordinate__required">*</span>
-              <span>登录密码</span>
+              <span>{{ $t("登录密码") }}</span>
             </label>
             <x-input
               id="promote-subordinate-password"
               v-model="formModel.password"
               prefix="lock"
-              placeholder="请输入密码"
+              :placeholder="$t('请输入密码')"
               autocomplete="new-password"
               maxlength="16"
               show-eye
@@ -153,7 +154,7 @@ async function handleCreate() {
 
       <div class="create-subordinate__submit">
         <x-button type="primary" block :loading="creating" @click="handleCreate">
-          创建直属下级
+          {{ $t("创建直属下级") }}
         </x-button>
       </div>
     </div>

@@ -16,6 +16,7 @@ import whatsappIcon from "@/assets/setting/whatsapp.avif";
 import telegramIcon from "@/assets/setting/telegram.avif";
 import vipImage from "@/assets/setting/vip.avif";
 import verifiedIcon from "@/assets/setting/verified.avif";
+import { $locale, $t, setLocale } from "@/locales";
 
 type SettingForm = Required<Pick<
   Eps.UserInfoEntity,
@@ -44,19 +45,26 @@ const formRef = ref<{
   validate: (fields?: string | string[]) => Promise<void>;
   clearValidate: (fields?: string | string[]) => void;
 } | null>(null);
+const languageOptions = computed(() => {
+  void $locale.value;
+  return [
+    { label: $t("settings.chinese"), value: "zh-cn" },
+    { label: $t("settings.english"), value: "en" }
+  ];
+});
 const formRules: XFormRules = {
   nickName: [
     {
       validator: (_rule, value, callback) => {
         if (!String(value ?? "").trim()) {
-          callback(new Error("昵称不能为空"));
+          callback(new Error($t("昵称不能为空")));
           return;
         }
         callback();
       },
       trigger: ["input", "blur", "change"]
     },
-    { max: 20, message: "昵称不能超过20个字符", trigger: ["input", "blur", "change"] }
+    { max: 20, message: $t("昵称不能超过20个字符"), trigger: ["input", "blur", "change"] }
   ]
 };
 
@@ -137,6 +145,10 @@ function handleBindPhone() {
   router.push("/home/security?active=0");
 }
 
+function handleLanguageChange(value: unknown) {
+  setLocale(value === "en" ? "en" : "zh-cn");
+}
+
 async function finishNicknameEditing() {
   try {
     await formRef.value?.validate("nickName");
@@ -177,14 +189,14 @@ async function handleSave() {
   }
 
   if (form.birthday && form.birthday > maximumBirthday.value) {
-    showCustomToast({ type: "warning", message: "用户需年满18周岁" });
+    showCustomToast({ type: "warning", message: $t("用户需年满18周岁") });
     return;
   }
 
   const payload = buildUpdatePayload();
 
   if (!Object.keys(payload).length) {
-    showCustomToast({ type: "warning", message: "暂无需要保存的修改" });
+    showCustomToast({ type: "warning", message: $t("暂无需要保存的修改") });
     return;
   }
 
@@ -194,7 +206,7 @@ async function handleSave() {
     await updateUserInfo(payload);
     await auth.updateInfo();
     syncForm();
-    showCustomToast({ type: "success", message: "用户信息保存成功" });
+    showCustomToast({ type: "success", message: $t("用户信息保存成功") });
   } catch {
     return;
   } finally {
@@ -220,7 +232,7 @@ onMounted(() => {
 
 <template>
   <div class="setting-page">
-    <sub-navbar title="设置用户信息" />
+    <sub-navbar :title="$t('settings.title')" />
 
     <main class="setting-content">
       <x-form ref="formRef" :rule="formRules" :model="form">
@@ -228,7 +240,7 @@ onMounted(() => {
           <button
             type="button"
             class="avatar-area"
-            aria-label="更换头像"
+            :aria-label="$t('更换头像')"
             @click="router.push('/home/setting/updateAvator')"
           >
             <van-image
@@ -267,7 +279,7 @@ onMounted(() => {
                   <button
                     type="button"
                     class="nickname-edit-trigger"
-                    aria-label="编辑昵称"
+                    :aria-label="$t('编辑昵称')"
                     @click="isNicknameEditing = true"
                   >
                     <svg-icon name="login_icon_bj" class-name="nickname-edit-icon" />
@@ -278,7 +290,7 @@ onMounted(() => {
                   v-model="form.nickName"
                   class="nickname-input"
                   :maxlength="20"
-                  placeholder="请输入昵称"
+                  :placeholder="$t('请输入昵称')"
                   autofocus
                   @keydown.enter.prevent="finishNicknameEditing"
                 >
@@ -286,7 +298,7 @@ onMounted(() => {
                     <img
                       :src="verifiedIcon"
                       class="nickname-verified-icon"
-                      alt="完成昵称编辑"
+                      :alt="$t('完成昵称编辑')"
                       @click.stop="finishNicknameEditing"
                     />
                   </template>
@@ -315,7 +327,7 @@ onMounted(() => {
           :model-value="String(auth.user.phone ?? '')"
           class="setting-input readonly-input"
           :class="{ 'readonly-input--actionable': !auth.user.phone }"
-          placeholder="请绑定手机"
+          :placeholder="$t('请绑定手机')"
           readonly
           @click="handleBindPhone"
         >
@@ -326,13 +338,31 @@ onMounted(() => {
       </section>
 
       <section class="setting-section">
+        <h2>{{ $t("settings.language") }}</h2>
+        <div class="setting-select">
+          <x-select
+            :model-value="$locale"
+            :options="languageOptions"
+            @update:model-value="handleLanguageChange"
+          >
+            <template #prefix>
+              <svg-icon name="input_icon_zh" class-name="setting-input-svg setting-input-svg--small" />
+            </template>
+            <template #suffix>
+              <svg-icon name="comm_icon_fh" class-name="setting-arrow" />
+            </template>
+          </x-select>
+        </div>
+      </section>
+
+      <section class="setting-section">
         <h2>第三方账号绑定</h2>
-        <x-input v-model="form.wechat" class="setting-input" :maxlength="50" placeholder="请输入微信号">
+        <x-input v-model="form.wechat" class="setting-input" :maxlength="50" :placeholder="$t('请输入微信号')">
           <template #prefix>
-            <img :src="wechatIcon" class="setting-input-icon" alt="微信" />
+            <img :src="wechatIcon" class="setting-input-icon" :alt="$t('微信')" />
           </template>
         </x-input>
-        <x-input v-model="form.whatsapp" class="setting-input" :maxlength="50" placeholder="请输入WhatsApp号">
+        <x-input v-model="form.whatsapp" class="setting-input" :maxlength="50" :placeholder="$t('请输入WhatsApp号')">
           <template #prefix>
             <img :src="whatsappIcon" class="setting-input-icon" alt="WhatsApp" />
           </template>
@@ -341,7 +371,7 @@ onMounted(() => {
           v-model="form.telegram"
           class="setting-input"
           :maxlength="50"
-          placeholder="请输入Telegram账号，例如@xxxx"
+          :placeholder="$t('请输入Telegram账号，例如@xxxx')"
         >
           <template #prefix>
             <img :src="telegramIcon" class="setting-input-icon" alt="Telegram" />
@@ -360,13 +390,13 @@ onMounted(() => {
           :max-date="maximumBirthdayDate"
           suffix-icon-name="comm_icon_fh"
         />
-        <p class="birthday-tip">系统要求满18周岁才能使用，即{{ maximumBirthday.replaceAll('-', '/') }}前出生。</p>
+        <p class="birthday-tip">{{ $t("系统要求满18周岁才能使用，即") }}{{ maximumBirthday.replaceAll('-', '/') }}前出生。</p>
       </section>
     </main>
 
     <footer class="setting-footer">
-      <x-button plain type="primary" @click="handleBack">返 回</x-button>
-      <x-button type="primary" :loading="isSaving" @click="handleSave">保 存</x-button>
+      <x-button plain type="primary" @click="handleBack">{{ $t("common.back") }}</x-button>
+      <x-button type="primary" :loading="isSaving" @click="handleSave">{{ $t("common.save") }}</x-button>
     </footer>
   </div>
 </template>

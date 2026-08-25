@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, inject, ref } from "vue";
 import { FORM_CONTEXT_KEY, FORM_ITEM_PROP_KEY } from "./form-context";
 
@@ -35,7 +36,7 @@ const prop = computed(() => itemProp?.value || legacyProp || "");
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
-  placeholder: "请选择",
+  placeholder: $t("请选择"),
   prefix: "",
   suffix: "",
   suffix_color: "",

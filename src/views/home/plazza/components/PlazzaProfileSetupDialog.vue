@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, reactive, ref, watch } from "vue";
 import { updateUserInfo } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
@@ -63,23 +64,23 @@ async function handleConfirm() {
   const description = form.description.trim();
 
   if (!nickName) {
-    showCustomToast({ type: "warning", message: "请输入昵称" });
+    showCustomToast({ type: "warning", message: $t("请输入昵称") });
     return;
   }
   if (nickName.length > 20) {
-    showCustomToast({ type: "warning", message: "昵称不能超过20个字符" });
+    showCustomToast({ type: "warning", message: $t("昵称不能超过20个字符") });
     return;
   }
   if (!form.avatarUrl) {
-    showCustomToast({ type: "warning", message: "请选择头像" });
+    showCustomToast({ type: "warning", message: $t("请选择头像") });
     return;
   }
   if (!description) {
-    showCustomToast({ type: "warning", message: "请输入个人介绍" });
+    showCustomToast({ type: "warning", message: $t("请输入个人介绍") });
     return;
   }
   if (description.length > 500) {
-    showCustomToast({ type: "warning", message: "个人介绍不能超过500个字符" });
+    showCustomToast({ type: "warning", message: $t("个人介绍不能超过500个字符") });
     return;
   }
 
@@ -87,7 +88,7 @@ async function handleConfirm() {
   try {
     await updateUserInfo({ nickName, avatarUrl: form.avatarUrl, description });
     await auth.updateInfo();
-    showCustomToast({ type: "success", message: "个人资料设置成功" });
+    showCustomToast({ type: "success", message: $t("个人资料设置成功") });
     emit("completed");
   } catch {
     return;
@@ -128,7 +129,7 @@ watch(
             v-model="form.nickName"
             maxlength="20"
             type="text"
-            placeholder="请输入您的昵称，字数1-20位"
+            :placeholder="$t('请输入您的昵称，字数1-20位')"
           />
         </label>
 
@@ -155,22 +156,22 @@ watch(
           <textarea
             v-model="form.description"
             maxlength="500"
-            placeholder="请输入个人介绍"
+            :placeholder="$t('请输入个人介绍')"
           ></textarea>
           <small>{{ form.description.length }} / 500</small>
         </label>
       </div>
 
       <footer>
-        <x-button plain type="primary" :disabled="isSaving" @click="handleClose">取 消</x-button>
-        <x-button type="primary" :loading="isSaving" @click="handleConfirm">确 认</x-button>
+        <x-button plain type="primary" :disabled="isSaving" @click="handleClose">{{ $t("取 消") }}</x-button>
+        <x-button type="primary" :loading="isSaving" @click="handleConfirm">{{ $t("确 认") }}</x-button>
       </footer>
 
     </section>
 
     <template #footer>
       <div class="profile-setup-dialog__close-footer">
-        <button type="button" class="profile-setup-dialog__close" aria-label="关闭" @click="handleClose">
+        <button type="button" class="profile-setup-dialog__close" :aria-label="$t('关闭')" @click="handleClose">
           <svg-icon name="close" color="white" />
         </button>
       </div>

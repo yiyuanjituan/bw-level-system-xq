@@ -1,22 +1,24 @@
 <template>
-  <SvgIcons />
-  <router-view v-slot="{ Component, route }">
-    <transition :name="systemTransitionName">
-      <component :is="Component" :key="route.matched[0]?.path || route.path" class="page-content" />
-    </transition>
-  </router-view>
-  <ui-toast />
-  <ui-dialog />
-  <van-watermark content="YG游戏" opacity="0.04" v-if="app.appInfo?.isDemo" />
-  <FindUs :ref="setRefs('findUs')" />
-  <recharge-drawer :ref="setRefs('rechargeDrawer')" />
-  <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
-  <recharge-record :ref="setRefs('rechargeRecordRef')" />
-  <download-tip :ref="setRefs('downloadTip')" />
-  <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
-  <dialog-tip :ref="setRefs('dialogTipRef')" />
-  <football-dialog v-if="false" />
-  <redpack-dialog />
+  <van-config-provider :locale="currentVantLocale">
+    <SvgIcons />
+    <router-view v-slot="{ Component, route }">
+      <transition :name="systemTransitionName">
+        <component :is="Component" :key="route.matched[0]?.path || route.path" class="page-content" />
+      </transition>
+    </router-view>
+    <ui-toast />
+    <ui-dialog />
+    <van-watermark :content="$t('YG游戏')" opacity="0.04" v-if="app.appInfo?.isDemo" />
+    <FindUs :ref="setRefs('findUs')" />
+    <recharge-drawer :ref="setRefs('rechargeDrawer')" />
+    <recharge-detail-drawer :ref="setRefs('rechargeDetailDrawer')" />
+    <recharge-record :ref="setRefs('rechargeRecordRef')" />
+    <download-tip :ref="setRefs('downloadTip')" />
+    <WithdrawSuccessNotify :ref="setRefs('withdrawSuccessRef')" />
+    <dialog-tip :ref="setRefs('dialogTipRef')" />
+    <football-dialog v-if="false" />
+    <redpack-dialog />
+  </van-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -24,7 +26,7 @@ import { systemTransitionName } from './hooks/useTransition';
 import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
 import RedpackDialog from '@/components/Dialog/RedpackDialog.vue';
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
 import { bus, userMoneyIn } from '@/utils/mitt';
@@ -36,6 +38,7 @@ import { connectSse, disconnectSse } from '@/utils/sse';
 import { startVersionUpdateCheck } from '@/utils/versionUpdate';
 import { useTelegramWebAppStart } from '@/hooks/useTelegramWebAppStart';
 import { isYimenApp } from '@/utils/yimenApp';
+import { $locale, vantLocales } from '@/locales';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -43,6 +46,7 @@ const auth = useAuthStore();
 const appData = useDataStore();
 const route = useRoute();
 const { handleTelegramWebAppStart } = useTelegramWebAppStart();
+const currentVantLocale = computed(() => vantLocales[$locale.value]);
 const popupRefMap = {
   find_us: 'findUs',
   popup_notice: 'dialogTipRef',

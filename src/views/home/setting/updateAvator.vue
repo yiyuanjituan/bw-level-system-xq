@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref } from "vue";
 import SubNavbar from "@/components/SubNavbar.vue";
 import { updateUserInfo } from "@/api/common";
@@ -60,12 +61,12 @@ function handleImageError(event: Event) {
 
 async function handleSave() {
   if (!selectedAvatarUrl.value) {
-    showCustomToast({ type: "warning", message: "请选择头像" });
+    showCustomToast({ type: "warning", message: $t("请选择头像") });
     return;
   }
 
   if (normalizeAvatarPath(selectedAvatarUrl.value) === normalizeAvatarPath(currentAvatarUrl)) {
-    showCustomToast({ type: "warning", message: "头像未发生变化" });
+    showCustomToast({ type: "warning", message: $t("头像未发生变化") });
     return;
   }
 
@@ -74,7 +75,7 @@ async function handleSave() {
   try {
     await updateUserInfo({ avatarUrl: selectedAvatarUrl.value });
     await auth.updateInfo();
-    showCustomToast({ type: "success", message: "头像修改成功" });
+    showCustomToast({ type: "success", message: $t("头像修改成功") });
     router.back();
   } catch {
     return;
@@ -92,10 +93,10 @@ onMounted(() => {
 
 <template>
   <div class="update-avatar-page">
-    <sub-navbar title="更换头像" />
+    <sub-navbar :title="$t('更换头像')" />
 
     <main class="update-avatar-content">
-      <div class="gender-tabs" role="tablist" aria-label="头像性别">
+      <div class="gender-tabs" role="tablist" :aria-label="$t('头像性别')">
         <button
           type="button"
           class="gender-tab"
@@ -109,7 +110,7 @@ onMounted(() => {
               d="M14.1 3h6.9v6.9h-2.3V6.93l-3.12 3.12a7 7 0 1 1-1.63-1.63l3.12-3.12H14.1V3ZM10 9a4.7 4.7 0 1 0 0 9.4A4.7 4.7 0 0 0 10 9Z"
             />
           </svg>
-          <span>男</span>
+          <span>{{ $t("男") }}</span>
         </button>
         <button
           type="button"
@@ -124,7 +125,7 @@ onMounted(() => {
               d="M12 2a7 7 0 0 1 1.15 13.9V18h2.6v2.2h-2.6V23h-2.3v-2.8h-2.6V18h2.6v-2.1A7 7 0 0 1 12 2Zm0 2.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Z"
             />
           </svg>
-          <span>女</span>
+          <span>{{ $t("女") }}</span>
         </button>
       </div>
 
@@ -152,7 +153,7 @@ onMounted(() => {
     </main>
 
     <footer class="update-avatar-footer">
-      <x-button type="primary" :loading="isSaving" @click="handleSave">保 存</x-button>
+      <x-button type="primary" :loading="isSaving" @click="handleSave">{{ $t("保 存") }}</x-button>
     </footer>
   </div>
 </template>

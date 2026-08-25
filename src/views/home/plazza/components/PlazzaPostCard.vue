@@ -60,7 +60,7 @@ function openPublisher() {
             v-if="post.author.isAdmin"
             class="post-card__admin-badge"
             :src="adminBadgeUrl"
-            alt="朋友圈管理员"
+            :alt="$t('朋友圈管理员')"
           />
           <span>{{ post.author.name }}</span>
         </button>
@@ -140,7 +140,7 @@ function openPublisher() {
         @click="emit('share', post)"
       >
         <svg-icon name="promote-share" class-name="post-card__share-icon" />
-        <span>分享</span>
+        <span>{{ $t("分享") }}</span>
       </button>
     </footer>
   </article>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import SubNavbar from "@/components/SubNavbar.vue";
@@ -95,7 +96,7 @@ function validateProofFile(file: File) {
   const isImage = ["image/png", "image/jpeg", "image/jpg"].includes(file.type);
   const isVideo = file.type === "video/mp4" || file.name.toLowerCase().endsWith(".mp4");
   if (!isImage && !isVideo) {
-    showCustomToast({ type: "warning", message: "仅支持PNG、JPG、JPEG图片或MP4视频" });
+    showCustomToast({ type: "warning", message: $t("仅支持PNG、JPG、JPEG图片或MP4视频") });
     return false;
   }
 
@@ -109,12 +110,12 @@ function validateProofFile(file: File) {
 }
 
 function handleUploadExceed() {
-  showCustomToast({ type: "warning", message: "最多上传15个证明材料" });
+  showCustomToast({ type: "warning", message: $t("最多上传15个证明材料") });
 }
 
 async function handlePasteReason() {
   if (!navigator.clipboard?.readText) {
-    showCustomToast({ type: "warning", message: "当前环境不支持读取剪贴板" });
+    showCustomToast({ type: "warning", message: $t("当前环境不支持读取剪贴板") });
     return;
   }
 
@@ -122,7 +123,7 @@ async function handlePasteReason() {
     const clipboardText = await navigator.clipboard.readText();
     reason.value = `${reason.value}${clipboardText}`.slice(0, 1000);
   } catch {
-    showCustomToast({ type: "warning", message: "读取剪贴板失败，请手动输入" });
+    showCustomToast({ type: "warning", message: $t("读取剪贴板失败，请手动输入") });
   }
 }
 
@@ -158,27 +159,27 @@ function closeClaimOrderDialog() {
 
 function handleSubmit() {
   if (!claimType.value) {
-    showCustomToast({ type: "warning", message: "请选择理赔类型" });
+    showCustomToast({ type: "warning", message: $t("请选择理赔类型") });
     return;
   }
   if (!claimRange.value) {
-    showCustomToast({ type: "warning", message: "请选择日期范围" });
+    showCustomToast({ type: "warning", message: $t("请选择日期范围") });
     return;
   }
   if (requiresClaimOrder.value && !claimOrder.value) {
-    showCustomToast({ type: "warning", message: "请选择理赔订单" });
+    showCustomToast({ type: "warning", message: $t("请选择理赔订单") });
     return;
   }
   if (!reason.value.trim()) {
-    showCustomToast({ type: "warning", message: "请输入申请理由" });
+    showCustomToast({ type: "warning", message: $t("请输入申请理由") });
     return;
   }
   if (!proofFiles.value.length) {
-    showCustomToast({ type: "warning", message: "请添加图片或视频证明材料" });
+    showCustomToast({ type: "warning", message: $t("请添加图片或视频证明材料") });
     return;
   }
   if (!/^\d{6}$/.test(withdrawPassword.value)) {
-    showCustomToast({ type: "warning", message: "请输入6位提现密码" });
+    showCustomToast({ type: "warning", message: $t("请输入6位提现密码") });
     return;
   }
 
@@ -186,7 +187,7 @@ function handleSubmit() {
   isSubmitting.value = true;
   window.setTimeout(() => {
     isSubmitting.value = false;
-    showCustomToast({ type: "warning", message: "暂无可理赔金额" });
+    showCustomToast({ type: "warning", message: $t("暂无可理赔金额") });
   }, 300);
 }
 
@@ -203,7 +204,7 @@ watch(claimType, () => {
 
 <template>
   <main class="apply-claim-page">
-    <SubNavbar title="申请理赔">
+    <SubNavbar :title="$t('申请理赔')">
       <template #right>
         <button class="apply-claim-header__rules" type="button" @click="router.push('/home/claim?active=2')">
           理赔规则
@@ -225,7 +226,7 @@ watch(claimType, () => {
         <div class="apply-claim-account-bar__balance">
           <svg-icon name="input_icon_hb" class-name="apply-claim-account-bar__currency" />
           <span>{{ balance }}</span>
-          <button type="button" aria-label="刷新余额" @click="auth.updateInfo()">
+          <button type="button" :aria-label="$t('刷新余额')" @click="auth.updateInfo()">
             <svg-icon name="comm_icon_sx" />
           </button>
         </div>
@@ -239,7 +240,7 @@ watch(claimType, () => {
             class="apply-claim-form__control"
             required
             prefix="input_icon_bank"
-            placeholder="请选择理赔类型"
+            :placeholder="$t('请选择理赔类型')"
             :options="claimTypeOptions"
             value-key="value"
             label-key="label"
@@ -281,13 +282,13 @@ watch(claimType, () => {
           <x-input
             v-model="claimAmount"
             prefix="input_icon_hb"
-            placeholder="请输入理赔金额"
+            :placeholder="$t('请输入理赔金额')"
           />
         </div>
 
         <div class="apply-claim-form__field">
           <label class="apply-claim-form__label">接收通知邮箱</label>
-          <x-input v-model="notifyEmail" prefix="security_email" placeholder="请输入接收通知邮箱" />
+          <x-input v-model="notifyEmail" prefix="security_email" :placeholder="$t('请输入接收通知邮箱')" />
         </div>
         <p class="apply-claim-email-tips">
           请务必填写真实邮箱地址，并将官方邮箱<b>gc@no.com</b><copy :text="'gc@no.com'" class="apply-claim-email-tips__copy" />
@@ -295,14 +296,14 @@ watch(claimType, () => {
         </p>
 
         <div class="apply-claim-reason">
-          <textarea v-model="reason" maxlength="1000" placeholder="请输入申请理由(详情描述，最多1000字)"></textarea>
+          <textarea v-model="reason" maxlength="1000" :placeholder="$t('请输入申请理由(详情描述，最多1000字)')"></textarea>
           <span>*</span>
           <button type="button" @click="handlePasteReason">粘贴</button>
           <p>{{ reason.length }}/1000字</p>
         </div>
 
         <div class="apply-claim-upload">
-          <div class="apply-claim-upload__title"><span>*</span><strong>添加图片/视频</strong><em>（可上传{{ proofFiles.length }}/15）</em></div>
+          <div class="apply-claim-upload__title"><span>*</span><strong>添加图片/视频</strong><em>{{ $t("（可上传") }}{{ proofFiles.length }}/15）</em></div>
           <x-upload
             v-model="proofFiles"
             accept="image/png,image/jpeg,image/jpg,.mp4"
@@ -313,13 +314,13 @@ watch(claimType, () => {
             :before-upload="validateProofFile"
             @exceed="handleUploadExceed"
           />
-          <p>图片仅限png、jpg、jpeg格式，每张不超过2MB视频限单个不超过100MB</p>
+          <p>{{ $t("图片仅限png、jpg、jpeg格式，每张不超过2MB视频限单个不超过100MB") }}</p>
         </div>
 
         <div ref="passwordSectionRef" class="apply-claim-password">
           <div class="apply-claim-password__label">
-            <span>验证提现密码</span>
-            <button type="button" aria-label="显示或隐藏提现密码" @click="isPasswordVisible = !isPasswordVisible">
+            <span>{{ $t("验证提现密码") }}</span>
+            <button type="button" :aria-label="$t('显示或隐藏提现密码')" @click="isPasswordVisible = !isPasswordVisible">
               <svg-icon :name="isPasswordVisible ? 'comm_icon_show' : 'comm_icon_hide'" />
             </button>
           </div>
@@ -347,11 +348,11 @@ watch(claimType, () => {
           </div>
         </teleport>
 
-        <p class="apply-claim-kind-tips">温馨提示 : 请如实填写申请，虚假或恶意提交申请，会被暂停或永久禁止申请理赔资格。</p>
+        <p class="apply-claim-kind-tips">{{ $t("温馨提示 : 请如实填写申请，虚假或恶意提交申请，会被暂停或永久禁止申请理赔资格。") }}</p>
 
         <div class="apply-claim-actions">
-          <x-button plain type="primary" disabled>保存草稿</x-button>
-          <x-button native-type="submit" type="primary" :loading="isSubmitting">提 交</x-button>
+          <x-button plain type="primary" disabled>{{ $t("保存草稿") }}</x-button>
+          <x-button native-type="submit" type="primary" :loading="isSubmitting">{{ $t("提 交") }}</x-button>
         </div>
       </form>
     </section>
@@ -365,20 +366,20 @@ watch(claimType, () => {
       :overlay-style="{ backdropFilter: 'blur(5px)' }"
     >
       <div class="claim-order-dialog__body">
-        <div class="claim-order-dialog__header">理赔提现订单</div>
+        <div class="claim-order-dialog__header">{{ $t("理赔提现订单") }}</div>
         <div class="claim-order-dialog__content">
           <ul class="claim-order-dialog__table-head">
-            <li>时间</li>
-            <li>订单编号（金额）</li>
+            <li>{{ $t("时间") }}</li>
+            <li>{{ $t("订单编号（金额）") }}</li>
           </ul>
           <div class="claim-order-dialog__empty">
-            <UiEmpty text="暂无记录" />
+            <UiEmpty :text="$t('暂无记录')" />
           </div>
         </div>
       </div>
 
       <template #footer>
-        <button type="button" class="claim-order-dialog__close" aria-label="关闭理赔订单" @click="closeClaimOrderDialog">
+        <button type="button" class="claim-order-dialog__close" :aria-label="$t('关闭理赔订单')" @click="closeClaimOrderDialog">
           <svg-icon name="close" />
         </button>
       </template>

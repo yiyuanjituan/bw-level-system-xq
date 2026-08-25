@@ -8,10 +8,10 @@ import UiButton from "@/components/Common/Button.vue";
     <div class="absolute top-0 left-0 w-full">
       <div class="level-box">
         <div class="sticky-box">
-          <div class="table-th w-[65px] flex-none">等级</div>
-          <div class="table-th flex-1">每日提现总额<div class="unmetTips">上限</div></div>
-          <div class="table-th flex-1">每日提现次数<div class="unmetTips">上限</div></div>
-          <div class="table-th flex-1">每日免手续费<div class="unmetTips">笔数</div></div>
+          <div class="table-th w-[65px] flex-none">{{ $t("等级") }}</div>
+          <div class="table-th flex-1">{{ $t("每日提现总额") }}<div class="unmetTips">{{ $t("上限") }}</div></div>
+          <div class="table-th flex-1">{{ $t("每日提现次数") }}<div class="unmetTips">{{ $t("上限") }}</div></div>
+          <div class="table-th flex-1">{{ $t("每日免手续费") }}<div class="unmetTips">{{ $t("笔数") }}</div></div>
         </div>
         <div class="vip_list">
           <div class="cell-box" v-for="i in 20">
@@ -26,12 +26,12 @@ import UiButton from "@/components/Common/Button.vue";
             </div>
             <div class="cell-item !w-[103px]">
               <div class="row-content">
-                <div class="currency-amount">不限制</div>
+                <div class="currency-amount">{{ $t("不限制") }}</div>
               </div>
             </div>
             <div class="cell-item !w-[103px]">
               <div class="row-content">
-                <div class="currency-amount text-[#FFAA09]">不限制</div>
+                <div class="currency-amount text-[#FFAA09]">{{ $t("不限制") }}</div>
               </div>
             </div>
             <div class="cell-item !w-[103px]">

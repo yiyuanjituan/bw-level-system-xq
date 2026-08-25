@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { onMounted, ref } from "vue";
 import { getHelpData, serviceList } from "@/api/common";
 import { openUrlInNewWindow } from "@/utils/common";
@@ -26,7 +27,7 @@ function jumpUrl(info: any, copy: boolean) {
   setTimeout(() => openUrlInNewWindow(info.url), copy ? 1000 : 0);
   if (copy) {
     toClipboard(info.account).then(() => {
-      showCustomToast({ type: "success", message: "复制成功" });
+      showCustomToast({ type: "success", message: $t("复制成功") });
     });
   }
 }
