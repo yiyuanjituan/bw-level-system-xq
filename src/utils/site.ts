@@ -12,7 +12,7 @@ function getSiteConfig() {
     getConfig()
       .then(res => {
         localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
-        setPageTitle(res.title);
+        setPageTitle(res.page_title || res.title);
         resolve(res);
       })
       .catch(err => resolve(void 0));
