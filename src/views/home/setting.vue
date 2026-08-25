@@ -16,7 +16,7 @@ import whatsappIcon from "@/assets/setting/whatsapp.avif";
 import telegramIcon from "@/assets/setting/telegram.avif";
 import vipImage from "@/assets/setting/vip.avif";
 import verifiedIcon from "@/assets/setting/verified.avif";
-import { $locale, $t, setLocale } from "@/locales";
+import { $t } from "@/locales";
 
 type SettingForm = Required<Pick<
   Eps.UserInfoEntity,
@@ -45,13 +45,6 @@ const formRef = ref<{
   validate: (fields?: string | string[]) => Promise<void>;
   clearValidate: (fields?: string | string[]) => void;
 } | null>(null);
-const languageOptions = computed(() => {
-  void $locale.value;
-  return [
-    { label: $t("settings.chinese"), value: "zh-cn" },
-    { label: $t("settings.english"), value: "en" }
-  ];
-});
 const formRules: XFormRules = {
   nickName: [
     {
@@ -143,10 +136,6 @@ function syncForm() {
 function handleBindPhone() {
   if (auth.user.phone) return;
   router.push("/home/security?active=0");
-}
-
-function handleLanguageChange(value: unknown) {
-  setLocale(value === "en" ? "en" : "zh-cn");
 }
 
 async function finishNicknameEditing() {
@@ -335,24 +324,6 @@ onMounted(() => {
             <svg-icon name="input_icon_sj" class-name="setting-input-svg setting-input-svg--small" />
           </template>
         </x-input>
-      </section>
-
-      <section class="setting-section">
-        <h2>{{ $t("settings.language") }}</h2>
-        <div class="setting-select">
-          <x-select
-            :model-value="$locale"
-            :options="languageOptions"
-            @update:model-value="handleLanguageChange"
-          >
-            <template #prefix>
-              <svg-icon name="input_icon_zh" class-name="setting-input-svg setting-input-svg--small" />
-            </template>
-            <template #suffix>
-              <svg-icon name="comm_icon_fh" class-name="setting-arrow" />
-            </template>
-          </x-select>
-        </div>
       </section>
 
       <section class="setting-section">
