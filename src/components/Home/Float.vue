@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useWindowSize } from '@vant/use';
 import { service } from '@/api/service';
 import router from '@/router';
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
+import closeIcon from "@/assets/home/kjrk_icon_guanbi.avif";
 
 defineOptions({
   name: 'HomeFloat'
@@ -165,8 +167,15 @@ onMounted(() => {
               <van-swipe :width="swipeWidth" :show-indicators="false" :autoplay="3000">
                 <van-swipe-item v-for="item in getPositionItems(position)" :key="item.id">
                   <div class="fast-btn" @click="handleFloatClick(item)">
-                    <img :src="item.image" alt="" class="fast-image" />
-                    <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" @click.stop="closePosition(position)" />
+                    <home-skeleton-image :src="item.image" alt="" class="fast-image" fit="contain" />
+                    <home-skeleton-image
+                      :src="closeIcon"
+                      alt=""
+                      class="close-icon"
+                      fit="contain"
+                      loading="eager"
+                      @click.stop="closePosition(position)"
+                    />
                   </div>
                 </van-swipe-item>
               </van-swipe>
@@ -183,8 +192,15 @@ onMounted(() => {
               <van-swipe :width="swipeWidth" :show-indicators="false" :autoplay="3000">
                 <van-swipe-item v-for="item in getPositionItems(position)" :key="item.id">
                   <div class="fast-btn" @click="handleFloatClick(item)">
-                    <img :src="item.image" alt="" class="fast-image" />
-                    <img src="@/assets/home/kjrk_icon_guanbi.avif" alt="" srcset="" class="close-icon" @click.stop="closePosition(position)" />
+                    <home-skeleton-image :src="item.image" alt="" class="fast-image" fit="contain" />
+                    <home-skeleton-image
+                      :src="closeIcon"
+                      alt=""
+                      class="close-icon"
+                      fit="contain"
+                      loading="eager"
+                      @click.stop="closePosition(position)"
+                    />
                   </div>
                 </van-swipe-item>
               </van-swipe>
@@ -231,7 +247,7 @@ onMounted(() => {
               display: block;
               width: 60px;
               height: 70px;
-              object-fit: contain;
+              background-color: transparent;
             }
             .close-icon {
               position: absolute;
@@ -239,6 +255,7 @@ onMounted(() => {
               left: 0;
               width: 18px;
               height: 18px;
+              background-color: transparent;
             }
           }
         }

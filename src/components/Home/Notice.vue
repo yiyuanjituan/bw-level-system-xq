@@ -4,6 +4,9 @@ import { useRouter } from "vue-router";
 import { service } from "@/api/service";
 import UiBadge from "@/components/UI/badge.vue";
 import { APP_PREFIX_KEY } from "@/utils/site";
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
+import noticeSpeakerIcon from "@/assets/home/icon_dt_pmd.avif";
+import noticeMessageIcon from "@/assets/home/icon_dt_1xx_wd.avif";
 
 defineOptions({
   name: "HomeNotice"
@@ -149,10 +152,12 @@ onMounted(init);
 
 <template>
   <div v-if="marqueeList.length" class="home-notice">
-    <img
-      src="@/assets/home/icon_dt_pmd.avif"
+    <home-skeleton-image
+      :src="noticeSpeakerIcon"
       alt="."
       class="home-notice__speaker"
+      fit="contain"
+      loading="eager"
     />
 
     <van-swipe
@@ -186,10 +191,12 @@ onMounted(init);
       @keydown.space.prevent="openNoticeCenter"
     >
       <ui-badge :content="messageCount">
-        <img
-          src="@/assets/home/icon_dt_1xx_wd.avif"
+        <home-skeleton-image
+          :src="noticeMessageIcon"
           alt="."
           class="home-notice__message-icon"
+          fit="contain"
+          loading="eager"
         />
       </ui-badge>
     </div>
@@ -213,7 +220,7 @@ onMounted(init);
     width: 18px;
     height: 16.5px;
     margin-right: 5px;
-    object-fit: contain;
+    background-color: transparent;
   }
 
   &__swipe {
@@ -247,7 +254,7 @@ onMounted(init);
   &__message-icon {
     width: 29px;
     height: 25.38px;
-    object-fit: contain;
+    background-color: transparent;
   }
 }
 

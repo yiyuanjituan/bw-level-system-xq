@@ -3,6 +3,7 @@ import { $t } from "@/locales";
 import { computed, ref } from "vue";
 import router from "@/router";
 import UiButton from "@/components/Common/Button.vue";
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import useAppStore from "@/store/modules/app";
 import useAuthStore from "@/store/modules/user";
 import { bus } from "@/utils/mitt";
@@ -69,7 +70,14 @@ async function updateWallet() {
       </button>
 
       <div class="home-download-tip__content">
-        <img v-if="app.appInfo.logo" class="home-download-tip__logo" :src="app.appInfo.logo" alt="logo" />
+        <home-skeleton-image
+          v-if="app.appInfo.logo"
+          class="home-download-tip__logo"
+          :src="app.appInfo.logo"
+          alt="logo"
+          fit="contain"
+          loading="eager"
+        />
         <div class="home-download-tip__text">
           <p><strong>{{ $t("下载APP，可参与领取更多优惠！") }}</strong></p>
         </div>
@@ -82,7 +90,14 @@ async function updateWallet() {
 
     <div class="home-nav__toolbar">
       <div class="home-nav__brand">
-        <img v-if="app.appInfo.logo" class="home-nav__logo" :src="app.appInfo.logo" alt="logo" />
+        <home-skeleton-image
+          v-if="app.appInfo.logo"
+          class="home-nav__logo"
+          :src="app.appInfo.logo"
+          alt="logo"
+          fit="contain"
+          loading="eager"
+        />
       </div>
 
       <div class="home-nav__actions">
@@ -98,11 +113,13 @@ async function updateWallet() {
 
           <div class="home-wallet" aria-live="polite">
             <div class="home-wallet__currency-frame">
-              <img
+              <home-skeleton-image
                 v-if="currencyInfo?.icon"
                 class="home-wallet__currency-icon"
                 :src="currencyInfo.icon"
                 alt=""
+                fit="cover"
+                loading="eager"
               />
             </div>
 
@@ -211,10 +228,10 @@ async function updateWallet() {
 }
 
 .home-download-tip__logo {
-  max-width: 90px;
-  max-height: 25px;
+  width: 90px;
+  height: 25px;
   flex: none;
-  object-fit: contain;
+  background-color: transparent;
 }
 
 .home-download-tip__text {
@@ -276,9 +293,9 @@ async function updateWallet() {
 }
 
 .home-nav__logo {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
 }
 
 .home-nav__actions {
@@ -334,7 +351,6 @@ async function updateWallet() {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  object-fit: cover;
 }
 
 .home-wallet__content {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import router from '@/router';
 import useHomeDataStore, { type BannerItem } from '@/store/modules/home';
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 
 defineOptions({
   name: "HomeBanner"
@@ -28,10 +29,11 @@ function handleBannerClick(item: BannerItem) {
         :key="item.id"
         @click="handleBannerClick(item)"
       >
-        <img
+        <home-skeleton-image
           :src="item.image"
           alt=""
           class="home-banner__image"
+          loading="eager"
         />
       </van-swipe-item>
     </van-swipe>
@@ -68,7 +70,6 @@ function handleBannerClick(item: BannerItem) {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
   }
 }
 </style>

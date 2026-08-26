@@ -11,11 +11,20 @@ import { bus } from "@/utils/mitt";
 const active = ref(0);
 const route = useRoute();
 
+interface TabBarItem {
+  name: string;
+  path: string;
+  light_prefix: string;
+  active_icon: string;
+  default_icon: string;
+  isTabBar: boolean;
+}
+
 function getTabBarOrder(meta?: { order?: number; tabBarOrder?: number }) {
   return meta?.tabBarOrder ?? meta?.order ?? 0;
 }
 
-const tabBar = computed<any[]>(() => [
+const tabBar = computed<TabBarItem[]>(() => [
   {
     name: $t("首页"),
     path: "/index",
@@ -36,7 +45,7 @@ const tabBar = computed<any[]>(() => [
     name: $t("存款"),
     path: "/recharge",
     light_prefix: "icon_btm_cz",
-    active_icon: "icon_btm_cz1",
+    active_icon: "icon_btm_cz0",
     default_icon: "icon_btm_cz0",
     isTabBar: true
   },
@@ -61,14 +70,26 @@ const tabBar = computed<any[]>(() => [
 watch(
   () => route.path,
   path => {
+    const matchedTabIndex = tabBar.value.findIndex(v => v.path === path);
+    if (matchedTabIndex >= 0) {
+      active.value = matchedTabIndex;
+      return;
+    }
+
     const newRoute = flattenRoutes(routes);
     const info = newRoute.find(v => v.path === path);
-    active.value = getTabBarOrder(info.meta);
+    active.value = getTabBarOrder(info?.meta);
   },
   { immediate: true }
 );
 
-function handleClick(item: any) {
+function getActiveIcon(item: TabBarItem) {
+  return item.active_icon || item.default_icon;
+}
+
+function handleClick(item?: TabBarItem) {
+  if (!item) return;
+
   if (item.path === "/recharge") {
     return bus.emit("showRecharge");
   }
@@ -93,9 +114,14 @@ function handleClick(item: any) {
   }
 }
 
+function handleClickByPath(path: string) {
+  const record = tabBar.value.find(v => v.path === path);
+  handleClick(record);
+}
+
 function handleJump(path: string) {
   const record = tabBar.value.find(v => v.path == path);
-  handleClick(record);
+  if (record) handleClick(record);
 }
 
 onMounted(() => {
@@ -107,83 +133,169 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="tab-list">
-    <div v-for="(item, index) in tabBar" :key="index" class="ui-tab-bar-item" @click="handleClick(item)">
-      <div class="item">
-        <div class="inline-block relative">
-          <i v-show="active !== index">
-            <i class="text-[24px] text-[#68707B] inline-flex h-[25px] w-auto items-center justify-center absolute">
-              <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
-                <use :xlink:href="`#${item.light_prefix}`" />
-              </svg>
-            </i>
-            <i class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center">
-              <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
-                <use :xlink:href="`#${item.default_icon}`" />
-              </svg>
-            </i>
-          </i>
-          <i v-show="active === index" class="text-[24px] text-[#F0C059] inline-flex h-[25px] w-auto items-center justify-center">
-            <svg width="1em" height="1em" fill="currentColor" class="" style="width: inherit; height: inherit">
-              <use :xlink:href="`#${item.active_icon}`" />
-            </svg>
-          </i>
+  <footer class="tab-bar-footer">
+    <div class="tab-bar-shell">
+      <nav class="app-tabbar" aria-label="主导航">
+        <div
+          v-for="(item, index) in tabBar"
+          :key="item.path"
+          class="app-tabbar__item"
+          :class="{ 'app-tabbar__item--active': active === index }"
+          role="button"
+          tabindex="0"
+          @click.stop="handleClickByPath(item.path)"
+          @keydown.enter.prevent="handleClickByPath(item.path)"
+          @keydown.space.prevent="handleClickByPath(item.path)"
+        >
+          <span class="app-tabbar__content">
+            <span class="app-tabbar__icon-group" aria-hidden="true">
+              <span v-if="active !== index" class="app-tabbar__icon-stack">
+                <svg-icon :name="item.light_prefix" class-name="app-tabbar__icon app-tabbar__icon--outside" />
+                <svg-icon :name="item.default_icon" class-name="app-tabbar__icon app-tabbar__icon--core" />
+              </span>
+              <svg-icon v-else :name="getActiveIcon(item)" class-name="app-tabbar__icon app-tabbar__icon--active" />
+            </span>
+            <span class="app-tabbar__text">{{ item.name }}</span>
+          </span>
         </div>
-        <span class="text" :class="{ '!text-[#F0C059]': active === index }">{{ item.name }}</span>
-      </div>
+      </nav>
     </div>
-  </div>
+  </footer>
 </template>
 
 <style lang="less" scoped>
-.tab-list {
-  height: 62px;
-  background: #1c1e23;
-  z-index: 1;
-  display: flex;
-  box-sizing: content-box;
-  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
-  position: relative;
+.tab-bar-footer {
   width: 100%;
-  color: white;
+  flex: none;
+  position: relative;
+  z-index: 20;
+  pointer-events: auto;
+}
 
-  .ui-tab-bar-item {
-    box-sizing: border-box;
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: inherit;
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
+.tab-bar-shell {
+  width: 100%;
+}
 
-    .item {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      align-items: center;
-      justify-content: flex-end;
-      text-align: center;
-      padding: 0 2.5px;
+.app-tabbar {
+  --app-tabbar-icon-size: 25px;
 
-      .text {
-        color: #68707b;
-        font-size: 12px;
-        word-break: break-word;
-        display: -webkit-box;
-        text-overflow: ellipsis;
-        vertical-align: middle;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        height: 27px;
-        line-height: 1.2;
-        overflow: hidden;
-        z-index: 2;
-      }
-    }
-  }
+  width: 100%;
+  min-height: calc(62px + var(--skin__safe-area-inset-bottom, 0px));
+  padding-bottom: var(--skin__safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+  display: flex;
+  position: relative;
+  z-index: 20;
+  overflow: hidden;
+  color: var(--skin__btmnav_def, var(--skin__neutral_2));
+  background-color: var(--skin__web_btmnav_db, var(--skin__bg_2));
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
+}
+
+:global([dir="rtl"]) .app-tabbar {
+  box-shadow: -1px 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.app-tabbar__item {
+  width: 20%;
+  height: 62px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.app-tabbar__content {
+  width: 100%;
+  height: 100%;
+  padding: 7px 2.5px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  pointer-events: none;
+}
+
+.app-tabbar__icon-group {
+  height: var(--app-tabbar-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  line-height: 0;
+}
+
+.app-tabbar__icon-stack {
+  width: auto;
+  height: var(--app-tabbar-icon-size);
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+
+:deep(.app-tabbar__icon) {
+  width: auto;
+  height: var(--app-tabbar-icon-size);
+  display: block;
+  font-size: var(--app-tabbar-icon-size);
+  line-height: 0;
+}
+
+:deep(.app-tabbar__icon--outside) {
+  position: absolute;
+  inset: 0 auto auto 0;
+  color: var(--skin__btmnav_def, var(--skin__neutral_2));
+}
+
+:deep(.app-tabbar__icon--core),
+:deep(.app-tabbar__icon--active) {
+  position: relative;
+  color: var(--skin__btmnav_active, var(--skin__primary));
+}
+
+.app-tabbar__text {
+  max-width: 100%;
+  height: 27px;
+  margin-top: 1px;
+  color: var(--skin__btmnav_def, var(--skin__neutral_2));
+  display: -webkit-box;
+  overflow: hidden;
+  z-index: 2;
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  word-break: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.app-tabbar__text:lang(vi),
+.app-tabbar__text:lang(my) {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.app-tabbar__item--active .app-tabbar__text {
+  color: var(--skin__btmnav_active, var(--skin__primary));
 }
 </style>

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { $t } from "@/locales";
 import HomeGameCard from "@/components/Home/GameCard.vue";
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
 
 defineOptions({
@@ -206,7 +207,13 @@ onBeforeUnmount(() => {
   <section v-if="games.length" class="home-game-section">
     <div class="home-game-section__headline">
       <div class="home-game-section__title">
-        <img v-if="section.img" :src="section.img" alt="" class="home-game-section__title-icon" />
+        <home-skeleton-image
+          v-if="section.img"
+          :src="section.img"
+          alt=""
+          class="home-game-section__title-icon"
+          fit="contain"
+        />
         <span class="home-game-section__title-text">{{ sectionTitle }}</span>
       </div>
 
@@ -282,7 +289,7 @@ onBeforeUnmount(() => {
   height: 26px;
   margin-right: 3px;
   flex: none;
-  object-fit: contain;
+  background-color: transparent;
 }
 
 :global([dir="rtl"]) .home-game-section__title-icon {

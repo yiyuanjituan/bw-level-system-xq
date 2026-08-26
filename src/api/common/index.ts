@@ -132,7 +132,7 @@ export function getConfig(data?: object): Promise<any> {
   });
 }
 
-export function getThemeConfig(): Promise<{ preset: string; variables: Record<string, string> }> {
+export function getThemeConfig(): Promise<{ theme: number; preset: string; variables: Record<string, string> }> {
   return http.request({
     url: "/open/v1/home/themeConfig",
     method: "post"

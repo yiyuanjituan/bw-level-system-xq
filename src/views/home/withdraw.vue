@@ -82,7 +82,6 @@ watch(active, value => {
 
 <style scoped lang="less">
 .security-container {
-  --skin__primary: #dfbe5b;
   --van-tab-active-text-color: var(--skin__primary);
   --van-tab-text-color: white;
 
@@ -91,7 +90,6 @@ watch(active, value => {
 
   .sub-header {
     --skin__lead: white;
-    --skin__neutral_1: #bcbcbc;
 
     position: relative;
     display: flex;

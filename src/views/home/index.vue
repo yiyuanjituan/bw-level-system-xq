@@ -5,6 +5,7 @@ import HomeBanner from '@/components/Home/Banner.vue';
 import HomeNotice from '@/components/Home/Notice.vue';
 import HomeGameList from '@/components/Home/GameList.vue';
 import HomeFloat from '@/components/Home/Float.vue';
+import HomeBackTop from '@/components/Home/BackTop.vue';
 
 const scrollEndDelay = 160;
 const isHomeScrolling = ref(false);
@@ -41,10 +42,7 @@ onBeforeUnmount(() => {
         <HomeGameList />
       </section>
     </main>
-    <van-back-top target="#scroll-box" class="home-back-top">
-      <svg-icon name="comm_icon_top" class-name="home-back-top__icon" />
-      <span class="home-back-top__text">{{ $t("返回顶部") }}</span>
-    </van-back-top>
+    <HomeBackTop target="#scroll-box" :is-put="isHomeScrolling" />
     <HomeFloat :is-put="isHomeScrolling" />
   </div>
 </template>
@@ -76,36 +74,4 @@ onBeforeUnmount(() => {
   padding-bottom: 20px;
 }
 
-.home-back-top {
-  --van-back-top-bottom: 77px;
-  --van-back-top-right: calc(50vw - 33px);
-  width: 66px;
-  height: 20px;
-  border-radius: 10px;
-  border: solid 1px #dfbe5b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  color: white;
-  flex-direction: row;
-  background: #191919;
-  font-size: 9px;
-
-  &__text {
-    line-height: 9px;
-    margin-left: 5px;
-    white-space: nowrap;
-    font-size: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    scale: 0.98;
-  }
-
-  :deep(.home-back-top__icon) {
-    width: 10px;
-    height: 10px;
-  }
-}
 </style>

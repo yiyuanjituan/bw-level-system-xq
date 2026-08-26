@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import type { HomeGameRecord } from "@/components/Home/types";
 
 defineOptions({
@@ -17,9 +18,6 @@ const emit = defineEmits<{
 
 const isGame = computed(() => props.game.gameMode === "game");
 const isDisabled = computed(() => Number(props.game.isOpen) === 0);
-const cardStyle = computed(() => ({
-  "--home-game-card-image": props.game.image ? `url(${props.game.image})` : "none"
-}));
 
 function handleClick() {
   if (isDisabled.value) {
@@ -36,11 +34,18 @@ function handleClick() {
     type="button"
     class="home-game-card"
     :class="{ 'home-game-card--disabled': isDisabled }"
-    :style="cardStyle"
     :aria-label="game.name || '游戏'"
     :aria-disabled="isDisabled"
     @click="handleClick"
   >
+    <home-skeleton-image
+      v-if="game.image"
+      :src="game.image"
+      alt=""
+      class="home-game-card__image"
+      fit="cover"
+    />
+
     <span v-if="isGame && game.name" class="home-game-card__name">
       {{ game.name }}
     </span>
@@ -63,11 +68,7 @@ function handleClick() {
   justify-content: center;
   overflow: hidden;
   color: #fff;
-  background-color: #1c1e23;
-  background-image: var(--home-game-card-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-color: var(--skin__ddt_bg);
   border-radius: 9px 13px 13px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -79,13 +80,24 @@ function handleClick() {
     right: 0;
     bottom: 0;
     left: 0;
+    z-index: 1;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+    pointer-events: none;
     content: "";
   }
 
   &:active:not(.home-game-card--disabled) {
     transform: scale(0.98);
   }
+}
+
+.home-game-card__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
 }
 
 .home-game-card__name {
