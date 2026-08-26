@@ -32,25 +32,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="home-container">
+  <div class="home-page">
     <HomeNavBar />
-    <div class="scroll-box" id="scroll-box" @scroll="handleHomeScroll">
+    <main class="home-page__scroll" id="scroll-box" @scroll="handleHomeScroll">
       <HomeBanner />
       <HomeNotice />
-      <div class="mt-[10px]">
+      <section class="home-page__game-list">
         <HomeGameList />
-      </div>
-    </div>
-    <van-back-top target="#scroll-box" class="page-home-custom-back-top">
-      <svg-icon name="comm_icon_top"></svg-icon>
-      <div class="span">{{ $t("返回顶部") }}</div>
+      </section>
+    </main>
+    <van-back-top target="#scroll-box" class="home-back-top">
+      <svg-icon name="comm_icon_top" class-name="home-back-top__icon" />
+      <span class="home-back-top__text">{{ $t("返回顶部") }}</span>
     </van-back-top>
-    <home-float :is-put="isHomeScrolling" />
+    <HomeFloat :is-put="isHomeScrolling" />
   </div>
 </template>
 
-<style lang="less">
-.page-home-custom-back-top {
+<style scoped lang="less">
+.home-page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--skin__home_bg);
+}
+
+.home-page__scroll {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background-color: var(--skin__home_bg);
+  background-image: url("@/assets/home/bg_pattern_tile.avif");
+  background-position: center;
+  background-size: 90px 90px;
+}
+
+.home-page__game-list {
+  margin-top: 10px;
+  padding-bottom: 20px;
+}
+
+.home-back-top {
   --van-back-top-bottom: 77px;
   --van-back-top-right: calc(50vw - 33px);
   width: 66px;
@@ -66,7 +92,7 @@ onBeforeUnmount(() => {
   background: #191919;
   font-size: 9px;
 
-  .span {
+  &__text {
     line-height: 9px;
     margin-left: 5px;
     white-space: nowrap;
@@ -76,23 +102,10 @@ onBeforeUnmount(() => {
     justify-content: center;
     scale: 0.98;
   }
-}
-</style>
 
-<style scoped lang="less">
-.home-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  .scroll-box {
-    overflow: auto;
-    height: 100%;
-    width: 100%;
-    background-image: url('@/assets/home/bg_pattern_tile.avif');
-    background-position: center;
-    background-size: 90px 90px;
+  :deep(.home-back-top__icon) {
+    width: 10px;
+    height: 10px;
   }
 }
 </style>

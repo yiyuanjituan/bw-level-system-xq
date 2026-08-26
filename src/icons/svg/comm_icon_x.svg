@@ -4,7 +4,7 @@
         <path d="M1.92 16a1 1 0 0 1-.7-1.7l14-14a1 1 0 0 1 1.4 1.4l-14 14a1 1 0 0 1-.7.3"></path>
     </g>
     <defs>
-        <clipPath>
+        <clipPath id="comm_icon_x__a">
             <path d="M.92 0h16v16h-16z"></path>
         </clipPath>
     </defs>

@@ -21,8 +21,8 @@ function handleBannerClick(item: BannerItem) {
 </script>
 
 <template>
-  <div v-if="home.homeBannerList.length" class="banner-box">
-    <van-swipe class="my-swipe" :autoplay="30000" indicator-color="white">
+  <div v-if="home.homeBannerList.length" class="home-banner">
+    <van-swipe class="home-banner__swipe" :autoplay="30000" indicator-color="white">
       <van-swipe-item
         v-for="item in home.homeBannerList"
         :key="item.id"
@@ -31,7 +31,7 @@ function handleBannerClick(item: BannerItem) {
         <img
           :src="item.image"
           alt=""
-          class="swiper-bg"
+          class="home-banner__image"
         />
       </van-swipe-item>
     </van-swipe>
@@ -39,16 +39,18 @@ function handleBannerClick(item: BannerItem) {
 </template>
 
 <style scoped lang="less">
-.banner-box {
+.home-banner {
   margin-top: 10px;
   padding-left: 10px;
   padding-right: 10px;
   width: 100%;
   height: 105px;
-  .my-swipe {
+
+  &__swipe {
     width: 100%;
     height: 100%;
     border-radius: 8px;
+    overflow: hidden;
     --van-swipe-indicator-size: 5px;
     --van-swipe-indicator-margin: 5px;
 
@@ -60,12 +62,13 @@ function handleBannerClick(item: BannerItem) {
     :deep(.van-swipe__indicator--active) {
       width: 12px !important;
     }
-    .swiper-bg {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 </style>

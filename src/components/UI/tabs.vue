@@ -103,11 +103,7 @@ function handleTabClick(index: number) {
     <div class="ui-tabs__wrap">
       <div class="ui-tabs__navigation-prev ui-tabs__navigation-prev--left" v-if="wrapScrollLeft >= 10 && props.indicator" @click="scrollToLeft">
         <section class="left-icon">
-          <i class="inline-flex items-center justify-center icon">
-            <svg width="1em" height="1em" fill="currentColor" class="">
-              <use xlink:href="#comm_icon_fh"></use>
-            </svg>
-          </i>
+          <svg-icon name="comm_icon_fh" class-name="icon" />
         </section>
       </div>
       <div class="scroll-content-box" :class="{ 'show-line': props.showLine }" @scroll="onWrapScroll" ref="scrollBoxRef">
@@ -137,11 +133,7 @@ function handleTabClick(index: number) {
         @click="scrollToRight"
       >
         <section class="right-icon">
-          <i class="inline-flex items-center justify-center icon">
-            <svg width="1em" height="1em" fill="currentColor" class="">
-              <use xlink:href="#comm_icon_fh"></use>
-            </svg>
-          </i>
+          <svg-icon name="comm_icon_fh" class-name="icon" />
         </section>
       </div>
     </div>
@@ -247,7 +239,7 @@ function handleTabClick(index: number) {
       user-select: none;
       scrollbar-width: none;
       &.show-line {
-        border-bottom: 1px solid #313843;
+        border-bottom: 1px solid var(--skin__border);
       }
 
       .ui-tab {

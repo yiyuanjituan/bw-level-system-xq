@@ -49,7 +49,7 @@ function handleChangeAccount(type: number) {
 .mine-info {
   border-radius: 7px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  border: solid thin #313843;
+  border: solid thin var(--skin__border);
   background: #1c1e23;
   padding: 10px 10px 7.5px;
   display: flex;

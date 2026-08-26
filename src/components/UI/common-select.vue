@@ -352,7 +352,7 @@ const handleBlur = () => {
 
 <style scoped lang="less">
 .ui-select {
-  border: 1px solid #313843;
+  border: 1px solid var(--skin__border);
   height: 35px;
   width: 100%;
   border-radius: 5px;
@@ -479,7 +479,7 @@ const handleBlur = () => {
 
   &__search {
     padding: 8px;
-    border-bottom: 1px solid #313843;
+    border-bottom: 1px solid var(--skin__border);
 
     &-input {
       width: 100%;

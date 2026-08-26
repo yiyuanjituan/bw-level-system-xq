@@ -35,7 +35,7 @@ const modelValue = defineModel({
     margin-right: 2px;
     border-radius: 3px;
     background-color: #1C1E23;
-    border: 1px solid #313843;
+    border: 1px solid var(--skin__border);
     display: flex;
     align-items: center;
     justify-content: center;

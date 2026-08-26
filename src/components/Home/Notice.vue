@@ -148,15 +148,15 @@ onMounted(init);
 </script>
 
 <template>
-  <div v-if="marqueeList.length" class="global-marquee px-[12px]">
+  <div v-if="marqueeList.length" class="home-notice">
     <img
       src="@/assets/home/icon_dt_pmd.avif"
       alt="."
-      class="left-icon mr-[5px]"
+      class="home-notice__speaker"
     />
 
     <van-swipe
-      class="marquee-swiper"
+      class="home-notice__swipe"
       vertical
       :autoplay="3000"
       :show-indicators="false"
@@ -169,19 +169,27 @@ onMounted(init);
       >
         <van-notice-bar :scrollable="true" :delay="1" :speed="60">
           <div
-            class="marquee-content"
+            class="home-notice__content"
             v-html="formatMarqueeContent(notice.content)"
           ></div>
         </van-notice-bar>
       </van-swipe-item>
     </van-swipe>
 
-    <div class="right-icon ml-[5px]" @click="openNoticeCenter">
+    <div
+      class="home-notice__message"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('消息中心')"
+      @click="openNoticeCenter"
+      @keydown.enter="openNoticeCenter"
+      @keydown.space.prevent="openNoticeCenter"
+    >
       <ui-badge :content="messageCount">
         <img
           src="@/assets/home/icon_dt_1xx_wd.avif"
           alt="."
-          class="w-[29px] h-[25.38px]"
+          class="home-notice__message-icon"
         />
       </ui-badge>
     </div>
@@ -189,23 +197,26 @@ onMounted(init);
 </template>
 
 <style scoped lang="less">
-.global-marquee {
+.home-notice {
   --van-notice-bar-height: 25px;
   --van-notice-bar-background: transparent;
   --van-notice-bar-text-color: #adb6c3;
   --van-notice-bar-font-size: 12px;
   --van-notice-bar-padding: 0px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   margin-top: 10px;
 
-  .left-icon {
+  &__speaker {
     flex: none;
     width: 18px;
     height: 16.5px;
+    margin-right: 5px;
+    object-fit: contain;
   }
 
-  .marquee-swiper {
+  &__swipe {
     flex: 1;
     min-width: 0;
     height: 25px;
@@ -219,17 +230,36 @@ onMounted(init);
       width: 100%;
     }
 
-    :deep(.marquee-content) {
+    :deep(.home-notice__content) {
       display: inline;
       white-space: nowrap;
     }
   }
 
-  .right-icon {
+  &__message {
     flex: none;
     width: 30px;
     height: 28.3px;
+    margin-left: 5px;
     cursor: pointer;
+  }
+
+  &__message-icon {
+    width: 29px;
+    height: 25.38px;
+    object-fit: contain;
+  }
+}
+
+:global([dir="rtl"]) .home-notice {
+  &__speaker {
+    margin-right: 0;
+    margin-left: 5px;
+  }
+
+  &__message {
+    margin-right: 5px;
+    margin-left: 0;
   }
 }
 </style>

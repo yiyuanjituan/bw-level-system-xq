@@ -1,6 +1,14 @@
-import { service } from '@/api/service';
-import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { service } from "@/api/service";
+import { defineStore } from "pinia";
+import { computed, ref } from "vue";
+import hotIcon from "@/assets/home/icon_dtfl_rm_1.avif";
+import liveIcon from "@/assets/home/icon_dtfl_zr_1.avif";
+import fishingIcon from "@/assets/home/icon_dtfl_by_1.avif";
+import slotIcon from "@/assets/home/icon_dtfl_dz_1.avif";
+import lotteryIcon from "@/assets/home/icon_dtfl_cp_1.avif";
+import sportIcon from "@/assets/home/icon_dtfl_ty_1.avif";
+import pokerIcon from "@/assets/home/icon_dtfl_qp_1.avif";
+import esportIcon from "@/assets/home/icon_dtfl_dianjing_1.avif";
 
 export type BannerPosition = 0 | 1;
 export type BannerJumpMode = 0 | 1 | 2;
@@ -21,6 +29,17 @@ export type BannerItem = {
   weigh: number;
   jumpMode: BannerJumpMode;
   url: string;
+};
+
+const defaultClassifyIconMap: Record<number, string> = {
+  0: hotIcon,
+  1: liveIcon,
+  2: fishingIcon,
+  3: slotIcon,
+  4: lotteryIcon,
+  5: sportIcon,
+  6: pokerIcon,
+  7: esportIcon
 };
 
 function toFiniteNumber(value: unknown, fallback: number) {
@@ -61,7 +80,7 @@ function normalizeBannerItem(record: BannerRecord, index: number): BannerItem | 
 export const useHomeDataStore = defineStore('home', () => {
   const banner = ref<BannerItem[]>([])
   const classify = ref<any>({})
-  const suggestList = ref<any>({})
+  const suggestList = ref<any[]>([])
   const venueList = ref<any[]>([])
 
   const bannerList = computed(() => Array.isArray(banner.value) ? banner.value : []);
@@ -90,27 +109,20 @@ export const useHomeDataStore = defineStore('home', () => {
   }
 
   const setSuggestData = (value: any) => {
-    suggestList.value = value
+    suggestList.value = Array.isArray(value) ? value : []
   }
   const setVenueList = (value: any[]) => {
-    let list = [];
-    value.forEach((item: any) => {
-      let img = item.img
-      if (!item.img) {
-        if (item.type == 1) img = `./siteadmin/skin/lobby_asset/icon_dtfl_zr_1.avif`
-        if (item.type == 2) img = `./siteadmin/skin/lobby_asset/icon_dtfl_by_1.avif`
-        if (item.type == 3) img = `./siteadmin/skin/lobby_asset/icon_dtfl_dz_1.avif`
-        if (item.type == 4) img = `./siteadmin/skin/lobby_asset/icon_dtfl_cp_1.avif`
-        if (item.type == 5) img = `./siteadmin/skin/lobby_asset/icon_dtfl_ty_1.avif`
-        if (item.type == 6) img = `./siteadmin/skin/lobby_asset/icon_dtfl_qp_1.avif`
-        if (item.type == 7) img = `./siteadmin/skin/lobby_asset/icon_dtfl_dianjing_1.avif`
-      }
-      list.push({
+    const sourceList = Array.isArray(value) ? value : []
+
+    venueList.value = sourceList.map((item: any) => {
+      const type = Number(item?.type);
+      const img = item?.img || item?.select_icon || item?.icon || defaultClassifyIconMap[type] || "";
+
+      return {
         ...item,
         img: img
-      })
+      }
     })
-    venueList.value = list
   }
 
   return {

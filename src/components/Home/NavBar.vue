@@ -1,440 +1,440 @@
 <script setup lang="ts" name="HomeNavBar">
 import { $t } from "@/locales";
 import { computed, ref } from "vue";
-import useAuthStore from "@/store/modules/user";
 import router from "@/router";
 import UiButton from "@/components/Common/Button.vue";
-import HomeDrawer from "@/components/Home/Drawer.vue";
 import useAppStore from "@/store/modules/app";
-import { showCustomToast } from "@/hooks/useCommon";
+import useAuthStore from "@/store/modules/user";
 import { bus } from "@/utils/mitt";
 import { isYimenApp } from "@/utils/yimenApp";
 
 defineOptions({
   name: "HomeNavBar"
 });
-const walletIsLoading = ref(false);
-const isShowMore = ref(false);
+
 const auth = useAuthStore();
-const isShowNav = ref(false);
 const app = useAppStore();
 const inApp = isYimenApp();
+const walletIsLoading = ref(false);
+
 const showDownloadApp = computed(() => app.isShowDownload && !inApp);
 const currencyInfo = computed(() => {
-  return app.appInfo.countryList.find(v => v.id == auth.user.currencyId);
+  return app.appInfo.countryList.find(currency => currency.id == auth.user.currencyId);
 });
 
 function handleToLogin() {
   router.push("/home/login");
 }
-const handleToRegister = () => router.push("/home/register");
-const drawerRef = ref(null);
 
-const changeShowNav = () => {
-  isShowNav.value = !isShowNav.value;
-  if (isShowNav.value) drawerRef.value.open();
-  if (!isShowNav.value) drawerRef.value.close();
-};
-
-const updateWallet = () => {
-  walletIsLoading.value = true;
-  auth.updateInfo();
-  setTimeout(() => {
-    walletIsLoading.value = false;
-  }, 2000);
-};
+function handleToRegister() {
+  router.push("/home/register");
+}
 
 function handleRecharge() {
-  isShowMore.value = false;
   bus.emit("showRecharge");
 }
 
-function handleWithdraw() {
-  isShowMore.value = false;
-
-  if (!auth.user.hasPayPassword) {
-    showCustomToast({
-      type: "warning",
-      message: $t("为了资金安全，需先设置提现密码哦！")
-    });
-    router.push("/home/security?active=5");
-    return;
-  }
-
-  router.push("/home/withdraw");
+function closeDownload() {
+  app.updateDownloadBtn(false);
 }
 
-function handleInterest() {
-  isShowMore.value = false;
-  router.push("/home/yuebao");
+async function updateWallet() {
+  if (walletIsLoading.value) return;
+
+  walletIsLoading.value = true;
+  try {
+    await auth.updateInfo();
+  } finally {
+    walletIsLoading.value = false;
+  }
 }
 </script>
 
 <template>
-  <header class="home-header">
-    <div class="safe-area-inset-top" :class="{ 'is-tip-download': showDownloadApp }"></div>
-    <div v-if="!inApp" class="download-app" :class="{ '!h-[0px]': !showDownloadApp }">
-      <span
-        class="text-[10px] text-[#B9B55CFF] px-[10px] flex w-30px items-center justify-center"
-        @click="app.updateDownloadBtn(false)"
+  <header class="home-nav">
+    <div class="home-nav__safe-area" :class="{ 'home-nav__safe-area--download': showDownloadApp }"></div>
+
+    <div
+      v-if="!inApp"
+      class="home-download-tip"
+      :class="{ 'home-download-tip--hidden': !showDownloadApp }"
+    >
+      <button
+        type="button"
+        class="home-download-tip__close"
+        :aria-label="$t('关闭')"
+        @click="closeDownload"
       >
-        <i>
-          <svg width="1em" height="1em" fill="currentColor" class="">
-            <use xlink:href="#comm_icon_x" />
-          </svg>
-        </i>
-      </span>
-      <div class="flex flex-1 h-[25px] items-center">
-        <img class="max-h-[25px]" :src="app.appInfo.logo" alt="." />
+        <svg-icon name="comm_icon_x" class-name="home-download-tip__close-icon" />
+      </button>
+
+      <div class="home-download-tip__content">
+        <img v-if="app.appInfo.logo" class="home-download-tip__logo" :src="app.appInfo.logo" alt="logo" />
+        <div class="home-download-tip__text">
+          <p><strong>{{ $t("下载APP，可参与领取更多优惠！") }}</strong></p>
+        </div>
       </div>
-      <div class="text-[9px] text-white mr-[5px] rounded-[5px] bg-[#B9B55C] flex h-[20px] w-[60px] items-center justify-center">
-        立即下载
-      </div>
+
+      <ui-button type="primary" size="small" class="home-download-tip__button">
+        {{ $t("立即下载") }}
+      </ui-button>
     </div>
 
-    <div class="header-container">
-      <div class="left">
-        <div class="icon-wrap" v-if="false">
-          <i class="inline-flex items-center justify-center" @click="changeShowNav">
-            <svg width="1em" height="1em" fill="#adb6c3" class="left-icon" :class="{ 'left-icon-transX': isShowNav }">
-              <use xlink:href="#btn_zcl_arrow" />
-            </svg>
-          </i>
-        </div>
-        <div class="logo">
-          <img :src="app.appInfo.logo" alt="." />
-        </div>
+    <div class="home-nav__toolbar">
+      <div class="home-nav__brand">
+        <img v-if="app.appInfo.logo" class="home-nav__logo" :src="app.appInfo.logo" alt="logo" />
       </div>
-      <div class="right" v-if="!auth.token">
-        <div class="un-login">
-          <div class="login-btn" role="button" @click="handleToLogin">
-            <span>登 录</span>
-          </div>
-          <div class="register-btn" role="button" @click="handleToRegister">
-            <span>注 册</span>
-          </div>
-        </div>
-      </div>
-      <div class="right" v-if="auth.token">
-        <div class="wallet">
-          <div class="wallet__currency">
-            <img :src="currencyInfo?.icon" alt="" class="country" />
-          </div>
-          <div class="currency-content-wrap">
-            <div class="count" v-if="!walletIsLoading">{{ auth.user.money }}</div>
-            <span class="loading-text" v-if="walletIsLoading">{{ $t("加载中") }}</span>
-          </div>
-          <div
-            class="refresh-icon"
-            :class="[walletIsLoading ? 'ml-[0px] animate__spin' : 'ml-[4px]']"
-            @click="updateWallet"
+
+      <div class="home-nav__actions">
+        <template v-if="auth.token">
+          <ui-button
+            type="primary"
+            size="small"
+            class="home-nav__recharge-button"
+            @click="handleRecharge"
           >
-            <svg width="1em" height="1em" fill="#F0C059" class="">
-              <use xlink:href="#comm_icon_sx"></use>
-              <!---->
-            </svg>
-          </div>
-        </div>
-        <div class="menu-button !mr-[5px]">
-          <ui-button class="!w-[80px] !h-[27px] !p-[0px] !rounded-[5px] !mr-[0px]" style="border-width: 0">
-            <div class="flex w-full h-full items-center relative">
-              <div class="w-[58.5px] text-[11px] text-[#874404]" @click="handleRecharge">{{ $t("存 款") }}</div>
-              <div class="popover" @click="isShowMore = !isShowMore">
-                <i
-                  class="inline-flex justify-center items-center text-[#874404]"
-                  :class="{
-                    'rotate-[-180deg]': isShowMore,
-                    'rotate-0': !isShowMore
-                  }"
-                >
-                  <svg width="1em" height="1em" fill="currentColor" class="">
-                    <use xlink:href="#comm_icon_sort"></use>
-                    <!---->
-                  </svg>
-                </i>
-              </div>
-            </div>
+            {{ $t("存 款") }}
           </ui-button>
-          <div class="popover-content" v-if="isShowMore">
-            <div class="content-box">
-              <div @click="handleWithdraw">{{ $t("提现") }}</div>
-              <div @click="handleInterest">{{ $t("利息宝") }}</div>
+
+          <div class="home-wallet" aria-live="polite">
+            <div class="home-wallet__currency-frame">
+              <img
+                v-if="currencyInfo?.icon"
+                class="home-wallet__currency-icon"
+                :src="currencyInfo.icon"
+                alt=""
+              />
             </div>
+
+            <div class="home-wallet__content">
+              <span v-if="!walletIsLoading" class="home-wallet__amount" dir="ltr">
+                {{ auth.user.money }}
+              </span>
+              <span v-else class="home-wallet__loading">{{ $t("加载中") }}</span>
+            </div>
+
+            <button
+              type="button"
+              class="home-wallet__refresh"
+              :class="{ 'home-wallet__refresh--loading': walletIsLoading }"
+              :aria-label="$t('刷新余额')"
+              @click="updateWallet"
+            >
+              <svg-icon name="comm_icon_sx" class-name="home-wallet__refresh-icon" />
+            </button>
           </div>
+        </template>
+
+        <div v-else class="home-nav__guest-actions">
+          <ui-button
+            type="primary"
+            size="small"
+            class="home-nav__guest-button home-nav__guest-button--login"
+            @click="handleToLogin"
+          >
+            {{ $t("登 录") }}
+          </ui-button>
+          <ui-button
+            size="small"
+            class="home-nav__guest-button home-nav__guest-button--register"
+            @click="handleToRegister"
+          >
+            {{ $t("注 册") }}
+          </ui-button>
         </div>
       </div>
     </div>
-
-    <home-drawer ref="drawerRef" @close="isShowNav = false" :show-down-load="showDownloadApp" />
   </header>
 </template>
 
 <style scoped lang="less">
-.home-header {
+.home-nav {
   width: 100%;
-  .safe-area-inset-top {
-    height: var(--status-bar-height);
-    background: #141417;
-    transition: all .3s;
+  flex: none;
+  color: var(--skin__lead);
+  background: var(--skin__bs_topnav_bg);
+}
 
-    &.is-tip-download {
-      background: #282525;
-    }
+.home-nav__safe-area {
+  height: var(--status-bar-height);
+  background: var(--skin__bs_topnav_bg);
+  transition: background-color 0.3s;
+
+  &--download {
+    background: var(--top_bg_color);
   }
-  .download-app {
-    height: 30px;
-    width: 100%;
-    background: #282525;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    overflow: hidden;
-    transition: all 0.3s;
+}
+
+.home-download-tip {
+  width: 100%;
+  height: 30px;
+  padding: 0 10px 0 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--top_bg_color);
+  transition: height 0.3s;
+
+  &--hidden {
+    height: 0;
   }
-  .header-container {
-    height: 45px;
-    padding-left: 5px;
-    background: #141417;
-    border-bottom: 0.5px solid #313843;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+}
 
-    .left {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100%;
-      z-index: 2;
-      .icon-wrap {
-        padding: 0 4px 0 0.5px;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        font-size: 18px;
-        color: #adb6c3;
-        .left-icon {
-          transition: all 0.3s;
-          transform: rotate(0deg);
-        }
-        .left-icon-transX {
-          transform: rotate(180deg);
-        }
-      }
-      .logo {
-        height: 35px;
-        max-width: 132px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        img {
-          object-fit: contain;
-          cursor: pointer;
-          max-width: 100%;
-          max-height: 100%;
-          vertical-align: middle;
-        }
-      }
-    }
-    .right {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      height: 100%;
-      z-index: 2;
-      .un-login {
-        display: flex;
-        align-items: center;
-        --btn-login-background: #f0c059;
-        --btn-login-color: #874404;
-        --btn-register-background: transparent;
-        --btn-register-color: #f0c059;
-        --btn-width: 68px;
-        --btn-height: 26px;
-        --btn-font-size: 11px;
-        --btn-border-color: #f0c059;
+:global([dir="rtl"]) .home-download-tip {
+  padding: 0 0 0 10px;
+}
 
-        .login-btn {
-          margin-right: 7.5px;
+.home-download-tip__close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--top_close_icon_color);
+  background: transparent;
+  cursor: pointer;
+}
 
-          width: var(--btn-width);
-          height: var(--btn-height);
-          padding: 0 5px;
-          font-size: var(--btn-font-size);
-          white-space: pre-wrap;
-          background-color: #f0c059;
-          border: thin solid var(--btn-border-color);
-          color: #874404;
-          border-radius: 5px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-size: contain;
-          background-repeat: no-repeat;
-          text-align: center;
-          word-wrap: break-word;
-        }
-        .register-btn {
-          margin-right: 5px;
+:deep(.home-download-tip__close-icon) {
+  width: 10px;
+  height: 10px;
+}
 
-          width: var(--btn-width);
-          height: var(--btn-height);
-          padding: 0 5px;
-          font-size: var(--btn-font-size);
-          white-space: pre-wrap;
-          background-color: var(--btn-register-background);
-          border: thin solid var(--btn-border-color);
-          color: var(--btn-register-color);
-          border-radius: 5px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background-size: contain;
-          background-repeat: no-repeat;
-          text-align: center;
-          word-wrap: break-word;
-        }
-      }
-      .wallet {
-        height: 20px;
-        border: solid 1px #313843;
-        border-radius: 9999rem;
-        display: flex;
-        align-items: center;
-        .wallet__currency {
-          background-image: url("@/assets/common/img_hb_frame.avif");
-          background-size: 100% 100%;
-          width: 17px;
-          height: 17px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
+.home-download-tip__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
 
-          .country {
-            width: 15px;
-            height: 15px;
-          }
-        }
-        .refresh-icon {
-          width: 15px;
-          height: 15px;
-          display: inline-flex;
-          justify-content: center;
-          align-items: center;
-          svg {
-            width: 15px;
-            height: 15px;
-          }
-        }
-        .currency-content-wrap {
-          color: #adb6c3;
-          display: flex;
-          font-size: 12px;
-          align-items: center;
-          line-height: 100%;
-          .count {
-            margin-left: 4px;
-            border-bottom: solid 1px #ffaa09;
-            color: #ffaa09;
-            direction: ltr;
-            font-size: 12px;
-            max-width: 80.5px;
-            line-height: 14px;
-          }
-          .loading-text {
-            direction: ltr;
-            margin-left: 6.5px;
-            margin-right: 6.5px;
-            font-size: 9px;
-            color: #68707b;
-            line-height: 100%;
-            margin-top: 1px;
-          }
-        }
+.home-download-tip__logo {
+  max-width: 90px;
+  max-height: 25px;
+  flex: none;
+  object-fit: contain;
+}
 
-        .animate__spin {
-          animation: spin 0.2s linear infinite; /* 2秒一次，匀速，无限循环 */
-        }
+.home-download-tip__text {
+  flex: 1;
+  min-width: 0;
+  max-height: 25px;
+  margin: 0 5px;
+  overflow: hidden;
+  color: var(--skin__lead);
+  font-size: 10px;
+  line-height: 13px;
+  text-align: start;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 
-        @keyframes spin {
-          0% {
-            transform: rotate(0);
-          }
+  p {
+    margin: 0;
+  }
+}
 
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      }
-      .menu-button {
-        margin-left: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: relative;
-        height: 27px;
-        font-family: inherit !important;
-        .popover {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          width: 20px !important;
-          height: 27px;
-          font-size: 8px;
-          padding-left: 1px;
-          overflow: visible;
-          i {
-            transition: all 0.3s;
-          }
+:deep(.home-download-tip__button) {
+  width: 60px;
+  height: 20px;
+  padding: 0 5px;
+  flex-shrink: 0;
+  border-color: var(--top_download_icon_color);
+  border-radius: 5px;
+  color: var(--skin__text_primary);
+  background: var(--top_download_icon_color);
+  font-size: 9px;
+  line-height: 1.2;
+  text-align: center;
+}
 
-          &::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            width: 0.5px;
-            height: 12px;
-            background-color: #874404;
-            transform: scaleX(0.5);
-          }
-        }
+:deep(.home-download-tip__button .ui-button__text) {
+  white-space: normal;
+  word-break: keep-all;
+}
 
-        .popover-content {
-          position: absolute;
-          background: #1c1e23;
-          box-shadow: 0 1.5px 3.5px rgba(0, 0, 0, 0.12);
-          //box-shadow: 0 1.5px 3.5px white;
-          width: 87px;
-          height: 97px;
-          right: 0;
-          top: 33px;
-          color: white;
-          border-radius: 7px;
-          box-sizing: border-box;
-          z-index: 9999999;
-          .content-box {
-            background: #1c1e23;
-            border: solid 1px #313843;
-            border-radius: 7.5px;
-            padding-top: 7.5px;
-            padding-bottom: 7.5px;
-            width: 100%;
-            height: 100%;
-            div {
-              width: 100%;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              font-size: 12px;
-              padding: 0 9.5px;
-              cursor: pointer;
-            }
-          }
-        }
-      }
-    }
+.home-nav__toolbar {
+  height: 55px;
+  padding: 0 10px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--lobby__px) solid var(--skin__border);
+  background: var(--skin__bs_topnav_bg);
+}
+
+.home-nav__brand {
+  width: 140px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: none;
+}
+
+.home-nav__logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.home-nav__actions {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  overflow: hidden;
+}
+
+:deep(.home-nav__recharge-button) {
+  width: 70px;
+  height: 30px;
+  padding: 0 8px;
+  border-color: var(--skin__primary);
+  border-radius: 999px;
+  color: var(--skin__text_primary);
+  background: var(--skin__primary);
+  font-size: 12px;
+}
+
+.home-wallet {
+  height: 30px;
+  max-width: 158px;
+  min-width: 0;
+  padding: 0 8px 0 2px;
+  display: flex;
+  align-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--skin__bs_topnav_wallet_bg);
+}
+
+:global([dir="rtl"]) .home-wallet {
+  padding: 0 2px 0 8px;
+}
+
+.home-wallet__currency-frame {
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 50%;
+  background: url("@/assets/common/img_hb_frame.avif") center / cover no-repeat;
+}
+
+.home-wallet__currency-icon {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.home-wallet__content {
+  min-width: 0;
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+}
+
+:global([dir="rtl"]) .home-wallet__content {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
+.home-wallet__amount {
+  max-width: 78px;
+  display: block;
+  overflow: hidden;
+  color: var(--skin__accent_3);
+  border-bottom: 1px solid var(--skin__accent_3);
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.home-wallet__loading {
+  color: var(--skin__neutral_2);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.home-wallet__refresh {
+  width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--skin__alt_border);
+  background: transparent;
+  cursor: pointer;
+
+  &--loading {
+    animation: home-wallet-spin 0.3s linear infinite;
+  }
+}
+
+:global([dir="rtl"]) .home-wallet__refresh {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
+:deep(.home-wallet__refresh-icon) {
+  width: 15px;
+  height: 15px;
+}
+
+.home-nav__guest-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+:deep(.home-nav__guest-button) {
+  width: 68px;
+  height: 27px;
+  padding: 0 5px;
+  border: var(--lobby__px) solid var(--skin__primary);
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+:deep(.home-nav__guest-button--login) {
+  color: var(--skin__text_primary);
+  background: var(--skin__primary);
+}
+
+:deep(.home-nav__guest-button--register) {
+  color: var(--skin__primary);
+  background: transparent;
+}
+
+:deep(.home-nav__guest-button .ui-button__text),
+:deep(.home-nav__recharge-button .ui-button__text) {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@keyframes home-wallet-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
