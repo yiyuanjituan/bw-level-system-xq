@@ -12,6 +12,7 @@ import useAuthStore from "@/store/modules/user";
 import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
 import recentIcon from "@/assets/home/u-series/img_gd_dtfl_zj.png";
 import favoriteIcon from "@/assets/home/u-series/img_gd_dtfl_sc.png";
+import arrowIcon from "@/assets/home/u-series/img_scroll_tkjt.png";
 
 defineOptions({
   name: "UHomeGameList"
@@ -28,6 +29,9 @@ const hotSection = computed<HomeGameSectionRecord>(() => ({
   children: normalizeGameList(home.suggestList)
 }));
 const categorySections = computed<HomeGameSectionRecord[]>(() => normalizeSectionList(home.venueList));
+const visibleCategorySections = computed<HomeGameSectionRecord[]>(() => (
+  categorySections.value.filter(section => hasGameData(section))
+));
 
 function normalizeGameList(value: unknown): HomeGameRecord[] {
   return Array.isArray(value) ? value : [];
@@ -41,6 +45,10 @@ function normalizeSectionList(value: unknown): HomeGameSectionRecord[] {
     name: String(section?.name ?? ""),
     children: normalizeGameList(section?.children)
   }));
+}
+
+function hasGameData(section: HomeGameSectionRecord) {
+  return normalizeGameList(section.children).length > 0;
 }
 
 async function loadHomeGames() {
@@ -83,7 +91,7 @@ function openSection(section: HomeGameSectionRecord) {
 }
 
 function openFullSection(section: HomeGameSectionRecord) {
-  const type = section.type ?? categorySections.value[0]?.type;
+  const type = section.type ?? visibleCategorySections.value[0]?.type;
   if (type == null) return;
 
   categoryDialogVisible.value = false;
@@ -109,11 +117,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="u-game-list">
-    <div class="u-game-list__grid">
+  <section class="game-list-wrapper">
+    <div class="game-list-wrapper-inner">
       <UGameBox
-        class="u-game-list__featured"
+        v-if="hasGameData(hotSection)"
         :section="hotSection"
+        :game-index="0"
         variant="featured"
         @select="openGame"
         @disabled="showDisabledTip"
@@ -121,29 +130,43 @@ onMounted(() => {
       />
 
       <UGameBox
-        v-for="(section, index) in categorySections"
+        v-for="(section, index) in visibleCategorySections"
         :key="section.id ?? section.type ?? index"
-        class="u-game-list__category"
-        :class="{ 'u-game-list__category--compact': index < 2 }"
         :section="section"
-        :variant="index < 2 ? 'compact' : 'regular'"
+        :game-index="index + 1"
+        :variant="index < 2 ? 'wide' : 'grid'"
         @select="openGame"
         @disabled="showDisabledTip"
         @more="openSection"
       />
 
-      <article class="u-game-list__more">
-        <header>{{ $t("更多") }}</header>
-        <div>
-          <button type="button" @click="openHistory(100)">
-            <img :src="recentIcon" alt="" />
-            <span>{{ $t("最近") }}</span>
-          </button>
-          <button type="button" @click="openHistory(101)">
-            <img :src="favoriteIcon" alt="" />
-            <span>{{ $t("收藏") }}</span>
-          </button>
+      <article class="game-box game-box-default" data-layout="more">
+        <div class="game-title">
+          {{ $t("更多") }}
+          <span
+            class="lobby-image lobby-image--use-bg title-icon"
+            :style="{ backgroundImage: `url(${arrowIcon})` }"
+          ></span>
         </div>
+
+        <section class="list-ordinary">
+          <section class="list-ordinary-layout">
+            <button type="button" :aria-label="$t('最近')" @click="openHistory(100)">
+              <img
+                :src="recentIcon"
+                class="lobby-image lobby-image--use-bg lobby-image--skeleton poster-image more-card"
+                alt=""
+              />
+            </button>
+            <button type="button" :aria-label="$t('收藏')" @click="openHistory(101)">
+              <img
+                :src="favoriteIcon"
+                class="lobby-image lobby-image--use-bg lobby-image--skeleton poster-image more-card"
+                alt=""
+              />
+            </button>
+          </section>
+        </section>
       </article>
     </div>
 
@@ -158,93 +181,112 @@ onMounted(() => {
 </template>
 
 <style scoped lang="less">
-.u-game-list {
-  padding: 10px;
+.game-list-wrapper {
+  width: 100%;
 }
 
-.u-game-list__grid {
-  grid-column-gap: 10px;
-  grid-row-gap: 10px;
+.game-list-wrapper > .game-list-wrapper-inner {
+  padding: 10px;
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.u-game-list__featured {
-  grid-column: 1 / span 2;
-  grid-row: 1 / span 2;
+.game-list-wrapper > .game-list-wrapper-inner > .game-box {
+  min-width: 0;
 }
 
-.u-game-list__category {
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="featured"] {
+  grid-area: 1 / 1 / 3 / 3;
+}
+
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="wide"] {
   grid-column: span 2;
-
-  &--compact {
-    grid-column: 3 / span 2;
-  }
 }
 
-.u-game-list__more {
-  grid-column: span 2;
-  height: 150px;
-  padding: 0 10px 10px;
-  overflow: hidden;
-  border: 1px solid var(--skin__bg_2);
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="wide"]:nth-of-type(2) {
+  grid-area: 1 / 3 / 2 / 5;
+}
+
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="wide"]:nth-of-type(3) {
+  grid-area: 2 / 3 / 3 / 5;
+}
+
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="grid"],
+.game-list-wrapper > .game-list-wrapper-inner > .game-box[data-layout="more"] {
+  grid-column: span 1;
+}
+
+.game-box[data-layout="more"] {
+  height: 103.5px;
   border-radius: 10px;
-  background: rgba(var(--skin__bg_2__toRgbString), 0.75);
-
-  header {
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--skin__neutral_1);
-    font-size: 11px;
-  }
-
-  > div {
-    height: calc(100% - 28px);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px;
-  }
-
-  button {
-    min-width: 0;
-    padding: 6px 3px 3px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 0;
-    border-radius: 7px;
-    color: var(--skin__neutral_1);
-    background: var(--skin__ddt_bg);
-    font-size: 10px;
-    cursor: pointer;
-
-    img {
-      width: min(55px, 80%);
-      height: min(55px, 70%);
-      margin-bottom: 5px;
-      object-fit: contain;
-    }
-  }
+  background-color: rgba(var(--skin__bg_2__toRgbString), 0.75);
+  border: 1px solid var(--skin__bg_2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
 }
 
-@media (min-width: 560px) {
-  .u-game-list__grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
+.game-box[data-layout="more"] .game-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  height: 22.5px;
+  width: 100%;
+  position: relative;
+  color: var(--skin__neutral_1);
+}
 
-  .u-game-list__featured {
-    grid-column: span 2;
-  }
+.game-box[data-layout="more"] .title-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  margin-top: -4.5px;
+  width: 9px;
+  height: 9px;
+  background-size: 100% 100%;
+}
 
-  .u-game-list__category,
-  .u-game-list__category--compact,
-  .u-game-list__more {
-    grid-column: span 2;
-  }
+.game-box[data-layout="more"] .list-ordinary {
+  width: fit-content;
+}
+
+.game-box[data-layout="more"] .list-ordinary-layout {
+  width: 69px;
+  height: 31px;
+  display: grid;
+  grid-template-columns: repeat(2, 31px);
+  column-gap: 7px;
+}
+
+.game-box[data-layout="more"] .list-ordinary-layout > button {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.game-box[data-layout="more"] .poster-image {
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  overflow: hidden;
+}
+
+.game-box[data-layout="more"] .more-card {
+  width: 31px;
+  height: 31px;
+  border-radius: 5.3px;
+}
+
+:global([dir="rtl"]) .game-box[data-layout="more"] .title-icon {
+  right: auto;
+  left: 5px;
+  transform: rotate(180deg);
 }
 </style>
