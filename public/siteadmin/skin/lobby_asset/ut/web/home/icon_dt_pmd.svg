@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="44" height="44" viewBox="0 0 44 44">
+  <defs>
+    <linearGradient id="29d301a80483733b69e59671c979556a-linear-gradient" x1="0.741" y1="0.089" x2="0.5" y2="0.814" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#309eff"/>
+      <stop offset="1" stop-color="#0966ff"/>
+    </linearGradient>
+    <linearGradient id="29d301a80483733b69e59671c979556a-linear-gradient-2" x1="0.6" y1="0.171" x2="0.343" y2="0.803" xlink:href="#linear-gradient"/>
+    <clipPath id="29d301a80483733b69e59671c979556a-clip-path">
+      <rect id="29d301a80483733b69e59671c979556a-&#x77e9;&#x5f62;_29295" data-name="&#x77e9;&#x5f62; 29295" width="44" height="44" transform="translate(35 459)" fill="url(#linear-gradient)"/>
+    </clipPath>
+  </defs>
+  <g id="29d301a80483733b69e59671c979556a-icon_dt_pmd" transform="translate(-35 -459)" clip-path="url(#29d301a80483733b69e59671c979556a-clip-path)">
+    <path id="29d301a80483733b69e59671c979556a-&#x8def;&#x5f84;_23388" data-name="&#x8def;&#x5f84; 23388" d="M35.362,32.629,29.7,28.515a2.5,2.5,0,0,1,2.938-4.045L38.3,28.584a2.5,2.5,0,1,1-2.939,4.045ZM6.585,26.05H3a3,3,0,0,1-3-3v-11a3,3,0,0,1,3-3H6.818L22,1.049a4,4,0,0,1,4,4v24a4,4,0,0,1-4,4Zm26.915-7a2.5,2.5,0,1,1,0-5h7a2.5,2.5,0,1,1,0,5ZM29.146,9.076A2.5,2.5,0,0,1,29.7,5.584L35.362,1.47A2.5,2.5,0,1,1,38.3,5.514L32.638,9.629a2.5,2.5,0,0,1-3.492-.553Z" transform="translate(35.5 463.951)" />
+  </g>
+</svg>
