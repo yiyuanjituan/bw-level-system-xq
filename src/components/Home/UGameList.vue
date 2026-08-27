@@ -80,6 +80,7 @@ function openGame(record: HomeGameRecord) {
     return;
   }
 
+  // @ts-ignore
   appData.setEnterInfo(record.venueId, record.id);
   void auth.updateInfo();
   void router.push({ path: "/home/embedded" });

@@ -19,6 +19,7 @@ type ListResult = {
 };
 
 export type CanReceiveSource = 2 | 3 | 4 | 5 | 6;
+export type MineTemplateName = "TemplateOne" | "TemplateTwo";
 
 export interface CanReceiveItem {
   key: string;
@@ -35,6 +36,14 @@ export interface CanReceiveResponse {
   total: number;
   totalMoney: number;
   totalVitality: number;
+}
+
+export interface ThemeConfigResponse {
+  theme: number;
+  templateTag?: string;
+  mineTemplate: MineTemplateName;
+  preset: string;
+  variables: Record<string, string>;
 }
 
 export interface BindEmailPayload {
@@ -132,7 +141,7 @@ export function getConfig(data?: object): Promise<any> {
   });
 }
 
-export function getThemeConfig(): Promise<{ theme: number; preset: string; variables: Record<string, string> }> {
+export function getThemeConfig(): Promise<ThemeConfigResponse> {
   return http.request({
     url: "/open/v1/home/themeConfig",
     method: "post"

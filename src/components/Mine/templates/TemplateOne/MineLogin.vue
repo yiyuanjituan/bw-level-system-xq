@@ -4,7 +4,6 @@ import router from "@/router";
 defineOptions({ name: "mine-login" });
 
 const jumpTo = (url: string) => {
-  console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   router.push(url);
 }
 

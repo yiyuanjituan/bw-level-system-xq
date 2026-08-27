@@ -82,7 +82,7 @@ const indicatorStyle = computed(() => {
     "--list-slide-width": `${indicatorWidth}px`,
     "--list-slide-inner-content-width": `${indicatorWidth}px`,
     "--list-slide-height": "6px",
-    "--list-slide-column-gap": "4px",
+    "--list-slide-column-gap": "3px",
     "--list-slide-row-gap": "0px",
     "--list-slide-grid-auto-flow": "column",
     "--list-slide-grid-template-rows": "6px",
@@ -257,7 +257,7 @@ watch(
   </van-dialog>
 </template>
 
-<style scoped>
+<style lang="less" scoped>
 :global(.van-overlay.overlay-box) {
   background: rgba(162, 177, 195, 0.4);
   backdrop-filter: blur(10px);
@@ -296,6 +296,10 @@ watch(
   height: 100%;
 }
 
+:global(.list-slide-layout.indicator) {
+  bottom: 10px;
+}
+
 .game-box > .title-icon {
   position: absolute;
   top: 14px;
@@ -312,6 +316,11 @@ watch(
   right: auto;
   left: 13px;
   transform: rotate(180deg);
+}
+
+.swiper {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .swiper-view-more {
@@ -344,7 +353,8 @@ watch(
   margin: 0;
   color: var(--skin__neutral_1, #ffffff);
   font-size: 15px;
-  line-height: 1;
+  line-height: 24px;
+  min-height: 24px;
 }
 
 .list-container {
@@ -535,7 +545,7 @@ watch(
 .slide-indicator {
   position: absolute;
   right: 0;
-  bottom: 5px;
+  bottom: 8px;
   left: 0;
   z-index: 1;
   padding-right: 1.5px;
@@ -549,6 +559,8 @@ watch(
   grid-template-columns: var(--list-slide-grid-template-columns);
   gap: var(--list-slide-row-gap) var(--list-slide-column-gap);
 }
+
+
 
 .list-slide-dot {
   width: 6px;

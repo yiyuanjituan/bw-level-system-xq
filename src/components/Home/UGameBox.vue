@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref } from "vue";
+import type { SwipeInstance } from "vant";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
 import arrowIcon from "@/assets/home/u-series/img_scroll_tkjt.png";
@@ -26,11 +27,8 @@ const emit = defineEmits<{
   more: [section: HomeGameSectionRecord];
 }>();
 
-const featuredScroller = ref<HTMLElement | null>(null);
+const featuredSwiper = ref<SwipeInstance | null>(null);
 const activeSlideIndex = ref(0);
-const canSlidePrev = ref(false);
-const canSlideNext = ref(false);
-const slideGap = 10;
 
 const gameList = computed(() => {
   const children = Array.isArray(props.section.children) ? props.section.children : [];
@@ -40,6 +38,8 @@ const gameList = computed(() => {
   return children.slice(0, 4);
 });
 const indicatorList = computed(() => gameList.value.map((_, index) => index));
+const canSlidePrev = computed(() => activeSlideIndex.value > 0);
+const canSlideNext = computed(() => activeSlideIndex.value < gameList.value.length - 1);
 
 function isGameOpen(record: HomeGameRecord) {
   return record.isOpen === true || record.isOpen === 1 || record.isOpen === "1";
@@ -53,58 +53,22 @@ function selectGame(record: HomeGameRecord) {
   emit("select", record);
 }
 
-function getSlideWidth() {
-  const firstSlide = featuredScroller.value?.querySelector<HTMLElement>("[data-slide-card='1']");
-  return firstSlide ? firstSlide.offsetWidth + slideGap : 0;
-}
-
-function updateSlideState() {
-  const scroller = featuredScroller.value;
-
-  if (!scroller || !gameList.value.length) {
-    activeSlideIndex.value = 0;
-    canSlidePrev.value = false;
-    canSlideNext.value = false;
-    return;
-  }
-
-  const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-  const safeScrollLeft = Math.min(Math.max(scroller.scrollLeft, 0), maxScrollLeft);
-  const slideWidth = getSlideWidth() || scroller.clientWidth;
-
-  activeSlideIndex.value = Math.min(
-    gameList.value.length - 1,
-    Math.max(0, Math.round(safeScrollLeft / slideWidth))
-  );
-  canSlidePrev.value = safeScrollLeft > 1;
-  canSlideNext.value = safeScrollLeft < maxScrollLeft - 1;
-}
-
-function handleFeaturedScroll() {
-  updateSlideState();
+function handleFeaturedChange(index: number) {
+  activeSlideIndex.value = index;
 }
 
 function scrollFeatured(direction: -1 | 1) {
-  const scroller = featuredScroller.value;
-  if (!scroller) return;
+  if (direction === -1) {
+    featuredSwiper.value?.prev();
+    return;
+  }
 
-  const slideWidth = getSlideWidth() || scroller.clientWidth;
-  scroller.scrollBy({ left: direction * slideWidth, behavior: "smooth" });
-  window.setTimeout(updateSlideState, 260);
+  featuredSwiper.value?.next();
 }
 
 function scrollToFeatured(index: number) {
-  const scroller = featuredScroller.value;
-  if (!scroller) return;
-
-  const slideWidth = getSlideWidth() || scroller.clientWidth;
-  scroller.scrollTo({ left: index * slideWidth, behavior: "smooth" });
-  window.setTimeout(updateSlideState, 260);
+  featuredSwiper.value?.swipeTo(index);
 }
-
-watch(gameList, () => {
-  void nextTick(updateSlideState);
-}, { immediate: true });
 </script>
 
 <template>
@@ -137,7 +101,7 @@ watch(gameList, () => {
             aria-label="上一个"
             @click.stop="scrollFeatured(-1)"
           >
-            <img class="lobby-image" :src="arrowIcon" alt="" />
+            <svg-icon name="img_scroll_jt" class-name="!text-white !text-[8px] rotate-[180deg]" />
           </button>
           <button
             type="button"
@@ -146,22 +110,23 @@ watch(gameList, () => {
             aria-label="下一个"
             @click.stop="scrollFeatured(1)"
           >
-            <img class="lobby-image" :src="arrowIcon" alt="" />
+            <svg-icon name="img_scroll_jt" class-name="!text-white !text-[8px] ml-[3px]" />
           </button>
         </div>
 
         <div class="list-container">
-          <section class="list-slide-layout scroll-box-transform list-slide-typesetting is-slide-one-screen list-swiper swiper">
-            <div
-              ref="featuredScroller"
-              class="list-slide-layout-inner scroll-box-transform-inner"
-              @scroll.passive="handleFeaturedScroll"
+          <section class="list-slide-layout scroll-box-transform list-slide-typesetting is-slide-one-screen list-swiper">
+            <van-swipe
+              ref="featuredSwiper"
+              class="swiper"
+              :loop="false"
+              :show-indicators="true"
+              @change="handleFeaturedChange"
             >
-              <section
+              <van-swipe-item
                 v-for="(game, index) in gameList"
                 :key="game.id ?? index"
-                class="list-slide-layout slide-pagination"
-                data-slide-card="1"
+                class="slide-pagination"
               >
                 <div class="list-slide-layout-inner">
                   <section class="list-ordinary">
@@ -191,12 +156,12 @@ watch(gameList, () => {
                     </section>
                   </section>
                 </div>
-              </section>
-            </div>
+              </van-swipe-item>
+            </van-swipe>
           </section>
 
           <section
-            v-if="indicatorList.length > 1"
+            v-if="indicatorList.length > 1 && false"
             class="list-slide-layout scroll-box-transform slide-indicator indicator"
           >
             <div class="list-slide-layout-inner scroll-box-transform-inner">
@@ -352,33 +317,39 @@ watch(gameList, () => {
   position: relative;
 }
 
+.scroll-box-transform {
+  width: 145.5px;
+  height: 190px;
+}
+
 .list-swiper {
+  width: 145.5px;
+  height: 190px;
+  margin: 0 auto;
+  overflow: hidden;
+
+  --van-swipe-indicator-margin: 10px;
+  --van-swipe-indicator-active-background: white;
+  //--van-swipe-indicator-size: 4px;
+}
+
+.list-swiper > .swiper {
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
-.list-swiper > .list-slide-layout-inner {
+.list-swiper :deep(.van-swipe__track) {
   height: 100%;
-  padding: 0 13.5px;
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 13.5px;
-  scrollbar-width: none;
 }
 
-.list-swiper > .list-slide-layout-inner::-webkit-scrollbar {
-  display: none;
+.list-swiper :deep(.van-swipe-item) {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 
 .list-swiper .slide-pagination {
-  width: 145.5px;
   height: 190px;
-  flex: 0 0 145.5px;
-  scroll-snap-align: center;
 }
 
 .list-swiper .slide-pagination > .list-slide-layout-inner {
@@ -435,7 +406,7 @@ watch(gameList, () => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 5px;
+  bottom: 20px;
   margin: auto;
   z-index: 1;
   overflow: hidden;
@@ -457,7 +428,6 @@ watch(gameList, () => {
   transition: all 0.3s;
 }
 
-.list-slide-dot.is-active,
 .list-slide-dot.is-active {
   background-color: #fff;
 }
@@ -633,7 +603,7 @@ watch(gameList, () => {
 }
 
 .game-box[data-layout="wide"] .poster-img-box-core {
-  --card-benchmark: 70px;
+  --card-benchmark: 69.5px;
   --poster-image-border-base-radius: calc(var(--card-benchmark) * 0.1714);
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts" name="mine-card">
 import { $t } from "@/locales";
+import MineShowInfo from "@/components/Mine/MineShowInfo.vue";
 import useAuthStore from "@/store/modules/user";
 import { computed, ref, watch } from "vue";
 import * as _ from "lodash-es";
@@ -72,7 +73,7 @@ const updateWallet = () => {
             <use xlink:href="#comm_icon_sort"></use>
           </svg>
         </div>
-        <mine-show-info v-if="isShowInfo" @close="isShowInfo = !isShowInfo" />
+        <MineShowInfo v-if="isShowInfo" @close="isShowInfo = !isShowInfo" />
         <span class="user-info-show-name" v-if="auth.user.showAccount == 1">{{
           auth.user.account
         }}</span>

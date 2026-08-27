@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
       <HomeNotice class="u-home__notice" />
       <UQuickNav />
       <UGameList />
-      <UContact />
+      <UFooterBox />
     </main>
     <HomeBackTop target="#u-home-scroll" :is-put="isHomeScrolling" />
     <HomeFloat :is-put="isHomeScrolling" />

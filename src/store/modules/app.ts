@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
+import type { MineTemplateName } from "@/api/common";
 import { APP_PREFIX_KEY } from "@/utils/site";
 
 // 站点图标必须写入 HTML head；接口刷新后覆盖已有节点，避免重复添加 link。
@@ -51,6 +52,7 @@ const applyThemeVariables = (themeConfig?: { variables?: Record<string, string> 
 };
 
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
+const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
 
 export const useAppStore = defineStore('app', () => {
   const appInfo = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_config`)))
@@ -59,6 +61,7 @@ export const useAppStore = defineStore('app', () => {
   const gameList = ref<{ id: number, children: any[] }[]>([])
   const isShowDownload = ref(true)
   const themeTemplate = ref<0 | 1>(normalizeThemeTemplate(appInfo.value?.theme_config?.theme))
+  const mineTemplate = ref<MineTemplateName>(normalizeMineTemplate(appInfo.value?.theme_config?.mineTemplate))
   updateFavicon(appInfo.value?.favicon)
   applyThemeVariables(appInfo.value?.theme_config)
 
@@ -66,11 +69,16 @@ export const useAppStore = defineStore('app', () => {
     getConfig().then((res) => {
       appInfo.value = res
       updateFavicon(res?.favicon)
-      applyThemeVariables(res?.theme_config)
+      if (res?.theme_config) {
+        themeTemplate.value = normalizeThemeTemplate(res.theme_config.theme)
+        mineTemplate.value = normalizeMineTemplate(res.theme_config.mineTemplate)
+        applyThemeVariables(res.theme_config)
+      }
     })
     getCommonInfo().then((res) => venueList.value = res.venueList)
     getThemeConfig().then((res) => {
       themeTemplate.value = normalizeThemeTemplate(res?.theme)
+      mineTemplate.value = normalizeMineTemplate(res?.mineTemplate)
       appInfo.value = {
         ...(appInfo.value || {}),
         theme_config: res
@@ -100,6 +108,7 @@ export const useAppStore = defineStore('app', () => {
   return {
     appInfo,
     themeTemplate,
+    mineTemplate,
     isShowDownload,
     venueList,
     gameList,

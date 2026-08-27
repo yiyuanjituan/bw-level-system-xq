@@ -31,7 +31,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 <style scoped lang="less">
 .sub-header {
-  --skin__lead: white;
   --skin__neutral_1: #bcbcbc;
 
   position: relative;
@@ -42,7 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   padding-top: var(--status-bar-height);
   height: calc(var(--status-bar-height) + 45px);
   min-height: calc(var(--status-bar-height) + 45px);
-  background-color: #191919;
+  background-color: var(--skin__bg_2);
   border-bottom: 1px solid #242424;
   box-sizing: border-box;
   width: 100%;
