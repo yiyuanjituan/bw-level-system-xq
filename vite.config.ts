@@ -6,13 +6,12 @@ import Components from "unplugin-vue-components/vite";
 import { VantResolver } from "unplugin-vue-components/resolvers";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import path from "path";
-import mockDevServerPlugin from "vite-plugin-mock-dev-server";
+import fs from "node:fs";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 import viteCompression from "vite-plugin-compression";
 import { createHtmlPlugin } from "vite-plugin-html";
-import { enableCDN } from "./build/cdn";
-import { createEpsPlugin } from "./src/api/service/vite";
-
+import { enableCDN } from './build/cdn.ts'
+import { createEpsPlugin } from './src/api/service/vite.ts'
 // 当前工作目录路径
 const root: string = process.cwd();
 
@@ -31,7 +30,6 @@ export default defineConfig(({ mode }) => {
       }),
       vue(),
       vueJsx(),
-      mockDevServerPlugin(),
       // vant 组件自动按需引入
       Components({
         dts: "src/typings/components.d.ts",

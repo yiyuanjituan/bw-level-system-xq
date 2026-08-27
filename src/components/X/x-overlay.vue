@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 defineOptions({
   name: "x-overlay"
 });
@@ -9,14 +11,16 @@ interface Props {
   hidden?: boolean;
   frosted?: boolean;
   safeArea?: boolean;
+  background?: string;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false,
   zIndex: 1,
   hidden: false,
   frosted: false,
-  safeArea: false
+  safeArea: false,
+  background: ""
 });
 
 const emit = defineEmits<{
@@ -26,6 +30,15 @@ const emit = defineEmits<{
 function onClick(event: MouseEvent) {
   emit("click", event);
 }
+
+const overlayStyle = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = {
+    "--x-overlay-z-index": String(props.zIndex)
+  };
+
+  if (props.background) style["--x-overlay-background"] = props.background;
+  return style;
+});
 </script>
 
 <template>
@@ -36,7 +49,7 @@ function onClick(event: MouseEvent) {
       :class="{ isShowFrostedGlassEffect: frosted }"
       :data-hidden="hidden ? '1' : '0'"
       :data-safe-area="safeArea ? '1' : '0'"
-      :style="{ '--x-overlay-z-index': String(zIndex) }"
+      :style="overlayStyle"
       @click="onClick"
     >
       <slot />

@@ -5,7 +5,6 @@ import NProgress from '@/utils/progress';
 import { autoCalculateTransitionName } from '@/hooks/useTransition';
 import { bus } from '@/utils/mitt';
 import { saveInviteCode } from '@/utils/inviteCode';
-import { isYimenApp, setStatusBar } from '@/utils/yimenApp';
 
 const router = createRouter({
   history: createWebHashHistory(),

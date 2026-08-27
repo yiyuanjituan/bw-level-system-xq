@@ -146,16 +146,6 @@ onMounted(() => {
                     type="image/avif"
                     class="svg-icon"
                   />
-                  <source
-                    srcset="@/assets/mine/gif_profile_style2.avif"
-                    type="image/png"
-                    class="svg-icon"
-                  />
-                  <img
-                    src="@/assets/mine/gif_profile_style2.avif"
-                    alt="Description"
-                    class="svg-icon"
-                  />
                 </picture>
               </div>
               <div class="label">{{ $t("存款") }}</div>

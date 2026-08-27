@@ -76,7 +76,7 @@ watch(() => [props.src, props.fallbackSrc], resetImage, { immediate: true });
   display: block;
   overflow: hidden;
   line-height: 0;
-  background-color: var(--skin__bg_1);
+  background-color: transparent;
 
   > img {
     width: 100%;
@@ -89,6 +89,10 @@ watch(() => [props.src, props.fallbackSrc], resetImage, { immediate: true });
 
   &[data-status="success"] > img {
     opacity: 1;
+  }
+
+  &[data-status="error"] {
+    background-color: var(--skin__ddt_bg);
   }
 }
 

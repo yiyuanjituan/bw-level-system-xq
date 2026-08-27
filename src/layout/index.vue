@@ -8,12 +8,16 @@
       </router-view>
     </div>
 
-    <TabBar />
+    <UTabBar v-if="app.themeTemplate === 1" />
+    <TabBar v-else />
   </div>
 </template>
 
 <script setup lang="ts">
 import { tabbarTransitionName } from "@/hooks/useTransition";
+import useAppStore from "@/store/modules/app";
+
+const app = useAppStore();
 </script>
 
 <style scoped>

@@ -75,6 +75,7 @@ const busListen = () => {
   bus.on('showRecharge', refs['rechargeDrawer']?.open);
   bus.on('showRechargeDetail', refs['rechargeDetailDrawer']?.open);
   bus.on('showRechargeRecord', refs['rechargeRecordRef']?.open)
+  bus.on('showDownloadTip', refs['downloadTip']?.open)
   bus.on('showWithdrawSuccess', (res) => refs['withdrawSuccessRef']?.open?.(res))
 };
 
@@ -176,6 +177,9 @@ onUnmounted(() => {
 });
 </script>
 <style lang="less">
+* {
+  box-sizing: border-box;
+}
 .none-enter-active,
 .none-leave-active {
   transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);

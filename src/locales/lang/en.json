@@ -141,6 +141,10 @@
   "不限制": "Unlimited",
   "查看订单": "View Order",
   "查看更多": "View More",
+  "选择语言": "Select Language",
+  "简体中文": "Simplified Chinese",
+  "更多": "More",
+  "联系我们": "Contact Us",
   "查看活动详情": "View Activity Details",
   "查看有效人数统计要求": "View Active Member Statistics Requirements",
   "创建成功": "Created Successfully",
@@ -618,5 +622,16 @@
   "电竞": "Esports",
   "热门": "Popular",
   "最近": "Recent",
-  "游戏": "Game"
+  "游戏": "Game",
+  "活动": "Promotions",
+  "任务": "Tasks",
+  "返水": "Cashback",
+  "APP下载": "Download App",
+  "个人资料": "Profile",
+  "语言": "Language",
+  "投注任务": "Betting Tasks",
+  "立即分享": "Share Now",
+  "最近游戏": "Recent Games",
+  "收藏游戏": "Favorite Games",
+  "幸运转盘": "Lucky Wheel"
 }

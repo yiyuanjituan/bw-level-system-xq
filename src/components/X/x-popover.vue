@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import XOverlay from "./x-overlay.vue";
 
 defineOptions({
   name: "x-popover"
@@ -14,6 +15,9 @@ interface Props {
   offset?: [number, number];
   trigger?: PopoverTrigger;
   closeOnClickOutside?: boolean;
+  overlay?: boolean;
+  overlayBackground?: string;
+  closeOnClickOverlay?: boolean;
   zIndex?: number;
 }
 
@@ -23,18 +27,23 @@ const props = withDefaults(defineProps<Props>(), {
   offset: () => [0, 8],
   trigger: "click",
   closeOnClickOutside: true,
+  overlay: false,
+  overlayBackground: "",
+  closeOnClickOverlay: true,
   zIndex: 3000
 });
 
 const emit = defineEmits<{
   (e: "update:show", value: boolean): void;
+  (e: "opened"): void;
 }>();
 
 const referenceRef = ref<HTMLElement>();
 const panelRef = ref<HTMLElement>();
-const panelStyle = ref<Record<string, string>>({});
+const panelStyle = ref<Record<string, string>>({ visibility: "hidden" });
 
 const transitionName = computed(() => `x-popover--${props.placement}`);
+const overlayZIndex = computed(() => Math.max(0, props.zIndex - 1));
 
 function setShow(value: boolean) {
   emit("update:show", value);
@@ -43,6 +52,14 @@ function setShow(value: boolean) {
 function toggleByTrigger() {
   if (props.trigger !== "click") return;
   setShow(!props.show);
+}
+
+function onOverlayClick() {
+  if (props.closeOnClickOverlay) setShow(false);
+}
+
+function handleAfterEnter() {
+  emit("opened");
 }
 
 function updateLocation() {
@@ -77,7 +94,8 @@ function updateLocation() {
   panelStyle.value = {
     top: `${safeTop}px`,
     left: `${safeLeft}px`,
-    zIndex: String(props.zIndex)
+    zIndex: String(props.zIndex),
+    visibility: "visible"
   };
 }
 
@@ -102,7 +120,9 @@ function onWindowChanged() {
 watch(
   () => props.show,
   async (value) => {
-    if (value) await syncLocation();
+    if (!value) return;
+    panelStyle.value = { zIndex: String(props.zIndex), visibility: "hidden" };
+    await syncLocation();
   }
 );
 
@@ -125,7 +145,14 @@ onBeforeUnmount(() => {
   </span>
 
   <Teleport to="body">
-    <Transition :name="transitionName">
+    <XOverlay
+      v-if="overlay"
+      :show="show"
+      :z-index="overlayZIndex"
+      :background="overlayBackground"
+      @click="onOverlayClick"
+    />
+    <Transition :name="transitionName" @after-enter="handleAfterEnter">
       <div v-if="show" ref="panelRef" class="x-popover" :style="panelStyle">
         <slot />
       </div>

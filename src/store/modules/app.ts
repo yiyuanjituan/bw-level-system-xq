@@ -50,12 +50,15 @@ const applyThemeVariables = (themeConfig?: { variables?: Record<string, string> 
   });
 };
 
+const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
+
 export const useAppStore = defineStore('app', () => {
   const appInfo = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_config`)))
   const venueList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_game`)))
   const activityList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_activity`) || '{}'))
   const gameList = ref<{ id: number, children: any[] }[]>([])
   const isShowDownload = ref(true)
+  const themeTemplate = ref<0 | 1>(normalizeThemeTemplate(appInfo.value?.theme_config?.theme))
   updateFavicon(appInfo.value?.favicon)
   applyThemeVariables(appInfo.value?.theme_config)
 
@@ -67,7 +70,11 @@ export const useAppStore = defineStore('app', () => {
     })
     getCommonInfo().then((res) => venueList.value = res.venueList)
     getThemeConfig().then((res) => {
-      appInfo.value.theme_config = res
+      themeTemplate.value = normalizeThemeTemplate(res?.theme)
+      appInfo.value = {
+        ...(appInfo.value || {}),
+        theme_config: res
+      }
       applyThemeVariables(res)
     })
   }
@@ -92,6 +99,7 @@ export const useAppStore = defineStore('app', () => {
 
   return {
     appInfo,
+    themeTemplate,
     isShowDownload,
     venueList,
     gameList,

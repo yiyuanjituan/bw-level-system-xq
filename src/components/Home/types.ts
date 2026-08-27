@@ -13,6 +13,7 @@ export interface HomeGameRecord {
 }
 
 export interface HomeGameSectionRecord {
+  id?: string | number;
   type?: string | number;
   img?: string;
   name: string;

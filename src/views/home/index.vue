@@ -6,6 +6,10 @@ import HomeNotice from '@/components/Home/Notice.vue';
 import HomeGameList from '@/components/Home/GameList.vue';
 import HomeFloat from '@/components/Home/Float.vue';
 import HomeBackTop from '@/components/Home/BackTop.vue';
+import UHome from '@/views/home/u-series.vue';
+import useAppStore from '@/store/modules/app';
+
+const app = useAppStore();
 
 const scrollEndDelay = 160;
 const isHomeScrolling = ref(false);
@@ -33,7 +37,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="home-page">
+  <UHome v-if="app.themeTemplate === 1" />
+  <div v-else class="home-page">
     <HomeNavBar />
     <main class="home-page__scroll" id="scroll-box" @scroll="handleHomeScroll">
       <HomeBanner />
