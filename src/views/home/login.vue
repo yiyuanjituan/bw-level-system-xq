@@ -326,7 +326,7 @@ watch(
           <div class="accept-agree" v-if="activeTabs == 0">
             <ui-checkbox v-model="isAgreeAccept">
               <div @click="isAgreeAccept = !isAgreeAccept">
-                我已满18岁,已阅读且同意<span class="text-[#F0C059]" @click.stop="openAccept">《用户协议》</span>
+                我已满18岁,已阅读且同意<span class="main-text" @click.stop="openAccept">《用户协议》</span>
               </div>
             </ui-checkbox>
           </div>
@@ -337,9 +337,9 @@ watch(
           </x-button>
         </section>
         <div class="mt-[10px] flex items-center justify-center">
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">{{ $t("联系客服") }}</div>
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" @click.stop="freeTrialGame">{{ $t("免费试玩") }}</div>
-          <div class="text-[#F0C059] text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">{{ $t("忘记密码") }}</div>
+          <div class="main-text text-[11px] flex items-center justify-center flex-1" @click.stop="jumpToService">{{ $t("联系客服") }}</div>
+          <div class="main-text text-[11px] flex items-center justify-center flex-1" @click.stop="freeTrialGame">{{ $t("免费试玩") }}</div>
+          <div class="main-text text-[11px] flex items-center justify-center flex-1" v-if="activeTabs == 1">{{ $t("忘记密码") }}</div>
         </div>
         <section v-if="activeTabs == 1 && quickLoginOptions.length" class="quick-login">
           <div class="quick-login__title"><span>{{ $t("快捷登录") }}</span></div>
@@ -509,7 +509,7 @@ watch(
           margin-right: 5px;
         }
         :deep(.ui-checkbox__label) {
-          color: white;
+          color: var(--skin__lead);
         }
       }
 

@@ -180,7 +180,7 @@ defineExpose({
 
   .login-register-tab-sub-title {
     padding-bottom: 4px;
-    color: white;
+    color: var(--skin__lead);
     font-size: 11px;
     line-height: 1.28;
     text-align: left;

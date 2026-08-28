@@ -11,13 +11,16 @@ import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
 import { bus } from '@/utils/mitt';
 import { service } from "@/api/service";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { isThemePreviewMode } from "@/utils/themePreview";
 
 defineOptions({
   name: "TemplateOne"
 });
 
 const auth = useAuthStore();
+const previewMode = isThemePreviewMode();
+const loginState = computed(() => !previewMode && Boolean(auth.token));
 const messageCount = ref(0);
 const interestRateText = ref("");
 
@@ -36,7 +39,7 @@ function jumpToMessage() {
 }
 
 async function loadMessageCount() {
-  if (!auth.token) return;
+  if (!loginState.value) return;
 
   try {
     const response = await service.v1.notice.notifyList({ limit: 9999 });
@@ -51,7 +54,7 @@ async function loadMessageCount() {
 }
 
 async function loadInterestRate() {
-  if (!auth.token) return;
+  if (!loginState.value) return;
 
   try {
     const response = await service.v1.activity.interestInfo();
@@ -111,7 +114,7 @@ onMounted(() => {
           <div class="user-card">
             <div class="float-message">
               <div />
-              <header v-if="auth.token">
+              <header v-if="loginState">
                 <div class="btn-container" @click="jumpToService">
                   <div class="w-[24px] h-[24px] text-[24px]">
                     <svg-icon name="top_kf" class="absolute text-[#68707B]" />
@@ -130,10 +133,10 @@ onMounted(() => {
                   </div>
                 </ui-badge>
               </header>
-              <header v-if="!auth.token" class="h-[24px]" />
+              <header v-if="!loginState" class="h-[24px]" />
             </div>
-            <MineCard v-if="auth.token" />
-            <MineLogin v-if="!auth.token" />
+            <MineCard v-if="loginState" />
+            <MineLogin v-if="!loginState" />
           </div>
           <div class="nav-card">
             <div class="nav-item" @click="handleWithdraw">

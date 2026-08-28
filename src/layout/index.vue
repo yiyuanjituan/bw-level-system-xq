@@ -8,8 +8,8 @@
       </router-view>
     </div>
 
-    <UTabBar v-if="app.themeTemplate === 1" />
-    <TabBar v-else />
+    <UTabBar v-if="app.themeTemplate === 1" key="u-series-tabbar" />
+    <TabBar v-else key="galaxy-tabbar" />
   </div>
 </template>
 

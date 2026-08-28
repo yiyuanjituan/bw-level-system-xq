@@ -39,6 +39,7 @@ import { startVersionUpdateCheck } from '@/utils/versionUpdate';
 import { useTelegramWebAppStart } from '@/hooks/useTelegramWebAppStart';
 import { isYimenApp } from '@/utils/yimenApp';
 import { $locale, vantLocales } from '@/locales';
+import { isThemePreviewMode } from '@/utils/themePreview';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -152,7 +153,12 @@ function checkPopupTip() {
 }
 
 onMounted(async () => {
-  stopVersionUpdateCheck = startVersionUpdateCheck();
+	if (isThemePreviewMode()) {
+		// 预览页只展示真实页面，禁止登录态连接、弹窗和实时业务副作用。
+		app.updateDownloadBtn(false);
+		return;
+	}
+	stopVersionUpdateCheck = startVersionUpdateCheck();
   busListen();
   await handleTelegramWebAppStart();
   app.refreshData();

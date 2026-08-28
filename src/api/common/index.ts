@@ -20,6 +20,7 @@ type ListResult = {
 
 export type CanReceiveSource = 2 | 3 | 4 | 5 | 6;
 export type MineTemplateName = "TemplateOne" | "TemplateTwo";
+export type MineHeroStyle = "blue" | "common" | "common82";
 
 export interface CanReceiveItem {
   key: string;
@@ -44,6 +45,9 @@ export interface ThemeConfigResponse {
   mineTemplate: MineTemplateName;
   preset: string;
   variables: Record<string, string>;
+  assets?: {
+    mineHeroStyle?: MineHeroStyle;
+  };
 }
 
 export interface BindEmailPayload {

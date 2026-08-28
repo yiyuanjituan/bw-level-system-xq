@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
-import type { MineTemplateName } from "@/api/common";
+import type { MineHeroStyle, MineTemplateName } from "@/api/common";
 import { APP_PREFIX_KEY } from "@/utils/site";
 
 // 站点图标必须写入 HTML head；接口刷新后覆盖已有节点，避免重复添加 link。
@@ -39,7 +39,7 @@ const toRgbChannels = (color: string) => {
   return rgbMatch[1].split(",").slice(0, 3).map((channel) => channel.trim()).join(",");
 };
 
-const applyThemeVariables = (themeConfig?: { variables?: Record<string, string> }) => {
+export const applyThemeVariables = (themeConfig?: { variables?: Record<string, string> }) => {
   const variables = themeConfig?.variables;
   if (!variables) return;
 
@@ -53,25 +53,49 @@ const applyThemeVariables = (themeConfig?: { variables?: Record<string, string> 
 
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
 const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
+const normalizeMineHeroStyle = (value: unknown): MineHeroStyle => value === "common" || value === "common82" ? value : "blue";
+
+const createEmptyAppInfo = () => ({
+  countryList: [],
+  home_popup: [],
+});
+
+const normalizeAppInfo = (value: any) => ({
+  ...createEmptyAppInfo(),
+  ...(value && typeof value === 'object' ? value : {}),
+  countryList: Array.isArray(value?.countryList) ? value.countryList : [],
+  home_popup: Array.isArray(value?.home_popup) ? value.home_popup : [],
+});
+
+const getPersistedAppInfo = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_config`) || "null");
+    return normalizeAppInfo(value);
+  } catch {
+    return createEmptyAppInfo();
+  }
+};
 
 export const useAppStore = defineStore('app', () => {
-  const appInfo = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_config`)))
+  const appInfo = ref<any>(getPersistedAppInfo())
   const venueList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_game`)))
   const activityList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_activity`) || '{}'))
   const gameList = ref<{ id: number, children: any[] }[]>([])
   const isShowDownload = ref(true)
   const themeTemplate = ref<0 | 1>(normalizeThemeTemplate(appInfo.value?.theme_config?.theme))
   const mineTemplate = ref<MineTemplateName>(normalizeMineTemplate(appInfo.value?.theme_config?.mineTemplate))
+  const mineHeroStyle = ref<MineHeroStyle>(normalizeMineHeroStyle(appInfo.value?.theme_config?.assets?.mineHeroStyle))
   updateFavicon(appInfo.value?.favicon)
   applyThemeVariables(appInfo.value?.theme_config)
 
   const refreshData = () => {
     getConfig().then((res) => {
-      appInfo.value = res
+      appInfo.value = normalizeAppInfo(res)
       updateFavicon(res?.favicon)
       if (res?.theme_config) {
         themeTemplate.value = normalizeThemeTemplate(res.theme_config.theme)
         mineTemplate.value = normalizeMineTemplate(res.theme_config.mineTemplate)
+        mineHeroStyle.value = normalizeMineHeroStyle(res.theme_config.assets?.mineHeroStyle)
         applyThemeVariables(res.theme_config)
       }
     })
@@ -79,6 +103,7 @@ export const useAppStore = defineStore('app', () => {
     getThemeConfig().then((res) => {
       themeTemplate.value = normalizeThemeTemplate(res?.theme)
       mineTemplate.value = normalizeMineTemplate(res?.mineTemplate)
+      mineHeroStyle.value = normalizeMineHeroStyle(res?.assets?.mineHeroStyle)
       appInfo.value = {
         ...(appInfo.value || {}),
         theme_config: res
@@ -109,6 +134,7 @@ export const useAppStore = defineStore('app', () => {
     appInfo,
     themeTemplate,
     mineTemplate,
+    mineHeroStyle,
     isShowDownload,
     venueList,
     gameList,

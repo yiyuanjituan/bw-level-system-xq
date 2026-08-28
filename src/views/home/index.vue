@@ -37,8 +37,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <UHome v-if="app.themeTemplate === 1" />
-  <div v-else class="home-page">
+  <UHome v-if="app.themeTemplate === 1" key="u-series" />
+  <div v-else key="galaxy" class="home-page">
     <HomeNavBar />
     <main class="home-page__scroll" id="scroll-box" @scroll="handleHomeScroll">
       <HomeBanner />

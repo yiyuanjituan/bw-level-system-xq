@@ -3,6 +3,15 @@ import setPageTitle from '@/utils/set-page-title';
 
 export const APP_PREFIX_KEY = 'YG_PREFIX';
 
+function isPreviewLocation() {
+  if (typeof window === 'undefined') return false;
+  const hashQuery = window.location.hash.includes('?')
+    ? window.location.hash.slice(window.location.hash.indexOf('?') + 1)
+    : '';
+  return new URLSearchParams(window.location.search).get('preview') === '1'
+    || new URLSearchParams(hashQuery).get('preview') === '1';
+}
+
 export function initApp() {
   return Promise.all([getSiteConfig(), getHomeData(), getLocalSize()]);
 }
@@ -11,7 +20,9 @@ function getSiteConfig() {
   return new Promise((resolve, reject) => {
     getConfig()
       .then(res => {
-        localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
+        if (!isPreviewLocation()) {
+          localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
+        }
         setPageTitle(res.page_title || res.title);
         resolve(res);
       })
@@ -23,7 +34,9 @@ function getHomeData() {
   return new Promise((resolve, reject) => {
     getCommonInfo()
       .then(res => {
-        localStorage.setItem(`${APP_PREFIX_KEY}_site_game`, JSON.stringify(res));
+        if (!isPreviewLocation()) {
+          localStorage.setItem(`${APP_PREFIX_KEY}_site_game`, JSON.stringify(res));
+        }
         resolve(res);
       })
       .catch(err => resolve(void 0));

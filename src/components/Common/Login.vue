@@ -162,6 +162,7 @@ defineExpose({
   .login-register-tab-sub-title {
     font-size: 11px;
     padding-bottom: 4px;
+    color: var(--skin__lead);
   }
 
   :deep(.country-icon) {

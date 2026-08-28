@@ -19,6 +19,7 @@ import type {
   MineTemplateMenuGroup,
   MineTemplateSelectPayload
 } from "./types";
+import { isThemePreviewMode } from "@/utils/themePreview";
 
 defineOptions({
   name: "TemplateTwo"
@@ -42,9 +43,10 @@ const app = useAppStore();
 const messageCount = ref(0);
 const interestRateText = ref("");
 const languageDialogVisible = ref(false);
-
+const previewMode = isThemePreviewMode();
+const loginState = computed(() => !previewMode && Boolean(auth.token));
 const currencyInfo = computed(() => {
-  return app.appInfo.countryList.find(currency => currency.id == auth.user.currencyId);
+  return app.appInfo.countryList.find(currency => currency.id == auth.user?.currencyId);
 });
 
 const currentLanguageName = computed(() => {
@@ -179,7 +181,7 @@ const quickActions = computed(() => {
 const menuGroups = computed(() => {
   const groups = props.menuGroups?.length ? props.menuGroups : defaultMenuGroups.value;
 
-  if (auth.token) return groups;
+  if (loginState.value) return groups;
 
   return groups
     .map(group => ({
@@ -194,7 +196,7 @@ function emitSelect(source: MineTemplateSelectPayload["source"], action: string,
 }
 
 async function loadMessageCount() {
-  if (!auth.token) return;
+  if (!loginState.value) return;
 
   try {
     const response = await service.v1.notice.notifyList({ limit: 9999 });
@@ -209,7 +211,7 @@ async function loadMessageCount() {
 }
 
 async function loadInterestRate() {
-  if (!auth.token) return;
+  if (!loginState.value) return;
 
   try {
     const response = await service.v1.activity.interestInfo();
@@ -366,9 +368,12 @@ onMounted(() => {
       <svg-icon name="arrow-back" />
     </button>
 
-    <div class="mine-template-two__hero">
+    <div
+      class="mine-template-two__hero"
+      :class="`mine-template-two__hero--${app.mineHeroStyle}`"
+    >
       <TemplateTwoTopCard
-        :is-login="Boolean(auth.token)"
+        :is-login="loginState"
         :user="auth.user"
         :message-count="messageCount"
         :currency-prefix="currencyInfo?.numberPrefix"
@@ -379,10 +384,10 @@ onMounted(() => {
       <TemplateTwoQuickNav :items="quickActions" @select="handleQuickSelect" />
     </div>
 
-    <TemplateTwoVipCard v-if="auth.token" />
+    <TemplateTwoVipCard v-if="loginState" />
     <TemplateTwoMenu
       class="mine-template-two__menu"
-      :class="{ 'mine-template-two__menu--guest': !auth.token }"
+      :class="{ 'mine-template-two__menu--guest': !loginState }"
       :groups="menuGroups"
       @select="handleMenuSelect"
     />
@@ -435,10 +440,22 @@ onMounted(() => {
   padding-top: var(--status-bar-height);
   position: relative;
   background-color: var(--skin__bg_2);
-  background-image: url("@/assets/mine/template-two/top_bg.avif");
+  background-image: none;
   background-position: center top;
   background-size: 100% auto;
   background-repeat: no-repeat;
+}
+
+.mine-template-two__hero--blue {
+  background-image: url("@/assets/mine/template-two/top_bg.avif");
+}
+
+.mine-template-two__hero--common {
+  background-image: url("/siteadmin/skin/lobby_asset/common/common/profile/style_1_topbg_yd.avif");
+}
+
+.mine-template-two__hero--common82 {
+  background-image: url("/siteadmin/skin/lobby_asset/82-0-common/common/profile/img_topbg.avif");
 }
 
 .mine-template-two__menu--guest {

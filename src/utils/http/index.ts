@@ -39,8 +39,14 @@ class Http {
         config.headers["siteId"] = import.meta.env.VITE_SITE_ID;
         config.headers["language"] = $locale.value;
 
+        const hashQuery = typeof window !== 'undefined' && window.location.hash.includes('?')
+          ? window.location.hash.slice(window.location.hash.indexOf('?') + 1)
+          : '';
+        const isPreviewMode = typeof window !== 'undefined'
+          && (new URLSearchParams(window.location.search).get('preview') === '1'
+            || new URLSearchParams(hashQuery).get('preview') === '1');
         const auth = localStorage.getItem("user")
-        if (auth) {
+        if (!isPreviewMode && auth) {
           const info = JSON.parse(auth);
           config.headers['Authorization'] = info?.token
         }

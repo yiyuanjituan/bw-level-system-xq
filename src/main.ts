@@ -19,6 +19,7 @@ import "vant/lib/index.css";
 import { initApp } from "@/utils/site";
 import { initializeStatusBarHeight } from "@/utils/yimenApp";
 import useHomeDataStore from "@/store/modules/home";
+import { initThemePreviewBridge, isThemePreviewMode } from "@/utils/themePreview";
 
 initializeStatusBarHeight();
 
@@ -33,8 +34,12 @@ app.use(Geetest, {
   captchaId: "c7f7181c75483c121ad718b7a636f0d0"
 });
 
+initThemePreviewBridge(store);
+
 initApp().finally(() => {
   // 先读取持久化缓存完成首屏渲染，再在应用启动时后台刷新轮播数据。
-  void useHomeDataStore(store).loadBanner();
+  if (!isThemePreviewMode()) {
+    void useHomeDataStore(store).loadBanner();
+  }
   app.mount("#app");
 });
