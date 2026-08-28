@@ -30,20 +30,22 @@ const handleChange = () => {
     display: flex;
     font-size: 11px;
     flex: 1;
+    color: var(--skin__lead);
     .svg-border {
       margin-right: 4px;
-      color: #68707B;
+      color: var(--skin__neutral_2);
       font-size: 15px;
-      background: #1C1E23;
+      background: var(--skin__bg_2);
       border-radius: 9999rem;
-      border: solid 1px #313843;
+      border: solid 1px var(--skin__border);
     }
   }
   .active {
-    color: #F0C059;
+    color: var(--skin__primary);
     .svg-border {
-      color: #874404;
-      background: #F0C059;
+      color: var(--skin__text_primary);
+      background-color: var(--skin__primary);
+      border: 0 none;
     }
   }
 }
