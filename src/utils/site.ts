@@ -24,14 +24,34 @@ export interface AppInitializationResult {
   commonInfo?: any;
 }
 
-export async function initApp(): Promise<AppInitializationResult> {
+export interface AppLoadingProgress {
+  progress: number;
+  status: string;
+}
+
+export async function initApp(onProgress?: (state: AppLoadingProgress) => void): Promise<AppInitializationResult> {
   getLocalSize();
+  let completedTasks = 0;
+  const progressStates: AppLoadingProgress[] = [
+    { progress: 34, status: "正在同步应用配置" },
+    { progress: 58, status: "正在加载主题资源" },
+    { progress: 82, status: "正在准备首页数据" },
+  ];
+  const trackProgress = <T>(request: Promise<T>) => request.finally(() => {
+    const state = progressStates[Math.min(completedTasks, progressStates.length - 1)];
+    completedTasks += 1;
+    onProgress?.(state);
+  });
+
+  onProgress?.({ progress: 10, status: "正在连接服务" });
+  await new Promise((resolve) => window.setTimeout(resolve, 3000));
   const [siteConfig, themeConfig, commonInfo] = await Promise.all([
-    getSiteConfig(),
-    getThemeData(),
-    getHomeData(),
+    trackProgress(getSiteConfig()),
+    trackProgress(getThemeData()),
+    trackProgress(getHomeData()),
   ]);
 
+  onProgress?.({ progress: 90, status: "正在应用远程配置" });
   return { siteConfig, themeConfig, commonInfo };
 }
 

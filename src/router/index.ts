@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, type RouteLocationNormalized } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory, type RouteLocationNormalized } from 'vue-router';
 import routes from './routes';
 import { useCachedViewStoreHook } from '@/store/modules/cachedView';
 import NProgress from '@/utils/progress';
@@ -7,7 +7,7 @@ import { bus } from '@/utils/mitt';
 import { saveInviteCode } from '@/utils/inviteCode';
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: import.meta.env.BASE_URL === './' ? createWebHashHistory() : createWebHistory(),
   routes
 });
 

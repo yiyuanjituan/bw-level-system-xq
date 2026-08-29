@@ -5,12 +5,19 @@ interface Window {
 		baseURL?: string;
 		loadingType?: "dots" | "ring" | "pulse";
 	};
+	setLoadingProgress?: (progress: number, text?: string) => void;
 }
 
 declare module "ym-jsbridge" {
 	interface YmJsBridge {
 		inApp: boolean;
+		android: boolean;
+		ios: boolean;
+		harmony: boolean;
+		appVersion: number;
 		ready(callback: () => void): void;
+		appInfo(callback: (info: Record<string, unknown>) => void): void;
+		deviceInfo(callback: (info: Record<string, unknown>) => void): void;
 		getStatusBar(callback: (success: boolean, statusBar: unknown) => void): void;
 		setStatusBar(
 			options: {

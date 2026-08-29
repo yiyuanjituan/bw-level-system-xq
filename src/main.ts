@@ -39,13 +39,16 @@ initThemePreviewBridge(store);
 app.mount("#app");
 
 const appStore = useAppStore(store);
-initApp().then((initialization) => {
-  // 远程配置先完整写入并应用主题，最后再关闭 Vue loading。
-  appStore.completeAppInitialization(initialization);
+initApp(({ progress, status }) => {
+  appStore.updateAppLoadingState(progress, status);
+}).then(async (initialization) => {
   if (!isThemePreviewMode()) {
-    void useHomeDataStore(store).loadBanner();
+    appStore.updateAppLoadingState(92, "正在加载首页内容");
+    await useHomeDataStore(store).loadBanner();
   }
-}).catch(() => {
+  // 远程配置和首页数据准备完成后，最后应用主题并关闭 loading。
+  await appStore.completeAppInitialization(initialization);
+}).catch(async () => {
   // 网络异常时使用项目内置样式继续启动，避免页面永久停留在 loading。
-  appStore.completeAppInitialization({});
+  await appStore.completeAppInitialization({});
 });

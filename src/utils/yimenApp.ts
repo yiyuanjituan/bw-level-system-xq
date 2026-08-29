@@ -1,4 +1,5 @@
 import jsBridge from "ym-jsbridge";
+import packageInfo from "../../package.json";
 
 const STATUS_BAR_HEIGHT_VARIABLE = "--status-bar-height";
 
@@ -59,4 +60,72 @@ export function initializeStatusBarHeight() {
       document.documentElement.style.setProperty(STATUS_BAR_HEIGHT_VARIABLE, `${height}px`);
     });
   });
+}
+
+function getFirstText(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  }
+  return "";
+}
+
+function getUserAgentDeviceModel() {
+  const userAgent = navigator.userAgent;
+  const androidModel = userAgent.match(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/[^;)]+)?[;)]/i)?.[1];
+  if (androidModel) return androidModel.replace(/\s+wv$/i, "").trim();
+  if (/iPad/i.test(userAgent)) return "iPad";
+  if (/iPhone/i.test(userAgent)) return "iPhone";
+  return "移动设备";
+}
+
+function readBridgeInfo(reader: (callback: (info: Record<string, unknown>) => void) => void) {
+  return new Promise<Record<string, unknown>>((resolve) => {
+    let completed = false;
+    const finish = (info: Record<string, unknown> = {}) => {
+      if (completed) return;
+      completed = true;
+      window.clearTimeout(timeoutId);
+      resolve(info);
+    };
+    const timeoutId = window.setTimeout(() => finish(), 800);
+
+    runWhenYimenReady(() => {
+      try {
+        reader((info) => finish(info && typeof info === "object" ? info : {}));
+      } catch {
+        finish();
+      }
+    });
+  });
+}
+
+export function getAppDeviceVersionFallbackLabel() {
+  const platform = jsBridge.ios ? "iOS" : jsBridge.harmony ? "HarmonyOS" : "Android";
+  const fallbackVersion = jsBridge.appVersion > 0 ? String(jsBridge.appVersion) : packageInfo.version;
+
+  return `${platform} · ${getUserAgentDeviceModel()} / v${fallbackVersion}`;
+}
+
+export async function getAppDeviceVersionLabel() {
+  const platform = jsBridge.ios ? "iOS" : jsBridge.harmony ? "HarmonyOS" : "Android";
+  const fallbackVersion = jsBridge.appVersion > 0 ? String(jsBridge.appVersion) : packageInfo.version;
+
+  if (!isYimenApp()) {
+    return getAppDeviceVersionFallbackLabel();
+  }
+
+  const [appInfo, deviceInfo] = await Promise.all([
+    readBridgeInfo((callback) => jsBridge.appInfo(callback)),
+    readBridgeInfo((callback) => jsBridge.deviceInfo(callback)),
+  ]);
+  const model = getFirstText(deviceInfo, ["model", "deviceModel", "deviceName", "name"])
+    || getUserAgentDeviceModel();
+  const systemVersion = getFirstText(deviceInfo, ["systemVersion", "osVersion", "release"]);
+  const version = getFirstText(appInfo, ["versionName", "appVersion", "version"])
+    || fallbackVersion;
+  const systemLabel = systemVersion ? `${platform} ${systemVersion}` : platform;
+
+  return `${systemLabel} · ${model} / v${version.replace(/^v/i, "")}`;
 }

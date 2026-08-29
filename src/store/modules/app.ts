@@ -14,11 +14,11 @@ import {
   SITE_GAME_CACHE_KEY
 } from "@/utils/appCache";
 import type { AppInitializationResult } from "@/utils/site";
+import { isYimenApp } from "@/utils/yimenApp";
 
 // 站点图标必须写入 HTML head；接口刷新后覆盖已有节点，避免重复添加 link。
 const updateFavicon = (iconUrl?: string) => {
-  const iconLink = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
-    || document.createElement("link");
+  const iconLink = document.querySelector<HTMLLinkElement>("link[rel~='icon']") || document.createElement("link");
 
   iconLink.rel = "icon";
   iconLink.href = iconUrl || "/favicon.ico";
@@ -104,6 +104,7 @@ const getPersistedAppInfo = () => {
 };
 
 export const useAppStore = defineStore('app', () => {
+  const appLoadingStartedAt = Date.now()
   const persistedAppInfo = getPersistedAppInfo()
   const appInfo = ref<any>(persistedAppInfo)
   const venueList = ref<any>(readLocalJson(SITE_GAME_CACHE_KEY, null))
@@ -111,6 +112,8 @@ export const useAppStore = defineStore('app', () => {
   const gameList = ref<{ id: number, children: any[] }[]>([])
   const isShowDownload = ref(true)
   const isAppReady = ref(false)
+  const appLoadingProgress = ref(6)
+  const appLoadingStatus = ref("正在启动应用")
   const themeTemplate = ref<0 | 1>(DEFAULT_THEME_TEMPLATE)
   const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
   const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
@@ -142,7 +145,12 @@ export const useAppStore = defineStore('app', () => {
     updateFavicon(siteConfig.favicon)
   }
 
-  const completeAppInitialization = (initialization: AppInitializationResult) => {
+  const updateAppLoadingState = (progress: number, status: string) => {
+    appLoadingProgress.value = Math.min(100, Math.max(appLoadingProgress.value, Math.round(progress)))
+    if (status) appLoadingStatus.value = status
+  }
+
+  const completeAppInitialization = async (initialization: AppInitializationResult) => {
     applySiteConfig(initialization.siteConfig)
 
     const remoteThemeConfig = initialization.themeConfig
@@ -153,6 +161,15 @@ export const useAppStore = defineStore('app', () => {
       venueList.value = initialization.commonInfo.venueList
     }
 
+    updateAppLoadingState(96, "正在渲染首页")
+    if (isYimenApp()) {
+      const remainingDuration = Math.max(0, 1800 - (Date.now() - appLoadingStartedAt))
+      if (remainingDuration > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remainingDuration))
+      }
+      updateAppLoadingState(100, "加载完成")
+      await new Promise((resolve) => window.setTimeout(resolve, 1500))
+    }
     isAppReady.value = true
   }
 
@@ -193,21 +210,26 @@ export const useAppStore = defineStore('app', () => {
     mineTemplate,
     mineHeroStyle,
     isAppReady,
+    appLoadingProgress,
+    appLoadingStatus,
     isShowDownload,
     venueList,
     gameList,
     activityList,
     refreshData,
     updateDownloadBtn,
+    updateAppLoadingState,
     completeAppInitialization,
     setGameList,
     updateActivity
   }
 }, {
   persist: {
-    omit: ["isAppReady", "themeTemplate", "mineTemplate", "mineHeroStyle", "appInfo.theme_config"],
+    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "appInfo.theme_config"],
     afterHydrate: ({ store }) => {
       (store as any).isAppReady = false;
+      (store as any).appLoadingProgress = 6;
+      (store as any).appLoadingStatus = "正在启动应用";
       (store as any).appInfo = normalizeAppInfo((store as any).appInfo);
       (store as any).themeTemplate = DEFAULT_THEME_TEMPLATE;
       (store as any).mineTemplate = DEFAULT_MINE_TEMPLATE;
