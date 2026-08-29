@@ -4,7 +4,7 @@ import { reactive, ref } from "vue";
 import PasswordPower from "@/components/Common/PasswordPower.vue";
 import { userRegister } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
-import type { FormExpose, FormRules } from "@/components/UI/form-context";
+import type { XFormRules } from "@/components/X/x-form-context";
 
 defineOptions({
   name: "PromoteCreateSubordinate"
@@ -23,13 +23,16 @@ interface CreateSubordinateForm {
 
 const createType = ref("single");
 const creating = ref(false);
-const formRef = ref<FormExpose>();
+const formRef = ref<{
+  validate: (fields?: string | string[]) => Promise<void>;
+  clearValidate: (fields?: string | string[]) => void;
+}>();
 const formModel = reactive<CreateSubordinateForm>({
   account: "",
   password: ""
 });
 
-const formRules: FormRules = {
+const formRules: XFormRules = {
   account: [
     { required: true, message: $t("请输入会员账号"), trigger: ["blur", "change"] },
     {
@@ -143,7 +146,7 @@ async function handleCreate() {
               prefix="lock"
               :placeholder="$t('请输入密码')"
               autocomplete="new-password"
-              maxlength="16"
+              :maxlength="16"
               show-eye
             />
           </x-form-item>

@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 
+type EnterGameId = string | number | null | undefined;
+
 export const useDataStore = defineStore('data', () => {
   const enterGameInfo = ref<{ venueId: any, gameId: any, os_type?: number }>({ venueId: null, gameId: null });
 
-  const setEnterInfo = (venueId: number, gameId: number, osType?: number) => {
+  const setEnterInfo = (venueId: EnterGameId, gameId: EnterGameId, osType?: number) => {
     enterGameInfo.value.venueId = venueId;
     enterGameInfo.value.gameId = gameId;
     if (osType === undefined) {

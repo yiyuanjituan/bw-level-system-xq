@@ -251,7 +251,7 @@ onMounted(() => init());
       </div>
       <div class="task-extra-button">
         <div class="refresh-box" @click="handleLoading">
-          <svg-icon name="comm_icon_retry" :class-name="{ loading: isLoading }" />
+          <svg-icon name="comm_icon_retry" :class-name="isLoading ? 'loading' : ''" />
           <span class="event-refresh-btn-text">刷新</span>
         </div>
       </div>

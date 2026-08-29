@@ -10,7 +10,16 @@ defineOptions({
   name: "MineGrid"
 });
 
-const list = ref([
+interface MineGridItem {
+  key: string;
+  icon_1: string;
+  icon_2: string;
+  icon_3?: string;
+  name: string;
+  url: string;
+}
+
+const list = ref<MineGridItem[]>([
   {
     key: "forget",
     icon_1: "style_2_icon_list_zhye",
@@ -119,7 +128,7 @@ const list = ref([
   },
 ]);
 const auth = useAuthStore()
-const displayList = computed(() => {
+const displayList = computed<MineGridItem[]>(() => {
   if (auth.token) {
     return list.value;
   }
@@ -152,7 +161,7 @@ function safeLogOut() {
   })
 }
 
-const onTapItem = (item: any) => {
+const onTapItem = (item: MineGridItem) => {
   if (item.key === 'aqtc') return safeLogOut()
   if (item.key === 'zdwm') return bus.emit('findUs')
 
@@ -175,7 +184,7 @@ const onTapItem = (item: any) => {
           <svg-icon :name="i.icon_1" class="svg-icon text-[#68707B]" />
           <svg-icon :name="i.icon_2" class="svg-icon text-[#F0C059]" />
           <div v-if="i.icon_3" class="flex items-center w-[100%] h-[6.5px] justify-center pt-[7px] pl-[2px]">
-            <svg-icon :name="i.icon_3" class="svg-icon !text-[6.5px] text-white" />
+            <svg-icon :name="i.icon_3 || ''" class="svg-icon !text-[6.5px] text-white" />
           </div>
         </div>
         <div class="item-text">{{ i.name }}</div>

@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { $t } from "@/locales";
-import UiForm from "@/components/UI/form.vue";
-import UiFormItem from "@/components/UI/form-item.vue";
-import UiInput from "@/components/UI/input.vue";
 import { computed, ref, useTemplateRef } from "vue";
 import { loginProps } from "@/enums/props";
 import useAppStore from "@/store/modules/app";
 import { predictPhoneNumber } from "@/utils/common";
 import { sendSms } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
+import type { XFormRules } from "@/components/X/x-form-context";
 
 defineOptions({
   name: "login-popup"
@@ -29,7 +27,7 @@ const modelValue = defineModel<loginProps>({
   })
 });
 
-const formRules = ref({
+const formRules = ref<XFormRules>({
   account: [
     { required: true, message: $t("请输入手机号码/账号"), trigger: "blur" },
     {

@@ -74,7 +74,7 @@ async function handleSubmit() {
               v-model="formModel.content"
               :placeholder="$t('您的任何意见对我们都很重要，凡是有价值意见都将被采纳，一旦采纳将视重要程度给予不同现金奖励，欢迎您畅所欲言！')"
               clearable
-              rows="6"
+              :rows="6"
             />
           </x-form-item>
 
