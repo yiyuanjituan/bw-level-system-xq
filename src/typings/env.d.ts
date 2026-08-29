@@ -3,6 +3,7 @@
 interface Window {
 	__APP_RUNTIME_CONFIG__?: {
 		baseURL?: string;
+		loadingType?: "dots" | "ring" | "pulse";
 	};
 }
 

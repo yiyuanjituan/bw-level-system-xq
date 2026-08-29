@@ -1,8 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
-import type { MineHeroStyle, MineTemplateName } from "@/api/common";
-import { APP_PREFIX_KEY } from "@/utils/site";
+import type { MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
+import {
+  DEFAULT_MINE_HERO_STYLE,
+  DEFAULT_MINE_TEMPLATE,
+  DEFAULT_THEME_TEMPLATE,
+  normalizeThemeConfig
+} from "@/config/theme-config";
+import {
+  SITE_ACTIVITY_CACHE_KEY,
+  SITE_CONFIG_CACHE_KEY,
+  SITE_GAME_CACHE_KEY
+} from "@/utils/appCache";
+import type { AppInitializationResult } from "@/utils/site";
 
 // 站点图标必须写入 HTML head；接口刷新后覆盖已有节点，避免重复添加 link。
 const updateFavicon = (iconUrl?: string) => {
@@ -54,61 +65,107 @@ export const applyThemeVariables = (themeConfig?: { variables?: Record<string, s
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
 const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
 const normalizeMineHeroStyle = (value: unknown): MineHeroStyle => value === "common" || value === "common82" ? value : "blue";
+const isPlainObject = (value: unknown): value is Record<string, any> => {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+};
+const isThemeConfigLike = (value: unknown): value is Partial<ThemeConfigResponse> => {
+  return isPlainObject(value)
+    && (isPlainObject(value.variables) || value.theme !== undefined || value.mineTemplate !== undefined);
+};
+
+const readLocalJson = <T>(key: string, fallback: T): T => {
+  try {
+    const rawValue = localStorage.getItem(key);
+    return rawValue ? JSON.parse(rawValue) : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 const createEmptyAppInfo = () => ({
   countryList: [],
   home_popup: [],
 });
 
-const normalizeAppInfo = (value: any) => ({
-  ...createEmptyAppInfo(),
-  ...(value && typeof value === 'object' ? value : {}),
-  countryList: Array.isArray(value?.countryList) ? value.countryList : [],
-  home_popup: Array.isArray(value?.home_popup) ? value.home_popup : [],
-});
+const normalizeAppInfo = (value: any) => {
+  const appInfo = {
+    ...createEmptyAppInfo(),
+    ...(value && typeof value === 'object' ? value : {}),
+    countryList: Array.isArray(value?.countryList) ? value.countryList : [],
+    home_popup: Array.isArray(value?.home_popup) ? value.home_popup : [],
+  };
+
+  delete appInfo.theme_config;
+  return appInfo;
+};
 
 const getPersistedAppInfo = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_config`) || "null");
-    return normalizeAppInfo(value);
-  } catch {
-    return createEmptyAppInfo();
-  }
+  return normalizeAppInfo(readLocalJson(SITE_CONFIG_CACHE_KEY, null));
 };
 
 export const useAppStore = defineStore('app', () => {
-  const appInfo = ref<any>(getPersistedAppInfo())
-  const venueList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_game`)))
-  const activityList = ref<any>(JSON.parse(localStorage.getItem(`${APP_PREFIX_KEY}_site_activity`) || '{}'))
+  const persistedAppInfo = getPersistedAppInfo()
+  const appInfo = ref<any>(persistedAppInfo)
+  const venueList = ref<any>(readLocalJson(SITE_GAME_CACHE_KEY, null))
+  const activityList = ref<any>(readLocalJson(SITE_ACTIVITY_CACHE_KEY, {}))
   const gameList = ref<{ id: number, children: any[] }[]>([])
   const isShowDownload = ref(true)
-  const themeTemplate = ref<0 | 1>(normalizeThemeTemplate(appInfo.value?.theme_config?.theme))
-  const mineTemplate = ref<MineTemplateName>(normalizeMineTemplate(appInfo.value?.theme_config?.mineTemplate))
-  const mineHeroStyle = ref<MineHeroStyle>(normalizeMineHeroStyle(appInfo.value?.theme_config?.assets?.mineHeroStyle))
+  const isAppReady = ref(false)
+  const themeTemplate = ref<0 | 1>(DEFAULT_THEME_TEMPLATE)
+  const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
+  const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
   updateFavicon(appInfo.value?.favicon)
-  applyThemeVariables(appInfo.value?.theme_config)
+
+  const applyThemeConfig = (themeConfig?: unknown) => {
+    if (!isThemeConfigLike(themeConfig)) return;
+
+    const normalizedThemeConfig = normalizeThemeConfig(themeConfig)
+
+    themeTemplate.value = normalizeThemeTemplate(normalizedThemeConfig.theme)
+    mineTemplate.value = normalizeMineTemplate(normalizedThemeConfig.mineTemplate)
+    mineHeroStyle.value = normalizeMineHeroStyle(normalizedThemeConfig.assets?.mineHeroStyle)
+    appInfo.value = {
+      ...(appInfo.value || {}),
+      theme_config: normalizedThemeConfig
+    }
+    applyThemeVariables(normalizedThemeConfig)
+  }
+
+  const applySiteConfig = (siteConfig?: unknown) => {
+    if (!isPlainObject(siteConfig)) return;
+
+    const currentThemeConfig = appInfo.value?.theme_config;
+    appInfo.value = {
+      ...normalizeAppInfo(siteConfig),
+      ...(currentThemeConfig ? { theme_config: currentThemeConfig } : {})
+    }
+    updateFavicon(siteConfig.favicon)
+  }
+
+  const completeAppInitialization = (initialization: AppInitializationResult) => {
+    applySiteConfig(initialization.siteConfig)
+
+    const remoteThemeConfig = initialization.themeConfig
+      || initialization.siteConfig?.theme_config;
+    if (remoteThemeConfig) applyThemeConfig(remoteThemeConfig)
+
+    if (initialization.commonInfo?.venueList) {
+      venueList.value = initialization.commonInfo.venueList
+    }
+
+    isAppReady.value = true
+  }
 
   const refreshData = () => {
     getConfig().then((res) => {
-      appInfo.value = normalizeAppInfo(res)
-      updateFavicon(res?.favicon)
+      applySiteConfig(res)
       if (res?.theme_config) {
-        themeTemplate.value = normalizeThemeTemplate(res.theme_config.theme)
-        mineTemplate.value = normalizeMineTemplate(res.theme_config.mineTemplate)
-        mineHeroStyle.value = normalizeMineHeroStyle(res.theme_config.assets?.mineHeroStyle)
-        applyThemeVariables(res.theme_config)
+        applyThemeConfig(res.theme_config)
       }
     })
     getCommonInfo().then((res) => venueList.value = res.venueList)
     getThemeConfig().then((res) => {
-      themeTemplate.value = normalizeThemeTemplate(res?.theme)
-      mineTemplate.value = normalizeMineTemplate(res?.mineTemplate)
-      mineHeroStyle.value = normalizeMineHeroStyle(res?.assets?.mineHeroStyle)
-      appInfo.value = {
-        ...(appInfo.value || {}),
-        theme_config: res
-      }
-      applyThemeVariables(res)
+      applyThemeConfig(res)
     })
   }
 
@@ -135,17 +192,28 @@ export const useAppStore = defineStore('app', () => {
     themeTemplate,
     mineTemplate,
     mineHeroStyle,
+    isAppReady,
     isShowDownload,
     venueList,
     gameList,
     activityList,
     refreshData,
     updateDownloadBtn,
+    completeAppInitialization,
     setGameList,
     updateActivity
   }
 }, {
-  persist: true,
+  persist: {
+    omit: ["isAppReady", "themeTemplate", "mineTemplate", "mineHeroStyle", "appInfo.theme_config"],
+    afterHydrate: ({ store }) => {
+      (store as any).isAppReady = false;
+      (store as any).appInfo = normalizeAppInfo((store as any).appInfo);
+      (store as any).themeTemplate = DEFAULT_THEME_TEMPLATE;
+      (store as any).mineTemplate = DEFAULT_MINE_TEMPLATE;
+      (store as any).mineHeroStyle = DEFAULT_MINE_HERO_STYLE;
+    }
+  },
 })
 
 export default useAppStore

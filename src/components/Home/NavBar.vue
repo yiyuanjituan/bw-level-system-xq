@@ -284,7 +284,7 @@ async function updateWallet() {
 }
 
 .home-nav__brand {
-  width: 140px;
+  max-width: 140px;
   height: 35px;
   display: flex;
   align-items: center;
@@ -296,6 +296,10 @@ async function updateWallet() {
   width: 100%;
   height: 100%;
   background-color: transparent;
+  :deep(img) {
+    max-width: 100%;
+    width: unset !important;
+  }
 }
 
 .home-nav__actions {

@@ -1,7 +1,13 @@
-import { getCommonInfo, getConfig } from '@/api/common';
+import { getCommonInfo, getConfig, getThemeConfig } from '@/api/common';
+import type { ThemeConfigResponse } from '@/api/common';
 import setPageTitle from '@/utils/set-page-title';
+import {
+  APP_PREFIX_KEY,
+  SITE_CONFIG_CACHE_KEY,
+  SITE_GAME_CACHE_KEY
+} from '@/utils/appCache';
 
-export const APP_PREFIX_KEY = 'YG_PREFIX';
+export { APP_PREFIX_KEY };
 
 function isPreviewLocation() {
   if (typeof window === 'undefined') return false;
@@ -12,8 +18,21 @@ function isPreviewLocation() {
     || new URLSearchParams(hashQuery).get('preview') === '1';
 }
 
-export function initApp() {
-  return Promise.all([getSiteConfig(), getHomeData(), getLocalSize()]);
+export interface AppInitializationResult {
+  siteConfig?: any;
+  themeConfig?: ThemeConfigResponse;
+  commonInfo?: any;
+}
+
+export async function initApp(): Promise<AppInitializationResult> {
+  getLocalSize();
+  const [siteConfig, themeConfig, commonInfo] = await Promise.all([
+    getSiteConfig(),
+    getThemeData(),
+    getHomeData(),
+  ]);
+
+  return { siteConfig, themeConfig, commonInfo };
 }
 
 function getSiteConfig() {
@@ -21,7 +40,9 @@ function getSiteConfig() {
     getConfig()
       .then(res => {
         if (!isPreviewLocation()) {
-          localStorage.setItem(`${APP_PREFIX_KEY}_site_config`, JSON.stringify(res));
+          const cachedSiteConfig = { ...(res || {}) };
+          delete cachedSiteConfig.theme_config;
+          localStorage.setItem(SITE_CONFIG_CACHE_KEY, JSON.stringify(cachedSiteConfig));
         }
         setPageTitle(res.page_title || res.title);
         resolve(res);
@@ -35,11 +56,24 @@ function getHomeData() {
     getCommonInfo()
       .then(res => {
         if (!isPreviewLocation()) {
-          localStorage.setItem(`${APP_PREFIX_KEY}_site_game`, JSON.stringify(res));
+          localStorage.setItem(SITE_GAME_CACHE_KEY, JSON.stringify(res));
         }
         resolve(res);
       })
       .catch(err => resolve(void 0));
+  });
+}
+
+function getThemeData(): Promise<ThemeConfigResponse | undefined> {
+  return new Promise((resolve) => {
+    if (isPreviewLocation()) {
+      resolve(void 0);
+      return;
+    }
+
+    getThemeConfig()
+      .then(res => resolve(res))
+      .catch(() => resolve(void 0));
   });
 }
 

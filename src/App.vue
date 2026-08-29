@@ -1,5 +1,6 @@
 <template>
-  <van-config-provider :locale="currentVantLocale">
+  <AppLoading v-if="!app.isAppReady" />
+  <van-config-provider v-else :locale="currentVantLocale">
     <SvgIcons />
     <router-view v-slot="{ Component, route }">
       <transition :name="systemTransitionName">
@@ -23,10 +24,11 @@
 
 <script setup lang="ts">
 import { systemTransitionName } from './hooks/useTransition';
+import AppLoading from '@/components/AppLoading.vue';
 import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
 import RedpackDialog from '@/components/Dialog/RedpackDialog.vue';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, nextTick, onUnmounted, watch } from 'vue';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
 import { bus, userMoneyIn } from '@/utils/mitt';
@@ -59,6 +61,7 @@ type HomePopupKey = keyof typeof popupRefMap;
 const popupQueue: HomePopupKey[] = [];
 let popupTimer: ReturnType<typeof setTimeout> | undefined;
 let stopVersionUpdateCheck: (() => void) | undefined;
+let isRuntimeStarted = false;
 
 const busListen = () => {
   bus.on('moneyIn', () => {
@@ -152,16 +155,19 @@ function checkPopupTip() {
   }, 1500);
 }
 
-onMounted(async () => {
+async function startRuntimeSideEffects() {
+  if (isRuntimeStarted) return;
+  isRuntimeStarted = true;
+  await nextTick();
+
 	if (isThemePreviewMode()) {
 		// 预览页只展示真实页面，禁止登录态连接、弹窗和实时业务副作用。
 		app.updateDownloadBtn(false);
 		return;
 	}
-	stopVersionUpdateCheck = startVersionUpdateCheck();
+  stopVersionUpdateCheck = startVersionUpdateCheck();
   busListen();
   await handleTelegramWebAppStart();
-  app.refreshData();
   app.updateDownloadBtn(true);
 
   if (auth.token) {
@@ -170,7 +176,15 @@ onMounted(async () => {
   }
 
   checkPopupTip();
-});
+}
+
+watch(
+  () => app.isAppReady,
+  (isReady) => {
+    if (isReady) void startRuntimeSideEffects();
+  },
+  { immediate: true, flush: 'post' }
+);
 
 onUnmounted(() => {
   stopVersionUpdateCheck?.();

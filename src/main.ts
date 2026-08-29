@@ -19,6 +19,7 @@ import "vant/lib/index.css";
 import { initApp } from "@/utils/site";
 import { initializeStatusBarHeight } from "@/utils/yimenApp";
 import useHomeDataStore from "@/store/modules/home";
+import useAppStore from "@/store/modules/app";
 import { initThemePreviewBridge, isThemePreviewMode } from "@/utils/themePreview";
 
 initializeStatusBarHeight();
@@ -35,11 +36,16 @@ app.use(Geetest, {
 });
 
 initThemePreviewBridge(store);
+app.mount("#app");
 
-initApp().finally(() => {
-  // 先读取持久化缓存完成首屏渲染，再在应用启动时后台刷新轮播数据。
+const appStore = useAppStore(store);
+initApp().then((initialization) => {
+  // 远程配置先完整写入并应用主题，最后再关闭 Vue loading。
+  appStore.completeAppInitialization(initialization);
   if (!isThemePreviewMode()) {
     void useHomeDataStore(store).loadBanner();
   }
-  app.mount("#app");
+}).catch(() => {
+  // 网络异常时使用项目内置样式继续启动，避免页面永久停留在 loading。
+  appStore.completeAppInitialization({});
 });

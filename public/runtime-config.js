@@ -1,7 +1,8 @@
 (function (global) {
   global.__APP_RUNTIME_CONFIG__ = Object.assign(
     {
-      baseURL: "/api"
+      baseURL: "/api",
+      loadingType: "dots"
     },
     global.__APP_RUNTIME_CONFIG__ || {}
   );
