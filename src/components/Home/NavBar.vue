@@ -83,7 +83,12 @@ async function updateWallet() {
         </div>
       </div>
 
-      <ui-button type="primary" size="small" class="home-download-tip__button">
+      <ui-button
+        type="primary"
+        size="small"
+        class="home-download-tip__button"
+        @click="bus.emit('showDownloadTip')"
+      >
         {{ $t("立即下载") }}
       </ui-button>
     </div>

@@ -113,8 +113,9 @@ const quickAmountOptions = computed<QuickAmountOption[]>(() => {
     displayAmount: getQuickDisplayAmount(amount)
   }));
 });
-const payModeTitle = computed(() => (payTypeMode.value == 'usdt' ? '上分数量' : '存款金额'));
-const inputPrefix = computed(() => (payTypeMode.value == 'usdt' ? 'U' : '￥'));
+const isUsdtPayMode = computed(() => activeGroup.value.type == 2 && payTypeMode.value == 'usdt');
+const payModeTitle = computed(() => (isUsdtPayMode.value ? '上分数量' : '存款金额'));
+const inputPrefix = computed(() => (isUsdtPayMode.value ? 'U' : '￥'));
 const inputPlaceholder = computed(() => `最低${activeInfo.value.min ?? 0} ~ 最高${activeInfo.value.max ?? 0}`);
 const showGroupDownloadTip = computed(() => {
   return Boolean(
@@ -141,13 +142,16 @@ function normalizeMoney(value: number) {
   return Number(value.toFixed(2));
 }
 
-const orderAmount = computed(() => {
-  const amount = Number(inputAmount.value);
+function isUsdtMode(mode = payTypeMode.value) {
+  return activeGroup.value.type == 2 && mode == 'usdt';
+}
+
+function getOrderAmountByInput(amount: number, mode = payTypeMode.value) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return 0;
   }
 
-  if (payTypeMode.value == 'user_language') {
+  if (!isUsdtMode(mode)) {
     return normalizeMoney(amount);
   }
 
@@ -156,6 +160,10 @@ const orderAmount = computed(() => {
   }
 
   return normalizeMoney(amount * currentRate.value);
+}
+
+const orderAmount = computed(() => {
+  return getOrderAmountByInput(Number(inputAmount.value));
 });
 const amountSummary = computed<AmountSummary | null>(() => {
   const amount = Number(inputAmount.value);
@@ -187,7 +195,7 @@ function resetWalletState() {
 }
 
 function getQuickInputAmount(amount: number, mode = payTypeMode.value) {
-  if (activeGroup.value.type != 2 || mode == 'usdt') {
+  if (activeGroup.value.type != 2 || isUsdtMode(mode)) {
     return amount;
   }
 
@@ -196,6 +204,10 @@ function getQuickInputAmount(amount: number, mode = payTypeMode.value) {
 
 function getQuickDisplayAmount(amount: number, mode = payTypeMode.value) {
   return getQuickInputAmount(amount, mode);
+}
+
+function getQuickGiftAmount(amount: number) {
+  return getOrderAmountByInput(getQuickInputAmount(amount)) * giftRatio.value;
 }
 
 function syncSelectedQuickAmount() {
@@ -496,7 +508,7 @@ watch(
           <div class="label-container">
             <span class="label">{{ option.displayAmount }}</span>
             <div v-if="giftRatio > 0" class="reward-box">
-              <span class="reward">+{{ formatMoney(option.amount * giftRatio) }}</span>
+              <span class="reward">+{{ formatMoney(getQuickGiftAmount(option.amount)) }}</span>
             </div>
           </div>
         </recharge-badge>

@@ -73,6 +73,6 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 .right-text {
-  color: var(--skin__accent_1);
+  color: var(--skin__accent_1) !important;
 }
 </style>

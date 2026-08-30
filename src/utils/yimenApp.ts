@@ -22,7 +22,33 @@ function normalizeStatusBarHeight(statusBar: unknown) {
 }
 
 export function isYimenApp() {
-  return typeof window !== "undefined" && jsBridge.inApp;
+  if (typeof window === "undefined") return false;
+
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const isIos = /iPad|iPhone|iPod/i.test(userAgent)
+    || (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const standaloneNavigator = navigator as Navigator & { standalone?: boolean };
+  const isStandalone = (typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches)
+    || standaloneNavigator.standalone === true;
+  const hashQuery = window.location.hash.includes("?")
+    ? window.location.hash.slice(window.location.hash.indexOf("?") + 1)
+    : "";
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(hashQuery);
+  const runtimeKeys = ["source", "from", "runtime", "mode", "type", "client", "app"];
+  const hasRuntimeMarker = (params: URLSearchParams, markers: string[]) => {
+    return markers.some((marker) => params.has(marker))
+      || runtimeKeys.some((key) => markers.includes(String(params.get(key) || "").trim().toLowerCase()));
+  };
+  const isPwa = isStandalone || hasRuntimeMarker(searchParams, ["pwa"]) || hasRuntimeMarker(hashParams, ["pwa"]);
+  const isMobileConfig = isIos
+    && (
+      hasRuntimeMarker(searchParams, ["mobileconfig", "ios-mobileconfig"])
+      || hasRuntimeMarker(hashParams, ["mobileconfig", "ios-mobileconfig"])
+    );
+
+  return Boolean(jsBridge.inApp || isPwa || isMobileConfig);
 }
 
 function runWhenYimenReady(action: () => void) {
