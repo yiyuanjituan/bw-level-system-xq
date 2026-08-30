@@ -113,6 +113,7 @@ const quickAmountOptions = computed<QuickAmountOption[]>(() => {
     displayAmount: getQuickDisplayAmount(amount)
   }));
 });
+const isCryptoRecharge = computed(() => activeGroup.value.type == 2);
 const isUsdtPayMode = computed(() => activeGroup.value.type == 2 && payTypeMode.value == 'usdt');
 const payModeTitle = computed(() => (isUsdtPayMode.value ? '上分数量' : '存款金额'));
 const inputPrefix = computed(() => (isUsdtPayMode.value ? 'U' : '￥'));
@@ -164,6 +165,22 @@ function getOrderAmountByInput(amount: number, mode = payTypeMode.value) {
 
 const orderAmount = computed(() => {
   return getOrderAmountByInput(Number(inputAmount.value));
+});
+const cryptoTransferAmount = computed(() => {
+  const amount = Number(inputAmount.value);
+  if (!isCryptoRecharge.value || !Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  if (isUsdtPayMode.value) {
+    return normalizeMoney(amount);
+  }
+
+  if (!currentRate.value) {
+    return 0;
+  }
+
+  return normalizeMoney(amount / currentRate.value);
 });
 const amountSummary = computed<AmountSummary | null>(() => {
   const amount = Number(inputAmount.value);
@@ -300,8 +317,17 @@ function handleSubmit() {
     return showCustomToast({ type: 'fail', message: $t("金额换算错误") });
   }
 
+  if (isCryptoRecharge.value && !cryptoTransferAmount.value) {
+    return showCustomToast({ type: 'fail', message: $t("金额换算错误") });
+  }
+
+  const orderPayload: Record<string, number> = { id: channelId, money: submitAmount };
+  if (isCryptoRecharge.value) {
+    orderPayload.cryptoAmount = cryptoTransferAmount.value;
+  }
+
   isLoading.value = true;
-  createOrder({ id: channelId, money: submitAmount })
+  createOrder(orderPayload)
     .then(res => {
       const url = res?.url;
       if (!url) {

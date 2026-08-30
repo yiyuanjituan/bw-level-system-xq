@@ -1,15 +1,62 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import QRCode from 'qrcode';
 import UiBadge from '@/components/UI/badge.vue';
 import { bus } from '@/utils/mitt';
 import UiLoading from '@/components/UI/loading.vue';
 import { service } from '@/api/service';
 import { formatMoney, openUrlInNewWindow } from '@/utils/common';
 import router from '@/router';
+import useAppStore from '@/store/modules/app';
+import { showImagePreview } from 'vant';
 
 const orderId = ref<number>(0);
 const show = ref(false);
 const orderInfo = ref<any>({});
+const generatedAddressQrCode = ref('');
+let qrCodeGenerationId = 0;
+const app = useAppStore();
+
+const orderContent = computed(() => orderInfo.value?.content ?? {});
+const currentRate = computed(() => {
+  const countryList = app.appInfo?.countryList ?? [];
+  const countryInfo = countryList.find((item: any) => item.id == orderInfo.value?.country_id);
+  const rate = Number(countryInfo?.uRate);
+  return Number.isFinite(rate) && rate > 0 ? rate : 0;
+});
+const isCryptoRecharge = computed(() => {
+  const contentName = String(orderContent.value?.name || '').toUpperCase();
+  return Number(orderContent.value?.channelType) === 2 || String(orderContent.value?.cryptoCurrency || '').toUpperCase() === 'USDT' || contentName.includes('USDT');
+});
+const cryptoCurrency = computed(() => String(orderContent.value?.cryptoCurrency || 'USDT'));
+const cryptoNetwork = computed(() => String(orderContent.value?.cryptoNetwork || 'TRC-20'));
+const cryptoAddress = computed(() => String(orderContent.value?.cryptoAddress || orderContent.value?.pay_number || '').trim());
+const cryptoAddressText = computed(() => cryptoAddress.value || '--');
+const cryptoTransferAmount = computed(() => {
+  const amount = Number(orderContent.value?.cryptoAmount);
+  if (Number.isFinite(amount) && amount > 0) {
+    return amount;
+  }
+
+  const money = Number(orderInfo.value?.money);
+  if (isCryptoRecharge.value && Number.isFinite(money) && money > 0 && currentRate.value) {
+    return Number((money / currentRate.value).toFixed(2));
+  }
+
+  return 0;
+});
+const cryptoTransferAmountText = computed(() => {
+  return cryptoTransferAmount.value ? `${formatMoney(cryptoTransferAmount.value)} ${cryptoCurrency.value}` : '--';
+});
+const paymentQrCode = computed(() => {
+  if (isCryptoRecharge.value) {
+    return generatedAddressQrCode.value;
+  }
+
+  return String(orderContent.value?.pay_qrcode || '').trim();
+});
+const paymentQrCodeLabel = computed(() => (isCryptoRecharge.value ? '存款地址二维码' : '收款二维码'));
+const paymentQrCodeAlt = computed(() => (isCryptoRecharge.value ? 'USDT存款地址二维码' : '收款二维码'));
 
 function open(params: any = {}) {
   orderId.value = params?.id;
@@ -37,6 +84,17 @@ function handleJumpUrl() {
   openUrlInNewWindow(orderInfo.value?.content?.url)
 }
 
+function handlePreviewQrCode() {
+  const imageUrl = paymentQrCode.value;
+  if (!imageUrl) return;
+
+  showImagePreview({
+    images: [imageUrl],
+    closeable: true,
+    showIndex: false
+  });
+}
+
 function close() {
   show.value = false;
 }
@@ -44,6 +102,35 @@ function close() {
 function onClosed() {
   show.value = false;
 }
+
+watch(
+  () => ({ isCrypto: isCryptoRecharge.value, address: cryptoAddress.value }),
+  async ({ isCrypto, address }) => {
+    const currentGenerationId = ++qrCodeGenerationId;
+    generatedAddressQrCode.value = '';
+
+    if (!isCrypto || !address) {
+      return;
+    }
+
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(address, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 180
+      });
+
+      if (currentGenerationId === qrCodeGenerationId) {
+        generatedAddressQrCode.value = qrCodeDataUrl;
+      }
+    } catch {
+      if (currentGenerationId === qrCodeGenerationId) {
+        generatedAddressQrCode.value = '';
+      }
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   open: open
@@ -110,32 +197,72 @@ defineExpose({
           </div>
 
           <div class="list !pt-[10px]" v-if="orderInfo.mode == 1 && [1, 2].includes(orderInfo?.pay_status)">
-            <div class="list-item-box">
-              <span class="label">收款银行</span>
-              <span class="info">
-                <span class="account">{{ orderInfo?.content?.pay_bank }}</span>
-                <span class="copy-label">
-                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_bank" />
+            <template v-if="isCryptoRecharge">
+              <div class="list-item-box">
+                <span class="label">收款币种</span>
+                <span class="info">
+                  <span class="account crypto-tag">{{ cryptoCurrency }}</span>
                 </span>
-              </span>
-            </div>
-            <div class="list-item-box" v-if="orderInfo">
-              <span class="label">收款姓名</span>
-              <span class="info">
-                <span class="account">{{ orderInfo?.content?.pay_name }}</span>
-                <span class="copy-label">
-                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_name" />
+              </div>
+              <div class="list-item-box">
+                <span class="label">区块格式</span>
+                <span class="info">
+                  <span class="account">{{ cryptoNetwork }}</span>
                 </span>
-              </span>
-            </div>
-            <div class="list-item-box">
-              <span class="label">收款账号</span>
-              <span class="info">
-                <span class="account">{{ orderInfo?.content?.pay_number }}</span>
-                <span class="copy-label">
-                  <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_number" />
+              </div>
+              <div class="list-item-box">
+                <span class="label">转账金额</span>
+                <span class="info">
+                  <span dir="ltr" class="crypto-transfer-amount">{{ cryptoTransferAmountText }}</span>
+                  <span class="copy-label" v-if="cryptoTransferAmount">
+                    <copy class-name="!text-[13px] main-text" :text="formatMoney(cryptoTransferAmount)" />
+                  </span>
                 </span>
-              </span>
+              </div>
+              <div class="list-item-box">
+                <span class="label">存款地址</span>
+                <span class="info">
+                  <span class="account crypto-address">{{ cryptoAddressText }}</span>
+                  <span class="copy-label" v-if="cryptoAddress">
+                    <copy class-name="!text-[13px] main-text" :text="cryptoAddress" />
+                  </span>
+                </span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="list-item-box">
+                <span class="label">收款银行</span>
+                <span class="info">
+                  <span class="account">{{ orderInfo?.content?.pay_bank }}</span>
+                  <span class="copy-label">
+                    <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_bank" />
+                  </span>
+                </span>
+              </div>
+              <div class="list-item-box" v-if="orderInfo">
+                <span class="label">收款姓名</span>
+                <span class="info">
+                  <span class="account">{{ orderInfo?.content?.pay_name }}</span>
+                  <span class="copy-label">
+                    <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_name" />
+                  </span>
+                </span>
+              </div>
+              <div class="list-item-box">
+                <span class="label">收款账号</span>
+                <span class="info">
+                  <span class="account">{{ orderInfo?.content?.pay_number }}</span>
+                  <span class="copy-label">
+                    <copy class-name="!text-[13px] main-text" :text="orderInfo?.content?.pay_number" />
+                  </span>
+                </span>
+              </div>
+            </template>
+            <div class="payment-qrcode-box" v-if="paymentQrCode" @click="handlePreviewQrCode">
+              <div class="payment-qrcode">
+                <img :src="paymentQrCode" :alt="paymentQrCodeAlt" />
+              </div>
+              <span class="payment-qrcode-label">{{ paymentQrCodeLabel }}</span>
             </div>
           </div>
 
@@ -381,6 +508,20 @@ defineExpose({
             .account {
               color: var(--skin__neutral_2);
             }
+            .crypto-tag {
+              color: var(--skin__accent_3);
+              font-weight: 700;
+            }
+            .crypto-address {
+              max-width: 190px;
+              text-align: right;
+              line-height: 16px;
+              word-break: break-all;
+            }
+            .crypto-transfer-amount {
+              color: var(--skin__accent_3);
+              font-weight: 700;
+            }
             .reward-amount {
               font-size: 13px;
               font-weight: 700;
@@ -388,6 +529,40 @@ defineExpose({
               text-decoration: underline;
             }
           }
+        }
+        .payment-qrcode-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin: 2px 0 12px;
+          padding: 10px;
+          border: var(--lobby__px) solid var(--skin__border);
+          border-radius: 7px;
+          background: var(--skin__bg_1);
+          cursor: pointer;
+          transition: opacity 0.2s ease;
+          &:active {
+            opacity: 0.85;
+          }
+        }
+        .payment-qrcode {
+          width: 130px;
+          height: 130px;
+          padding: 7px;
+          border-radius: 6px;
+          background: #fff;
+          img {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+        .payment-qrcode-label {
+          margin-top: 7px;
+          color: var(--skin__neutral_2);
+          font-size: 12px;
+          line-height: 14px;
         }
       }
     }
