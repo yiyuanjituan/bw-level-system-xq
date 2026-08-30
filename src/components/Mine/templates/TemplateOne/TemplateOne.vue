@@ -13,6 +13,7 @@ import { bus } from '@/utils/mitt';
 import { service } from "@/api/service";
 import { computed, onMounted, ref } from "vue";
 import { isThemePreviewMode } from "@/utils/themePreview";
+import depositIcon from "@/assets/mine/gif_profile_style2.avif";
 
 defineOptions({
   name: "TemplateOne"
@@ -151,13 +152,7 @@ onMounted(() => {
             </div>
             <div class="nav-item" @click="handleRecharge()">
               <div class="icon">
-                <picture>
-                  <source
-                    srcset="@/assets/mine/gif_profile_style2.avif"
-                    type="image/avif"
-                    class="svg-icon"
-                  />
-                </picture>
+                <img :src="depositIcon" class="deposit-icon" alt="" />
               </div>
               <div class="label">{{ $t("存款") }}</div>
             </div>
@@ -276,6 +271,12 @@ onMounted(() => {
               position: relative;
               display: flex;
               align-items: center;
+              .deposit-icon {
+                width: 32px;
+                height: 32px;
+                display: block;
+                object-fit: contain;
+              }
               .svg-icon {
                 position: absolute;
                 bottom: 0;

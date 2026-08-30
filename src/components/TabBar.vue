@@ -153,7 +153,12 @@ onUnmounted(() => {
                 <svg-icon :name="item.light_prefix" class-name="app-tabbar__icon app-tabbar__icon--outside" />
                 <svg-icon :name="item.default_icon" class-name="app-tabbar__icon app-tabbar__icon--core" />
               </span>
-              <svg-icon v-else :name="getActiveIcon(item)" class-name="app-tabbar__icon app-tabbar__icon--active" />
+              <svg-icon
+                v-else
+                :key="getActiveIcon(item)"
+                :name="getActiveIcon(item)"
+                class-name="app-tabbar__icon app-tabbar__icon--active"
+              />
             </span>
             <span class="app-tabbar__text">{{ item.name }}</span>
           </span>
@@ -236,7 +241,9 @@ onUnmounted(() => {
 }
 
 .app-tabbar__icon-group {
+  width: var(--app-tabbar-icon-size);
   height: var(--app-tabbar-icon-size);
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,16 +252,19 @@ onUnmounted(() => {
 }
 
 .app-tabbar__icon-stack {
-  width: auto;
+  width: var(--app-tabbar-icon-size);
   height: var(--app-tabbar-icon-size);
+  flex: none;
   position: relative;
   display: block;
   line-height: 0;
 }
 
 :deep(.app-tabbar__icon) {
-  width: auto;
+  width: var(--app-tabbar-icon-size);
+  min-width: var(--app-tabbar-icon-size);
   height: var(--app-tabbar-icon-size);
+  flex: none;
   display: block;
   font-size: var(--app-tabbar-icon-size);
   line-height: 0;

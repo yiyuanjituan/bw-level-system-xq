@@ -45,7 +45,6 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import appSplashImage from "@/assets/app/app-splash-v1.jpg";
 import useAppStore from "@/store/modules/app";
 import { getRuntimeLoadingType } from "@/utils/runtimeConfig";
 import {
@@ -55,6 +54,7 @@ import {
 } from "@/utils/yimenApp";
 
 const app = useAppStore();
+const appSplashImage = `${import.meta.env.BASE_URL}app-splash-v1.jpg`;
 // 网页端调试启动页时设为 true，恢复 App 专用时改回 false
 const inApp = isYimenApp();
 const loadingType = getRuntimeLoadingType();
@@ -62,7 +62,7 @@ const deviceVersionLabel = ref(getAppDeviceVersionFallbackLabel());
 const progress = computed(() => Math.min(100, Math.max(0, Math.round(app.appLoadingProgress))));
 const progressStyle = computed(() => ({ width: `${progress.value}%` }));
 const percentageStyle = computed(() => ({
-  left: `clamp(var(--app-splash-bubble-min), ${progress.value}%, var(--app-splash-bubble-max))`,
+  left: `${progress.value}%`,
 }));
 
 const setLoadingProgress = (nextProgress: number, status?: string) => {
@@ -91,32 +91,12 @@ onBeforeUnmount(() => {
 <style scoped lang="less">
 .app-splash {
   --app-splash-bubble-width: 36.25px;
-  --app-splash-arrow-offset: 2px;
-  --app-splash-bubble-min: 20.125px;
-  --app-splash-bubble-max: calc(100% - 16.125px);
   position: fixed;
   inset: 0;
   z-index: 1000;
   overflow: hidden;
   background: #38a889;
   color: #fff;
-
-  &::before,
-  &::after {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    content: "";
-    pointer-events: none;
-  }
-
-  &::before {
-    background: rgba(43, 184, 149, 0.52);
-  }
-
-  &::after {
-    background: linear-gradient(180deg, rgba(35, 169, 139, 0.06) 45%, rgba(33, 159, 132, 0.2) 100%);
-  }
 }
 
 .app-splash__background {
@@ -151,7 +131,7 @@ onBeforeUnmount(() => {
   width: var(--app-splash-bubble-width);
   height: 15.3125px;
   padding: 0;
-  border-radius: 4.25px;
+  border-radius: 999px;
   background: #55bd35;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   font-family: Roboto, Arial, sans-serif;
@@ -160,17 +140,18 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
   line-height: 15.3125px;
   text-align: center;
-  transform: translateX(calc(-50% - var(--app-splash-arrow-offset)));
+  transform: translateX(-50%);
   transition: left 0.64s ease;
 
   &::after {
     position: absolute;
-    top: calc(100% - 0.5px);
-    left: calc(50% + var(--app-splash-arrow-offset));
-    width: 6.25px;
-    height: 4.375px;
-    background: inherit;
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    top: calc(100% - 1px);
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-top: 5px solid #55bd35;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
     content: "";
     transform: translateX(-50%);
   }

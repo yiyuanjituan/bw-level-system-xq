@@ -18,5 +18,20 @@ const currentTemplate = computed(() => templateMap[currentTemplateName.value]);
 </script>
 
 <template>
-  <component :is="currentTemplate" />
+  <div class="mine-page">
+    <component :is="currentTemplate" class="mine-page__content" />
+  </div>
 </template>
+
+<style scoped>
+.mine-page,
+.mine-page__content {
+  width: 100%;
+  height: 100%;
+}
+
+.mine-page {
+  overflow: hidden;
+  background: var(--skin__bg_1);
+}
+</style>
