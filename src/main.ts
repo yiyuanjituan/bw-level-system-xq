@@ -21,8 +21,10 @@ import { initializeStatusBarHeight } from "@/utils/yimenApp";
 import useHomeDataStore from "@/store/modules/home";
 import useAppStore from "@/store/modules/app";
 import { initThemePreviewBridge, isThemePreviewMode } from "@/utils/themePreview";
+import { registerPwa } from "@/utils/pwa";
 
 initializeStatusBarHeight();
+registerPwa();
 
 const app = createApp(App);
 app.use(store);

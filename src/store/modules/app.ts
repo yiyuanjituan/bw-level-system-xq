@@ -15,6 +15,7 @@ import {
 } from "@/utils/appCache";
 import type { AppInitializationResult } from "@/utils/site";
 import { isYimenApp } from "@/utils/yimenApp";
+import { updatePwaMetadata } from "@/utils/pwa";
 
 // 站点图标必须写入 HTML head；接口刷新后覆盖已有节点，避免重复添加 link。
 const updateFavicon = (iconUrl?: string) => {
@@ -118,6 +119,7 @@ export const useAppStore = defineStore('app', () => {
   const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
   const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
   updateFavicon(appInfo.value?.favicon)
+  updatePwaMetadata(appInfo.value)
 
   const applyThemeConfig = (themeConfig?: unknown) => {
     if (!isThemeConfigLike(themeConfig)) return;
@@ -143,6 +145,7 @@ export const useAppStore = defineStore('app', () => {
       ...(currentThemeConfig ? { theme_config: currentThemeConfig } : {})
     }
     updateFavicon(siteConfig.favicon)
+    updatePwaMetadata(siteConfig)
   }
 
   const updateAppLoadingState = (progress: number, status: string) => {

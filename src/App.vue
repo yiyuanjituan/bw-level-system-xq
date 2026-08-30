@@ -42,6 +42,7 @@ import { useTelegramWebAppStart } from '@/hooks/useTelegramWebAppStart';
 import { isYimenApp } from '@/utils/yimenApp';
 import { $locale, vantLocales } from '@/locales';
 import { isThemePreviewMode } from '@/utils/themePreview';
+import { hasAvailableDownloadOption } from '@/utils/downloadConfig';
 
 const { refs, setRefs } = useRefs();
 const app = useAppStore();
@@ -92,7 +93,14 @@ function stopPopupQueueListener() {
 }
 
 function openPopupByKey(popupKey: HomePopupKey) {
-  if (popupKey === 'download_tip' && (route.name !== 'Index' || isYimenApp())) {
+  if (
+    popupKey === 'download_tip'
+    && (
+      route.name !== 'Index'
+      || isYimenApp()
+      || !hasAvailableDownloadOption(app.appInfo?.downloadConfig)
+    )
+  ) {
     return false;
   }
 
