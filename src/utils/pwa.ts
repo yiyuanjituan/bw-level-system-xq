@@ -61,7 +61,7 @@ function setAppleTouchIcon(iconUrl: string) {
   if (!iconLink) {
     iconLink = document.createElement("link");
     iconLink.rel = "apple-touch-icon";
-    iconLink.sizes = "180x180";
+    iconLink.setAttribute("sizes", "180x180");
     document.head.appendChild(iconLink);
   }
   iconLink.href = iconUrl;
