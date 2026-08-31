@@ -83,44 +83,66 @@ onMounted(() => {
 </script>
 
 <template>
-  <button type="button" class="mine-template-two-vip" @click="handleOpenVip">
+  <div
+    class="mine-template-two-vip vip-container mine-1-vip"
+    role="button"
+    tabindex="0"
+    @click="handleOpenVip"
+    @keydown.enter.space.prevent="handleOpenVip"
+  >
     <img class="mine-template-two-vip__bg" :src="vipBg" alt="" />
 
-    <span class="mine-template-two-vip__left">
-      <span class="mine-template-two-vip__level">
-        <span class="mine-template-two-vip__level-badge">
+    <div class="mine-template-two-vip__left left-wrap">
+      <div class="mine-template-two-vip__level vip-level">
+        <div class="mine-template-two-vip__level-badge level-image">
           <img :src="vipColor" alt="" />
           <img :src="vipStyle" alt="" />
-          <span :data-text="currentLevel">{{ currentLevel }}</span>
-        </span>
-        <span class="mine-template-two-vip__current">V{{ currentLevel }}</span>
-      </span>
+          <div class="mine-template-two-vip__level-text level-text">
+            <span :data-text="currentLevel">{{ currentLevel }}</span>
+          </div>
+        </div>
+        <div class="mine-template-two-vip__current current-vip">V{{ currentLevel }}</div>
+      </div>
 
-      <span class="mine-template-two-vip__progress">
-        <span
-          class="mine-template-two-vip__progress-bar"
-          :style="{ width: `${progressPercent}%` }"
-        />
-        <span class="mine-template-two-vip__progress-text">{{ progressText }}</span>
-      </span>
-    </span>
+      <div class="mine-template-two-vip__progress-info process-info">
+        <div class="process-info-item">
+          <div class="mine-template-two-vip__progress bar">
+            <div
+              class="mine-template-two-vip__progress-bar bar-item"
+              :style="{ width: `${progressPercent}%` }"
+            />
+            <div class="mine-template-two-vip__progress-text bar-label">{{ progressText }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <span class="mine-template-two-vip__divider" />
+    <div class="mine-template-two-vip__divider middle-space" />
 
-    <span class="mine-template-two-vip__right">
-      <span class="mine-template-two-vip__bonus">
-        <span>{{ $t("晋级奖金") }}</span>
-        <strong>{{ promotionAmountText }}</strong>
-      </span>
-      <span class="mine-template-two-vip__upgrade">
-        <span>{{ $t("晋级VIP需再") }}</span>
-        <em>{{ $t("投注") }}</em>
-        <strong>{{ upNeedFlowText }}</strong>
-      </span>
-    </span>
+    <div class="mine-template-two-vip__right right-wrap">
+      <div class="mine-template-two-vip__bonus promotion-wrap">
+        <div>
+          <span class="promotion-text">{{ $t("晋级奖金") }}</span>
+          <span class="promotion-amount">{{ promotionAmountText }}</span>
+        </div>
+      </div>
+      <div class="mine-template-two-vip__upgrade vip-process-text">
+        <div class="vip-process-text-wrap">
+          <div class="process">
+            <span class="process-type-label">
+              <span class="action-text">{{ $t("晋级VIP需再") }}</span>
+              <span class="action-btn">{{ $t("投注") }}</span>
+            </span>
+            <span class="action-amount">{{ upNeedFlowText }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <svg-icon name="mine-template-two-comm_icon_fh" class="mine-template-two-vip__arrow" />
-  </button>
+    <i class="mine-template-two-vip__arrow right-icon">
+      <svg-icon name="mine-template-two-comm_icon_fh" />
+    </i>
+  </div>
 </template>
 
 <style scoped lang="less">
@@ -194,19 +216,25 @@ onMounted(() => {
     object-fit: contain;
   }
 
-  span {
+  .mine-template-two-vip__level-text {
     position: relative;
     z-index: 1;
-    width: 1ch;
-    color: transparent;
-    background-image: linear-gradient(to bottom, #f7ea94, #e5b952 51%, #ce9510);
-    background-clip: text;
-    -webkit-background-clip: text;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    text-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    span {
+      width: 1ch;
+      color: transparent;
+      background-image: linear-gradient(to bottom, #f7ea94, #e5b952 51%, #ce9510);
+      background-clip: text;
+      -webkit-background-clip: text;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      text-shadow: none;
+    }
   }
 }
 
@@ -272,12 +300,18 @@ onMounted(() => {
 
 .mine-template-two-vip__bonus {
   height: 38px;
-  gap: 4px;
   color: var(--skin__text_primary);
   font-size: 12px;
   line-height: 16px;
 
-  strong {
+  > div {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .promotion-amount {
     min-width: 0;
     max-width: 65px;
     margin-top: 2px;
@@ -293,12 +327,24 @@ onMounted(() => {
 
 .mine-template-two-vip__upgrade {
   margin-top: 7px;
-  gap: 3px;
   color: var(--skin__text_primary);
   font-size: 10px;
   line-height: 13.5px;
 
-  span {
+  .process {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .process-type-label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .action-text {
     max-width: 60.5px;
     display: -webkit-box;
     overflow: hidden;
@@ -309,17 +355,16 @@ onMounted(() => {
     -webkit-line-clamp: 2;
   }
 
-  em {
+  .action-btn {
     padding: 0;
     text-decoration: underline;
     color: var(--skin__text_primary);
     background: transparent;
     font-size: 10px;
-    font-style: normal;
     white-space: nowrap;
   }
 
-  strong {
+  .action-amount {
     min-width: 0;
     max-width: 65px;
     overflow: hidden;
@@ -339,6 +384,10 @@ onMounted(() => {
   font-size: 11px;
   opacity: .6;
   transform: rotate(180deg);
+
+  :deep(svg) {
+    display: block;
+  }
 }
 
 :global([dir="rtl"]) .mine-template-two-vip {

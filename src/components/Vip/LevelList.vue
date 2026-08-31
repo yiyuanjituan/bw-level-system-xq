@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
       color: var(--skin__lead);
       border-bottom: var(--lobby__px) solid var(--skin__border);
       background-color: var(--skin__bg_2);
-      z-index: 10;
+      //z-index: 10;
       .level {
         width: 49px;
         line-height: 35px;

@@ -232,13 +232,13 @@ onMounted(() => getData());
               width: 75px;
               height: 35px;
               margin-bottom: 10px;
-              background: url('@/assets/common/btn_zc1_2.avif') no-repeat;
-              background-size: 100% 100%;
+              background: var(--skin__bg_2);
               display: flex;
               align-items: center;
               border-radius: 7px;
               padding: 0 3px 0 1.5px;
               color: var(--skin__left_nav_def);
+              border: 1px solid var(--skin__border);
               box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
               word-break: break-all;
               .sidebar-tab-icon {
@@ -279,9 +279,9 @@ onMounted(() => getData());
               }
             }
             .item-active-box {
-              background: url('@/assets/common/btn_zc1_1.avif') no-repeat;
-              background-size: 100% 100%;
-              color: var(--skin__left_nav_active);
+              background: var(--skin__primary);
+              border-color: var(--skin__primary);
+              color: var(--skin__text_primary);
             }
           }
         }

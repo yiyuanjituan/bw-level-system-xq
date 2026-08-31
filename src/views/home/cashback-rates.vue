@@ -242,7 +242,7 @@ onMounted(() => init());
         :deep(.x-select) {
           width: 80px;
           height: 25px;
-          border-radius: 9999rem;
+          border-radius: 9999px;
         }
 
         :deep(.x-select__label) {

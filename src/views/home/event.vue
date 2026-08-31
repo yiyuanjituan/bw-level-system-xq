@@ -165,21 +165,21 @@ onMounted(() => {
         .item-box {
           width: 100%;
           height: 100%;
-          border: 1px solid transparent;
+          border: 1px solid var(--skin__border);
           box-sizing: border-box;
-          background-image: url("@/assets/common/btn_zc1_2.avif");
+          background: var(--skin__bg_2);
           border-radius: 7px;
           padding: 0 3px 0 2px;
-          background-size: 100% 100%;
-          color: #adb6c3;
+          color: var(--skin__left_nav_def);
           box-shadow: 0 1px 2px 0 #0000001f;
           word-break: break-all;
         }
 
         &--active {
           .item-box {
-            border-color: #f0c059;
-            color: #f0c059;
+            border-color: var(--skin__primary);
+            color: var(--skin__text_primary);
+            background: var(--skin__primary);
           }
         }
       }

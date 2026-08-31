@@ -5,7 +5,7 @@ import XInput from "@/components/X/x-input.vue";
 import XLoading from "@/components/X/x-loading.vue";
 import XTab from "@/components/X/x-tab.vue";
 import XTabs from "@/components/X/x-tabs.vue";
-import { computed, nextTick, onMounted, Ref, ref, watch } from "vue";
+import { computed, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
@@ -24,6 +24,18 @@ const gameTypeVenueList = ref<any[]>([]);
 const gameTypeVenueId = ref<string | number>(0);
 const TRIAL_GAME_TYPE = "20";
 const PAGE_SIZE = 30;
+const typeDataMap: Record<string, { name: string; image?: string }> = {
+  "1": { name: "真人", image: "game-icon_dtfl_zr_0" },
+  "2": { name: "捕鱼", image: "game-icon_dtfl_by_0" },
+  "3": { name: "电子", image: "game-icon_dtfl_dz_0" },
+  "4": { name: "彩票", image: "game-icon_dtfl_cp_0" },
+  "5": { name: "体育", image: "game-icon_dtfl_ty_0" },
+  "6": { name: "棋牌", image: "game-icon_dtfl_qp_0" },
+  "7": { name: "电竞", image: "game-icon_dtfl_dianjing_0" },
+  [TRIAL_GAME_TYPE]: { name: "试玩", image: "game-icon_dtfl_sw_0" },
+  "100": { name: "最近" },
+  "101": { name: "收藏" }
+};
 const currentPage = ref(1);
 const trialGameList = ref<TrialGameListResponse["gameList"]>([]);
 const trialGameCache = new Map<string, TrialGameListResponse>();
@@ -109,21 +121,16 @@ function updateActiveKey(key: any) {
   handleChangeTab({ id: 0 });
 }
 
-const typeData = computed(() => {
-  const type = route.query?.type;
-  if (!type) return { name: "" };
-  if (type == "1") return { name: "真人", image: "game-icon_dtfl_zr_0" };
-  if (type == "2") return { name: "捕鱼", image: "game-icon_dtfl_by_0" };
-  if (type == "3") return { name: "电子", image: "game-icon_dtfl_dz_0" };
-  if (type == "4") return { name: "彩票", image: "game-icon_dtfl_cp_0" };
-  if (type == "5") return { name: "体育", image: "game-icon_dtfl_ty_0" };
-  if (type == "6") return { name: "棋牌", image: "game-icon_dtfl_qp_0" };
-  if (type == "7") return { name: "电竞", image: "game-icon_dtfl_dianjing_0" };
-  if (type == TRIAL_GAME_TYPE) return { name: "试玩", image: "game-icon_dtfl_sw_0" };
-  if (type == "100") return { name: "最近" };
-  if (type == "101") return { name: "收藏" };
-  return {};
-});
+const typeData = computed(() => typeDataMap[String(route.query?.type ?? "")] ?? { name: "" });
+
+function getTrialCacheKey(venueId: number, gameClassify: number) {
+  return `${venueId}:${gameClassify}`;
+}
+
+function isCurrentTrialRequest(cacheKey: string) {
+  return isTrialPage.value
+    && getTrialCacheKey(Number(gameTypeVenueId.value), Number(rightKey.value)) === cacheKey;
+}
 
 function init() {
   const type = route.query?.type;
@@ -190,7 +197,7 @@ function loadGameListData() {
   if (isTrialPage.value) {
     const venueId = Number(gameTypeVenueId.value);
     const gameClassify = Number(rightKey.value);
-    const cacheKey = `${venueId}:${gameClassify}`;
+    const cacheKey = getTrialCacheKey(venueId, gameClassify);
     const cachedTrialData = trialGameCache.get(cacheKey);
 
     if (cachedTrialData) {
@@ -210,14 +217,12 @@ function loadGameListData() {
         trialGameCache.set(cacheKey, trialData);
 
         // 快速切换筛选条件时，只允许当前条件的请求更新页面。
-        const currentCacheKey = `${Number(gameTypeVenueId.value)}:${Number(rightKey.value)}`;
-        if (!isTrialPage.value || currentCacheKey !== cacheKey) return;
+        if (!isCurrentTrialRequest(cacheKey)) return;
         gameTypeVenueList.value = trialData.venueList;
         trialGameList.value = trialData.gameList;
       })
       .finally(() => {
-        const currentCacheKey = `${Number(gameTypeVenueId.value)}:${Number(rightKey.value)}`;
-        if (isTrialPage.value && currentCacheKey === cacheKey) {
+        if (isCurrentTrialRequest(cacheKey)) {
           isLoading.value = false;
         }
       });
@@ -247,8 +252,6 @@ async function handleChangeTab(record: any) {
     return;
   }
   await router.replace({ path: route.path, query: { ...route.query, platformId: record.id } });
-  // 强制重新渲染
-  await nextTick();
 }
 
 watch(() => route.fullPath, () => init());
@@ -596,16 +599,16 @@ onMounted(() => {
   padding: 0 6px 0 3px;
   color: var(--skin__left_nav_def);
   word-break: break-word;
-  background-image: url("@/assets/common/btn_zc1_2.avif");
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background: var(--skin__bg_2);
+  border: 1px solid var(--skin__border);
   border-radius: 5px;
   box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
 }
 
 .venue-tab--active {
-  color: var(--skin__left_nav_active);
-  background-image: url("@/assets/common/btn_zc1_1.avif");
+  color: var(--skin__text_primary);
+  background: var(--skin__primary);
+  border-color: var(--skin__primary);
   pointer-events: none;
 }
 

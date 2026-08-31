@@ -437,7 +437,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   flex: 1;
   min-height: 0;
   height: auto;
-  padding: 0.2rem;
+  padding: 10px;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
@@ -469,7 +469,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 
 .promote-data__period-tabs {
   flex-shrink: 0;
-  padding: 0.2rem 0;
+  padding: 10px 0;
   border-bottom: var(--lobby__px) solid var(--skin__border);
   background-color: var(--skin__bg_2);
 }
@@ -535,27 +535,27 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._data-link-to_1ngn0_89._has-value_1ngn0_89 ._number-column_1ngn0_59 {
   color: var(--skin__primary);
   text-decoration: underline;
-  text-underline-offset: 0.06rem;
+  text-underline-offset: 3px;
 }
 
 ._commissionCard_5ctcb_59 {
   width: 100%;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  padding: 10px;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
+  box-shadow: 0 1.5px 3.5px rgb(0 0 0 / 6%);
 }
 
 ._commissionCard_5ctcb_59 ._headerSection_5ctcb_66 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 0.12rem;
+  margin-bottom: 6px;
 }
 
 ._commissionCard_5ctcb_59 ._title_5ctcb_72 {
   color: var(--skin__lead);
-  font-size: 0.3rem;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.3;
 }
@@ -567,12 +567,12 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._commissionCard_5ctcb_59 ._amountGroup_5ctcb_81 {
   display: flex;
   align-items: baseline;
-  gap: 0.04rem;
+  gap: 2px;
 }
 
 ._commissionCard_5ctcb_59 ._mainAmount_5ctcb_86 {
   color: var(--skin__accent_3, #ffaa09);
-  font-size: 0.34rem;
+  font-size: 17px;
   font-weight: 600;
   line-height: normal;
 }
@@ -580,14 +580,14 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._commissionCard_5ctcb_59 ._subAmount_5ctcb_92,
 ._commissionCard_5ctcb_59 ._subAmount_5ctcb_92 span {
   color: var(--skin__neutral_2, #999) !important;
-  font-size: 0.24rem;
+  font-size: 12px;
   font-weight: 400;
   line-height: normal;
 }
 
 ._commissionCard_5ctcb_59 ._divider_5ctcb_102 {
-  height: 0.01rem;
-  margin-bottom: 0.16rem;
+  height: 0.5px;
+  margin-bottom: 8px;
   background-color: var(--skin__border);
 }
 
@@ -604,18 +604,18 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._commissionCard_5ctcb_59 ._detailItem_5ctcb_112 {
   display: flex;
   flex-direction: column;
-  gap: 0.08rem;
+  gap: 4px;
 }
 
 ._commissionCard_5ctcb_59 ._label_5ctcb_117 {
   color: var(--skin__neutral_1, #666);
-  font-size: 0.24rem;
+  font-size: 12px;
   white-space: nowrap;
 }
 
 ._commissionCard_5ctcb_59 ._detailGrid_5ctcb_107 ._value_5ctcb_122 {
   color: var(--skin__lead);
-  font-size: 0.28rem;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -625,17 +625,17 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 
 ._allDataContainer_8fyve_59 {
   width: 100%;
-  margin-top: 0.2rem;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
+  box-shadow: 0 1.5px 3.5px rgb(0 0 0 / 6%);
 }
 
 ._allDataContainer_8fyve_59 ._header_8fyve_67 {
-  margin-bottom: 0.2rem;
+  margin-bottom: 10px;
   color: var(--skin__lead);
-  font-size: 0.3rem;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.3;
   text-align: center;
@@ -648,15 +648,15 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._allDataContainer_8fyve_59 ._grid_8fyve_78 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.16rem 0.2rem;
+  gap: 8px 10px;
 }
 
 ._allDataContainer_8fyve_59 ._dataItem_8fyve_83 {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 7px;
   background-color: rgba(var(--skin__primary__toRgbString), 0.05);
 }
 
@@ -668,7 +668,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 
 ._allDataContainer_8fyve_59 ._title_8fyve_91,
 ._allDataContainer_8fyve_59 ._subTitle_8fyve_101 {
-  font-size: 0.26rem;
+  font-size: 13px;
   line-height: normal;
 }
 
@@ -685,11 +685,11 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.04rem;
+  gap: 2px;
 }
 
 ._allDataContainer_8fyve_59 ._totalAmount_8fyve_113 {
-  font-size: 0.3rem;
+  font-size: 15px;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -697,7 +697,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 
 ._allDataContainer_8fyve_59 ._totalCount_8fyve_122 {
   color: var(--skin__neutral_2, #999);
-  font-size: 0.3rem;
+  font-size: 15px;
   font-weight: 400;
   line-height: normal;
 }
@@ -708,7 +708,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 }
 
 ._allDataContainer_8fyve_59 ._divider_8fyve_134 {
-  height: 0.01rem;
+  height: 0.5px;
   background-color: var(--skin__border);
   opacity: 0.3;
 }
@@ -722,7 +722,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._allDataContainer_8fyve_59 ._label_8fyve_144 {
   flex-shrink: 0;
   color: var(--skin__neutral_2, #666);
-  font-size: 0.24rem;
+  font-size: 12px;
   line-height: normal;
 }
 
@@ -731,20 +731,20 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   align-items: baseline;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 0.04rem;
+  gap: 2px;
 }
 
 ._allDataContainer_8fyve_59 ._value_8fyve_150,
 ._allDataContainer_8fyve_59 ._value_8fyve_150 span {
   color: var(--skin__lead);
-  font-size: 0.24rem;
+  font-size: 12px;
   font-weight: 500;
   line-height: normal;
 }
 
 ._allDataContainer_8fyve_59 ._linkCount_8fyve_165 {
   color: var(--skin__neutral_2, #999);
-  font-size: 0.24rem;
+  font-size: 12px;
   font-weight: 400;
   line-height: normal;
   text-decoration: none;
@@ -757,28 +757,28 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 
 ._teamDataTableContainer_12h2o_59 {
   width: 100%;
-  margin-top: 0.2rem;
-  padding: 0.2rem;
-  border-radius: 0.14rem;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 7px;
   background: var(--skin__bg_2);
-  box-shadow: 0 0.03rem 0.07rem rgb(0 0 0 / 6%);
+  box-shadow: 0 1.5px 3.5px rgb(0 0 0 / 6%);
 }
 
 ._teamDataTableContainer_12h2o_59 ._header_12h2o_67,
 ._teamDataTableContainer_12h2o_59 ._sectionTitle_12h2o_78 {
   color: var(--skin__lead);
-  font-size: 0.3rem;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.3;
   text-align: center;
 }
 
 ._teamDataTableContainer_12h2o_59 ._header_12h2o_67 {
-  margin-bottom: 0.2rem;
+  margin-bottom: 10px;
 }
 
 ._teamDataTableContainer_12h2o_59 ._sectionTitle_12h2o_78 {
-  margin: 0.1rem 0 0.16rem;
+  margin: 5px 0 8px;
 }
 
 :global(html[data-skin-layout="98"]) ._teamDataTableContainer_12h2o_59 ._header_12h2o_67,
@@ -789,17 +789,17 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
 ._teamDataTableContainer_12h2o_59 ._section_12h2o_78 {
   display: flex;
   flex-direction: column;
-  gap: 0.16rem;
+  gap: 8px;
   padding: 0;
-  margin-bottom: 0.1rem;
-  border-radius: 0.14rem;
+  margin-bottom: 5px;
+  border-radius: 7px;
 }
 
 ._teamDataTableContainer_12h2o_59 ._row_12h2o_98 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: stretch;
-  gap: 0.2rem;
+  gap: 10px;
 }
 
 ._teamDataTableContainer_12h2o_59 ._dataItem_12h2o_104 {
@@ -807,30 +807,30 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  min-height: 0.8rem;
-  padding: 0.16rem 0.2rem;
-  gap: 0.08rem;
-  border-radius: 0.14rem;
+  min-height: 40px;
+  padding: 8px 10px;
+  gap: 4px;
+  border-radius: 7px;
   text-align: center;
 }
 
 ._teamDataTableContainer_12h2o_59 ._label_12h2o_115 {
-  max-width: 1.9rem;
+  max-width: 95px;
   color: var(--skin__lead);
-  font-size: 0.24rem;
+  font-size: 12px;
   font-weight: 400;
   line-height: normal;
 }
 
 ._teamDataTableContainer_12h2o_59 ._value_12h2o_122 span {
-  font-size: 0.28rem;
+  font-size: 14px;
   font-weight: 600;
   line-height: normal;
 }
 
 ._teamDataTableContainer_12h2o_59 ._divider_12h2o_127 {
-  height: 0.01rem;
-  margin: 0.2rem 0 0;
+  height: 0.5px;
+  margin: 10px 0 0;
   background-color: var(--skin__border);
 }
 

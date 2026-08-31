@@ -138,7 +138,7 @@ function formatMoney(value: unknown) {
 
 .member-info {
   padding: 0;
-  border-bottom: 0.01rem solid var(--skin__primary);
+  border-bottom: 0.5px solid var(--skin__primary);
   border-top: 0;
   border-right: 0;
   border-left: 0;
@@ -194,7 +194,7 @@ function formatMoney(value: unknown) {
   color: var(--skin__primary);
   cursor: pointer;
   text-decoration: underline;
-  text-underline-offset: 0.06rem;
+  text-underline-offset: 3px;
 }
 
 .link-value--disabled {

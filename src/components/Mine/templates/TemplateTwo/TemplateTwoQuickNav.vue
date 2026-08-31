@@ -12,52 +12,66 @@ defineProps<{
 const emit = defineEmits<{
   select: [item: MineTemplateActionItem];
 }>();
+
+function handleSelect(item: MineTemplateActionItem) {
+  if (item.disabled) return;
+  emit("select", item);
+}
 </script>
 
 <template>
-  <nav class="mine-template-two-quick" aria-label="个人中心快捷入口">
-    <button
-      v-for="item in items"
-      :key="item.key"
-      type="button"
-      class="mine-template-two-quick__item"
-      :disabled="item.disabled"
-      @click="emit('select', item)"
-    >
-      <span class="mine-template-two-quick__icon-wrap">
-        <img v-if="item.image" class="mine-template-two-quick__image" :src="item.image" alt="" />
-        <template v-else>
-          <svg-icon
-            v-if="item.icon"
-            :name="item.icon"
-            class="mine-template-two-quick__svg mine-template-two-quick__svg--base"
-          />
-          <svg-icon
-            v-if="item.activeIcon"
-            :name="item.activeIcon"
-            class="mine-template-two-quick__svg mine-template-two-quick__svg--active"
-          />
-        </template>
-        <span
-          v-if="item.badge"
-          class="mine-template-two-quick__badge"
-          :class="`mine-template-two-quick__badge--${item.badgeTone || 'danger'}`"
-        >
-          {{ item.badge }}
-        </span>
-      </span>
-      <span class="mine-template-two-quick__label">{{ item.label }}</span>
-    </button>
-  </nav>
+  <div class="mine-template-two-quick mine-navs-wrap">
+    <div class="mine-template-two-quick__card main nav-card-container" aria-label="个人中心快捷入口">
+      <div
+        v-for="item in items"
+        :key="item.key"
+        class="mine-template-two-quick__item nav-item"
+        :class="{ 'mine-template-two-quick__item--disabled': item.disabled }"
+        role="button"
+        :tabindex="item.disabled ? -1 : 0"
+        :aria-disabled="Boolean(item.disabled)"
+        @click="handleSelect(item)"
+        @keydown.enter.space.prevent="handleSelect(item)"
+      >
+        <div class="mine-template-two-quick__icon-wrap icon">
+          <img v-if="item.image" class="mine-template-two-quick__image" :src="item.image" alt="" />
+          <template v-else>
+            <svg-icon
+              v-if="item.icon"
+              :name="item.icon"
+              class="mine-template-two-quick__svg mine-template-two-quick__svg--base"
+            />
+            <svg-icon
+              v-if="item.activeIcon"
+              :name="item.activeIcon"
+              class="mine-template-two-quick__svg mine-template-two-quick__svg--active"
+            />
+          </template>
+          <span
+            v-if="item.badge"
+            class="mine-template-two-quick__badge ui-badge"
+            :class="`mine-template-two-quick__badge--${item.badgeTone || 'danger'}`"
+          >
+            {{ item.badge }}
+          </span>
+        </div>
+        <div class="mine-template-two-quick__label label">{{ item.label }}</div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="less">
 .mine-template-two-quick {
-  width: calc(100% - 10px);
-  max-width: 355px;
-  margin: 17px auto 0;
-  padding: 5px 0 0;
+  width: 355px;
+  max-width: calc(100% - 10px);
+  margin: 17px 5px 0;
   box-sizing: border-box;
+}
+
+.mine-template-two-quick__card {
+  width: 100%;
+  padding-top: 5px;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -69,23 +83,19 @@ const emit = defineEmits<{
 }
 
 .mine-template-two-quick__item {
-  min-width: 0;
+  min-width: 71px;
   min-height: 66px;
-  padding: 0;
   flex: 1 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  border: 0;
   color: var(--skin__lead);
-  background: transparent;
-  font: inherit;
   font-size: 11px;
   text-align: center;
   cursor: pointer;
 
-  &:disabled {
+  &--disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }

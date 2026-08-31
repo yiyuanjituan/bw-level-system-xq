@@ -2,8 +2,9 @@
 import { computed, ref, watch } from "vue";
 import CommonCopy from "@/components/Common/Copy.vue";
 import MineShowInfo from "@/components/Mine/MineShowInfo.vue";
-import MyWallet from "@/components/Mine/MyWallet.vue";
 import defaultAvatarUrl from "@/assets/setting/default-avatar.avif";
+import { $t } from "@/locales";
+import useAuthStore from "@/store/modules/user";
 
 defineOptions({
   name: "TemplateTwoUserPanel"
@@ -12,18 +13,25 @@ defineOptions({
 const props = defineProps<{
   user: Eps.UserInfoEntity;
   currencyPrefix?: string | number;
+  currencyIcon?: string;
 }>();
 
 const emit = defineEmits<{
   action: ["profile"];
 }>();
 
+const auth = useAuthStore();
 const isShowInfo = ref(false);
+const isRefresh = ref(false);
 const avatarLoadFailed = ref(false);
 
 const avatarUrl = computed(() => {
   return props.user.avatarUrl && !avatarLoadFailed.value ? props.user.avatarUrl : defaultAvatarUrl;
 });
+
+const avatarBackgroundStyle = computed(() => ({
+  backgroundImage: `url(${JSON.stringify(avatarUrl.value)})`
+}));
 
 const displayName = computed(() => {
   if (props.user.showAccount === 2 && props.user.phone) {
@@ -38,68 +46,133 @@ const displayName = computed(() => {
 
 const copyText = computed(() => {
   if (props.user.showAccount === 0) return props.user.unionid || "";
-  if (props.user.showAccount === 1 || props.user.showAccount === undefined) return props.user.account || "";
+  if (props.user.showAccount === 1 || props.user.showAccount === undefined) {
+    return props.user.account || "";
+  }
   return "";
 });
 
+function onRefresh() {
+  if (isRefresh.value) return;
+
+  isRefresh.value = true;
+  auth.updateInfo().finally(() => {
+    isRefresh.value = false;
+  });
+}
+
 watch(
   () => props.user.avatarUrl,
-  () => {
-    // 用户更换头像后重新尝试加载接口返回的新地址。
+  avatarSource => {
     avatarLoadFailed.value = false;
-  }
+    if (!avatarSource) return;
+
+    // 头像由接口动态替换，预加载失败时才回退到本地默认头像。
+    const avatarImage = new Image();
+    avatarImage.onload = () => {
+      if (props.user.avatarUrl === avatarSource) avatarLoadFailed.value = false;
+    };
+    avatarImage.onerror = () => {
+      if (props.user.avatarUrl === avatarSource) avatarLoadFailed.value = true;
+    };
+    avatarImage.src = avatarSource;
+  },
+  { immediate: true }
 );
 </script>
 
 <template>
-  <div class="mine-template-two-user">
-    <div class="mine-template-two-user__avatar-wrap">
-      <van-image
-        class="mine-template-two-user__avatar"
-        width="44px"
-        height="44px"
-        round
-        :src="avatarUrl"
-        @error="avatarLoadFailed = true"
-      />
-      <button type="button" class="mine-template-two-user__edit" @click="emit('action', 'profile')">
-        <svg-icon name="mine-template-two-icon_grzl" />
-      </button>
+  <div class="mine-template-two-user info-and-balance">
+    <div
+      class="mine-template-two-user__avatar lobby-image lobby-image--use-bg mine-avatar-wrap user-avatar"
+      :style="avatarBackgroundStyle"
+    >
+      <div
+        class="mine-template-two-user__edit mine-avatar-edit-wrap"
+        role="button"
+        tabindex="0"
+        @click="emit('action', 'profile')"
+        @keydown.enter.space.prevent="emit('action', 'profile')"
+      >
+        <i class="lobby-image">
+          <svg-icon name="mine-template-two-icon_grzl" />
+        </i>
+      </div>
     </div>
 
-    <div class="mine-template-two-user__content">
-      <div class="mine-template-two-user__name-row">
-        <button
-          type="button"
-          class="mine-template-two-user__toggle"
-          :class="{ 'mine-template-two-user__toggle--active': isShowInfo }"
-          @click="isShowInfo = !isShowInfo"
-        >
-          <svg-icon name="arrow-down" />
-        </button>
-        <MineShowInfo v-if="isShowInfo" @close="isShowInfo = false" />
-        <span class="mine-template-two-user__name">{{ displayName }}</span>
-        <CommonCopy
-          v-if="copyText"
-          class="mine-template-two-user__copy"
-          class-name="text-[13px]"
-          :text="copyText"
-        />
+    <div class="mine-template-two-user__account-wrap account-wrap">
+      <div class="mine-template-two-user__account account">
+        <div class="mine-template-two-user__custom-name select-custom-name">
+          <div class="mine-template-two-user__name-content">
+            <span class="ui-popover__wrapper mine-template-two-user__popover">
+              <span
+                class="mine-template-two-user__toggle mine-account-toggle-box"
+                :class="{ 'mine-template-two-user__toggle--active': isShowInfo }"
+                role="button"
+                tabindex="0"
+                @click="isShowInfo = !isShowInfo"
+                @keydown.enter.space.prevent="isShowInfo = !isShowInfo"
+              >
+                <svg-icon name="arrow-down" />
+              </span>
+              <MineShowInfo v-if="isShowInfo" @close="isShowInfo = false" />
+            </span>
+            <span class="mine-template-two-user__name show-hidden-arrow user-info-show-name">
+              {{ displayName }}
+            </span>
+            <CommonCopy
+              v-if="copyText"
+              class="mine-template-two-user__copy copy"
+              class-name="text-[13px]"
+              :text="copyText"
+            />
+          </div>
+        </div>
       </div>
 
-      <div class="mine-template-two-user__meta-row">
-        <div class="mine-template-two-user__id">
+      <div class="mine-template-two-user__sub-info sub-info">
+        <p class="mine-template-two-user__id id-box">
           <span class="mine-template-two-user__id-label">ID:</span>
           <span class="mine-template-two-user__id-value">{{ user.unionid || "--" }}</span>
           <CommonCopy
             v-if="user.unionid"
-            class="mine-template-two-user__copy mine-template-two-user__copy--id"
+            class="mine-template-two-user__copy mine-template-two-user__copy--id copy"
             class-name="text-[13px]"
             :text="user.unionid"
           />
-        </div>
+        </p>
         <span class="mine-template-two-user__divider" />
-        <MyWallet class="mine-template-two-user__wallet" />
+        <img
+          v-if="currencyIcon"
+          class="mine-template-two-user__currency-sign currency-sign"
+          :src="currencyIcon"
+          alt=""
+        />
+        <div class="mine-template-two-user__currency global-currency-info-index user-currency-info">
+          <div class="ui-popover__wrapper">
+            <div class="currency-info-box no-border">
+              <div class="currency-info-custom">
+                <div v-if="!isRefresh" class="currency-content-wrap">
+                  <div class="currency-count">
+                    <span>{{ user.money }}</span>
+                  </div>
+                </div>
+                <div v-else class="gaming">{{ $t("加载中") }}</div>
+                <div
+                  class="icon-content refresh"
+                  role="button"
+                  tabindex="0"
+                  @click="onRefresh"
+                  @keydown.enter.space.prevent="onRefresh"
+                >
+                  <i class="refresh-icon" :class="{ 'animate__spin': isRefresh }">
+                    <svg-icon name="comm_icon_sx" />
+                  </i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -112,71 +185,86 @@ watch(
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
-}
-
-.mine-template-two-user__avatar-wrap {
-  width: 44px;
-  height: 44px;
-  flex: none;
-  position: relative;
 }
 
 .mine-template-two-user__avatar {
-  overflow: hidden;
-  border: var(--lobby__px) solid rgba(var(--skin__primary__toRgbString), 0.35);
-  background: var(--skin__bg_2);
+  width: 44px;
+  height: 44px;
+  position: relative;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--skin__bg_2);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 .mine-template-two-user__edit {
   width: 21px;
   height: 21px;
-  padding: 0;
   position: absolute;
   right: 0;
   bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: var(--lobby__px) solid var(--skin__bg_1);
+  border: 1px solid var(--skin__bg_1);
   border-radius: 50%;
   color: var(--skin__text_primary);
   background: var(--skin__primary);
-  font-size: 20px;
   cursor: pointer;
+
+  i {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
 }
 
-.mine-template-two-user__content {
+.mine-template-two-user__account-wrap {
   min-width: 0;
+  margin-left: 5px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.mine-template-two-user__name-row,
-.mine-template-two-user__meta-row,
-.mine-template-two-user__id {
+.mine-template-two-user__account {
+  min-height: 14px;
+  margin-bottom: 4px;
+}
+
+.mine-template-two-user__custom-name,
+.mine-template-two-user__name-content,
+.mine-template-two-user__sub-info,
+.mine-template-two-user__id,
+.mine-template-two-user__currency,
+.currency-info-custom {
   min-width: 0;
   display: flex;
   align-items: center;
 }
 
-.mine-template-two-user__name-row {
-  min-height: 14px;
-  margin-bottom: 4px;
+.mine-template-two-user__name-content {
   position: relative;
+}
+
+.mine-template-two-user__popover {
+  position: relative;
+  display: inline-flex;
 }
 
 .mine-template-two-user__toggle {
   width: 9px;
   height: 9px;
-  padding: 0;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0;
   color: var(--skin__neutral_2);
-  background: transparent;
   font-size: 8px;
   transform: rotate(90deg);
   transition: transform 0.2s;
@@ -203,14 +291,15 @@ watch(
   color: var(--skin__primary);
 }
 
-.mine-template-two-user__meta-row {
+.mine-template-two-user__sub-info {
   height: 20px;
-  margin-top: 0;
   font-size: 16px;
 }
 
 .mine-template-two-user__id {
   width: 125px;
+  margin: 0;
+  justify-content: space-between;
   color: var(--skin__lead);
   font-size: 16px;
   line-height: 20px;
@@ -230,6 +319,7 @@ watch(
 
 .mine-template-two-user__copy--id {
   margin-left: 5px;
+  font-size: 14px;
 }
 
 .mine-template-two-user__divider {
@@ -238,26 +328,81 @@ watch(
   margin: 0 10px;
   flex: none;
   background: var(--skin__lead);
-  opacity: .1;
+  opacity: 0.1;
 }
 
-.mine-template-two-user__wallet {
-  min-width: 0;
+.mine-template-two-user__currency-sign {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
-  :deep(.currency-info-box) {
-    --currency-info-box-height: 20px;
-    --currency-info-box-border-radius: 10px;
-    --currency-info-box-background-color: transparent;
-    --currency-info-currency-count-color: var(--skin__lead);
-    --currency-info-currency-count-border-color: var(--skin__lead);
-    --currency-info-currency-count-size: 16px;
-    --currency-info-currency-count-max-width: 105px;
-    --currency-info-currency-count-margin: 0 0 0 4px;
-    --currency-info-refresh-icon-color: var(--skin__primary);
-    --currency-info-refresh-icon-size: 14px;
-    --currency-info-refresh-icon-margin: 0 0 0 5px;
-    --currency-info-gaming-color: var(--skin__lead);
-    --currency-info-gaming-size: 12px;
+.mine-template-two-user__currency {
+  max-width: 105px;
+  height: 20px;
+  margin-left: 4px;
+}
+
+.currency-info-box,
+.currency-info-custom {
+  height: 20px;
+}
+
+.currency-content-wrap,
+.currency-count {
+  min-width: 0;
+}
+
+.currency-count {
+  max-width: 82px;
+  overflow: hidden;
+  color: var(--skin__lead);
+  font-size: 16px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.gaming {
+  color: var(--skin__lead);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.icon-content {
+  height: 20px;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  color: var(--skin__primary);
+  cursor: pointer;
+}
+
+.refresh-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.animate__spin {
+  animation: template-two-wallet-spin 0.3s linear infinite;
+}
+
+@keyframes template-two-wallet-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -266,9 +411,16 @@ watch(
   left: 0;
 }
 
+:global([dir="rtl"]) .mine-template-two-user__account-wrap {
+  margin-right: 5px;
+  margin-left: 0;
+}
+
 :global([dir="rtl"]) .mine-template-two-user__copy,
-:global([dir="rtl"]) .mine-template-two-user__copy--id {
-  margin-right: 4px;
+:global([dir="rtl"]) .mine-template-two-user__copy--id,
+:global([dir="rtl"]) .mine-template-two-user__currency,
+:global([dir="rtl"]) .icon-content {
+  margin-right: 5px;
   margin-left: 0;
 }
 

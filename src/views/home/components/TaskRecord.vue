@@ -334,7 +334,7 @@ defineExpose({
           flex-shrink: 0;
 
           :deep(.x-select) {
-            border-radius: 9999rem;
+            border-radius: 9999px;
             width: 80px;
             height: 25px;
             font-size: 10px;

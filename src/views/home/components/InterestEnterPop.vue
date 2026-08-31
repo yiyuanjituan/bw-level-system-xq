@@ -224,7 +224,7 @@ div[role="dialog"] {
           }
         }
         .settlement-label {
-          font-size: 0.22rem;
+          font-size: 11px;
           color: var(--skin__neutral_2);
           margin-left: 10px;
           text-align: right;

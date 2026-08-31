@@ -357,52 +357,74 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="mine-template-two">
-    <button
-      v-if="showBack"
-      type="button"
-      class="mine-template-two__back"
-      :aria-label="$t('返回上一级')"
-      @click="handleBack"
+  <div class="mine-template-two-layout" data-show-big-icon="0">
+    <section
+      data-route-for-scroll="mine"
+      class="mine-template-two lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar"
     >
-      <svg-icon name="arrow-back" />
-    </button>
+      <div
+        v-if="showBack"
+        class="mine-template-two__back"
+        role="button"
+        tabindex="0"
+        :aria-label="$t('返回上一级')"
+        @click="handleBack"
+        @keydown.enter.space.prevent="handleBack"
+      >
+        <i class="ui-arrow ui-arrow--left">
+          <svg-icon name="arrow-back" />
+        </i>
+      </div>
 
-    <div
-      class="mine-template-two__hero"
-      :class="`mine-template-two__hero--${app.mineHeroStyle}`"
-    >
-      <TemplateTwoTopCard
-        :is-login="loginState"
-        :user="auth.user"
-        :message-count="messageCount"
-        :currency-prefix="currencyInfo?.numberPrefix"
-        @header-action="handleTopAction"
-        @profile-action="handleUserAction"
-        @guest-action="handleGuestAction"
-      />
-      <TemplateTwoQuickNav :items="quickActions" @select="handleQuickSelect" />
-    </div>
+      <div
+        class="mine-template-two__mine-bg lobby-image lobby-image--use-bg mine-box"
+        :class="`mine-template-two__mine-bg--${app.mineHeroStyle}`"
+      >
+        <TemplateTwoTopCard
+          :is-login="loginState"
+          :user="auth.user"
+          :message-count="messageCount"
+          :currency-prefix="currencyInfo?.numberPrefix"
+          :currency-icon="currencyInfo?.icon"
+          @header-action="handleTopAction"
+          @profile-action="handleUserAction"
+          @guest-action="handleGuestAction"
+        />
+        <TemplateTwoQuickNav :items="quickActions" @select="handleQuickSelect" />
+        <TemplateTwoVipCard v-if="loginState" />
+        <TemplateTwoMenu
+          class="mine-template-two__menu"
+          :class="{ 'mine-template-two__menu--guest': !loginState }"
+          :groups="menuGroups"
+          @select="handleMenuSelect"
+        />
+      </div>
 
-    <TemplateTwoVipCard v-if="loginState" />
-    <TemplateTwoMenu
-      class="mine-template-two__menu"
-      :class="{ 'mine-template-two__menu--guest': !loginState }"
-      :groups="menuGroups"
-      @select="handleMenuSelect"
-    />
-    <ULanguageDialog v-model="languageDialogVisible" />
-  </section>
+      <ULanguageDialog v-model="languageDialogVisible" />
+    </section>
+  </div>
 </template>
 
 <style scoped lang="less">
+.mine-template-two-layout,
+.mine-template-two {
+  width: 100%;
+  height: 100%;
+}
+
+.mine-template-two-layout {
+  position: relative;
+  overflow: hidden;
+  background: var(--skin__bg_1);
+}
+
 .mine-template-two {
   min-height: 100%;
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
   color: var(--skin__lead);
-  background: var(--skin__bg_2);
+  background: var(--skin__bg_1);
   scrollbar-width: thin;
   scrollbar-color: var(--skin__border) transparent;
 
@@ -417,10 +439,8 @@ onMounted(() => {
 }
 
 .mine-template-two__back {
-  width: 16px;
-  height: 16px;
-  padding: 8px 7px;
-  box-sizing: content-box;
+  width: 30px;
+  height: 32px;
   position: absolute;
   top: var(--status-bar-height);
   left: 0;
@@ -428,16 +448,24 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0;
   color: var(--skin__neutral_1);
-  background: transparent;
   font-size: 12px;
   cursor: pointer;
 }
 
-.mine-template-two__hero {
-  min-height: 168px;
+.mine-template-two__back .ui-arrow {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-template-two__mine-bg {
+  width: 100%;
+  min-height: 100%;
   padding-top: var(--status-bar-height);
+  box-sizing: border-box;
   position: relative;
   background-color: var(--skin__bg_2);
   background-image: none;
@@ -446,15 +474,15 @@ onMounted(() => {
   background-repeat: no-repeat;
 }
 
-.mine-template-two__hero--blue {
+.mine-template-two__mine-bg--blue {
   background-image: url("@/assets/mine/template-two/top_bg.avif");
 }
 
-.mine-template-two__hero--common {
+.mine-template-two__mine-bg--common {
   background-image: url("/siteadmin/skin/lobby_asset/common/common/profile/style_1_topbg_yd.avif");
 }
 
-.mine-template-two__hero--common82 {
+.mine-template-two__mine-bg--common82 {
   background-image: url("/siteadmin/skin/lobby_asset/82-0-common/common/profile/img_topbg.avif");
 }
 

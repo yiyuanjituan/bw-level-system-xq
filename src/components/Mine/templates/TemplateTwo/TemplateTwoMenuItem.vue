@@ -18,18 +18,32 @@ const extraLines = computed(() => {
   if (!props.item.extra) return [];
   return Array.isArray(props.item.extra) ? props.item.extra : [props.item.extra];
 });
+
+function handleSelect() {
+  if (props.item.disabled) return;
+  emit("select", props.item);
+}
 </script>
 
 <template>
-  <button
-    type="button"
-    class="mine-template-two-menu-item"
-    :disabled="item.disabled"
-    @click="emit('select', item)"
+  <li
+    class="mine-template-two-menu-item item menu-item"
+    :class="{
+      'mine-template-two-menu-item--disabled': item.disabled,
+      'mine-template-two-menu-item--language': item.key === 'language'
+    }"
+    role="button"
+    :tabindex="item.disabled ? -1 : 0"
+    :aria-disabled="Boolean(item.disabled)"
+    @click="handleSelect"
+    @keydown.enter.space.prevent="handleSelect"
   >
-    <span class="mine-template-two-menu-item__left">
-      <span
-        class="mine-template-two-menu-item__icon"
+    <div
+      class="mine-template-two-menu-item__left menu-item-left"
+      :class="{ 'mine-template-two-menu-item__left--has-extra': extraLines.length }"
+    >
+      <div
+        class="mine-template-two-menu-item__icon icon-box"
         :class="{ 'mine-template-two-menu-item__icon--claim': item.iconMode === 'claim' }"
       >
         <template v-if="item.iconMode === 'claim'">
@@ -58,21 +72,43 @@ const extraLines = computed(() => {
             class="mine-template-two-menu-item__svg mine-template-two-menu-item__svg--active"
           />
         </template>
-      </span>
-      <span class="mine-template-two-menu-item__label">{{ item.label }}</span>
-    </span>
+      </div>
+      <span class="mine-template-two-menu-item__label mine-menulist-label">{{ item.label }}</span>
+    </div>
 
-    <span class="mine-template-two-menu-item__right">
-      <span
-        v-if="extraLines.length"
+    <div class="mine-template-two-menu-item__right menu-item-right">
+      <div
+        v-if="item.key === 'promote' && extraLines.length"
+        class="mine-template-two-menu-item__extra mine-template-two-menu-item__promote promote-content"
+        :class="`mine-template-two-menu-item__extra--${item.extraTone || 'muted'}`"
+      >
+        <div class="seamless-scroll">
+          <div class="scroll-item">
+            <span v-for="line in extraLines" :key="line">{{ line }}</span>
+          </div>
+        </div>
+      </div>
+      <div
+        v-else-if="item.key === 'claim' && extraLines.length"
+        class="mine-template-two-menu-item__extra claim-content"
+        :class="`mine-template-two-menu-item__extra--${item.extraTone || 'muted'}`"
+      >
+        <p>
+          <span v-for="line in extraLines" :key="line">{{ line }}</span>
+        </p>
+      </div>
+      <p
+        v-else-if="extraLines.length"
         class="mine-template-two-menu-item__extra"
         :class="`mine-template-two-menu-item__extra--${item.extraTone || 'muted'}`"
       >
         <span v-for="line in extraLines" :key="line">{{ line }}</span>
-      </span>
-      <svg-icon name="mine-template-two-comm_icon_fh" class="mine-template-two-menu-item__arrow" />
-    </span>
-  </button>
+      </p>
+      <i class="mine-template-two-menu-item__arrow right-icon">
+        <svg-icon name="mine-template-two-comm_icon_fh" />
+      </i>
+    </div>
+  </li>
 </template>
 
 <style scoped lang="less">
@@ -85,14 +121,13 @@ const extraLines = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 0;
   color: var(--skin__lead);
   background: var(--skin__bg_2);
-  font: inherit;
   text-align: left;
+  list-style: none;
   cursor: pointer;
 
-  &:disabled {
+  &--disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
@@ -171,7 +206,7 @@ const extraLines = computed(() => {
   display: -webkit-box;
   overflow: hidden;
   color: var(--skin__lead);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 16px;
   text-overflow: ellipsis;
   word-break: break-word;
@@ -183,6 +218,8 @@ const extraLines = computed(() => {
   width: auto;
   min-width: 130px;
   max-width: 160px;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -190,6 +227,10 @@ const extraLines = computed(() => {
   font-size: 11px;
   line-height: 15px;
   text-align: right;
+
+  p {
+    margin: 0;
+  }
 
   span {
     max-width: 100%;
@@ -223,6 +264,10 @@ const extraLines = computed(() => {
   color: var(--skin__neutral_2);
   font-size: 12px;
   transform: rotate(180deg);
+
+  :deep(svg) {
+    display: block;
+  }
 }
 
 :global([dir="rtl"]) .mine-template-two-menu-item {

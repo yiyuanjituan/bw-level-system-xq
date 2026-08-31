@@ -803,10 +803,10 @@ onBeforeUnmount(() => {
 .plazza-list-container {
   flex: 1 1 auto;
   width: 100%;
-  height: calc(calc(var(--lobby__screen-height) - var(--subpage-tabbar-base-height, 0px)) - 1.83rem);
+  height: calc(calc(var(--lobby__screen-height) - var(--subpage-tabbar-base-height, 0px)) - 91.5px);
   min-height: 0;
   box-sizing: border-box;
-  padding-top: 0.2rem;
+  padding-top: 10px;
   overflow: hidden;
   background: var(--skin__bg_1);
 }

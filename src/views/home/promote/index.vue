@@ -170,7 +170,7 @@ onMounted(() => {
   min-height: 0;
 
   --van-tabs-line-height: 35px;
-  --van-tabs-nav-background: #191919;
+  --van-tabs-nav-background: var(--skin__bg_2);
   --van-tab-text-color: var(--skin__lead);
   --van-tab-active-text-color: var(--skin__primary);
   --van-tabs-bottom-bar-color: var(--skin__primary);
@@ -186,7 +186,7 @@ onMounted(() => {
 
   :deep(.van-tabs__wrap) {
     flex-shrink: 0;
-    border-bottom: 1px solid #242424;
+    border-bottom: 1px solid var(--skin__border);
   }
 
   :deep(.van-tabs__nav) {

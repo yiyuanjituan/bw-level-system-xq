@@ -42,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
   height: calc(var(--status-bar-height) + 45px);
   min-height: calc(var(--status-bar-height) + 45px);
   background-color: var(--skin__bg_2);
-  border-bottom: 1px solid #242424;
+  border-bottom: 1px solid var(--skin__border);
   box-sizing: border-box;
   width: 100%;
   .arrow-left {
