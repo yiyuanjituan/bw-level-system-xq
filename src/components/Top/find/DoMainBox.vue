@@ -52,24 +52,29 @@ async function saveToImg() {
       <div class="title-box">
         <img src="@/assets/common/comm_icon_zdwm_bcwz.avif" alt="" class="w-[20px] h-[20px]">
         <div class="text">保存网址</div>
-        <span class="flex items-center capture-ignore">
-          <svg-icon name="comm_icon_copy" class-name="text-[13px] text-[#DFBE5B] mb-[2px]" />
-          <span class="copy-text text-[#DFBE5B]" @click="copyFun(`回家网址: ${props.backUrl}`)">复制全部</span>
+        <span class="copy-action capture-ignore" @click="copyFun(`回家网址: ${props.backUrl}`)">
+          <svg-icon name="comm_icon_copy" class-name="copy-icon" />
+          <span class="copy-text">复制全部</span>
         </span>
       </div>
       <div class="body">
         <div class="editor-content" v-html="app.appInfo.official_website"></div>
       </div>
       <div class="link-box">
-        <div class="label">回家网址</div>{{ props.backUrl }}
-        <svg-icon
-          name="comm_icon_copy"
-          class-name="text-[11px] text-[#DFBE5B] mx-[10px] mb-[2px] capture-ignore"
-          @click="copyFun(props.backUrl)"
-        />
+        <div class="link-item">
+          <span class="label">回家网址</span>
+          <span class="text">{{ props.backUrl }}</span>
+          <span class="link-icon capture-ignore" @click="copyFun(props.backUrl)">
+            <svg-icon name="comm_icon_copy" class-name="link-copy-icon" />
+          </span>
+        </div>
       </div>
-      <div class="h-[35px] capture-ignore">
-        <x-button class="mt-[10px] !w-[100%]" @click="saveToImg">{{ $t("保存图片") }}</x-button>
+      <div class="save-button-wrap capture-ignore">
+        <x-button
+          color="var(--skin__primary)"
+          text-color="var(--skin__text_primary)"
+          @click="saveToImg"
+        >{{ $t("保存图片") }}</x-button>
       </div>
     </div>
   </div>
@@ -77,11 +82,10 @@ async function saveToImg() {
 
 <style scoped lang="less">
 .domain-box {
-  background-color: #191919;
+  background-color: var(--skin__bg_2);
   border-radius: 7px;
   padding: 0 10px 10px;
-  box-shadow: 0 1.5px 3.5px 0 #0000001f;
-  height: 203px;
+  box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
 
   .title-box {
     display: flex;
@@ -89,33 +93,58 @@ async function saveToImg() {
     justify-content: flex-start;
     height: 40px;
     margin-bottom: 10px;
-    border-bottom: thin solid #242424;
+    border-bottom: thin solid var(--skin__border);
     gap: 8px;
 
+    > img {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
     .text {
+      min-width: 0;
+      color: var(--skin__lead);
       font-size: 13px;
       font-weight: 700;
       flex-grow: 1;
     }
 
+    .copy-action {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      color: var(--skin__primary);
+      cursor: pointer;
+    }
+
     .copy-text {
-      font-size: 11px;
+      max-width: 125px;
       padding-left: 5px;
-      display: -webkit-box;
       overflow: hidden;
+      color: inherit;
+      font-size: 11px;
+      display: -webkit-box;
       text-overflow: ellipsis;
       vertical-align: middle;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
-      max-width: 125px;
+    }
+
+    :deep(.copy-icon) {
+      margin-bottom: 2px;
+      color: inherit;
+      font-size: 13px;
     }
   }
 
   .body {
-    color: #1fe11f;
+    color: var(--skin__accent_1);
 
     .editor-content {
       font-size: 8px;
+      line-height: 1.4;
+      word-break: break-word;
 
       * {
         word-break: break-word;
@@ -127,28 +156,83 @@ async function saveToImg() {
   }
 
   .link-box {
-    font-size: 11px;
-    line-height: 15px;
-    color: #dfbe5b;
-    word-break: break-all;
-    cursor: pointer;
-    display: block;
     margin-top: 10px;
-    display: flex;
-    align-items: center;
+
+    .link-item {
+      padding-bottom: 10px;
+      color: var(--skin__primary);
+      font-size: 11px;
+      line-height: 15px;
+      word-break: break-all;
+      cursor: pointer;
+      display: block;
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+    }
 
     .label {
       margin-right: 3px;
-      color: white;
+      color: var(--skin__lead);
       display: inline-block;
       cursor: auto;
       white-space: nowrap;
     }
+
+    .text {
+      margin-right: 11px;
+    }
+
+    .link-icon {
+      height: 15px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      vertical-align: bottom;
+      position: relative;
+    }
+
+    :deep(.link-copy-icon) {
+      color: var(--skin__primary);
+      font-size: 11px;
+    }
+  }
+
+  .save-button-wrap {
+    height: 35px;
+    margin-top: 10px;
   }
 
   :deep(.ui-button) {
+    width: 100%;
+    height: 35px;
+    border-color: var(--skin__primary);
+    border-radius: 7px;
+
     .ui-button__text {
-      color: white;
+      color: var(--skin__text_primary);
+    }
+  }
+}
+
+[dir="rtl"] .domain-box {
+  .title-box {
+    .copy-text {
+      padding-right: 5px;
+      padding-left: 0;
+    }
+  }
+
+  .link-box {
+    .label {
+      margin-right: 0;
+      margin-left: 3px;
+    }
+
+    .text {
+      margin-right: 0;
+      margin-left: 11px;
     }
   }
 }

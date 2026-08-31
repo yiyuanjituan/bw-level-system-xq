@@ -3,6 +3,8 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { $t } from "@/locales";
 import HomeGameCard from "@/components/Home/GameCard.vue";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
+import useAppStore from "@/store/modules/app";
+import type { GameImageDisplay } from "@/api/common";
 import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
 
 defineOptions({
@@ -18,6 +20,7 @@ const emit = defineEmits<{
   (e: "disabled"): void;
 }>();
 
+const app = useAppStore();
 const currentPage = ref(0);
 const dragOffset = ref(0);
 const isDragging = ref(false);
@@ -36,9 +39,12 @@ let pointerState: {
 const games = computed(() => {
   return Array.isArray(props.section.children) ? props.section.children : [];
 });
+const imageDisplay = computed<GameImageDisplay>(() => app.gameImageDisplay === "long" ? "long" : "square");
+const isLongImageDisplay = computed(() => imageDisplay.value === "long");
+const defaultPageShowNum = computed(() => isLongImageDisplay.value ? 6 : 8);
 const pageShowNum = computed(() => {
   const value = Number(props.section.pageShowNum);
-  return Number.isFinite(value) && value > 0 ? value : 6;
+  return Number.isFinite(value) && value > 0 ? value : defaultPageShowNum.value;
 });
 const pageCount = computed(() => Math.ceil(games.value.length / pageShowNum.value));
 const pages = computed(() => {
@@ -204,7 +210,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section v-if="games.length" class="home-game-section">
+  <section
+    v-if="games.length"
+    class="home-game-section"
+    :class="{ 'home-game-section--long-image': isLongImageDisplay }"
+  >
     <div class="home-game-section__headline">
       <div class="home-game-section__title">
         <home-skeleton-image
@@ -257,6 +267,7 @@ onBeforeUnmount(() => {
             v-for="(game, gameIndex) in pageItems"
             :key="`${pageIndex}-${getGameKey(game, gameIndex)}`"
             :game="game"
+            :image-display="imageDisplay"
             @select="handleGameSelect"
             @disabled="handleDisabledClick"
           />
@@ -268,6 +279,8 @@ onBeforeUnmount(() => {
 
 <style scoped lang="less">
 .home-game-section {
+  --home-square-card-size: min(77px, calc((100vw - 48px) / 4));
+
   padding: 15px 15px 0;
 }
 
@@ -384,7 +397,14 @@ onBeforeUnmount(() => {
   width: 100%;
   flex: 0 0 100%;
   display: grid;
+  grid-template-columns: repeat(4, var(--home-square-card-size));
+  justify-content: space-between;
+  gap: 14px 0;
+}
+
+.home-game-section--long-image .home-game-section__page {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
   gap: 15px;
 }
 </style>

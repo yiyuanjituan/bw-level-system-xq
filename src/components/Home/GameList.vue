@@ -9,6 +9,7 @@ import router from "@/router";
 import useHomeDataStore from "@/store/modules/home";
 import useDataStore from "@/store/modules/data";
 import useAuthStore from "@/store/modules/user";
+import useAppStore from "@/store/modules/app";
 import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
 import hotIcon from "@/assets/home/icon_dtfl_rm_1.avif";
 import recentIcon from "@/assets/home/icon_dtfl_zj_1.avif";
@@ -21,12 +22,14 @@ defineOptions({
 const home = useHomeDataStore();
 const appData = useDataStore();
 const auth = useAuthStore();
+const app = useAppStore();
+const hotPageShowNum = computed(() => app.gameImageDisplay === "long" ? 9 : 12);
 
 const fixedSectionList = computed<HomeGameSectionRecord[]>(() => [
   {
     img: hotIcon,
     name: $t("热门"),
-    pageShowNum: 9,
+    pageShowNum: hotPageShowNum.value,
     children: normalizeGameList(home.suggestList)
   },
   {
