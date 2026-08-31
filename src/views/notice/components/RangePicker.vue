@@ -64,7 +64,6 @@ interface Props {
 const modelValue = defineModel<string>();
 const props = defineProps<Props>();
 const slots = useSlots();
-const dropdownItemRef = ref<any>();
 const isOpen = ref(false);
 const draftValue = ref("");
 
@@ -99,17 +98,15 @@ const hasCustomTrigger = computed(() => Boolean(slots.trigger));
 // 面板内使用草稿值，用户取消时不会直接改动已确认的选中项。
 const draftOption = computed(() => getSelectedOption(draftValue.value));
 
-function closeDropdown() {
-  dropdownItemRef.value?.toggle(false);
-}
+function togglePopover() {
+  if (!isOpen.value) {
+    draftValue.value = selectedValue.value;
+  }
 
-function handleOpen() {
-  isOpen.value = true;
-  draftValue.value = selectedValue.value;
+  isOpen.value = !isOpen.value;
 }
 
 function handleClose() {
-  isOpen.value = false;
   draftValue.value = selectedValue.value;
 }
 
@@ -118,7 +115,7 @@ function handleSelect(option: RangeOption) {
 }
 
 function handleCancel() {
-  closeDropdown();
+  isOpen.value = false;
 }
 
 function handleConfirm() {
@@ -129,7 +126,7 @@ function handleConfirm() {
     emit("change", option.value, option);
   }
 
-  closeDropdown();
+  isOpen.value = false;
 }
 
 watch(
@@ -172,13 +169,18 @@ watch(
     class="range-picker"
     :class="{ 'range-picker--custom-trigger': hasCustomTrigger }"
   >
-    <van-dropdown-menu active-color="#DFBE5B" direction="down">
-      <van-dropdown-item
-        ref="dropdownItemRef"
-        @open="handleOpen"
-        @close="handleClose"
-      >
-        <template #title>
+    <van-popover
+      v-model:show="isOpen"
+      trigger="manual"
+      placement="bottom-start"
+      theme="light"
+      :show-arrow="false"
+      :offset="[0, 8]"
+      teleport="body"
+      @close="handleClose"
+    >
+      <template #reference>
+        <div class="range-picker__reference" @click.stop="togglePopover">
           <slot
             name="trigger"
             :selected-option="selectedOption"
@@ -193,43 +195,42 @@ watch(
               <svg-icon name="arrow-back" :class-name="isOpen ? 'rotate-[90deg]' : 'rotate-[-90deg]'" class="text-[10px]" style="transition: all .3s" />
             </div>
           </slot>
-        </template>
-
-        <div class="range-picker__popup">
-          <div class="range-picker__panel">
-            <div class="range-picker__grid">
-              <button
-                v-for="option in rangeOptions"
-                :key="option.value"
-                class="range-picker__option"
-                :class="{ 'is-active': option.value === draftOption.value }"
-                type="button"
-                @click="handleSelect(option)"
-              >
-                {{ option.text }}
-              </button>
-            </div>
-
-            <div class="range-picker__actions">
-              <button
-                class="range-picker__action range-picker__action--ghost"
-                type="button"
-                @click="handleCancel"
-              >
-                {{ $t("取消") }}
-              </button>
-              <button
-                class="range-picker__action range-picker__action--primary"
-                type="button"
-                @click="handleConfirm"
-              >
-                {{ $t("确认") }}
-              </button>
-            </div>
-          </div>
         </div>
-      </van-dropdown-item>
-    </van-dropdown-menu>
+      </template>
+
+      <div class="range-picker__panel">
+        <div class="range-picker__grid">
+          <button
+            v-for="option in rangeOptions"
+            :key="option.value"
+            class="range-picker__option"
+            :class="{ 'is-active': option.value === draftOption.value }"
+            type="button"
+            @click="handleSelect(option)"
+          >
+            {{ option.text }}
+          </button>
+        </div>
+
+        <div class="range-picker__actions">
+          <x-button
+            class="range-picker__action range-picker__action--ghost"
+            plain
+            type="primary"
+            @click="handleCancel"
+          >
+            {{ $t("取消") }}
+          </x-button>
+          <x-button
+            class="range-picker__action range-picker__action--primary"
+            type="primary"
+            @click="handleConfirm"
+          >
+            {{ $t("确认") }}
+          </x-button>
+        </div>
+      </div>
+    </van-popover>
   </div>
 </template>
 
@@ -238,48 +239,15 @@ watch(
   display: inline-block;
   min-width: 65px;
 
-  --van-dropdown-menu-height: 25px;
-  --van-dropdown-menu-title-font-size: 10px;
-  --van-dropdown-menu-title-text-color: #dfbe5b;
-  --van-dropdown-menu-title-active-text-color: #dfbe5b;
-  --van-dropdown-menu-background: transparent;
-
-  :deep(.van-dropdown-menu) {
-    width: 100%;
+  :deep(.van-popover) {
     background: transparent;
   }
 
-  :deep(.van-dropdown-menu__bar) {
-    height: var(--van-dropdown-menu-height) !important;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  :deep(.van-dropdown-menu__item) {
-    justify-content: flex-start;
-  }
-
-  :deep(.van-dropdown-menu__title) {
-    width: 100%;
-    padding: 0;
-    line-height: 1;
-    text-align: left;
-    border: 0;
-    color: inherit;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  :deep(.van-dropdown-menu__title--active) {
-    color: inherit;
-  }
-
-  :deep(.van-dropdown-menu__title::after) {
-    display: none;
-  }
-
-  :deep(.van-dropdown-menu__title .van-ellipsis) {
+  :deep(.van-popover__content) {
     overflow: visible;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   &__trigger {
@@ -292,7 +260,7 @@ watch(
     border: 1px solid var(--skin__border);
     box-sizing: border-box;
     border-radius: 9999px;
-    background: #161616;
+    background: var(--skin__bg_2);
     color: var(--skin__neutral_2);
     font-size: 10px;
     line-height: 25px;
@@ -301,7 +269,7 @@ watch(
 
   &__trigger.is-open {
     border-color: var(--skin__primary);
-    color: #dfbe5b;
+    color: var(--skin__primary);
   }
 
   &__trigger-label {
@@ -311,58 +279,31 @@ watch(
     white-space: nowrap;
   }
 
-  &__trigger-arrow {
-    flex: none;
-    width: 0;
-    height: 0;
-    border-right: 4px solid transparent;
-    border-left: 4px solid transparent;
-    border-top: 5px solid currentColor;
-    transition: transform 0.2s ease;
-  }
-
-  &__trigger.is-open &__trigger-arrow {
-    transform: rotate(180deg);
-  }
-
   &--custom-trigger {
     min-width: 0;
   }
 
-  :deep(.van-dropdown-item__content) {
-    background: transparent;
-    box-shadow: none;
-    transition: opacity 0.2s ease !important;
-    transform: none !important;
-  }
-
-  :deep(.van-dropdown-item__content.van-popup-slide-top-enter-active),
-  :deep(.van-dropdown-item__content.van-popup-slide-top-leave-active) {
-    transition: opacity 0.2s ease !important;
-  }
-
-  :deep(.van-dropdown-item__content.van-popup-slide-top-enter-from),
-  :deep(.van-dropdown-item__content.van-popup-slide-top-leave-active) {
-    opacity: 0;
-    transform: none !important;
-  }
-
-  &__popup {
-    padding: 4px 10px 0;
-    background: transparent;
+  &__reference {
+    display: block;
+    width: 100%;
   }
 
   &__panel {
+    display: flex;
+    flex-direction: column;
     width: min(355px, calc(100vw - 20px));
     margin: 0 auto;
-    padding: 10px;
-    background: #1d1d1d;
-    border: 1px solid #2a2a2a;
-    border-radius: 8px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+    padding: 0;
+    color: var(--skin__neutral_2);
+    background: var(--skin__bg_2);
+    border: var(--lobby__px) solid var(--skin__border);
+    border-radius: 7px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
   }
 
   &__grid {
+    padding: 10px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
@@ -370,50 +311,58 @@ watch(
 
   &__option {
     height: 35px;
-    border: 1px solid #2a2a2a;
+    padding: 0;
+    border: var(--lobby__px) solid var(--skin__border);
     box-sizing: border-box;
     border-radius: 7px;
-    background: #1d1d1d;
-    color: #fff;
+    background: transparent;
+    color: var(--skin__lead);
     font-size: 12px;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease;
   }
 
   &__option.is-active {
-    color: #dfbe5b;
-    border-color: #dfbe5b;
-    background: rgba(223, 190, 91, 0.04);
+    color: var(--skin__primary);
+    border-color: var(--skin__primary);
+    background: transparent;
   }
 
   &__actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    align-items: center;
+    height: 40px;
+    margin: 0 0 10px;
+    padding: 0 10px;
     gap: 10px;
-    margin-top: 14px;
+    overflow: hidden;
   }
 
   &__action {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
     height: 40px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    padding: 0;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 400;
+    transition: opacity 0.2s ease;
   }
 
   &__action--ghost {
-    color: #dfbe5b;
-    border: 1px solid #dfbe5b;
+    color: var(--skin__primary);
+    border-color: var(--skin__primary);
     background: transparent;
   }
 
   &__action--primary {
-    color: #fff;
-    border: 1px solid #dfbe5b;
-    background: #dfbe5b;
+    color: var(--skin__text_primary);
+    border-color: var(--skin__primary);
+    background: var(--skin__primary);
   }
 }
 </style>

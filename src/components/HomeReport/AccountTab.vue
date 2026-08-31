@@ -320,7 +320,7 @@ onMounted(() => {
   .balance-card {
     margin: 10px 10px 0;
     padding: 10px;
-    background: #191919;
+    background: var(--skin__bg_2);
     border-radius: 5px;
     box-shadow: 0 1.5px 4.5px rgba(0, 0, 0, 0.16);
   }
@@ -377,7 +377,7 @@ onMounted(() => {
     padding: 0;
     border: 0;
     background: transparent;
-    color: #dfbe5b;
+    color: var(--skin__primary);
     font-size: 12px;
     white-space: nowrap;
   }
@@ -412,13 +412,13 @@ onMounted(() => {
     padding: 0 10px;
     border: 1px solid var(--skin__neutral_3);
     border-radius: 14px;
-    background: #191919;
+    background: var(--skin__bg_2);
     color: var(--skin__neutral_2, var(--skin__lead));
   }
 
   .filter-select :deep(.x-select--focused) {
-    border-color: #dfbe5b;
-    color: #dfbe5b;
+    border-color: var(--skin__primary);
+    color: var(--skin__primary);
   }
 
   .filter-select :deep(.x-select__wrap) {
@@ -660,7 +660,7 @@ onMounted(() => {
   }
 
   .empty-state__link {
-    color: #dfbe5b;
+    color: var(--skin__primary);
   }
 }
 </style>

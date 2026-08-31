@@ -8,12 +8,21 @@ export const showCustomToast = (options: string | IToastOptions) => {
 };
 
 export const showCustomDialog = (options: ICustomDialogOptions): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const enhancedOptions = {
       ...options,
-      onConfirm: () => resolve(true),
-      onCancel: () => resolve(false),
-      onClose: () => reject(new Error("Dialog closed"))
+      onConfirm: () => {
+        resolve(true);
+        options.onConfirm?.();
+      },
+      onCancel: () => {
+        resolve(false);
+        options.onCancel?.();
+      },
+      onClose: () => {
+        resolve(false);
+        options.onClose?.();
+      }
     };
 
     bus.emit("showDialog", enhancedOptions);

@@ -111,7 +111,7 @@ function openPopupByKey(popupKey: HomePopupKey) {
   }
 
   if (popupKey === 'popup_notice') {
-    // return popupRef.open({ layout: 3 });
+    return popupRef.open({ layout: 3 });
     return popupRef.open();
   }
 

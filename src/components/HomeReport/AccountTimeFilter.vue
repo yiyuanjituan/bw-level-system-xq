@@ -3,6 +3,10 @@ import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import type { AccountTimeFilterMode, AccountTimeRange } from "@/components/HomeReport/types";
 
+defineOptions({
+  name: "AccountTimeFilter"
+});
+
 const props = defineProps<{
   modelValue?: AccountTimeRange;
 }>();
@@ -124,8 +128,11 @@ watch(
 <template>
   <van-popover
     v-model:show="showPopover"
+    class="account-time-filter__popover"
     trigger="manual"
     placement="bottom-start"
+    theme="light"
+    :aria-label="$t('选择日期')"
     :show-arrow="false"
     :offset="[0, 8]"
     teleport="body"
@@ -135,6 +142,8 @@ watch(
         class="time-trigger"
         :class="{ 'time-trigger--active': showPopover }"
         type="button"
+        aria-haspopup="dialog"
+        :aria-expanded="showPopover"
         @click.stop="togglePopover"
       >
         <span class="time-trigger__text">{{ currentLabel }}</span>
@@ -147,77 +156,99 @@ watch(
     </template>
 
     <div class="time-panel">
-      <div class="time-panel__quick">
-        <button
-          class="time-panel__quick-item"
-          :class="{ 'time-panel__quick-item--active': draftMode === 'today' }"
-          @click="selectQuickMode('today')"
-        >
-          {{ $t("今日") }}
-        </button>
-        <button
-          class="time-panel__quick-item"
-          :class="{ 'time-panel__quick-item--active': draftMode === 'yesterday' }"
-          @click="selectQuickMode('yesterday')"
-        >
-          {{ $t("昨日") }}
-        </button>
+      <div class="time-panel__quick-area">
+        <div class="time-panel__quick">
+          <button
+            type="button"
+            class="time-panel__quick-item"
+            :class="{ 'time-panel__quick-item--active': draftMode === 'today' }"
+            :aria-pressed="draftMode === 'today'"
+            @click="selectQuickMode('today')"
+          >
+            {{ $t("今日") }}
+          </button>
+          <button
+            type="button"
+            class="time-panel__quick-item"
+            :class="{ 'time-panel__quick-item--active': draftMode === 'yesterday' }"
+            :aria-pressed="draftMode === 'yesterday'"
+            @click="selectQuickMode('yesterday')"
+          >
+            {{ $t("昨日") }}
+          </button>
+        </div>
       </div>
 
       <div class="time-panel__title">{{ $t("自定义") }}</div>
 
-      <div class="time-panel__picker-header">
-        <span>{{ $t("开始日期") }}</span>
-        <span>{{ $t("结束日期") }}</span>
-      </div>
+      <ul class="time-panel__picker-header">
+        <li><span>{{ $t("开始日期") }}</span></li>
+        <li><span>{{ $t("结束日期") }}</span></li>
+      </ul>
 
       <div class="time-panel__picker-row">
-        <van-date-picker
-          v-model="draftStartDate"
-          class="time-panel__picker"
-          :columns-type="['year', 'month', 'day']"
-          :min-date="minDate"
-          :max-date="maxDate"
-          :show-toolbar="false"
-          :option-height="35"
-          :visible-option-num="5"
-          @change="markCustomMode"
-        />
+        <div class="time-panel__picker-item">
+          <van-date-picker
+            v-model="draftStartDate"
+            class="time-panel__picker"
+            :columns-type="['year', 'month', 'day']"
+            :min-date="minDate"
+            :max-date="maxDate"
+            :show-toolbar="false"
+            :option-height="35"
+            :visible-option-num="5"
+            @change="markCustomMode"
+          />
+        </div>
         <div class="picker-content-item-line"></div>
-        <van-date-picker
-          v-model="draftEndDate"
-          class="time-panel__picker"
-          :columns-type="['year', 'month', 'day']"
-          :min-date="minDate"
-          :max-date="maxDate"
-          :show-toolbar="false"
-          :option-height="35"
-          :visible-option-num="5"
-          @change="markCustomMode"
-        />
+        <div class="time-panel__picker-item">
+          <van-date-picker
+            v-model="draftEndDate"
+            class="time-panel__picker"
+            :columns-type="['year', 'month', 'day']"
+            :min-date="minDate"
+            :max-date="maxDate"
+            :show-toolbar="false"
+            :option-height="35"
+            :visible-option-num="5"
+            @change="markCustomMode"
+          />
+        </div>
       </div>
 
-      <div class="time-panel__actions">
-        <x-button class="flex-1 !h-[40px]" plain type="primary" @click="handleCancel">{{ $t("取消") }}</x-button>
-        <x-button class="flex-1 !h-[40px]" @click="handleConfirm">{{ $t("确认") }}</x-button>
-      </div>
+      <ul class="time-panel__actions">
+        <li>
+          <x-button class="time-panel__action" plain type="primary" @click="handleCancel">
+            {{ $t("取消") }}
+          </x-button>
+        </li>
+        <li>
+          <x-button class="time-panel__action" @click="handleConfirm">
+            {{ $t("确认") }}
+          </x-button>
+        </li>
+      </ul>
     </div>
   </van-popover>
 </template>
 
 <style scoped lang="less">
 .time-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
   min-width: 65px;
   height: 25px;
   padding: 0 10px;
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
-  border: 1px solid var(--skin__neutral_3);
-  border-radius: 14px;
-  background: #191919;
   color: var(--skin__neutral_2, var(--skin__lead));
+  font-family: inherit;
+  background: var(--skin__bg_2, #191919);
+  border: var(--lobby__px, 0.5px) solid var(--skin__neutral_3);
+  border-radius: 14px;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
 
   .time-trigger__text {
     flex: 1;
@@ -230,75 +261,101 @@ watch(
   .time-trigger__arrow {
     font-size: 10px;
     color: var(--skin__neutral_2, var(--skin__lead));
+    transition: color 0.2s ease, transform 0.3s linear;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--skin__primary);
+    outline-offset: 2px;
   }
 }
 
 .time-trigger--active {
-  border-color: #dfbe5b;
-  color: #dfbe5b;
+  color: var(--skin__primary);
+  border-color: var(--skin__primary);
 
   .time-trigger__arrow {
-    color: #dfbe5b;
+    color: var(--skin__primary);
   }
 }
 
 .time-panel {
-  width: 355px;
-  border: var(--lobby__px) solid var(--skin__border);
+  display: flex;
+  flex-direction: column;
+  width: min(355px, calc(100vw - 20px));
+  overflow: hidden;
+  color: var(--skin__neutral_2);
+  background: var(--skin__bg_2);
+  border: var(--lobby__px, 0.5px) solid var(--skin__border);
+  border-radius: 7px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-  color: var(--skin__neutral_2);
 
   .time-panel__quick {
-    padding: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    padding: 10px;
   }
 
   .time-panel__quick-item {
-    width: calc((100% - 20px) / 3);
     display: flex;
     align-items: center;
     justify-content: center;
+    width: calc((100% - 20px) / 3);
     height: 35px;
-    font-size: 12px;
-    box-sizing: border-box;
-    border-radius: 7px;
-    border: var(--lobby__px) solid var(--skin__border);
-    user-select: none;
-    cursor: pointer;
+    padding: 0;
     color: var(--skin__lead);
-    text-align: center;
+    font-family: inherit;
+    font-size: 12px;
     line-height: 1;
+    text-align: center;
+    background: transparent;
+    border: var(--lobby__px, 0.5px) solid var(--skin__border);
+    border-radius: 7px;
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--skin__primary);
+      outline-offset: -2px;
+    }
   }
 
   .time-panel__quick-item--active {
-    border-color: #dfbe5b;
-    color: #dfbe5b;
+    color: var(--skin__primary);
+    border-color: var(--skin__primary);
   }
 
   .time-panel__title {
+    padding: 5px 10px;
     color: var(--skin__lead);
     font-size: 12px;
     font-weight: 400;
-    padding: 5px 10px;
     line-height: 1;
   }
 
   .time-panel__picker-header {
-    overflow: hidden;
-    padding: 0 10px;
-    gap: 10px;
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    gap: 10px;
+    padding: 0 10px;
+    margin: 0 0 5px;
+    overflow: hidden;
     font-size: 12px;
-    span {
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 50%;
       padding: 0;
       margin: 0;
       list-style: none;
+    }
+
+    span {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -310,53 +367,60 @@ watch(
   }
 
   .time-panel__picker-row {
-    margin-bottom: 10px;
-    width: 100%;
     display: flex;
     flex-direction: row;
     justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+
+    .time-panel__picker-item {
+      width: 50%;
+      min-width: 0;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
     .picker-content-item-line {
       width: 0.5px;
-      height: 155px;
+      height: 175px;
+      margin: 0 5px;
       background-color: var(--skin__border);
       z-index: 10;
-      margin: 0 5px;
     }
   }
 
   .time-panel__picker {
-    flex: 1;
-    padding: 0 10px;
-    box-sizing: border-box;
+    width: 100%;
     overflow: hidden;
   }
 
   .time-panel__actions {
-    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    overflow: hidden;
-    padding: 0 10px;
     gap: 10px;
+    height: 40px;
+    padding: 0 10px;
+    margin: 0 0 10px;
+    overflow: hidden;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50%;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
   }
 
   .time-panel__action {
+    width: 100%;
     height: 40px;
     border-radius: 7px;
     font-size: 13px;
     font-weight: 600;
-  }
-
-  .time-panel__action--ghost {
-    border: 1px solid #dfbe5b;
-    background: transparent;
-    color: #dfbe5b;
-  }
-
-  .time-panel__action--primary {
-    border: 0;
-    background: #dfbe5b;
-    color: #ffffff;
+    letter-spacing: 2px;
   }
 
   :deep(.van-picker) {
@@ -364,8 +428,9 @@ watch(
   }
 
   :deep(.van-picker-column) {
-    font-size: 12px;
     color: #6f6f6f;
+    font-size: 12px;
+    z-index: 2;
   }
 
   :deep(.van-picker__columns) {
@@ -375,6 +440,7 @@ watch(
   :deep(.van-picker-column__item) {
     color: #6f6f6f;
     font-size: 12px;
+    background: transparent;
   }
 
   :deep(.van-picker-column__item--selected) {
@@ -383,20 +449,51 @@ watch(
     font-weight: 600;
   }
 
+  :deep(.van-picker-column__item--selected + .van-picker-column__item) {
+    color: var(--skin__neutral_1);
+  }
+
+  :deep(.van-picker-column__item--selected + .van-picker-column__item + .van-picker-column__item) {
+    color: var(--skin__neutral_2);
+  }
+
   :deep(.van-picker__mask) {
-    background-image: linear-gradient(180deg, rgba(26, 26, 26, 0.94), rgba(26, 26, 26, 0.6)), linear-gradient(0deg, rgba(26, 26, 26, 0.94), rgba(26, 26, 26, 0.6));
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(var(--skin__bg_2__toRgbString), 0.9),
+        rgba(var(--skin__bg_2__toRgbString), 0.4)
+      ),
+      linear-gradient(
+        0deg,
+        rgba(var(--skin__bg_2__toRgbString), 0.9),
+        rgba(var(--skin__bg_2__toRgbString), 0.4)
+      );
+    z-index: 3;
   }
 
   :deep(.van-picker__frame) {
-    left: 0;
     right: 0;
-    border-bottom: var(--lobby__px) solid var(--skin__border);
-    border-top: var(--lobby__px) solid var(--skin__border);
+    left: 0;
     background-color: transparent;
+    border-top: var(--lobby__px, 0.5px) solid var(--skin__border);
+    border-bottom: var(--lobby__px, 0.5px) solid var(--skin__border);
+
     &::after {
-      content: "";
       display: none;
     }
   }
+}
+
+:deep(.account-time-filter__popover.van-popover) {
+  overflow: visible;
+  background: transparent;
+}
+
+:deep(.account-time-filter__popover .van-popover__content) {
+  overflow: hidden;
+  background: var(--skin__bg_2);
+  border-radius: 7px;
+  box-shadow: 0 2px 6px rgba(var(--skin__web_left_bg_shadow_active__toRgbString), 0.3);
 }
 </style>

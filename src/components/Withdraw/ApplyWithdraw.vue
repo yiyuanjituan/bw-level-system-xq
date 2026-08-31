@@ -88,8 +88,8 @@ onMounted(() => updateWallet());
     left: 0;
     right: 0;
     .withdraw-info-main {
-      background-color: #191919;
-      border-bottom: thin solid #242424;
+      background-color: var(--skin__bg_2);
+      border-bottom: thin solid var(--skin__border);
       padding: 10px;
       .withdraw-info {
         display: flex;
@@ -115,8 +115,8 @@ onMounted(() => updateWallet());
     .choose-type {
       width: 100%;
       height: 66px;
-      background: #191919;
-      border-bottom: thin solid #242424;
+      background: var(--skin__bg_2);
+      border-bottom: thin solid var(--skin__border);
       cursor: pointer;
       padding: 15px 10px;
       display: flex;
@@ -128,8 +128,8 @@ onMounted(() => updateWallet());
         height: 35px;
         border-radius: 7px;
         margin-right: 5px;
-        color: white;
-        border: thin solid #242424;
+        color: var(--skin__lead);
+        border: thin solid var(--skin__border);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -147,8 +147,8 @@ onMounted(() => updateWallet());
         }
       }
       .choose-item-active {
-        border-color: #dfbe5b;
-        color: #dfbe5b;
+        border-color: var(--skin__primary);
+        color: var(--skin__primary);
       }
     }
   }

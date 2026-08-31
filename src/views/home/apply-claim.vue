@@ -328,7 +328,7 @@ watch(claimType, () => {
             class="apply-claim-password__input"
             :class="{ 'apply-claim-password__input--focused': showPasswordKeyboard }"
           >
-            <van-password-input
+            <x-password-input
               :mask="!isPasswordVisible"
               :value="withdrawPassword"
               :focused="showPasswordKeyboard"
@@ -339,7 +339,7 @@ watch(claimType, () => {
 
         <teleport to="body">
           <div class="apply-claim-password__keyboard">
-            <van-number-keyboard
+            <x-number-keyboard
               v-model="withdrawPassword"
               :maxlength="6"
               :show="showPasswordKeyboard"
@@ -761,67 +761,9 @@ watch(claimType, () => {
   height: 16px;
 }
 
-.apply-claim-password__input {
-  box-sizing: border-box;
-  --van-password-input-margin: 0px;
-  --van-password-input-height: 50px;
-  --van-password-input-background: transparent;
-  --van-border-color: var(--skin__neutral_3);
-  --van-password-input-radius: 6px;
-  --van-password-input-dot-color: var(--skin__lead);
-  --van-password-input-text-color: var(--skin__lead);
-  --van-password-input-dot-size: 13px;
-  --van-password-input-cursor-width: 1.5px;
-  --van-password-input-cursor-color: var(--skin__lead);
-  width: 100%;
-  border: var(--lobby__px, 0.5px) solid var(--skin__neutral_3);
-  border-radius: var(--van-password-input-radius);
-  overflow: hidden;
-
-  :deep(.van-password-input) {
-    border-radius: var(--van-password-input-radius);
-  }
-
-  :deep(.van-hairline--surround)::after {
-    border-width: 0;
-  }
-
-  :deep(.van-password-input__item) {
-    background: var(--skin__bg_2);
-  }
-
-  :deep(.van-password-input__item--focus) {
-    z-index: 1;
-    box-shadow: inset 0 0 0 1px var(--skin__primary);
-  }
-
-  :deep(.van-password-input__item:first-child) {
-    border-radius: var(--van-password-input-radius) 0 0 var(--van-password-input-radius);
-  }
-
-  :deep(.van-password-input__item:last-child) {
-    border-radius: 0 var(--van-password-input-radius) var(--van-password-input-radius) 0;
-  }
-}
-
 .apply-claim-password__keyboard {
   position: absolute;
   z-index: 99999;
-
-  :deep(.van-number-keyboard) {
-    --van-number-keyboard-background: #000;
-    --van-number-keyboard-key-background: var(--skin__bg_2);
-    --van-number-keyboard-key-height: 46px;
-    --van-number-keyboard-key-font-size: 21px;
-  }
-
-  :deep(.van-key__wrapper) {
-    color: var(--skin__lead);
-  }
-
-  :deep(.van-key--active) {
-    background: var(--skin__bg_2) !important;
-  }
 }
 
 .apply-claim-kind-tips {

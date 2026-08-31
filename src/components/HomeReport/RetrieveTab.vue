@@ -141,7 +141,7 @@ onMounted(() => {
   .balance-card {
     margin: 10px 10px 0;
     padding: 10px;
-    background: #191919;
+    background: var(--skin__bg_2);
     border-radius: 5px;
     box-shadow: 0 1.5px 4.5px rgba(0, 0, 0, 0.16);
 
@@ -226,11 +226,11 @@ onMounted(() => {
       width: 75px;
       height: 35px;
       padding: 0 3px 0 1.5px;
-      background-size: 100% 100%;
       color: var(--skin__left_nav_def);
+      background: var(--skin__bg_2);
+      border: 1px solid var(--skin__border);
       box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
       word-break: break-all;
-      background-image: url("@/assets/common/btn_zc1_2.avif");
       .slider-icon-box {
         width: 24px;
         height: 18px;
@@ -254,15 +254,12 @@ onMounted(() => {
         line-height: 16px;
         font-size: 12px;
         text-align: center;
-        //color: var(--skin__left_nav_active);
       }
     }
     .custom-row-tab_active {
-      background-image: url("@/assets/common/btn_zc1_1.avif");
-      color: var(--skin__left_nav_active);
-      .slider-icon-box {
-        color: var(--skin__left_nav_active);
-      }
+      color: var(--skin__text_primary);
+      background: var(--skin__primary);
+      border-color: var(--skin__primary);
     }
 
     :deep(.x-tabs__content) {

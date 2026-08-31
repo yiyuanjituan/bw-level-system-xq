@@ -169,7 +169,7 @@ onMounted(() => init());
               <div class="question-list">
                 <div class="question-item" v-for="(item, index) in i.children" :key="index" @click="openDetail(item)">
                   <div class="left-box">
-                    <div class="sort-no">{{ index + 1 }}、</div>
+                    <div class="sort-no">{{ Number(index) + 1 }}、</div>
                     <div class="title">{{ item.title }}</div>
                   </div>
                   <svg-icon name="comm_icon_fh" class-name="rotate-[180deg]" />
@@ -203,7 +203,7 @@ onMounted(() => init());
   position: relative;
   overflow: auto;
   padding: 10px;
-  background: #000;
+  background: var(--skin__bg_1);
   .service-inner {
     height: 100%;
     overflow: auto;

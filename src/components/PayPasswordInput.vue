@@ -3,6 +3,7 @@ import { $t } from "@/locales";
 import { reactive, ref } from "vue";
 import { verifyWithdrawalPassword } from "@/api/common";
 import { showCustomDialog } from "@/hooks/useCommon";
+import router from '@/router';
 
 const emits = defineEmits(["input-true"]);
 const show = ref(false);
@@ -49,11 +50,11 @@ function handleForgetPassword() {
     showCancelButton: true,
     confirmButtonText: "客服",
     width: 300,
-    bgColor: "#191919"
   }).then(res => {
     if (res) {
-      // @todo 实现跳转客服界面
-      console.log(res);
+      // // @todo 实现跳转客服界面
+      // console.log(res);
+      router.push("/home/notice?noticeType=4");
     }
   });
 }
@@ -94,7 +95,7 @@ defineExpose({
               />
             </div>
             <div class="form-withdraw-pass">
-              <van-password-input
+              <x-password-input
                 :mask="!showEye"
                 :value="form.password"
                 :focused="showKeyboard"
@@ -124,7 +125,7 @@ defineExpose({
   </div>
   <teleport to="body">
     <div class="absolute z-[99999] input-keyboard">
-      <van-number-keyboard
+      <x-number-keyboard
         :maxlength="6"
         v-model="form.password"
         :show="showKeyboard"
@@ -179,40 +180,6 @@ defineExpose({
         margin-bottom: 9px;
         color: var(--skin__lead);
         font-size: 12px;
-      }
-      .form-withdraw-pass {
-        --van-password-input-margin: 0.5px;
-        --van-password-input-background: transparent;
-        --van-border-color: #242424;
-        --van-password-input-radius: 7px;
-        --van-password-input-dot-color: #fff;
-        --van-password-input-text-color: white;
-        --van-password-input-dot-size: 13px;
-        --van-password-input-cursor-width: 1.5px;
-        --van-password-input-cursor-color: white;
-        border: solid 0.5px #242424;
-        border-radius: var(--van-password-input-radius);
-
-        :deep(.van-password-input) {
-          border-radius: var(--van-password-input-radius);
-          overflow: hidden;
-        }
-        :deep(.van-hairline--surround) {
-          &::after {
-            border-width: 0;
-          }
-        }
-        :deep(.van-password-input__item--focus) {
-          border: solid 1px var(--skin__primary);
-        }
-        :deep(.van-password-input__item) {
-          &:first-child {
-            border-radius: var(--van-password-input-radius) 0 0 var(--van-password-input-radius);
-          }
-          &:last-child {
-            border-radius: 0 var(--van-password-input-radius) var(--van-password-input-radius) 0;
-          }
-        }
       }
       .remark {
         display: flex;
@@ -271,21 +238,6 @@ defineExpose({
     }
   }
 }
-.input-keyboard {
-  :deep(.van-number-keyboard) {
-    --van-number-keyboard-background: #000;
-    --van-number-keyboard-key-background: #191919;
-    --van-number-keyboard-key-height: 46px;
-    --van-number-keyboard-key-font-size: 21px;
-  }
-  :deep(.van-key__wrapper) {
-    color: #bcbcbc;
-  }
-  :deep(.van-key--active) {
-    background: #191919 !important;
-  }
-}
-
 .dialog-close-box {
   position: relative;
   width: 100%;

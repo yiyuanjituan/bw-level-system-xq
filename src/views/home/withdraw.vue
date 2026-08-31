@@ -83,22 +83,20 @@ watch(active, value => {
 <style scoped lang="less">
 .security-container {
   --van-tab-active-text-color: var(--skin__primary);
-  --van-tab-text-color: white;
+  --van-tab-text-color: var(--skin__lead);
 
   height: 100%;
-  background: #000;
+  background: var(--skin__bg_1);
 
   .sub-header {
-    --skin__lead: white;
-
     position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding-top: var(--status-bar-height);
     height: calc(45px + var(--status-bar-height));
-    background-color: #191919;
-    border-bottom: 1px solid #242424;
+    background-color: var(--skin__bg_2);
+    border-bottom: 1px solid var(--skin__border);
     width: 100%;
     .arrow-left {
       position: absolute;
@@ -118,7 +116,7 @@ watch(active, value => {
       align-items: center;
       height: 45px;
       padding: 0 10px;
-      color: #dfbe5b;
+      color: var(--skin__primary);
       font-size: 25px;
       position: absolute;
       right: 0;

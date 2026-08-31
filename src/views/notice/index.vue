@@ -64,17 +64,17 @@ watch(activePath, (value) => {
 
 <style scoped lang="less">
 .notice-page-container {
-  background: #000;
-  color: #fff;
+  background: var(--skin__bg_1);
+  color: var(--skin__lead);
   .tabs-container {
     height: calc(100vh - 45px);
 
     --van-tabs-line-height: 100%;
-    --van-tab-text-color: white;
+    --van-tab-text-color: var(--skin__lead);
     --van-padding-xs: 0px;
     --van-padding-sm: 15px;
-    --van-tabs-bottom-bar-color: #f0c059;
-    --van-tab-active-text-color: #f0c059;
+    --van-tabs-bottom-bar-color: var(--skin__primary);
+    --van-tab-active-text-color: var(--skin__primary);
     --van-tabs-bottom-bar-height: 2px;
     --van-tab-font-size: 12px;
     --van-tabs-bottom-bar-width: 24px;

@@ -146,7 +146,7 @@ async function handleSubmit() {
             </div>
 
             <div class="pay-password-page__password-input">
-              <van-password-input
+              <x-password-input
                 :mask="!showPassword"
                 :value="form.password"
                 :focused="showPasswordKeyboard"
@@ -173,7 +173,7 @@ async function handleSubmit() {
             </div>
 
             <div class="pay-password-page__password-input">
-              <van-password-input
+              <x-password-input
                 :mask="!showPasswordConfirmation"
                 :value="form.passwordConfirmation"
                 :focused="showPasswordConfirmationKeyboard"
@@ -212,13 +212,13 @@ async function handleSubmit() {
           </span>
         </div>
 
-        <van-number-keyboard
+        <x-number-keyboard
           v-model="form.password"
           :maxlength="6"
           :show="showPasswordKeyboard"
           @blur="hideKeyboard"
         />
-        <van-number-keyboard
+        <x-number-keyboard
           v-model="form.passwordConfirmation"
           :maxlength="6"
           :show="showPasswordConfirmationKeyboard"
@@ -303,23 +303,6 @@ async function handleSubmit() {
   color: var(--skin__primary, #dfbe5b);
 }
 
-.pay-password-page__password-input {
-  --van-password-input-margin: 0.5px;
-  --van-password-input-background: var(--skin__bg_2, #191919);
-  --van-border-color: var(--skin__border, #242424);
-  --van-password-input-radius: 100px;
-  --van-password-input-dot-color: var(--skin__lead, #fff);
-  --van-password-input-text-color: var(--skin__lead, #fff);
-  --van-password-input-dot-size: 13px;
-  --van-password-input-cursor-width: 1.5px;
-  --van-password-input-cursor-color: var(--skin__lead, #fff);
-}
-
-.pay-password-page__password-input :deep(.van-password-input) {
-  overflow: hidden;
-  border-radius: 7px;
-}
-
 .pay-password-page__notice {
   display: flex;
   align-items: flex-start;
@@ -365,10 +348,4 @@ async function handleSubmit() {
   box-shadow: 0 -1.5px 5px rgba(0, 0, 0, 0.1);
 }
 
-:deep(.van-number-keyboard) {
-  --van-number-keyboard-background: #000;
-  --van-number-keyboard-key-background: var(--skin__bg_2, #191919);
-  --van-number-keyboard-key-height: 46px;
-  --van-number-keyboard-key-font-size: 21px;
-}
 </style>
