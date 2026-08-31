@@ -31,3 +31,4 @@ coverage
 *.sw?
 
 /src/typings/components.d.ts
+/public/game_pictures/

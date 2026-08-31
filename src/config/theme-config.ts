@@ -1,4 +1,4 @@
-import type { MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
+import type { GameImageDisplay, MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
 
 export interface ThemeVariableConfig {
   name: string;
@@ -9,6 +9,7 @@ export interface ThemeVariableConfig {
 export const DEFAULT_THEME_TEMPLATE = 0;
 export const DEFAULT_MINE_TEMPLATE: MineTemplateName = "TemplateOne";
 export const DEFAULT_MINE_HERO_STYLE: MineHeroStyle = "blue";
+export const DEFAULT_GAME_IMAGE_DISPLAY: GameImageDisplay = "square";
 export const DEFAULT_THEME_PRESET = "theme-1";
 
 export const THEME_VARIABLE_CONFIGS: ThemeVariableConfig[] = [
@@ -57,7 +58,10 @@ export const DEFAULT_THEME_CONFIG: ThemeConfigResponse = {
   mineTemplate: DEFAULT_MINE_TEMPLATE,
   preset: DEFAULT_THEME_PRESET,
   variables: { ...DEFAULT_THEME_VARIABLES },
-  assets: { mineHeroStyle: DEFAULT_MINE_HERO_STYLE },
+  assets: {
+    mineHeroStyle: DEFAULT_MINE_HERO_STYLE,
+    gameImageDisplay: DEFAULT_GAME_IMAGE_DISPLAY,
+  },
 };
 
 const isPlainObject = (value: unknown): value is Record<string, any> => {
@@ -88,6 +92,9 @@ export function normalizeThemeConfig(value?: Partial<ThemeConfigResponse> | null
       mineHeroStyle: source.assets?.mineHeroStyle === "common" || source.assets?.mineHeroStyle === "common82"
         ? source.assets.mineHeroStyle
         : DEFAULT_MINE_HERO_STYLE,
+      gameImageDisplay: source.assets?.gameImageDisplay === "long" || source.assets?.gameImageDisplay === "square"
+        ? source.assets.gameImageDisplay
+        : DEFAULT_GAME_IMAGE_DISPLAY,
     },
   };
 }

@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
-import type { MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
+import type { GameImageDisplay, MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
 import {
+  DEFAULT_GAME_IMAGE_DISPLAY,
   DEFAULT_MINE_HERO_STYLE,
   DEFAULT_MINE_TEMPLATE,
   DEFAULT_THEME_TEMPLATE,
@@ -66,12 +67,13 @@ export const applyThemeVariables = (themeConfig?: { variables?: Record<string, s
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
 const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
 const normalizeMineHeroStyle = (value: unknown): MineHeroStyle => value === "common" || value === "common82" ? value : "blue";
+const normalizeGameImageDisplay = (value: unknown): GameImageDisplay => value === "long" ? "long" : DEFAULT_GAME_IMAGE_DISPLAY;
 const isPlainObject = (value: unknown): value is Record<string, any> => {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 };
 const isThemeConfigLike = (value: unknown): value is Partial<ThemeConfigResponse> => {
   return isPlainObject(value)
-    && (isPlainObject(value.variables) || value.theme !== undefined || value.mineTemplate !== undefined);
+    && (isPlainObject(value.variables) || isPlainObject(value.assets) || value.theme !== undefined || value.mineTemplate !== undefined);
 };
 
 const readLocalJson = <T>(key: string, fallback: T): T => {
@@ -118,6 +120,7 @@ export const useAppStore = defineStore('app', () => {
   const themeTemplate = ref<0 | 1>(DEFAULT_THEME_TEMPLATE)
   const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
   const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
+  const gameImageDisplay = ref<GameImageDisplay>(DEFAULT_GAME_IMAGE_DISPLAY)
   updateFavicon(appInfo.value?.favicon)
   updatePwaMetadata(appInfo.value)
 
@@ -129,6 +132,7 @@ export const useAppStore = defineStore('app', () => {
     themeTemplate.value = normalizeThemeTemplate(normalizedThemeConfig.theme)
     mineTemplate.value = normalizeMineTemplate(normalizedThemeConfig.mineTemplate)
     mineHeroStyle.value = normalizeMineHeroStyle(normalizedThemeConfig.assets?.mineHeroStyle)
+    gameImageDisplay.value = normalizeGameImageDisplay(normalizedThemeConfig.assets?.gameImageDisplay)
     appInfo.value = {
       ...(appInfo.value || {}),
       theme_config: normalizedThemeConfig
@@ -212,6 +216,7 @@ export const useAppStore = defineStore('app', () => {
     themeTemplate,
     mineTemplate,
     mineHeroStyle,
+    gameImageDisplay,
     isAppReady,
     appLoadingProgress,
     appLoadingStatus,
@@ -228,7 +233,7 @@ export const useAppStore = defineStore('app', () => {
   }
 }, {
   persist: {
-    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "appInfo.theme_config"],
+    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "gameImageDisplay", "appInfo.theme_config"],
     afterHydrate: ({ store }) => {
       (store as any).isAppReady = false;
       (store as any).appLoadingProgress = 6;
@@ -237,6 +242,7 @@ export const useAppStore = defineStore('app', () => {
       (store as any).themeTemplate = DEFAULT_THEME_TEMPLATE;
       (store as any).mineTemplate = DEFAULT_MINE_TEMPLATE;
       (store as any).mineHeroStyle = DEFAULT_MINE_HERO_STYLE;
+      (store as any).gameImageDisplay = DEFAULT_GAME_IMAGE_DISPLAY;
     }
   },
 })

@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import SubNavbar from "@/components/SubNavbar.vue";
-import UiInput from "@/components/UI/input.vue";
+import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
+import XInput from "@/components/X/x-input.vue";
+import XLoading from "@/components/X/x-loading.vue";
+import XTab from "@/components/X/x-tab.vue";
+import XTabs from "@/components/X/x-tabs.vue";
 import { computed, nextTick, onMounted, Ref, ref, watch } from "vue";
-import UiTabs from "@/components/UI/tabs.vue";
-import UiPagination from "@/components/UI/pagination.vue";
-import UiLoading from "@/components/UI/loading.vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
@@ -56,6 +57,7 @@ const trialClassifyList: RightItem[] = [
 const rightKey: Ref<string> = ref(RightKeyEnum.ALL);
 const auth = useAuthStore();
 const isLoading = ref<boolean>(false);
+const isLongImageDisplay = computed(() => app.gameImageDisplay === "long");
 const isTrialPage = computed(() => route.query?.type == TRIAL_GAME_TYPE);
 const isLotteryOrSportsPage = computed(() => ["4", "5"].includes(String(route.query?.type)));
 const showVenueSidebar = computed(() => !isLotteryOrSportsPage.value);
@@ -71,14 +73,30 @@ const paginatedGameList = computed(() => {
   return gameList.value.slice(startIndex, startIndex + PAGE_SIZE);
 });
 
-function handleScroll(e) {
-  const { scrollHeight, scrollTop, clientHeight } = e.target;
-  showNext.value = scrollHeight - scrollTop -   clientHeight > 2;
+function handleScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const { scrollHeight, scrollTop, clientHeight } = target;
+  showNext.value = scrollHeight - scrollTop - clientHeight > 2;
 }
 
 function showTip() {
   // @ts-ignore
   showCustomToast({ type: "fail", message: $t("tips.maintenance") });
+}
+
+function isEnabledFlag(value: unknown) {
+  return value === true || value === 1 || value === "1";
+}
+
+function isGameOpen(record: any) {
+  return isEnabledFlag(record?.isOpen);
+}
+
+function isRecommendGame(record: any) {
+  return isEnabledFlag(record?.recommended)
+    || isEnabledFlag(record?.isRecommend)
+    || isEnabledFlag(record?.is_recommend)
+    || isEnabledFlag(record?.recommend);
 }
 
 function updateActiveKey(key: any) {
@@ -109,6 +127,7 @@ const typeData = computed(() => {
 
 function init() {
   const type = route.query?.type;
+  showNext.value = false;
   if (isLotteryOrSportsPage.value && Number(route.query?.platformId) !== 0) {
     router.replace({ path: route.path, query: { ...route.query, platformId: 0 } });
     return;
@@ -155,6 +174,16 @@ function init() {
     if (rightKey.value != "all") rightKey.value = RightKeyEnum.ALL;
   }
   loadGameListData();
+}
+
+function updateActiveVenue(venueId: string | number) {
+  const nextVenueId = Number(venueId);
+  const activeVenue = nextVenueId === 0
+    ? { id: 0 }
+    : gameTypeVenueList.value.find(item => Number(item.id) === nextVenueId);
+
+  if (!activeVenue) return;
+  handleChangeTab(activeVenue);
 }
 
 function loadGameListData() {
@@ -222,7 +251,7 @@ async function handleChangeTab(record: any) {
   await nextTick();
 }
 
-watch(() => route.fullPath,(newVal, oldVal) => init());
+watch(() => route.fullPath, () => init());
 
 function enterGame(record: any) {
   appData.setEnterInfo(record.venueId, record.id, isTrialPage.value ? 1 : undefined);
@@ -230,6 +259,15 @@ function enterGame(record: any) {
     auth.updateInfo();
   }
   router.push({ path: "/home/embedded" });
+}
+
+function handleGameClick(record: any) {
+  if (!isGameOpen(record)) {
+    showTip();
+    return;
+  }
+
+  enterGame(record);
 }
 
 function checkHistory() {
@@ -246,97 +284,123 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="secondary-page detail">
+  <div class="secondary-page detail" :class="{ 'detail--long-image': isLongImageDisplay }">
     <sub-navbar :title="typeData.name" />
     <div class="content">
       <div class="page-body">
         <div class="search-layout">
           <div class="search-bar">
-            <ui-input :placeholder="$t('搜索游戏')">
+            <x-input :placeholder="$t('搜索游戏')" size="small" class="game-search">
               <template #suffix>
-                <svg-icon name="comm_icon_ss" color="#dfbe5b"></svg-icon>
+                <svg-icon name="comm_icon_ss" class-name="game-search__icon"></svg-icon>
               </template>
-            </ui-input>
+            </x-input>
           </div>
         </div>
         <div class="content-layout">
           <div class="inner-box" :class="{ 'inner-box--without-sidebar': !showVenueSidebar }">
             <div class="slider-box" v-if="showVenueSidebar">
-              <div class="tabs">
-                <div class="tabs__wrap">
-                  <div class="scroll-box" @scroll="handleScroll">
-                    <div class="ui-tab" v-if="typeData.image">
-                      <div
-                        class="inner"
-                        :class="{ 'active-inner': gameTypeVenueId == 0 }"
-                        @click="handleChangeTab({ id: 0 })"
-                      >
-                        <svg-icon :name="typeData.image" class-name="text-[25px]" />
-                        <p class="mt-[1px]">{{ typeData.name }}</p>
-                      </div>
+              <x-tabs
+                v-model:active="gameTypeVenueId"
+                class="venue-tabs"
+                position="left"
+                shrink
+                :show-nav-arrows="false"
+                :line-width="0"
+                :line-height="0"
+                @change="updateActiveVenue"
+                @scroll.capture="handleScroll"
+              >
+                <x-tab v-if="typeData.image" :name="0">
+                  <template #title>
+                    <div class="venue-tab" :class="{ 'venue-tab--active': gameTypeVenueId == 0 }">
+                      <svg-icon :name="typeData.image" class-name="venue-tab__category-icon" />
+                      <p>{{ typeData.name }}</p>
                     </div>
-                    <div class="ui-tab" v-for="(item, index) in gameTypeVenueList" :key="index">
-                      <div
-                        class="inner"
-                        :class="{ 'active-inner': gameTypeVenueId == item.id }"
-                        @click="handleChangeTab(item)"
-                      >
-                        <img :src="item.short_image" alt="" />
-                        <p class="">{{ item.apiCode }}</p>
-                      </div>
+                  </template>
+                </x-tab>
+                <x-tab v-for="item in gameTypeVenueList" :key="item.id" :name="Number(item.id)">
+                  <template #title>
+                    <div class="venue-tab" :class="{ 'venue-tab--active': gameTypeVenueId == item.id }">
+                      <img :src="item.short_image" alt="" />
+                      <p>{{ item.apiCode }}</p>
                     </div>
-                  </div>
-                  <div class="next-box" v-if="showNext">
-                    <div class="down-indicator">
-                      <svg-icon name="img_scroll_jt"></svg-icon>
-                      <svg-icon name="img_scroll_jt"></svg-icon>
-                    </div>
-                  </div>
+                  </template>
+                </x-tab>
+              </x-tabs>
+              <div class="next-box" v-if="showNext">
+                <div class="down-indicator">
+                  <svg-icon name="img_scroll_jt"></svg-icon>
+                  <svg-icon name="img_scroll_jt"></svg-icon>
                 </div>
               </div>
             </div>
             <div class="right-box">
-              <ui-tabs :list="rightList" :indicator="false" :show-line="false" :show-gap="false">
-                <template v-slot:tab="{ row }">
-                  <div class="nav-btn" :class="{ active: rightKey == row.key }" @click="updateActiveKey(row.key)">
-                    {{ row.name }}
-                  </div>
-                </template>
-              </ui-tabs>
-              <div class="grid-game-col flex-1">
-                <div
-                  class="w-[100%] h-[100%] flex items-center justify-center pb-[100px]"
-                  v-if="isLoading && gameList.length == 0"
-                >
-                  <ui-loading />
+              <x-tabs
+                v-model:active="rightKey"
+                class="scene-tabs"
+                shrink
+                :show-nav-arrows="false"
+                :line-width="0"
+                :line-height="0"
+                @change="updateActiveKey"
+              >
+                <x-tab v-for="row in rightList" :key="row.key" :name="row.key">
+                  <template #title>
+                    <div class="nav-btn" :class="{ active: rightKey == row.key }">
+                      {{ row.name }}
+                    </div>
+                  </template>
+                </x-tab>
+              </x-tabs>
+              <div class="grid-game-col">
+                <div class="loading-state" v-if="isLoading && gameList.length == 0">
+                  <x-loading size="22px" />
                 </div>
                 <ui-empty v-if="!isLoading && gameList.length == 0" />
                 <div class="scroll-box" v-if="gameList.length > 0">
                   <div class="grid-box">
                     <template v-for="item in paginatedGameList" :key="item.id">
                       <div
-                        class="card-item w-[80px] h-[107px]"
-                        :style="{ '--bg-img': `url(${item.image})` }"
-                        @click="enterGame(item)"
+                        class="card-item"
+                        @click="handleGameClick(item)"
                       >
-                        <section class="card-title" v-if="!isLotteryOrSportsPage">
+                        <div class="card-image">
+                          <home-skeleton-image :src="item.image" :alt="String(item.name ?? '')" class="poster-image" />
+                          <div class="thumb-icon" v-if="isRecommendGame(item)"></div>
+                          <div class="collect-icon">
+                            <img src="@/assets/home/btn_sc_off_2.avif" alt="" class="collect-img" v-if="true" />
+                            <img src="@/assets/home/btn_sc_on_2.avif" alt="" class="collect-img" v-if="false" />
+                          </div>
+                          <div class="disabled-box" @click.stop="showTip" v-if="!isGameOpen(item)">
+                            <div class="disabled-icon"></div>
+                          </div>
+                          <section class="card-title card-title--overlay" v-if="isLongImageDisplay && !isLotteryOrSportsPage">
+                            <h4 class="name-inner">{{ item.name }}</h4>
+                          </section>
+                        </div>
+                        <section class="card-title" v-if="!isLongImageDisplay && !isLotteryOrSportsPage">
                           <h4 class="name-inner">{{ item.name }}</h4>
                         </section>
-                        <div class="thumb-icon" v-if="false"></div>
-                        <div class="collect-icon">
-                          <img src="@/assets/home/btn_sc_off_2.avif" alt="" srcset="" class="collect-img" v-if="true" />
-                          <img src="@/assets/home/btn_sc_on_2.avif" alt="" srcset="" class="collect-img" v-if="false" />
-                        </div>
-                        <div class="disabled-box" @click.stop="showTip" v-if="!item.isOpen">
-                          <div class="disabled-icon text-white"></div>
-                        </div>
                       </div>
                     </template>
                   </div>
                 </div>
               </div>
               <div class="footer" v-if="!isLoading && totalPages > 1">
-                <ui-pagination v-model="currentPage" :total="gameList.length" :page-size="PAGE_SIZE" />
+                <van-pagination
+                  v-model="currentPage"
+                  :total-items="gameList.length"
+                  :items-per-page="PAGE_SIZE"
+                >
+                  <template #prev-text>
+                    <svg-icon name="arrow-back" class-name="pagination-icon pagination-icon--prev" />
+                  </template>
+                  <template #next-text>
+                    <svg-icon name="arrow-back" class-name="pagination-icon pagination-icon--next" />
+                  </template>
+                  <template #page="{ number }">{{ number }}</template>
+                </van-pagination>
               </div>
             </div>
           </div>
@@ -348,361 +412,697 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .detail {
-  background: #000;
-  color: white;
+  --game-card-benchmark: 77px;
+  --game-card-width: 85px;
+  --game-grid-columns: 3;
+  --game-grid-width: 270px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
+  color: var(--skin__lead);
+  background: var(--skin__bg_1);
 }
+
+.detail--long-image {
+  --game-card-benchmark: 80px;
+  --game-card-width: 80px;
+  --game-grid-columns: 3;
+  --game-grid-width: 260px;
+}
+
+:deep(.sub-header) {
+  height: calc(var(--status-bar-height) + 45px);
+  min-height: calc(var(--status-bar-height) + 45px);
+  background-color: var(--skin__bg_2);
+  border-bottom: var(--lobby__px) solid var(--skin__border);
+}
+
+:deep(.sub-header .arrow-left) {
+  min-width: 40px;
+  padding-right: 20px;
+  padding-left: 10px;
+  color: var(--skin__neutral_1);
+  font-size: 12px;
+}
+
+:deep(.sub-header .title) {
+  color: var(--skin__lead);
+  font-size: 15px;
+}
+
+:deep(.sub-header .title-inner) {
+  max-width: 215px;
+}
+
 .content {
-  width: 100%;
-  flex: 1 1 0;
-  max-height: 100%;
   position: relative;
   z-index: 1;
+  flex: 1 1 0;
+  width: 100%;
+  max-height: 100%;
   overflow: hidden;
+}
 
-  .page-body {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    .search-layout {
-      margin: 10px 10px 0;
-      flex-shrink: 0;
-      .search-bar {
-        .ui-input {
-          height: 25px;
-          border-radius: 13px;
-        }
-      }
-    }
-    .content-layout {
-      padding: 10px 10px 0;
-      overflow: hidden;
-      flex-grow: 1;
-      height: 100%;
-      .inner-box {
-        display: flex;
-        height: 100%;
-        &.inner-box--without-sidebar {
-          .right-box .grid-game-col .scroll-box .grid-box {
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 80px);
-            justify-content: space-between;
-          }
-        }
-        .slider-box {
-          flex-shrink: 0;
-          flex-grow: 0;
-          margin-right: 10px;
+.page-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-          position: relative;
-          padding-bottom: 5px;
+.search-layout {
+  flex-shrink: 0;
+  margin: 10px 10px 0;
+}
 
-          .tabs {
-            height: 100%;
-            width: fit-content;
-            .tabs__wrap {
-              height: calc(100% + 3.5px);
-              margin: -1px -5px -2.5px;
-              padding: 1px 5px 2.5px;
-              overflow: visible;
-              min-height: 30px;
-              .next-box {
-                width: 100%;
-                position: absolute;
-                left: 0px;
-                bottom: -2.5px;
-                z-index: 100;
+.search-bar {
+  width: 100%;
+}
 
-                height: 32.5px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                background-image: linear-gradient(
-                  to bottom,
-                  transparent,
-                  rgba(0, 0, 0, 0.6) 35%,
-                  rgba(0, 0, 0, 0.8) 45%,
-                  rgba(0, 0, 0, 0.9) 50%,
-                  rgba(0, 0, 0, 1) 60%,
-                  #000
-                );
-                .down-indicator svg {
-                  margin: -3px 0;
-                  width: 11px;
-                  height: 11px;
-                  color: #dfbe5b;
-                  transform: rotate(90deg);
-                  &:first-of-type {
-                    opacity: 0.6;
-                    margin: -6px 0;
-                  }
-                }
-              }
+.game-search {
+  height: 25px;
+}
 
-              .scroll-box {
-                box-sizing: border-box;
-                margin: -5px;
-                padding: 5px;
-                overflow: hidden scroll;
-                position: relative;
-                display: flex;
-                background: transparent;
-                user-select: none;
-                scrollbar-width: none;
-                flex-direction: column;
-                height: 100%;
+:deep(.game-search.x-input-wrapper) {
+  height: 25px;
+  padding: 0 10px;
+  color: var(--skin__neutral_2);
+  font-size: 11px;
+  background-color: var(--skin__bg_2);
+  border: var(--lobby__px) solid var(--skin__border);
+  border-radius: 13px;
+}
 
-                .ui-tab {
-                  margin-top: 10px;
-                  flex: 0 0 auto;
-                  padding: 0;
-                  position: relative;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  box-sizing: border-box;
-                  color: inherit;
-                  font-size: 14px;
-                  line-height: 10px;
-                  cursor: pointer;
-                  &:first-child {
-                    margin-top: 0;
-                  }
-                  .inner {
-                    background-image: url(@/assets/home/btn_zc2_2.avif);
-                    width: 75px;
-                    height: 52.5px;
-                    padding: 0 2.5px;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 9px;
-                    display: flex;
-                    background-size: 100% 100%;
-                    box-shadow: 0 1.5px 3.5px 0 #0000001f;
-                    word-break: break-word;
-                    color: #b1b3bc;
+:deep(.game-search .x-input__suffix) {
+  margin-left: 5px;
+}
 
-                    img {
-                      width: 25px;
-                      height: auto;
-                      max-height: 25px;
-                      z-index: 2;
-                      max-width: 100%;
-                    }
-                    p {
-                      font-size: 12px;
-                      line-height: 13px;
-                      display: -webkit-box;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      vertical-align: middle;
-                      -webkit-line-clamp: 2;
-                      -webkit-box-orient: vertical;
-                      color: #bcbcbc;
-                      position: relative;
-                      width: 100%;
-                      margin: 0 auto;
-                      align-items: center;
-                      justify-content: center;
-                      text-align: center;
-                      z-index: 6;
-                    }
-                  }
-                  .active-inner {
-                    background-image: url(@/assets/home/btn_zc2_1.avif);
-                    color: #fff;
-                    p {
-                      color: #fff;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+.game-search__icon {
+  color: var(--skin__primary);
+  font-size: 14px;
+}
 
-        .right-box {
-          flex: 1;
-          width: 0;
-          display: flex;
-          flex-direction: column;
+.content-layout {
+  flex-grow: 1;
+  height: 100%;
+  padding: 10px 10px 0;
+  overflow: hidden;
+}
 
-          :deep(.ui-tabs__wrap) {
-            padding-left: 0;
-            padding-right: 0;
-          }
-          .nav-btn {
-            font-size: 11px;
-            line-height: 10px;
-            flex: none;
-            margin-right: 8px;
-            padding: 0 2.5px;
-            flex-shrink: 0;
-            flex-grow: 0;
-            width: 70px;
-            height: 27.5px;
-            word-break: break-word;
-            background-color: #191919;
-            //border-color: #242424;
-            color: #bcbcbc;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 7px;
-            border: 1px solid rgb(36, 36, 36);
-            &.active {
-              --skin__primary: #dfbe5b;
-              background: var(--skin__primary);
-              color: white;
-              height: 28px;
-            }
-          }
+.inner-box {
+  display: flex;
+  height: 100%;
+}
 
-          .grid-game-col {
-            margin-top: 8px;
+.inner-box--without-sidebar {
+  --game-card-benchmark: 77px;
+  --game-card-width: 77px;
+  --game-grid-columns: 4;
+  --game-grid-width: 330.5px;
+}
 
-            position: relative;
-            box-sizing: content-box;
-            width: 100%;
-            z-index: 1;
-            min-height: 150px;
-            height: 150px;
-            margin-right: -6.5px;
-            margin-left: -6.5px;
-            padding-right: 6.5px;
-            padding-left: 6.5px;
-            flex: 1;
-            max-height: 100%;
-            .scroll-box {
-              scrollbar-color: #242424 transparent;
-              scrollbar-width: thin;
-              overflow: auto;
+.detail--long-image .inner-box--without-sidebar {
+  --game-card-benchmark: 80px;
+  --game-card-width: 80px;
+  --game-grid-columns: 4;
+  --game-grid-width: 350px;
+}
 
-              position: absolute;
-              top: 0;
-              box-sizing: border-box;
-              width: 100%;
-              height: 100%;
-              min-height: 300px;
-              margin-right: -6.5px;
-              margin-left: -6.5px;
-              padding-right: 6.5px;
-              padding-left: 6.5px;
-              .grid-box {
-                width: 260px;
-                display: flex;
-                flex-wrap: wrap;
-                column-gap: 10px;
-                row-gap: 10px;
-              }
-              .card-item {
-                background: #1b1b1b;
-                background-image: var(--bg-img);
-                border-radius: 10px;
-                background-size: cover;
-                background-repeat: no-repeat;
-                position: relative;
-                overflow: hidden;
+.slider-box {
+  position: relative;
+  flex-shrink: 0;
+  flex-grow: 0;
+  margin-right: 10px;
+  padding-bottom: 5px;
+}
 
-                .card-title {
-                  box-sizing: border-box;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  width: 100%;
-                  height: 26px;
-                  padding: 0 3px 3px;
-                  color: #fff;
-                  font-size: 9px;
-                  word-wrap: break-word;
-                  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-                  line-height: 1.25;
-                  position: absolute;
-                  bottom: 0;
-                }
-                .name-inner {
-                  font-weight: bolder;
-                }
-                .thumb-icon {
-                  background-image: url(@/assets/home/img_game_tj1_1.avif);
-                  position: absolute;
-                  top: -0.5px;
-                  left: -0.5px;
-                  z-index: 8;
-                  width: 25px;
-                  height: 21px;
-                  background-size: 100% 100%;
-                }
-                .collect-icon {
-                  position: absolute;
-                  top: 3px;
-                  right: 3px;
+.venue-tabs {
+  width: fit-content;
+  height: 100%;
+}
 
-                  z-index: 9;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  width: fit-content;
-                  height: fit-content;
-                  margin: -3px;
-                  padding: 3px;
-                  line-height: 0;
-                  cursor: pointer;
-                  .collect-img {
-                    width: 17px;
-                    height: 17px;
-                    font-size: 17px;
-                    border-radius: 50%;
-                    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-                    background-size: 100% 100%;
-                  }
-                }
+.venue-tabs :deep(.x-tabs__wrap) {
+  height: calc(100% + 3.5px);
+  min-height: auto;
+  margin: -1px -5px -2.5px;
+  padding: 1px 5px 2.5px;
+  overflow: visible;
+}
 
-                .disabled-box {
-                  position: absolute;
-                  top: 0;
-                  right: 0;
-                  bottom: 0;
-                  left: 0;
-                  z-index: 9;
-                  text-align: center;
-                  background-color: rgba(0, 0, 0, 0.5);
-                  border-radius: 0;
-                  cursor: not-allowed;
-                  opacity: 1;
-                  transition: opacity 0.6s;
-                  .disabled-icon {
-                    position: absolute;
-                    top: 0;
-                    left: 50%;
-                    transform: translate(-50%);
-                    width: 80px;
-                    height: 80px;
-                    background: url(@/assets/home/img_whz_style_13.avif) no-repeat;
-                    background-size: 100% 100%;
-                  }
-                }
-              }
-            }
-          }
+.venue-tabs :deep(.x-tabs__nav) {
+  box-sizing: border-box;
+  width: auto;
+  height: 100%;
+  margin: -5px;
+  padding: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
 
-          .footer {
-            margin-top: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-            z-index: 10;
-          }
-        }
-      }
-    }
+.venue-tabs :deep(.x-tabs__nav::-webkit-scrollbar) {
+  display: none;
+}
+
+.venue-tabs :deep(.x-tab) {
+  flex: none;
+  width: 100%;
+  min-height: auto;
+  padding: 0;
+  line-height: 1;
+  white-space: normal;
+}
+
+.venue-tabs :deep(.x-tab + .x-tab) {
+  margin-top: 10px;
+}
+
+.venue-tabs :deep(.x-tab--active) {
+  color: inherit;
+  font-weight: 400;
+}
+
+.venue-tabs :deep(.x-tabs__content),
+.venue-tabs :deep(.x-tabs__line) {
+  display: none;
+}
+
+.venue-tab {
+  display: flex;
+  align-items: center;
+  width: 75px;
+  height: 35px;
+  padding: 0 6px 0 3px;
+  color: var(--skin__left_nav_def);
+  word-break: break-word;
+  background-image: url("@/assets/common/btn_zc1_2.avif");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border-radius: 5px;
+  box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
+}
+
+.venue-tab--active {
+  color: var(--skin__left_nav_active);
+  background-image: url("@/assets/common/btn_zc1_1.avif");
+  pointer-events: none;
+}
+
+.venue-tab img,
+.venue-tab__category-icon {
+  z-index: 2;
+  flex-shrink: 0;
+  width: 24px;
+  height: auto;
+  max-width: 100%;
+  max-height: 24px;
+}
+
+.venue-tab__category-icon {
+  height: 24px;
+}
+
+.venue-tab p {
+  position: relative;
+  z-index: 6;
+  display: -webkit-box;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  color: currentColor;
+  font-size: 11px;
+  line-height: 13px;
+  text-align: center;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.next-box {
+  position: absolute;
+  bottom: -2.5px;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32.5px;
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(var(--skin__bg_1__toRgbString, 0, 0, 0), 0.6) 35%,
+    rgba(var(--skin__bg_1__toRgbString, 0, 0, 0), 0.8) 45%,
+    rgba(var(--skin__bg_1__toRgbString, 0, 0, 0), 0.9) 50%,
+    var(--skin__bg_1) 60%,
+    var(--skin__bg_1)
+  );
+}
+
+.down-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.down-indicator svg {
+  width: 11px;
+  height: 11px;
+  margin: -3px 0;
+  color: var(--skin__primary);
+  transform: rotate(90deg);
+}
+
+.down-indicator svg:first-of-type {
+  opacity: 0.6;
+}
+
+.right-box {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 0;
+  overflow: hidden;
+}
+
+.scene-tabs {
+  flex-shrink: 0;
+}
+
+.scene-tabs :deep(.x-tabs__wrap) {
+  min-height: auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.scene-tabs :deep(.x-tabs__nav) {
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scene-tabs :deep(.x-tab) {
+  flex: none;
+  min-height: auto;
+  padding: 0;
+  line-height: 1;
+}
+
+.scene-tabs :deep(.x-tab--active) {
+  color: inherit;
+  font-weight: 400;
+}
+
+.scene-tabs :deep(.x-tabs__content),
+.scene-tabs :deep(.x-tabs__line) {
+  display: none;
+}
+
+.nav-btn {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-shrink: 0;
+  flex-grow: 0;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 27.5px;
+  padding: 0 2.5px;
+  color: var(--skin__neutral_1);
+  font-size: 11px;
+  line-height: 1.2;
+  word-break: break-word;
+  background-color: var(--skin__bg_2);
+  border: var(--lobby__px) solid var(--skin__border);
+  border-radius: 7px;
+}
+
+.nav-btn.active {
+  height: 28px;
+  color: var(--skin__text_primary);
+  background-color: var(--skin__primary);
+  border-color: var(--skin__primary);
+}
+
+.grid-game-col {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  box-sizing: content-box;
+  width: 100%;
+  height: 150px;
+  max-height: 100%;
+  min-height: 150px;
+  margin-top: 10px;
+  margin-right: -6.5px;
+  margin-left: -6.5px;
+  padding-right: 6.5px;
+  padding-left: 6.5px;
+}
+
+.loading-state {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 100px;
+  color: var(--skin__primary);
+}
+
+.scroll-box {
+  position: absolute;
+  top: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin-right: -6.5px;
+  margin-left: -6.5px;
+  padding-right: 6.5px;
+  padding-left: 6.5px;
+  overflow: auto;
+  scrollbar-color: var(--skin__border) transparent;
+  scrollbar-width: thin;
+}
+
+.grid-box {
+  display: grid;
+  grid-template-columns: repeat(var(--game-grid-columns), var(--game-card-width));
+  width: var(--game-grid-width);
+  column-gap: 7.5px;
+  row-gap: 7px;
+  padding-bottom: 15px;
+}
+
+.detail--long-image .grid-box {
+  column-gap: 10px;
+  row-gap: 10px;
+}
+
+.inner-box--without-sidebar .grid-box {
+  margin: 0 auto;
+}
+
+.card-item {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--game-card-width);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-item:active {
+  transform: scale(0.98);
+}
+
+.card-image {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: var(--game-card-benchmark);
+  height: var(--game-card-benchmark);
+  overflow: hidden;
+  color: var(--skin__ddt_icon, var(--skin__lead));
+  background-color: var(--skin__ddt_bg);
+  background-size: 100% 100%;
+  border: 0 solid var(--skin__web_plat_line, transparent);
+  border-radius: 5px;
+}
+
+.detail--long-image .card-image {
+  height: calc(var(--game-card-benchmark) * 1.33);
+  border-radius: 10px;
+}
+
+.detail--long-image .card-image::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 46px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.52));
+  content: "";
+}
+
+.poster-image {
+  width: 100%;
+  height: 100%;
+  background-color: var(--skin__ddt_bg);
+  border-radius: inherit;
+}
+
+.detail--long-image .poster-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.card-title {
+  flex-shrink: 0;
+  width: var(--game-card-width);
+  height: 30px;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--skin__cards_text, var(--skin__lead));
+  font-size: 11px;
+  line-height: 1.36;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.card-title--overlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  margin-top: 0;
+  padding: 0 3px 3px;
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.25;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.detail--long-image .card-title--overlay .name-inner {
+  font-weight: 700;
+}
+
+.name-inner {
+  display: -webkit-box;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-size: inherit;
+  font-weight: 500;
+  line-height: inherit;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.thumb-icon {
+  position: absolute;
+  top: -0.5px;
+  left: -0.5px;
+  z-index: 8;
+  width: 25px;
+  height: 21px;
+  background-image: url("@/assets/home/img_game_tj1_1.avif");
+  background-size: 100% 100%;
+}
+
+.detail--long-image .thumb-icon {
+  width: 25.5px;
+  height: 20.5px;
+  background-image: url("@/assets/home/img_game_tj1_zj.avif");
+}
+
+.collect-icon {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: fit-content;
+  margin: -3px;
+  padding: 3px;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.collect-img {
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+  background-size: 100% 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.disabled-box {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  text-align: center;
+  cursor: not-allowed;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  transition: opacity 0.6s;
+}
+
+.disabled-icon {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--game-card-benchmark);
+  height: var(--game-card-benchmark);
+  background: url("@/assets/home/img_whz_style_13.avif") center / 100% 100% no-repeat;
+  transform: translateX(-50%);
+}
+
+.detail--long-image .disabled-box {
+  border-radius: inherit;
+}
+
+.detail--long-image .disabled-icon {
+  top: 50%;
+  width: 56%;
+  height: 56%;
+  background: url("@/assets/home/u-series/img_whz_style_1.png") center / contain no-repeat;
+  transform: translate(-50%, -50%);
+}
+
+.footer {
+  z-index: 10;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.footer :deep(.van-pagination) {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  height: 25px;
+  margin: 0 auto;
+  font-size: 10px;
+}
+
+.footer :deep(.van-pagination__item) {
+  box-sizing: border-box;
+  min-width: 25px;
+  height: 25px;
+  margin: 0 3.75px;
+  color: var(--skin__lead);
+  font-weight: 400;
+  background: var(--skin__bg_2);
+  border: var(--lobby__px) solid var(--skin__border);
+  border-radius: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.footer :deep(.van-pagination__item::after) {
+  display: none;
+}
+
+.footer :deep(.van-pagination__item--active) {
+  color: var(--skin__text_primary);
+  background-color: var(--skin__primary);
+  border-color: var(--skin__primary);
+}
+
+.footer :deep(.van-pagination__item--disabled) {
+  color: var(--skin__neutral_2);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-icon {
+  color: var(--skin__primary);
+  font-size: 9px;
+}
+
+.pagination-icon--prev {
+  margin-left: 3px;
+}
+
+.pagination-icon--next {
+  margin-left: 3px;
+  transform: rotate(180deg);
+}
+
+:global([dir="rtl"]) .slider-box {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+:global([dir="rtl"]) .venue-tab {
+  padding: 0 3px 0 6px;
+}
+
+:global([dir="rtl"]) .collect-icon {
+  right: auto;
+  left: 3px;
+}
+
+:global([dir="rtl"]) .thumb-icon {
+  right: -0.5px;
+  left: auto;
+}
+
+:global([dir="rtl"]) .pagination-icon--next {
+  transform: rotate(-180deg);
+}
+
+@media (max-width: 340px) {
+  .inner-box:not(.inner-box--without-sidebar) {
+    --game-card-width: 85px;
+    --game-grid-columns: 2;
+    --game-grid-width: 177.5px;
+  }
+
+  .inner-box--without-sidebar {
+    --game-card-width: 85px;
+    --game-grid-columns: 3;
+    --game-grid-width: 270px;
+  }
+
+  .detail--long-image .inner-box:not(.inner-box--without-sidebar) {
+    --game-card-width: 80px;
+    --game-grid-columns: 2;
+    --game-grid-width: 170px;
+  }
+
+  .detail--long-image .inner-box--without-sidebar {
+    --game-card-width: 80px;
+    --game-grid-columns: 3;
+    --game-grid-width: 260px;
   }
 }
 </style>

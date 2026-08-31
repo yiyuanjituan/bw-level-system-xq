@@ -21,6 +21,7 @@ type ListResult = {
 export type CanReceiveSource = 2 | 3 | 4 | 5 | 6;
 export type MineTemplateName = "TemplateOne" | "TemplateTwo";
 export type MineHeroStyle = "blue" | "common" | "common82";
+export type GameImageDisplay = "square" | "long";
 
 export interface CanReceiveItem {
   key: string;
@@ -47,6 +48,7 @@ export interface ThemeConfigResponse {
   variables: Record<string, string>;
   assets?: {
     mineHeroStyle?: MineHeroStyle;
+    gameImageDisplay?: GameImageDisplay;
   };
 }
 
