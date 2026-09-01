@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { $t } from '@/locales';
 import { handleBack } from '@/utils/common';
 import { showCustomToast } from '@/hooks/useCommon';
@@ -30,6 +30,8 @@ const messageCount = ref(0);
 const interestRateText = ref('');
 const walletIsLoading = ref(false);
 const languageDialogVisible = ref(false);
+const scrollbarVisible = ref(false);
+let scrollbarHideTimer: ReturnType<typeof setTimeout> | undefined;
 
 const visibleSections = computed(() => {
   const supportedSections = new Set(['profile', 'quick', 'banner', 'menu']);
@@ -92,6 +94,15 @@ function handleQuickAction(actionKey: string) {
   }
 }
 
+function handleScroll() {
+  scrollbarVisible.value = true;
+  if (scrollbarHideTimer) clearTimeout(scrollbarHideTimer);
+  scrollbarHideTimer = setTimeout(() => {
+    scrollbarVisible.value = false;
+    scrollbarHideTimer = undefined;
+  }, 600);
+}
+
 async function updateWallet() {
   if (!loginState.value || walletIsLoading.value) return;
 
@@ -137,11 +148,20 @@ onMounted(() => {
   void loadMessageCount();
   void loadInterestRate();
 });
+
+onBeforeUnmount(() => {
+  if (scrollbarHideTimer) clearTimeout(scrollbarHideTimer);
+});
 </script>
 
 <template>
   <div class="mine-template-one-layout">
-    <section data-route-for-scroll="mine" class="mine-template-one lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar">
+    <section
+      data-route-for-scroll="mine"
+      class="mine-template-one lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar"
+      :class="{ 'mine-template-one--scrolling': scrollbarVisible }"
+      @scroll.passive="handleScroll"
+    >
       <button type="button" class="mine-template-one__back" :aria-label="$t('返回上一级')" @click="handleBack">
         <svg-icon name="arrow-back" />
       </button>
@@ -240,8 +260,12 @@ onMounted(() => {
   color: var(--skin__lead);
   background: var(--skin__bg_1);
   scrollbar-width: thin;
-  scrollbar-color: var(--skin__border) transparent;
+  scrollbar-color: transparent transparent;
   padding-bottom: 10px;
+}
+
+.mine-template-one--scrolling {
+  scrollbar-color: var(--skin__border) transparent;
 }
 
 .mine-template-one::-webkit-scrollbar {
@@ -250,6 +274,10 @@ onMounted(() => {
 
 .mine-template-one::-webkit-scrollbar-thumb {
   border-radius: 3px;
+  background: transparent;
+}
+
+.mine-template-one--scrolling::-webkit-scrollbar-thumb {
   background: var(--skin__border);
 }
 

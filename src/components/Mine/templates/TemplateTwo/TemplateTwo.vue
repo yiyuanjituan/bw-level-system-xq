@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { $locale, $t } from "@/locales";
 import { handleBack } from "@/utils/common";
@@ -44,6 +44,8 @@ const app = useAppStore();
 const messageCount = ref(0);
 const interestRateText = ref("");
 const languageDialogVisible = ref(false);
+const scrollbarVisible = ref(false);
+let scrollbarHideTimer: ReturnType<typeof setTimeout> | undefined;
 const previewMode = isThemePreviewMode();
 const loginState = computed(() => !previewMode && Boolean(auth.token));
 const currencyInfo = computed(() => {
@@ -193,7 +195,7 @@ const defaultMenuGroups = computed<MineTemplateMenuGroup[]>(() => [
         key: "about",
         label: $t("关于我们"),
         icon: "mine-template-two-list_gywm",
-        route: "/about"
+        route: "/home/about"
       },
       {
         key: "logout",
@@ -399,9 +401,22 @@ function handleMenuSelect(item: MineTemplateActionItem) {
   handleBuiltinAction(item.key, item);
 }
 
+function handleScroll() {
+  scrollbarVisible.value = true;
+  if (scrollbarHideTimer) clearTimeout(scrollbarHideTimer);
+  scrollbarHideTimer = setTimeout(() => {
+    scrollbarVisible.value = false;
+    scrollbarHideTimer = undefined;
+  }, 600);
+}
+
 onMounted(() => {
   void loadMessageCount();
   void loadInterestRate();
+});
+
+onBeforeUnmount(() => {
+  if (scrollbarHideTimer) clearTimeout(scrollbarHideTimer);
 });
 </script>
 
@@ -410,6 +425,8 @@ onMounted(() => {
     <section
       data-route-for-scroll="mine"
       class="mine-template-two lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar"
+      :class="{ 'mine-template-two--scrolling': scrollbarVisible }"
+      @scroll.passive="handleScroll"
     >
       <div
         v-if="showBack"
@@ -485,7 +502,11 @@ onMounted(() => {
   color: var(--skin__lead);
   background: var(--skin__bg_1);
   scrollbar-width: thin;
-  scrollbar-color: var(--skin__border) transparent;
+  scrollbar-color: transparent transparent;
+
+  &.mine-template-two--scrolling {
+    scrollbar-color: var(--skin__border) transparent;
+  }
 
   &::-webkit-scrollbar {
     width: 3px;
@@ -493,6 +514,10 @@ onMounted(() => {
 
   &::-webkit-scrollbar-thumb {
     border-radius: 3px;
+    background: transparent;
+  }
+
+  &.mine-template-two--scrolling::-webkit-scrollbar-thumb {
     background: var(--skin__border);
   }
 }

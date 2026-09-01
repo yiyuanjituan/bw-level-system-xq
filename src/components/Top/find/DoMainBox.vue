@@ -71,6 +71,7 @@ async function saveToImg() {
       </div>
       <div class="save-button-wrap capture-ignore">
         <x-button
+          class="!w-[100%]"
           color="var(--skin__primary)"
           text-color="var(--skin__text_primary)"
           @click="saveToImg"

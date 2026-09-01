@@ -252,6 +252,14 @@ export const useAppStore = defineStore('app', () => {
     isAppReady.value = true
   }
 
+  const refreshThemeConfig = async () => {
+    try {
+      applyThemeConfig(await getThemeConfig())
+    } catch (error) {
+      console.error("刷新前台装修配置失败，失败原因：", error)
+    }
+  }
+
   const refreshData = () => {
     getConfig().then((res) => {
       applySiteConfig(res)
@@ -260,9 +268,7 @@ export const useAppStore = defineStore('app', () => {
       }
     })
     getCommonInfo().then((res) => venueList.value = res.venueList)
-    getThemeConfig().then((res) => {
-      applyThemeConfig(res)
-    })
+    void refreshThemeConfig()
   }
 
   const updateDownloadBtn = (value: boolean) => {
@@ -304,6 +310,7 @@ export const useAppStore = defineStore('app', () => {
     gameList,
     activityList,
     refreshData,
+    refreshThemeConfig,
     updateDownloadBtn,
     updateAppLoadingState,
     completeAppInitialization,

@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, type Component } from "vue";
+import { computed, defineAsyncComponent, onMounted, type Component } from "vue";
 import { TemplateOne } from "@/components/Mine/templates";
+import { TemplateTwo } from "@/components/Mine/templates";
 import useAppStore from "@/store/modules/app";
+import { isThemePreviewMode } from "@/utils/themePreview";
 
 type MineTemplateName = "TemplateOne" | "TemplateTwo";
 
 const app = useAppStore();
 const templateMap: Record<MineTemplateName, Component> = {
   TemplateOne,
-  TemplateTwo: defineAsyncComponent(() => import("@/components/Mine/templates/TemplateTwo/TemplateTwo.vue"))
+  TemplateTwo
 };
 
 const currentTemplateName = computed<MineTemplateName>(() => {
   return app.mineTemplate === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
 });
 const currentTemplate = computed(() => templateMap[currentTemplateName.value]);
+
+onMounted(() => {
+  if (!isThemePreviewMode()) void app.refreshThemeConfig();
+});
 </script>
 
 <template>

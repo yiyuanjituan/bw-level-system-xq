@@ -86,11 +86,7 @@ function getHomeData() {
 
 function getThemeData(): Promise<ThemeConfigResponse | undefined> {
   return new Promise((resolve) => {
-    if (isPreviewLocation()) {
-      resolve(void 0);
-      return;
-    }
-
+    // 装修预览也必须加载当前站点主题，页面装修消息只包含布局，不能用本地 theme.less 代替远程配色。
     getThemeConfig()
       .then(res => resolve(res))
       .catch(() => resolve(void 0));

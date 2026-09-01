@@ -37,7 +37,6 @@ app.use(Geetest, {
   captchaId: "c7f7181c75483c121ad718b7a636f0d0"
 });
 
-initThemePreviewBridge(store);
 app.mount("#app");
 
 const appStore = useAppStore(store);
@@ -46,11 +45,15 @@ initApp(({ progress, status }) => {
 }).then(async (initialization) => {
   if (!isThemePreviewMode()) {
     appStore.updateAppLoadingState(92, "正在加载首页内容");
-    await useHomeDataStore(store).loadBanner();
   }
+  // 装修预览也要加载真实轮播，否则轮播区块会因数据为空而消失，造成排序未生效的假象。
+  await useHomeDataStore(store).loadBanner();
   // 远程配置和首页数据准备完成后，最后应用主题并关闭 loading。
   await appStore.completeAppInitialization(initialization);
 }).catch(async () => {
   // 网络异常时使用项目内置样式继续启动，避免页面永久停留在 loading。
   await appStore.completeAppInitialization({});
+}).finally(() => {
+  // 远程主题应用完成后再通知 Admin，保证实时装修值不会被稍晚返回的初始化配置覆盖。
+  initThemePreviewBridge(store);
 });

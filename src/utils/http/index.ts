@@ -35,16 +35,21 @@ class Http {
       config => {
         // 每次请求读取运行时配置，支持部署后注入新地址而无需重新打包
         config.baseURL = getRuntimeBaseURL();
-        // 发送请求前，可在此携带 token
-        config.headers["siteId"] = import.meta.env.VITE_SITE_ID;
-        config.headers["language"] = $locale.value;
 
         const hashQuery = typeof window !== 'undefined' && window.location.hash.includes('?')
           ? window.location.hash.slice(window.location.hash.indexOf('?') + 1)
           : '';
-        const isPreviewMode = typeof window !== 'undefined'
-          && (new URLSearchParams(window.location.search).get('preview') === '1'
-            || new URLSearchParams(hashQuery).get('preview') === '1');
+        const searchParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(hashQuery);
+        const isPreviewMode = searchParams.get('preview') === '1' || hashParams.get('preview') === '1';
+        const previewSiteId = Number(searchParams.get('siteId') || hashParams.get('siteId'));
+
+        // 装修预览必须读取 Admin 当前站点的数据，普通页面继续使用构建时站点配置。
+        config.headers["siteId"] = isPreviewMode && Number.isInteger(previewSiteId) && previewSiteId > 0
+          ? String(previewSiteId)
+          : import.meta.env.VITE_SITE_ID;
+        config.headers["language"] = $locale.value;
+
         const auth = localStorage.getItem("user")
         if (!isPreviewMode && auth) {
           const info = JSON.parse(auth);

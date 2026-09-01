@@ -129,11 +129,11 @@ const menuItems = computed<MineGridItem[]>(() => [
     activeIcon: 'template-one-style_7_icon_zdwm1',
     name: $t('找到我们')
   },
-  {
-    key: 'language',
-    icon: 'mine-template-two-list_xzyy',
-    name: $t('选择语言')
-  },
+  // {
+  //   key: 'language',
+  //   icon: 'mine-template-two-list_xzyy',
+  //   name: $t('选择语言')
+  // },
   {
     key: 'faq',
     icon: 'template-one-style_7_icon_cjwt',
@@ -160,7 +160,7 @@ const menuItems = computed<MineGridItem[]>(() => [
     icon: 'template-one-style_7_icon_gywm',
     activeIcon: 'template-one-style_7_icon_gywm1',
     name: $t('关于我们'),
-    url: '/about'
+    url: '/home/about'
   },
   {
     key: 'logout',

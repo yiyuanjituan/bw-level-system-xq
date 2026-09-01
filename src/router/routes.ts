@@ -152,18 +152,6 @@ const routes: Array<RouteRecordRaw> = [
           pageTransition: "page-slide-forward"
         }
       },
-      {
-        path: "about",
-        name: "About",
-        component: () => import("@/views/about/index.vue"),
-        meta: {
-          title: "关于",
-          noCache: true,
-          order: 2,
-          isTabBar: true,
-          pageTransition: "page-slide-forward"
-        }
-      }
     ]
   },
   {
@@ -356,6 +344,17 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/views/home/apply-claim.vue"),
         meta: {
           isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
+        path: "about",
+        name: "About",
+        component: () => import("@/views/about/index.vue"),
+        meta: {
+          title: "关于我们",
+          isSecondary: true,
+          noCache: true,
           pageTransition: "page-slide-forward"
         }
       },
