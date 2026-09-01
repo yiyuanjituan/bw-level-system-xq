@@ -56,8 +56,8 @@ import UiButton from "@/components/Common/Button.vue";
   .sticky-box {
     position: sticky;
     top: 0;
-    background: #191919;
-    border: 1px solid #242424;
+    background: var(--skin__bg2);
+    border: 1px solid var(--skin__border);
     min-height: 50px;
     display: flex;
     align-items: center;
