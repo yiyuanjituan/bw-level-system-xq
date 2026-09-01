@@ -1,14 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
 import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
-import type { GameImageDisplay, MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
+import type { GameImageDisplay, HomePageSection, MineHeroStyle, MineMenuItem, MinePageSection, MineQuickAction, MineTemplateName, ThemeConfigResponse } from "@/api/common";
 import {
-  DEFAULT_GAME_IMAGE_DISPLAY,
-  DEFAULT_MINE_HERO_STYLE,
-  DEFAULT_MINE_TEMPLATE,
   DEFAULT_THEME_TEMPLATE,
   normalizeThemeConfig
 } from "@/config/theme-config";
+import {
+  DEFAULT_GAME_IMAGE_DISPLAY,
+  DEFAULT_HOME_PAGE_SECTIONS,
+  DEFAULT_MINE_HERO_STYLE,
+  DEFAULT_MINE_PAGE_LAYOUT,
+  DEFAULT_MINE_TEMPLATE,
+  normalizeHomePageLayout,
+  normalizeMinePageLayout,
+} from "@/config/page-config";
 import {
   SITE_ACTIVITY_CACHE_KEY,
   SITE_CONFIG_CACHE_KEY,
@@ -65,17 +71,12 @@ export const applyThemeVariables = (themeConfig?: { variables?: Record<string, s
 };
 
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
-const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
-const normalizeMineHeroStyle = (value: unknown): MineHeroStyle => value === "common" || value === "common82" ? value : "blue";
-const normalizeGameImageDisplay = (value: unknown): GameImageDisplay => {
-  return value === "square" || value === "long" ? value : DEFAULT_GAME_IMAGE_DISPLAY;
-};
 const isPlainObject = (value: unknown): value is Record<string, any> => {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 };
 const isThemeConfigLike = (value: unknown): value is Partial<ThemeConfigResponse> => {
   return isPlainObject(value)
-    && (isPlainObject(value.variables) || isPlainObject(value.assets) || value.theme !== undefined || value.mineTemplate !== undefined);
+    && (isPlainObject(value.variables) || isPlainObject(value.pageLayouts) || value.theme !== undefined || value.preset !== undefined);
 };
 
 const readLocalJson = <T>(key: string, fallback: T): T => {
@@ -108,6 +109,12 @@ const getPersistedAppInfo = () => {
   return normalizeAppInfo(readLocalJson(SITE_CONFIG_CACHE_KEY, null));
 };
 
+export interface PreviewStateReplacement {
+  scope: "theme" | "page";
+  pageCode?: "home" | "mine";
+  data?: unknown;
+}
+
 export const useAppStore = defineStore('app', () => {
   const appLoadingStartedAt = Date.now()
   const persistedAppInfo = getPersistedAppInfo()
@@ -122,7 +129,14 @@ export const useAppStore = defineStore('app', () => {
   const themeTemplate = ref<0 | 1>(DEFAULT_THEME_TEMPLATE)
   const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
   const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
+  const mineHeroImage = ref('')
   const gameImageDisplay = ref<GameImageDisplay>(DEFAULT_GAME_IMAGE_DISPLAY)
+  const homePageSections = ref<HomePageSection[]>(DEFAULT_HOME_PAGE_SECTIONS.map(section => ({ ...section })))
+  const homePageLayoutVersion = ref(0)
+  const minePageSections = ref<MinePageSection[]>(DEFAULT_MINE_PAGE_LAYOUT.sections.map(section => ({ ...section })))
+  const mineQuickActions = ref<MineQuickAction[]>(DEFAULT_MINE_PAGE_LAYOUT.config.quickActions.map(item => ({ ...item })))
+  const mineMenuItems = ref<MineMenuItem[]>(DEFAULT_MINE_PAGE_LAYOUT.config.menuItems.map(item => ({ ...item })))
+  const minePageLayoutVersion = ref(0)
   updateFavicon(appInfo.value?.favicon)
   updatePwaMetadata(appInfo.value)
 
@@ -130,16 +144,72 @@ export const useAppStore = defineStore('app', () => {
     if (!isThemeConfigLike(themeConfig)) return;
 
     const normalizedThemeConfig = normalizeThemeConfig(themeConfig)
+    const homePageLayout = normalizeHomePageLayout(normalizedThemeConfig.pageLayouts?.home)
+    const minePageLayout = normalizeMinePageLayout(normalizedThemeConfig.pageLayouts?.mine)
 
     themeTemplate.value = normalizeThemeTemplate(normalizedThemeConfig.theme)
-    mineTemplate.value = normalizeMineTemplate(normalizedThemeConfig.mineTemplate)
-    mineHeroStyle.value = normalizeMineHeroStyle(normalizedThemeConfig.assets?.mineHeroStyle)
-    gameImageDisplay.value = normalizeGameImageDisplay(normalizedThemeConfig.assets?.gameImageDisplay)
+    mineTemplate.value = minePageLayout.config.template
+    mineHeroStyle.value = minePageLayout.config.heroStyle
+    mineHeroImage.value = minePageLayout.config.heroImage || ''
+    gameImageDisplay.value = homePageLayout.config.gameImageDisplay
+    homePageSections.value = homePageLayout.sections.map(section => ({ ...section }))
+    minePageSections.value = minePageLayout.sections.map(section => ({ ...section }))
+    mineQuickActions.value = minePageLayout.config.quickActions.map(item => ({ ...item }))
+    mineMenuItems.value = minePageLayout.config.menuItems.map(item => ({ ...item }))
     appInfo.value = {
       ...(appInfo.value || {}),
       theme_config: normalizedThemeConfig
     }
     applyThemeVariables(normalizedThemeConfig)
+  }
+
+  const replacePreviewState = (replacement: PreviewStateReplacement) => {
+    if (replacement.scope === "theme") {
+      // 主题装修发送的是完整主题数据，但不应覆盖由页面装修独立维护的首页与个人中心布局。
+      applyThemeConfig({
+        ...(isPlainObject(replacement.data) ? replacement.data : {}),
+        pageLayouts: {
+          home: {
+            sections: homePageSections.value.map(section => ({ ...section })),
+            config: { gameImageDisplay: gameImageDisplay.value }
+          },
+          mine: {
+            sections: minePageSections.value.map(section => ({ ...section })),
+            config: {
+              template: mineTemplate.value,
+              heroStyle: mineHeroStyle.value,
+              heroImage: mineHeroImage.value,
+              quickActions: mineQuickActions.value.map(item => ({ ...item })),
+              menuItems: mineMenuItems.value.map(item => ({ ...item }))
+            }
+          }
+        }
+      })
+      return
+    }
+
+    if (replacement.scope !== "page" || !isPlainObject(replacement.data)) return
+
+    if (replacement.pageCode === "home") {
+      const homePageLayout = normalizeHomePageLayout(replacement.data)
+      // 使用新数组整体替换布局，全局缓存同时供首页和子游戏页消费。
+      homePageSections.value = homePageLayout.sections.map(section => ({ ...section }))
+      gameImageDisplay.value = homePageLayout.config.gameImageDisplay
+      homePageLayoutVersion.value += 1
+      return
+    }
+
+    if (replacement.pageCode === "mine") {
+      const minePageLayout = normalizeMinePageLayout(replacement.data)
+      // 整体替换个人中心状态：区块、模板、顶部样式、自定义背景、快捷入口与功能菜单。
+      minePageSections.value = minePageLayout.sections.map(section => ({ ...section }))
+      mineTemplate.value = minePageLayout.config.template
+      mineHeroStyle.value = minePageLayout.config.heroStyle
+      mineHeroImage.value = minePageLayout.config.heroImage || ''
+      mineQuickActions.value = minePageLayout.config.quickActions.map(item => ({ ...item }))
+      mineMenuItems.value = minePageLayout.config.menuItems.map(item => ({ ...item }))
+      minePageLayoutVersion.value += 1
+    }
   }
 
   const applySiteConfig = (siteConfig?: unknown) => {
@@ -218,7 +288,14 @@ export const useAppStore = defineStore('app', () => {
     themeTemplate,
     mineTemplate,
     mineHeroStyle,
+    mineHeroImage,
     gameImageDisplay,
+    homePageSections,
+    homePageLayoutVersion,
+    minePageSections,
+    mineQuickActions,
+    mineMenuItems,
+    minePageLayoutVersion,
     isAppReady,
     appLoadingProgress,
     appLoadingStatus,
@@ -230,12 +307,13 @@ export const useAppStore = defineStore('app', () => {
     updateDownloadBtn,
     updateAppLoadingState,
     completeAppInitialization,
+    replacePreviewState,
     setGameList,
     updateActivity
   }
 }, {
   persist: {
-    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "gameImageDisplay", "appInfo.theme_config"],
+    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "mineHeroImage", "gameImageDisplay", "homePageSections", "homePageLayoutVersion", "minePageSections", "mineQuickActions", "mineMenuItems", "minePageLayoutVersion", "appInfo.theme_config"],
     afterHydrate: ({ store }) => {
       (store as any).isAppReady = false;
       (store as any).appLoadingProgress = 6;
@@ -244,7 +322,14 @@ export const useAppStore = defineStore('app', () => {
       (store as any).themeTemplate = DEFAULT_THEME_TEMPLATE;
       (store as any).mineTemplate = DEFAULT_MINE_TEMPLATE;
       (store as any).mineHeroStyle = DEFAULT_MINE_HERO_STYLE;
+      (store as any).mineHeroImage = '';
       (store as any).gameImageDisplay = DEFAULT_GAME_IMAGE_DISPLAY;
+      (store as any).homePageSections = DEFAULT_HOME_PAGE_SECTIONS.map(section => ({ ...section }));
+      (store as any).homePageLayoutVersion = 0;
+      (store as any).minePageSections = DEFAULT_MINE_PAGE_LAYOUT.sections.map(section => ({ ...section }));
+      (store as any).mineQuickActions = DEFAULT_MINE_PAGE_LAYOUT.config.quickActions.map(item => ({ ...item }));
+      (store as any).mineMenuItems = DEFAULT_MINE_PAGE_LAYOUT.config.menuItems.map(item => ({ ...item }));
+      (store as any).minePageLayoutVersion = 0;
     }
   },
 })

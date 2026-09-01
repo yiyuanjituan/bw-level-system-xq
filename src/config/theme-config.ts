@@ -1,4 +1,10 @@
-import type { GameImageDisplay, MineHeroStyle, MineTemplateName, ThemeConfigResponse } from "@/api/common";
+import type { ThemeConfigResponse } from "@/api/common";
+import {
+  DEFAULT_HOME_PAGE_LAYOUT,
+  DEFAULT_MINE_PAGE_LAYOUT,
+  normalizeHomePageLayout,
+  normalizeMinePageLayout,
+} from "@/config/page-config";
 
 export interface ThemeVariableConfig {
   name: string;
@@ -7,9 +13,6 @@ export interface ThemeVariableConfig {
 }
 
 export const DEFAULT_THEME_TEMPLATE = 0;
-export const DEFAULT_MINE_TEMPLATE: MineTemplateName = "TemplateOne";
-export const DEFAULT_MINE_HERO_STYLE: MineHeroStyle = "blue";
-export const DEFAULT_GAME_IMAGE_DISPLAY: GameImageDisplay = "long";
 export const DEFAULT_THEME_PRESET = "theme-1";
 
 export const THEME_VARIABLE_CONFIGS: ThemeVariableConfig[] = [
@@ -55,12 +58,21 @@ export const DEFAULT_THEME_VARIABLES = THEME_VARIABLE_CONFIGS.reduce<Record<stri
 export const DEFAULT_THEME_CONFIG: ThemeConfigResponse = {
   theme: DEFAULT_THEME_TEMPLATE,
   templateTag: "",
-  mineTemplate: DEFAULT_MINE_TEMPLATE,
   preset: DEFAULT_THEME_PRESET,
   variables: { ...DEFAULT_THEME_VARIABLES },
-  assets: {
-    mineHeroStyle: DEFAULT_MINE_HERO_STYLE,
-    gameImageDisplay: DEFAULT_GAME_IMAGE_DISPLAY,
+  pageLayouts: {
+    home: {
+      sections: DEFAULT_HOME_PAGE_LAYOUT.sections.map(section => ({ ...section })),
+      config: { ...DEFAULT_HOME_PAGE_LAYOUT.config },
+    },
+    mine: {
+      sections: DEFAULT_MINE_PAGE_LAYOUT.sections.map(section => ({ ...section })),
+      config: {
+        ...DEFAULT_MINE_PAGE_LAYOUT.config,
+        quickActions: DEFAULT_MINE_PAGE_LAYOUT.config.quickActions.map(item => ({ ...item })),
+        menuItems: DEFAULT_MINE_PAGE_LAYOUT.config.menuItems.map(item => ({ ...item })),
+      },
+    },
   },
 };
 
@@ -83,18 +95,13 @@ export function normalizeThemeConfig(value?: Partial<ThemeConfigResponse> | null
   return {
     theme: Number(source.theme) === 1 ? 1 : DEFAULT_THEME_TEMPLATE,
     templateTag: typeof source.templateTag === "string" ? source.templateTag : "",
-    mineTemplate: source.mineTemplate === "TemplateTwo" ? "TemplateTwo" : DEFAULT_MINE_TEMPLATE,
     preset: typeof source.preset === "string" && source.preset.trim()
       ? source.preset.trim()
       : DEFAULT_THEME_PRESET,
     variables,
-    assets: {
-      mineHeroStyle: source.assets?.mineHeroStyle === "common" || source.assets?.mineHeroStyle === "common82"
-        ? source.assets.mineHeroStyle
-        : DEFAULT_MINE_HERO_STYLE,
-      gameImageDisplay: source.assets?.gameImageDisplay === "long" || source.assets?.gameImageDisplay === "square"
-        ? source.assets.gameImageDisplay
-        : DEFAULT_GAME_IMAGE_DISPLAY,
+    pageLayouts: {
+      home: normalizeHomePageLayout(source.pageLayouts?.home),
+      mine: normalizeMinePageLayout(source.pageLayouts?.mine),
     },
   };
 }

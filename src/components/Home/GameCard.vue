@@ -82,9 +82,6 @@ function handleClick() {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
-  &:active:not(.home-game-card--disabled) {
-    transform: scale(0.98);
-  }
 }
 
 .home-game-card__visual {

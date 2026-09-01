@@ -7,6 +7,7 @@ import MineCard from "./MineCard.vue";
 import MineGrid from "./MineGrid.vue";
 import MineLogin from "./MineLogin.vue";
 import useAuthStore from "@/store/modules/user";
+import useAppStore from "@/store/modules/app";
 import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
 import { bus } from '@/utils/mitt';
@@ -20,10 +21,52 @@ defineOptions({
 });
 
 const auth = useAuthStore();
+const app = useAppStore();
 const previewMode = isThemePreviewMode();
 const loginState = computed(() => !previewMode && Boolean(auth.token));
 const messageCount = ref(0);
 const interestRateText = ref("");
+
+const MENU_TO_GRID_KEY: Record<string, string> = {
+  balanceRecovery: "forget",
+  accountDetails: "zhmx",
+  betRecords: "tzjl",
+  withdrawManage: "txgl",
+  personalReport: "grbb",
+  vip: "vip",
+  security: "aqzx",
+  findUs: "zdwm",
+  promote: "fxzq",
+  claim: "claim",
+  plazza: "pyq",
+  faq: "cjwt",
+  feedback: "yjfk",
+  devices: "dlsb",
+  logout: "aqtc",
+};
+
+const visibleSections = computed(() => {
+  const supportedSections = new Set(["profile", "quick", "banner", "menu"]);
+  return app.minePageSections.filter(section => section.visible !== false && supportedSections.has(section.key));
+});
+
+// 自定义顶部背景使用上传/填写的图片地址，其余情况使用内置背景图。
+const topBgStyle = computed(() => {
+  if (app.mineHeroStyle === "custom" && app.mineHeroImage) {
+    return { backgroundImage: `url("${app.mineHeroImage}")` };
+  }
+  return {};
+});
+
+const quickActions = computed(() => {
+  return app.mineQuickActions.filter(item => item.visible !== false);
+});
+
+const visibleGridKeys = computed(() => {
+  return app.mineMenuItems
+    .filter(item => item.visible !== false && MENU_TO_GRID_KEY[item.key])
+    .map(item => MENU_TO_GRID_KEY[item.key]);
+});
 
 function jumpToService() {
   router.push({
@@ -93,6 +136,12 @@ function handleLxb() {
   router.push("/home/yuebao");
 }
 
+function handleQuickAction(key: string) {
+  if (key === "withdraw") return handleWithdraw();
+  if (key === "deposit") return handleRecharge();
+  if (key === "yuebao") return handleLxb();
+}
+
 onMounted(() => {
   void loadMessageCount();
   void loadInterestRate();
@@ -109,70 +158,59 @@ onMounted(() => {
       </i>
     </div>
     <div class="mine-body">
-      <div class="top-body">
-        <div class="bgGradient"></div>
-        <div class="row-user-card">
-          <div class="user-card">
-            <div class="float-message">
-              <div />
-              <header v-if="loginState">
-                <div class="btn-container" @click="jumpToService">
-                  <div class="w-[24px] h-[24px] text-[24px]">
-                    <svg-icon name="top_kf" class="absolute text-[#68707B]" />
-                    <svg-icon name="top_kf2" class="absolute text-[#F0C059]" />
-                  </div>
-                </div>
-                <ui-badge :content="messageCount" :size="[2, -2]">
-                  <div class="btn-container" @click="jumpToMessage">
+      <template v-for="section in visibleSections" :key="`${app.minePageLayoutVersion}-${section.key}`">
+        <div v-if="section.key === 'profile'" class="top-body" :style="topBgStyle">
+          <div class="bgGradient"></div>
+          <div class="row-user-card">
+            <div class="user-card">
+              <div class="float-message">
+                <div />
+                <header v-if="loginState">
+                  <div class="btn-container" @click="jumpToService">
                     <div class="w-[24px] h-[24px] text-[24px]">
-                      <svg-icon name="top_xx" class="absolute text-[#68707B]" />
-                      <svg-icon
-                        name="top_xx2"
-                        class="absolute text-[#F0C059]"
-                      />
+                      <svg-icon name="top_kf" class="absolute text-[#68707B]" />
+                      <svg-icon name="top_kf2" class="absolute text-[#F0C059]" />
                     </div>
                   </div>
-                </ui-badge>
-              </header>
-              <header v-if="!loginState" class="h-[24px]" />
-            </div>
-            <MineCard v-if="loginState" />
-            <MineLogin v-if="!loginState" />
-          </div>
-          <div class="nav-card">
-            <div class="nav-item" @click="handleWithdraw">
-              <div class="icon">
-                <svg-icon name="style_2_icon_mid_tx" class="svg-icon" />
-                <svg-icon
-                  name="style_2_icon_mid_tx2"
-                  class="svg-icon text-[#04BE02]"
-                />
+                  <ui-badge :content="messageCount" :size="[2, -2]">
+                    <div class="btn-container" @click="jumpToMessage">
+                      <div class="w-[24px] h-[24px] text-[24px]">
+                        <svg-icon name="top_xx" class="absolute text-[#68707B]" />
+                        <svg-icon name="top_xx2" class="absolute text-[#F0C059]" />
+                      </div>
+                    </div>
+                  </ui-badge>
+                </header>
+                <header v-else class="h-[24px]" />
               </div>
-              <div class="label">{{ $t("提现") }}</div>
-            </div>
-            <div class="nav-item" @click="handleRecharge()">
-              <div class="icon">
-                <img :src="depositIcon" class="deposit-icon" alt="" />
-              </div>
-              <div class="label">{{ $t("存款") }}</div>
-            </div>
-            <div class="nav-item" @click="handleLxb()">
-              <ui-badge :content="interestRateText">
-                <div class="icon">
-                  <svg-icon name="style_2_icon_mid_lxb" class="svg-icon" />
-                  <svg-icon
-                    name="style_2_icon_mid_lxb2"
-                    class="svg-icon text-[#EA4E3D]"
-                  />
-                </div>
-              </ui-badge>
-              <div class="label">{{ $t("利息宝") }}</div>
+              <MineCard v-if="loginState" />
+              <MineLogin v-else />
             </div>
           </div>
         </div>
-      </div>
-      <MineBanner />
-      <MineGrid />
+
+        <div v-else-if="section.key === 'quick' && quickActions.length" class="quick-section">
+          <div class="nav-card">
+            <div v-for="action in quickActions" :key="action.key" class="nav-item" @click="handleQuickAction(action.key)">
+              <div class="icon">
+                <template v-if="action.key === 'withdraw'">
+                  <svg-icon name="style_2_icon_mid_tx" class="svg-icon" />
+                  <svg-icon name="style_2_icon_mid_tx2" class="svg-icon text-[#04BE02]" />
+                </template>
+                <img v-else-if="action.key === 'deposit'" :src="depositIcon" class="deposit-icon" alt="" />
+                <template v-else>
+                  <svg-icon name="style_2_icon_mid_lxb" class="svg-icon" />
+                  <svg-icon name="style_2_icon_mid_lxb2" class="svg-icon text-[#EA4E3D]" />
+                </template>
+              </div>
+              <div class="label">{{ action.key === 'withdraw' ? $t('提现') : action.key === 'deposit' ? $t('存款') : $t('利息宝') }}</div>
+            </div>
+          </div>
+        </div>
+
+        <MineBanner v-else-if="section.key === 'banner'" />
+        <MineGrid v-else-if="section.key === 'menu'" :ordered-keys="visibleGridKeys" />
+      </template>
     </div>
   </div>
 </template>
@@ -248,56 +286,51 @@ onMounted(() => {
             }
           }
         }
-        .nav-card {
-          margin-bottom: 10px;
+      }
+    }
+    .quick-section {
+      padding: 15px 10px 8px;
+      background: #202329;
+    }
+    .nav-card {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      border-radius: 7px;
+      background: #1c1e23;
+      .nav-item {
+        position: relative;
+        display: flex;
+        min-width: 72px;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        .icon {
+          width: 32px;
+          min-height: 32px;
+          position: relative;
           display: flex;
-          justify-content: space-around;
-          margin-top: 25px;
-          padding: 0 10px;
-          .nav-item {
-            position: relative;
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            font-size: 14px;
-            width: 72px;
-            color: white;
-            cursor: pointer;
-            .icon {
-              width: 32px;
-              min-height: 32px;
-              position: relative;
-              display: flex;
-              align-items: center;
-              .deposit-icon {
-                width: 32px;
-                height: 32px;
-                display: block;
-                object-fit: contain;
-              }
-              .svg-icon {
-                position: absolute;
-                bottom: 0;
-                font-size: 32px;
-              }
-            }
-            .label {
-              text-align: center;
-              padding-top: 2.5px;
-              color: #adb6c3;
-              word-break: break-word;
-              height: 35px;
-              line-height: 17.5px;
-              display: -webkit-box;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              vertical-align: middle;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-            }
-          }
+          align-items: center;
+          justify-content: center;
+          .deposit-icon { width: 32px; height: 32px; display: block; object-fit: contain; }
+          .svg-icon { position: absolute; bottom: 0; font-size: 32px; }
+        }
+        .label {
+          height: 35px;
+          padding-top: 2.5px;
+          display: -webkit-box;
+          overflow: hidden;
+          color: #adb6c3;
+          line-height: 17.5px;
+          text-align: center;
+          text-overflow: ellipsis;
+          word-break: break-word;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
         }
       }
     }

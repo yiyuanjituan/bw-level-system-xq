@@ -1,12 +1,15 @@
 import type { Pinia } from 'pinia';
-import useAppStore, { applyThemeVariables } from '@/store/modules/app';
+import useAppStore, { type PreviewStateReplacement } from '@/store/modules/app';
+
+const PREVIEW_UPDATE_MESSAGE = 'YG_PREVIEW_STATE_REPLACE';
+const PREVIEW_READY_MESSAGE = 'YG_PREVIEW_READY';
 
 export function isThemePreviewMode() {
   if (typeof window === 'undefined') return false;
-  return getThemePreviewParam('preview') === '1';
+  return getPreviewParam('preview') === '1';
 }
 
-function getThemePreviewParam(name: string) {
+function getPreviewParam(name: string) {
   const hashQuery = window.location.hash.includes('?')
     ? window.location.hash.slice(window.location.hash.indexOf('?') + 1)
     : '';
@@ -25,18 +28,18 @@ function normalizeHttpOrigin(value: string) {
   }
 }
 
-interface ThemePreviewPayload {
-  theme?: number;
-  mineTemplate?: 'TemplateOne' | 'TemplateTwo';
-  variables?: Record<string, string>;
-  assets?: {
-    mineHeroStyle?: 'blue' | 'common' | 'common82';
-    gameImageDisplay?: 'square' | 'long';
-  };
+interface PreviewReplaceMessage {
+  type: typeof PREVIEW_UPDATE_MESSAGE;
+  version: number;
+  payload: PreviewStateReplacement;
 }
 
-const isPreviewMessage = (value: unknown): value is { type: string; payload?: ThemePreviewPayload } => {
-  return Boolean(value && typeof value === 'object' && (value as { type?: unknown }).type === 'YG_THEME_PREVIEW_UPDATE');
+const isPreviewReplaceMessage = (value: unknown): value is PreviewReplaceMessage => {
+  if (!value || typeof value !== 'object') return false;
+  const message = value as Partial<PreviewReplaceMessage>;
+  return message.type === PREVIEW_UPDATE_MESSAGE
+    && Boolean(message.payload && typeof message.payload === 'object')
+    && (message.payload?.scope === 'theme' || message.payload?.scope === 'page');
 };
 
 export function initThemePreviewBridge(pinia: Pinia) {
@@ -44,34 +47,20 @@ export function initThemePreviewBridge(pinia: Pinia) {
 
   const app = useAppStore(pinia);
   // 优先使用后台显式传入的来源，referrer 被浏览器策略移除时仍能完成跨域握手。
-  const parentOrigin = normalizeHttpOrigin(getThemePreviewParam('parentOrigin'))
+  const parentOrigin = normalizeHttpOrigin(getPreviewParam('parentOrigin'))
     || normalizeHttpOrigin(document.referrer);
-
-  const applyPayload = (payload?: ThemePreviewPayload) => {
-    if (!payload) return;
-    if (payload.theme === 0 || payload.theme === 1) app.themeTemplate = payload.theme;
-    if (payload.mineTemplate === 'TemplateOne' || payload.mineTemplate === 'TemplateTwo') {
-      app.mineTemplate = payload.mineTemplate;
-    }
-    applyThemeVariables({ variables: payload.variables });
-
-    if (payload.assets?.mineHeroStyle === 'blue' || payload.assets?.mineHeroStyle === 'common' || payload.assets?.mineHeroStyle === 'common82') {
-      app.mineHeroStyle = payload.assets.mineHeroStyle;
-    }
-    if (payload.assets?.gameImageDisplay === 'square' || payload.assets?.gameImageDisplay === 'long') {
-      app.gameImageDisplay = payload.assets.gameImageDisplay;
-    }
-  };
 
   const handleMessage = (event: MessageEvent) => {
     if (event.source !== window.parent) return;
     if (parentOrigin && event.origin !== parentOrigin) return;
-    if (!isPreviewMessage(event.data)) return;
-    applyPayload(event.data.payload);
+    if (!isPreviewReplaceMessage(event.data)) return;
+
+    // 所有装修消息都携带完整作用域数据，由 Store 一次性替换对应状态。
+    app.replacePreviewState(event.data.payload);
   };
 
   window.addEventListener('message', handleMessage);
-  window.parent?.postMessage({ type: 'YG_THEME_PREVIEW_READY', version: 1 }, parentOrigin || '*');
+  window.parent?.postMessage({ type: PREVIEW_READY_MESSAGE, version: 2 }, parentOrigin || '*');
 
   return () => window.removeEventListener('message', handleMessage);
 }

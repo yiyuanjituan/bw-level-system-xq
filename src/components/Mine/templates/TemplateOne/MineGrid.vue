@@ -19,6 +19,12 @@ interface MineGridItem {
   url: string;
 }
 
+const props = withDefaults(defineProps<{
+  orderedKeys?: string[];
+}>(), {
+  orderedKeys: () => []
+});
+
 const list = ref<MineGridItem[]>([
   {
     key: "forget",
@@ -129,11 +135,17 @@ const list = ref<MineGridItem[]>([
 ]);
 const auth = useAuthStore()
 const displayList = computed<MineGridItem[]>(() => {
-  if (auth.token) {
-    return list.value;
-  }
+  const baseList = auth.token
+    ? list.value
+    : list.value.filter(item => item.key !== "aqtc");
 
-  return list.value.filter(item => item.key !== "aqtc");
+  if (!props.orderedKeys.length) return baseList;
+
+  const itemMap = new Map(baseList.map(item => [item.key, item]));
+  return props.orderedKeys.flatMap(key => {
+    const menuItem = itemMap.get(key);
+    return menuItem ? [menuItem] : [];
+  });
 });
 
 function safeLogOut() {
@@ -172,7 +184,7 @@ const onTapItem = (item: MineGridItem) => {
 </script>
 
 <template>
-  <div class="grid-box">
+  <div v-if="displayList.length" class="grid-box">
     <div class="grid-row">
       <div
         class="grid-item-box"

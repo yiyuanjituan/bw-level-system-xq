@@ -12,6 +12,7 @@ import TemplateTwoMenu from "./TemplateTwoMenu.vue";
 import TemplateTwoQuickNav from "./TemplateTwoQuickNav.vue";
 import TemplateTwoTopCard from "./TemplateTwoTopCard.vue";
 import TemplateTwoVipCard from "./TemplateTwoVipCard.vue";
+import MineBanner from "../TemplateOne/MineBanner.vue";
 import ULanguageDialog from "@/components/Home/ULanguageDialog.vue";
 import depositIcon from "@/assets/mine/template-two/deposit.webp";
 import type {
@@ -47,6 +48,36 @@ const previewMode = isThemePreviewMode();
 const loginState = computed(() => !previewMode && Boolean(auth.token));
 const currencyInfo = computed(() => {
   return app.appInfo.countryList.find(currency => currency.id == auth.user?.currencyId);
+});
+
+// 列表菜单 key 到装修配置菜单项 key 的映射，未配置的项保持展示。
+const MENU_KEY_TO_CANONICAL: Record<string, string> = {
+  records: "records",
+  "withdraw-manage": "withdrawManage",
+  promote: "promote",
+  claim: "claim",
+  profile: "profile",
+  security: "security",
+  "find-us": "findUs",
+  language: "language",
+  faq: "faq",
+  feedback: "feedback",
+  devices: "devices",
+  about: "about",
+  logout: "logout",
+};
+
+const visibleSections = computed(() => app.minePageSections.filter(section => section.visible !== false));
+
+// 自定义顶部背景使用上传/填写的图片地址，其余情况使用内置样式类。
+const mineBgClass = computed(() => app.mineHeroStyle === "custom"
+  ? ""
+  : `mine-template-two__mine-bg--${app.mineHeroStyle}`);
+const mineBgStyle = computed(() => {
+  if (app.mineHeroStyle === "custom" && app.mineHeroImage) {
+    return { backgroundImage: `url("${app.mineHeroImage}")` };
+  }
+  return {};
 });
 
 const currentLanguageName = computed(() => {
@@ -175,15 +206,33 @@ const defaultMenuGroups = computed<MineTemplateMenuGroup[]>(() => [
 ]);
 
 const quickActions = computed(() => {
-  return props.quickActions?.length ? props.quickActions : defaultQuickActions.value;
+  if (props.quickActions?.length) return props.quickActions;
+
+  const itemMap = new Map(defaultQuickActions.value.map(item => [item.key, item]));
+  return app.mineQuickActions.flatMap(configItem => {
+    const actionItem = itemMap.get(configItem.key);
+    return configItem.visible !== false && actionItem ? [actionItem] : [];
+  });
 });
 
 const menuGroups = computed(() => {
-  const groups = props.menuGroups?.length ? props.menuGroups : defaultMenuGroups.value;
+  let visibleGroups: MineTemplateMenuGroup[];
+  if (props.menuGroups?.length) {
+    visibleGroups = props.menuGroups;
+  } else {
+    const menuItemMap = new Map(
+      defaultMenuGroups.value.flatMap(group => group.items).map(item => [MENU_KEY_TO_CANONICAL[item.key], item])
+    );
+    const orderedItems = app.mineMenuItems.flatMap(configItem => {
+      const menuItem = menuItemMap.get(configItem.key);
+      return configItem.visible !== false && menuItem ? [menuItem] : [];
+    });
+    visibleGroups = orderedItems.length ? [{ key: "configured", items: orderedItems }] : [];
+  }
 
-  if (loginState.value) return groups;
+  if (loginState.value) return visibleGroups;
 
-  return groups
+  return visibleGroups
     .map(group => ({
       ...group,
       items: group.items.filter(item => !item.hiddenWhenLogout)
@@ -378,26 +427,36 @@ onMounted(() => {
 
       <div
         class="mine-template-two__mine-bg lobby-image lobby-image--use-bg mine-box"
-        :class="`mine-template-two__mine-bg--${app.mineHeroStyle}`"
+        :class="mineBgClass"
+        :style="mineBgStyle"
       >
-        <TemplateTwoTopCard
-          :is-login="loginState"
-          :user="auth.user"
-          :message-count="messageCount"
-          :currency-prefix="currencyInfo?.numberPrefix"
-          :currency-icon="currencyInfo?.icon"
-          @header-action="handleTopAction"
-          @profile-action="handleUserAction"
-          @guest-action="handleGuestAction"
-        />
-        <TemplateTwoQuickNav :items="quickActions" @select="handleQuickSelect" />
-        <TemplateTwoVipCard v-if="loginState" />
-        <TemplateTwoMenu
-          class="mine-template-two__menu"
-          :class="{ 'mine-template-two__menu--guest': !loginState }"
-          :groups="menuGroups"
-          @select="handleMenuSelect"
-        />
+        <template v-for="section in visibleSections" :key="`${app.minePageLayoutVersion}-${section.key}`">
+          <TemplateTwoTopCard
+            v-if="section.key === 'profile'"
+            :is-login="loginState"
+            :user="auth.user"
+            :message-count="messageCount"
+            :currency-prefix="currencyInfo?.numberPrefix"
+            :currency-icon="currencyInfo?.icon"
+            @header-action="handleTopAction"
+            @profile-action="handleUserAction"
+            @guest-action="handleGuestAction"
+          />
+          <TemplateTwoQuickNav
+            v-else-if="section.key === 'quick' && quickActions.length"
+            :items="quickActions"
+            @select="handleQuickSelect"
+          />
+          <TemplateTwoVipCard v-else-if="section.key === 'vip' && loginState" />
+          <MineBanner v-else-if="section.key === 'banner'" class="mine-template-two__banner" />
+          <TemplateTwoMenu
+            v-else-if="section.key === 'menu' && menuGroups.length"
+            class="mine-template-two__menu"
+            :class="{ 'mine-template-two__menu--guest': !loginState }"
+            :groups="menuGroups"
+            @select="handleMenuSelect"
+          />
+        </template>
       </div>
 
       <ULanguageDialog v-model="languageDialogVisible" />
@@ -487,6 +546,10 @@ onMounted(() => {
 }
 
 .mine-template-two__menu--guest {
+  margin-top: 10px;
+}
+
+.mine-template-two__banner {
   margin-top: 10px;
 }
 

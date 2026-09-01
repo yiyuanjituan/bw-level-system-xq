@@ -20,8 +20,74 @@ type ListResult = {
 
 export type CanReceiveSource = 2 | 3 | 4 | 5 | 6;
 export type MineTemplateName = "TemplateOne" | "TemplateTwo";
-export type MineHeroStyle = "blue" | "common" | "common82";
+export type MineHeroStyle = "blue" | "common" | "common82" | "custom";
 export type GameImageDisplay = "square" | "long";
+export type HomePageSectionKey = "banner" | "notice" | "gameList";
+export type MinePageSectionKey = "profile" | "quick" | "vip" | "banner" | "menu";
+export type MineQuickActionKey = "withdraw" | "deposit" | "yuebao";
+export type MineMenuItemKey =
+  | "records"
+  | "balanceRecovery"
+  | "accountDetails"
+  | "betRecords"
+  | "withdrawManage"
+  | "personalReport"
+  | "vip"
+  | "promote"
+  | "claim"
+  | "plazza"
+  | "profile"
+  | "security"
+  | "findUs"
+  | "language"
+  | "faq"
+  | "feedback"
+  | "devices"
+  | "about"
+  | "logout";
+
+export interface HomePageSection {
+  key: HomePageSectionKey;
+  visible: boolean;
+}
+
+export interface HomePageConfig {
+  gameImageDisplay: GameImageDisplay;
+}
+
+export interface HomePageLayout {
+  sections: HomePageSection[];
+  config: HomePageConfig;
+}
+
+export interface MinePageSection {
+  key: MinePageSectionKey;
+  visible: boolean;
+}
+
+export interface MineQuickAction {
+  key: MineQuickActionKey;
+  visible: boolean;
+}
+
+export interface MineMenuItem {
+  key: MineMenuItemKey;
+  visible: boolean;
+}
+
+export interface MinePageConfig {
+  template: MineTemplateName;
+  heroStyle: MineHeroStyle;
+  /** 自定义顶部背景图；仅 heroStyle 为 custom 时生效 */
+  heroImage?: string;
+  quickActions: MineQuickAction[];
+  menuItems: MineMenuItem[];
+}
+
+export interface MinePageLayout {
+  sections: MinePageSection[];
+  config: MinePageConfig;
+}
 
 export interface CanReceiveItem {
   key: string;
@@ -43,12 +109,11 @@ export interface CanReceiveResponse {
 export interface ThemeConfigResponse {
   theme: number;
   templateTag?: string;
-  mineTemplate: MineTemplateName;
   preset: string;
   variables: Record<string, string>;
-  assets?: {
-    mineHeroStyle?: MineHeroStyle;
-    gameImageDisplay?: GameImageDisplay;
+  pageLayouts?: {
+    home?: HomePageLayout;
+    mine?: MinePageLayout;
   };
 }
 

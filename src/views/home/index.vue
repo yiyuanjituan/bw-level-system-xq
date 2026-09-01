@@ -41,11 +41,15 @@ onBeforeUnmount(() => {
   <div v-else key="galaxy" class="home-page">
     <HomeNavBar />
     <main class="home-page__scroll" id="scroll-box" @scroll="handleHomeScroll">
-      <HomeBanner />
-      <HomeNotice />
-      <section class="home-page__game-list">
-        <HomeGameList />
-      </section>
+      <template v-for="section in app.homePageSections" :key="`${app.homePageLayoutVersion}-${section.key}`">
+        <template v-if="section.visible">
+          <HomeBanner v-if="section.key === 'banner'" />
+          <HomeNotice v-else-if="section.key === 'notice'" />
+          <section v-else-if="section.key === 'gameList'" class="home-page__game-list">
+            <HomeGameList />
+          </section>
+        </template>
+      </template>
     </main>
     <HomeBackTop target="#scroll-box" :is-put="isHomeScrolling" />
     <HomeFloat :is-put="isHomeScrolling" />
