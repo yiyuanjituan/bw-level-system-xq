@@ -25,8 +25,8 @@ const app = useAppStore();
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: rgb(28, 30, 35);
-  color: white;
+  background: var(--skin__bg_1);
+  color: var(--skin__lead);
   overflow: hidden;
 }
 

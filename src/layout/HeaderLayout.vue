@@ -121,7 +121,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background: var(--skin__bg_1);
-  color: white;
+  color: var(--skin__lead);
 
   .base-header {
     position: relative;

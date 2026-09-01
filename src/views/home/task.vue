@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import useAuthStore from "@/store/modules/user";
 import TaskRecord from "./components/TaskRecord.vue";
 import TaskLimitTip from "@/views/home/components/TaskLimitTip.vue";
+import UiEmpty from "@/components/UI/empty.vue";
 
 const isLoading = ref(false);
 const totalConfig = ref<any>({});
@@ -41,12 +42,8 @@ async function init() {
       .taskConfigData()
       .then(res => {
         totalConfig.value = res;
-        if (res.taskConfig?.["101"] && !activeTabName.value) {
-          activeTabName.value = "101";
-        } else if (res.taskConfig?.["102"] && !activeTabName.value) {
-          activeTabName.value = "102";
-        } else if (res.taskConfig?.["103"] && !activeTabName.value) {
-          activeTabName.value = "103";
+        if (!activeTabName.value) {
+          activeTabName.value = res.taskConfig?.["101"] ? "101" : "102";
         }
         getTaskData();
 
@@ -83,7 +80,7 @@ function handleTapGo(type: any) {
   if (type == 0) {
     router.push("/home/register");
   } else if (type == 1) {
-    showCustomToast({ type: "success", message: $t("下载APP的操作") });
+    bus.emit("showDownloadTip");
   } else if (type == 2) {
     bus.emit("showRecharge");
   } else if (type == 3) {
@@ -95,7 +92,7 @@ function handleTapGo(type: any) {
   } else if (type == 6) {
     router.push("/home/withdraw");
   } else if (type == 7) {
-    showCustomToast({ type: "success", message: $t("修改社交信息") });
+    router.push("/home/setting");
   } else if (type == 8) {
     bus.emit("switchTab", "/index");
   } else if (type == 9) {
@@ -180,7 +177,7 @@ onMounted(() => init());
 
 <template>
   <div class="task-container">
-    <div class="active-level-box">
+    <div v-if="totalConfig?.rewardConfig?.length > 0" class="active-level-box">
       <div class="active-level">
         <div class="caption">
           <span class="captionItem">
@@ -242,7 +239,7 @@ onMounted(() => init());
         <div class="item-tab" v-if="totalConfig?.taskConfig?.['101']" @click="handleChangeTaskData(101)">
           <div class="task-tab-name" :class="{ 'active-name': activeTabName == '101' }">新手任务</div>
         </div>
-        <div class="item-tab" v-if="totalConfig?.taskConfig?.['102']" @click="handleChangeTaskData(102)">
+        <div class="item-tab" @click="handleChangeTaskData(102)">
           <div class="task-tab-name" :class="{ 'active-name': activeTabName == '102' }">每日任务</div>
         </div>
         <div class="item-tab" v-if="totalConfig?.taskConfig?.['103']" @click="handleChangeTaskData(103)">
@@ -256,7 +253,7 @@ onMounted(() => init());
         </div>
       </div>
     </div>
-    <div class="active-receive-box">
+    <div v-if="taskList.length > 0" class="active-receive-box">
       <div class="active-receive-left">
         <img v-if="activeTabName == '101'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_xr.avif" class="icon-box" />
         <img v-if="activeTabName == '102'" src="/siteadmin/skin/lobby_asset/web/task/img_rw_mrrw.avif" class="icon-box" />
@@ -279,79 +276,97 @@ onMounted(() => init());
       </div>
     </div>
     <div class="task-content-box">
-      <div class="card-layout" v-for="(item, index) in taskList" :key="index">
-        <div class="card-layout-inner">
-          <div class="flex card-top">
-            <div class="instruction-info">
-              <div class="instruction-base-info">
-                <div class="description-primary">{{ item.name }}</div>
-                <div class="more-limit" v-if="item.desc">
-                  <span class="text">
-                    <span class="text-inner">{{ $t("仅限：") }}{{ item.desc }}</span>
-                  </span>
-                  <span
-                    class="btn-more"
-                    v-if="(item.limit_ids && item.limit_ids.length > 3) || (item.desc && item.desc.length > 16)"
-                    @click="seeMore(item)"
-                  >
-                    更多
-                  </span>
+      <ui-empty v-if="taskList.length === 0" class="task-empty" :text="$t('暂无内容')">
+        <template #text="{ text }">
+          <span class="task-empty__text">
+            <span>{{ text }}</span>
+            <button
+              type="button"
+              class="task-empty__retry"
+              :disabled="isLoading"
+              :aria-label="$t('刷新')"
+              @click="handleLoading"
+            >
+              <svg-icon name="comm_icon_retry" :class-name="isLoading ? 'loading' : ''" />
+            </button>
+          </span>
+        </template>
+      </ui-empty>
+      <template v-else>
+        <div class="card-layout" v-for="(item, index) in taskList" :key="index">
+          <div class="card-layout-inner">
+            <div class="flex card-top">
+              <div class="instruction-info">
+                <div class="instruction-base-info">
+                  <div class="description-primary">{{ item.name }}</div>
+                  <div class="more-limit" v-if="item.desc">
+                    <span class="text">
+                      <span class="text-inner">{{ $t("仅限：") }}{{ item.desc }}</span>
+                    </span>
+                    <span
+                      class="btn-more"
+                      v-if="(item.limit_ids && item.limit_ids.length > 3) || (item.desc && item.desc.length > 16)"
+                      @click="seeMore(item)"
+                    >
+                      更多
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="card-bottom">
-            <div class="card-bottom-box">
-              <div class="card-left-box">
-                <div class="card-left-inner">
-                  <div class="bottom-slot">
-                    <div class="icon-wrap" v-if="item.money > 0">
-                      <span class="category-icon-text">
-                        <img src="/siteadmin/active/rmb.svg" alt="" srcset="" />
-                        <span class="category-text">{{ item.money }}</span>
-                      </span>
+            <div class="card-bottom">
+              <div class="card-bottom-box">
+                <div class="card-left-box">
+                  <div class="card-left-inner">
+                    <div class="bottom-slot">
+                      <div class="icon-wrap" v-if="item.money > 0">
+                        <span class="category-icon-text">
+                          <img src="/siteadmin/active/rmb.svg" alt="" srcset="" />
+                          <span class="category-text">{{ item.money }}</span>
+                        </span>
+                      </div>
+                      <div class="icon-wrap" v-if="item.vitality > 0">
+                        <span class="category-icon-text tili">
+                          <svg-icon name="comm_icon_shy" class-name="text-[18px]"></svg-icon>
+                          <span class="category-text">{{ item.vitality }}</span>
+                        </span>
+                      </div>
                     </div>
-                    <div class="icon-wrap" v-if="item.vitality > 0">
-                      <span class="category-icon-text tili">
-                        <svg-icon name="comm_icon_shy" class-name="text-[18px]"></svg-icon>
-                        <span class="category-text">{{ item.vitality }}</span>
-                      </span>
+                    <div class="progress-wrapper" v-if="getIsShow(item.taskDetailType, [8, 9, 10])">
+                      <van-progress
+                        class="green-bar"
+                        :pivot-text="`${item.currentProgress}/${item.maxProgress}`"
+                        :percentage="(item.currentProgress / item.maxProgress) * 100"
+                      />
                     </div>
-                  </div>
-                  <div class="progress-wrapper" v-if="getIsShow(item.taskDetailType, [8, 9, 10])">
-                    <van-progress
-                      class="green-bar"
-                      :pivot-text="`${item.currentProgress}/${item.maxProgress}`"
-                      :percentage="(item.currentProgress / item.maxProgress) * 100"
-                    />
                   </div>
                 </div>
-              </div>
-              <div class="card-right-box">
-                <div class="card-right-box-inner">
-                  <x-button
-                    class="!w-[75px] !h-[30px] text-[11px]"
-                    v-if="getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) && !item.isOver && !item.isOverGet"
-                    @click="handleTapGo(item.taskDetailType)"
-                  >
-                    {{ $t("前 往") }}
-                  </x-button>
-                  <x-button
-                    :loading="item.isLoading"
-                    type="success"
-                    class="!w-[75px] !h-[30px] text-[11px]"
-                    v-if="item.isOver && !item.isOverGet"
-                    @click="handleGetReward(item)"
-                  >
-                    {{ $t("领 取") }}
-                  </x-button>
-                  <x-button disabled type="warning" class="!w-[75px] !h-[30px] text-[11px]" v-if="item.isOver && item.isOverGet"> {{ $t("已领取") }} </x-button>
+                <div class="card-right-box">
+                  <div class="card-right-box-inner">
+                    <x-button
+                      class="!w-[75px] !h-[30px] text-[11px]"
+                      v-if="getIsShow(item.taskDetailType, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) && !item.isOver && !item.isOverGet"
+                      @click="handleTapGo(item.taskDetailType)"
+                    >
+                      {{ $t("前 往") }}
+                    </x-button>
+                    <x-button
+                      :loading="item.isLoading"
+                      type="success"
+                      class="!w-[75px] !h-[30px] text-[11px]"
+                      v-if="item.isOver && !item.isOverGet"
+                      @click="handleGetReward(item)"
+                    >
+                      {{ $t("领 取") }}
+                    </x-button>
+                    <x-button disabled type="warning" class="!w-[75px] !h-[30px] text-[11px]" v-if="item.isOver && item.isOverGet"> {{ $t("已领取") }} </x-button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
     <task-record ref="taskRecordRef" />
     <task-limit-tip ref="taskLimitTipRef" />
@@ -572,6 +587,7 @@ onMounted(() => init());
       display: flex;
       align-items: center;
       font-size: 10px;
+      color: var(--skin__lead);
       .icon-box {
         width: 45px;
         height: 36px;
@@ -609,6 +625,47 @@ onMounted(() => init());
     flex: 1;
     height: 0;
     overflow: auto;
+
+    .task-empty {
+      min-height: 100%;
+
+      :deep(.empty-text) {
+        color: var(--skin__neutral_2);
+      }
+
+      &__text {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      &__retry {
+        width: 14px;
+        height: 14px;
+        margin-left: 8px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        color: var(--skin__primary);
+        background: transparent;
+        cursor: pointer;
+
+        &:disabled {
+          cursor: default;
+        }
+
+        :deep(.svg-icon) {
+          width: 14px;
+          height: 14px;
+        }
+
+        :deep(.loading) {
+          animation: loading-icon 0.5s ease-in-out infinite;
+        }
+      }
+    }
+
     .card-layout {
       display: flex;
       margin-top: 10px;

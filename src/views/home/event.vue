@@ -80,7 +80,6 @@ onMounted(() => {
             <div class="item-box flex items-center justify-center">
               <svg-icon
                 name="event_zh"
-                :color="activeCategoryId === 0 ? '#F0C059' : '#adb6c3'"
                 class="!w-[24px] !h-[24px]"
               />
               <div class="w-[46.5px] text-[12.5px] text-center">综 合</div>
@@ -105,21 +104,27 @@ onMounted(() => {
         </div>
       </div>
       <div class="event-extra-button">
-        <div
-          type="button"
-          class="btn-small ui-button mt-[10px] bg-transparent"
+        <x-button
+          class="mt-[10px]"
+          size="small"
+          plain
+          type="primary"
           @click="router.push('/home/records')"
         >
-          <div class="lh-[100%] text-[#F0C059] pt-[2px]">
-            <span class="text">{{ $t("领取记录") }}</span>
-          </div>
-        </div>
-        <div type="button" class="btn-small ui-button mt-[10px] bg-transparent" @click="handleLoading">
-          <div class="lh-[100%] text-[#F0C059] pt-[2px] flex">
-            <svg-icon name="refresh" color="#F0C059" class="!w-[11px] !h-[11px]" :class="{ loading: isLoading }" />
-            <span class="ml-[2px] text-[9px]">{{ $t("刷新奖励") }}</span>
-          </div>
-        </div>
+          {{ $t("领取记录") }}
+        </x-button>
+        <x-button
+          class="mt-[10px]"
+          style="white-space: nowrap"
+          size="small"
+          plain
+          type="primary"
+          :loading="isLoading"
+          @click="handleLoading"
+        >
+          <template #icon><svg-icon name="comm_icon_retry" /></template>
+          {{ $t("刷新奖励") }}
+        </x-button>
       </div>
     </div>
     <div class="ui-tab-right">
@@ -193,40 +198,14 @@ onMounted(() => {
       align-items: center;
       flex-direction: column;
       margin: 0 auto;
-      .ui-button {
-        position: relative;
-        box-sizing: border-box;
-        height: 35px;
-        padding: 0;
-        font-size: 12px;
-        line-height: 1.2;
-        text-align: center;
-        border-radius: 7px;
-        cursor: pointer;
-        transition: opacity 0.2s;
-        -webkit-appearance: none;
-        appearance: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+      :deep(.x-button__text) {
+        text-overflow: unset !important;
       }
-      .btn-small {
-        height: 25px;
-        width: 60px;
-        padding: 0 2.5px;
-        font-size: 10px;
-        border: 1px solid #f0c059;
-        .loading {
-          animation: loading-icon 0.5s ease-in-out infinite;
-        }
-        @keyframes loading-icon {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
+
+      :deep(.x-button__content) {
+        text-overflow: unset !important;
+        white-space: nowrap;
       }
     }
   }

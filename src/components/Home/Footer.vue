@@ -324,8 +324,8 @@ function sanitizeFooterRichText(value: string) {
 
 .home-footer__rich-text {
   overflow-wrap: anywhere;
-  color: var(--skin__neutral_1);
-  font-size: 11px;
+  color: var(--skin__lead);
+  font-size: 12px;
   line-height: 1.6;
 }
 

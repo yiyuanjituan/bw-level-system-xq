@@ -24,7 +24,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <component :is="currentTemplate" class="mine-page__content" />
+  <div>
+    <component :is="currentTemplate" class="mine-page__content" />
+  </div>
 </template>
 
 <style scoped>
