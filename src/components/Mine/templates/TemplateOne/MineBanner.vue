@@ -3,7 +3,7 @@ import router from '@/router';
 import useHomeDataStore, { type BannerItem } from '@/store/modules/home';
 
 defineOptions({
-  name: "MineBanner"
+  name: 'MineBanner'
 });
 
 const home = useHomeDataStore();
@@ -23,16 +23,8 @@ function handleBannerClick(item: BannerItem) {
 <template>
   <div v-if="home.mineBannerList.length" class="banner-box">
     <van-swipe class="my-swipe" :autoplay="30000" indicator-color="white">
-      <van-swipe-item
-        v-for="item in home.mineBannerList"
-        :key="item.id"
-        @click="handleBannerClick(item)"
-      >
-        <img
-          :src="item.image"
-          alt=""
-          class="swiper-bg"
-        />
+      <van-swipe-item v-for="item in home.mineBannerList" :key="item.id" @click="handleBannerClick(item)">
+        <img :src="item.image" alt="" class="swiper-bg" />
       </van-swipe-item>
     </van-swipe>
   </div>
@@ -40,18 +32,18 @@ function handleBannerClick(item: BannerItem) {
 
 <style scoped lang="less">
 .banner-box {
-  margin-top: 5px;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+  padding-left: 12.5px;
+  padding-right: 12.5px;
+  margin-bottom: 0;
   width: 100%;
   height: 160px;
 
   .my-swipe {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
-    background: #202329;
+    border-radius: 10px;
+    background: var(--skin__bg_2);
     --van-swipe-indicator-size: 5px;
     --van-swipe-indicator-margin: 5px;
 

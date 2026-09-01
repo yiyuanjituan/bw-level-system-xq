@@ -1,306 +1,218 @@
-<script setup lang="ts" name="mine-card">
-import { $t } from "@/locales";
-import MineShowInfo from "@/components/Mine/MineShowInfo.vue";
-import useAuthStore from "@/store/modules/user";
-import { computed, ref, watch } from "vue";
-import * as _ from "lodash-es";
-import useAppStore from "@/store/modules/app";
-import useClipboard from "vue-clipboard3";
-import { showCustomToast } from "@/hooks/useCommon";
-import router from "@/router";
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import * as _ from 'lodash-es';
+import Copy from '@/components/Common/Copy.vue';
+import MineShowInfo from '@/components/Mine/MineShowInfo.vue';
+import router from '@/router';
+import useAppStore from '@/store/modules/app';
+import useAuthStore from '@/store/modules/user';
 
-defineOptions({ name: "mine-card" });
+defineOptions({ name: 'MineCard' });
 
 const auth = useAuthStore();
 const app = useAppStore();
-const walletIsLoading = ref(false);
-const avatarLoadFailed = ref(false);
-const defaultAvatarUrl = "/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif";
-const { toClipboard } = useClipboard();
 const isShowInfo = ref(false);
-const avatarUrl = computed(() => {
-  return auth.user.avatarUrl && !avatarLoadFailed.value ? auth.user.avatarUrl : defaultAvatarUrl;
-});
+const avatarLoadFailed = ref(false);
+const defaultAvatarUrl = '/siteadmin/skin/lobby_asset/common/common/profile/icon_wd_mrtx.avif';
+
 const currencyInfo = computed(() => {
-  return app.appInfo.countryList.find(v => v.id == auth.user.currencyId);
+  return app.appInfo?.countryList?.find(currency => currency.id == auth.user?.currencyId);
 });
+const avatarUrl = computed(() => {
+  return auth.user?.avatarUrl && !avatarLoadFailed.value ? auth.user.avatarUrl : defaultAvatarUrl;
+});
+const displayName = computed(() => {
+  if (auth.user?.showAccount === 0) return String(auth.user?.unionid || '');
+  if (auth.user?.showAccount === 2 && auth.user?.phone) {
+    const prefix = currencyInfo.value?.numberPrefix ? `+${currencyInfo.value.numberPrefix} ` : '';
+    return `${prefix}***${_.join(_.takeRight(auth.user.phone, 3), '')}`;
+  }
+  return String(auth.user?.account || auth.user?.unionid || '');
+});
+const displayNameCanCopy = computed(() => auth.user?.showAccount !== 2 && Boolean(displayName.value));
 
 watch(
-  () => auth.user.avatarUrl,
+  () => auth.user?.avatarUrl,
   () => {
     // 用户更换头像后重新尝试加载接口返回的新地址。
     avatarLoadFailed.value = false;
   }
 );
 
-function copyAccount(text) {
-  toClipboard(text).then(() => {
-    showCustomToast({ type: "success", message: $t("复制成功") });
-  });
+function toggleAccountInfo() {
+  isShowInfo.value = !isShowInfo.value;
 }
 
-const updateWallet = () => {
-  walletIsLoading.value = true;
-  auth.updateInfo();
-  setTimeout(() => {
-    walletIsLoading.value = false;
-  }, 2000);
-};
+function jumpToProfile() {
+  void router.push('/home/setting');
+}
 </script>
 
 <template>
-  <div class="user-center">
-    <div class="avatar-box">
-      <van-image
-        round
-        width="100%"
-        height="100%"
-        :src="avatarUrl"
-        @error="avatarLoadFailed = true"
-      />
-      <div class="edit-icon absolute" @click="router.push('/home/setting')">
+  <div class="mine-user-card">
+    <div class="mine-user-card__avatar">
+      <van-image round width="100%" height="100%" :src="avatarUrl" @error="avatarLoadFailed = true" />
+      <button class="mine-user-card__edit" type="button" :aria-label="$t('个人资料')" @click="jumpToProfile">
         <svg-icon name="icon_grzl" />
-      </div>
+      </button>
     </div>
-    <div class="username-id">
-      <div class="user-name">
-        <div
-          @click="isShowInfo = !isShowInfo"
-          class="rotate-box"
-          :class="{ 'rotate-[180deg]': isShowInfo, 'mr-[3.5px]': true }"
-        >
-          <svg width="1em" height="1em" fill="currentColor" class="down-icon">
-            <use xlink:href="#comm_icon_sort"></use>
-          </svg>
-        </div>
-        <MineShowInfo v-if="isShowInfo" @close="isShowInfo = !isShowInfo" />
-        <span class="user-info-show-name" v-if="auth.user.showAccount == 1">{{
-          auth.user.account
-        }}</span>
-        <span class="user-info-show-name" v-if="auth.user.showAccount == 2">
-          {{
-            (currencyInfo.numberPrefix ? "+" : "") + currencyInfo.numberPrefix
-          }}
-          ***
-          {{ _.join(_.takeRight(auth.user.phone, 3), "") }}
-        </span>
-        <span class="user-info-show-name" v-if="auth.user.showAccount == 0">{{ auth.user.unionid }}</span>
-        <span
-          class="copy-icon"
-          v-if="auth.user.showAccount == 0 || auth.user.showAccount == 1"
-          @click="copyAccount(auth.user.showAccount == 0 ? auth.user.unionid : auth.user.account)"
-        >
-          <svg width="1em" height="1em" fill="currentColor" class="">
-            <use xlink:href="#comm_icon_copy"></use>
-          </svg>
-        </span>
+
+    <div class="mine-user-card__info">
+      <div class="mine-user-card__name-row">
+        <button class="mine-user-card__account-toggle" type="button" :aria-expanded="isShowInfo" @click="toggleAccountInfo">
+          <svg-icon name="arrow-down" :class="{ 'mine-user-card__sort--open': isShowInfo }" />
+        </button>
+        <MineShowInfo v-if="isShowInfo" @close="isShowInfo = false" />
+        <span class="mine-user-card__name" dir="auto">{{ displayName }}</span>
+        <Copy v-if="displayNameCanCopy" :text="displayName" class="mine-user-card__copy" class-name="mine-user-card__copy-icon" />
       </div>
-      <div class="username-id-currency">
-        <p class="flex items-center user-id">
-          <span class="label">ID:</span>
-          <span class="id-text">{{ auth.user.unionid }}</span>
-          <span class="copt-text" @click="copyAccount(auth.user.unionid)">
-            <i class="inline-flex justify-center items-center w-[15px]">
-              <svg width="1em" height="1em" fill="currentColor" class="">
-                <use xlink:href="#comm_icon_copy"></use>
-              </svg>
-            </i>
-          </span>
-        </p>
-        <span class="sperator"></span>
-        <div class="flex items-center currency-box">
-          <div class="currency">
-            <van-image
-              :src="currencyInfo?.icon"
-              alt=""
-              srcset=""
-              width="100%"
-              height="100%"
-              round
-            />
-          </div>
-          <div class="currency-info">
-            <div class="currency-count" :style="{ borderBottom: `${walletIsLoading ? 0 : 1}px solid white` }">
-              <span style="line-height: 17px" v-if="!walletIsLoading">{{ auth.user.money }}</span>
-              <span style="line-height: 12px" v-if="walletIsLoading" class="text-[#F0C059] text-[12px] mx-[1px]">{{ $t("加载中") }}</span>
-            </div>
-            <div
-              class="refresh-icon"
-              :class="[walletIsLoading ? 'ml-[0px] animate__spin' : 'ml-[4px]']"
-              @click="updateWallet"
-            >
-              <svg width="1em" height="1em" fill="#F0C059" class="">
-                <use xlink:href="#comm_icon_sx"></use>
-                <!---->
-              </svg>
-            </div>
-            <!--            <div-->
-            <!--              class="text-[17px] text-[#F0C059] w-[11px]"-->
-            <!--              :class="[walletIsLoading ? 'ml-[0px] animate__spin' : 'ml-[0px]']"-->
-            <!--              @click="updateWallet"-->
-            <!--            >-->
-            <!--              <svg-icon name="comm_icon_sx" />-->
-            <!--            </div>-->
-          </div>
-        </div>
+
+      <div class="mine-user-card__id-row" dir="ltr">
+        <span class="mine-user-card__id-label">ID:</span>
+        <span class="mine-user-card__id">{{ auth.user?.unionid }}</span>
+        <Copy
+          :text="String(auth.user?.unionid || '')"
+          class="mine-user-card__copy"
+          class-name="mine-user-card__copy-icon mine-user-card__copy-icon--id"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="less">
-.user-center {
+.mine-user-card {
   position: relative;
-  margin-top: 0;
-  font-size: 12px;
-  justify-content: flex-start;
   display: flex;
   align-items: center;
+  margin-top: 10px;
+}
 
-  .avatar-box {
-    width: 50px;
-    height: 50px;
-    position: relative;
-    border-radius: 50%;
+.mine-user-card__avatar {
+  width: 49px;
+  height: 49px;
+  margin-right: 8px;
+  flex: none;
+  position: relative;
+  border-radius: 50%;
+}
 
-    img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-    }
+.mine-user-card__edit {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--skin__text_primary);
+  background: var(--skin__primary);
+  font-size: 18px;
+  cursor: pointer;
+}
 
-    .edit-icon {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 21px;
-      height: 21px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1px solid #202329;
-      background-color: #f0c059;
-      font-size: 20px;
-      color: #874404;
-    }
-  }
+.mine-user-card__info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  .username-id {
-    margin-left: 10px;
-    display: flex;
-    flex-direction: column;
+.mine-user-card__name-row,
+.mine-user-card__id-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
 
-    .user-name {
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      height: 14px;
-      position: relative;
-      .rotate-box {
-        transition: all 0.2s;
-      }
+.mine-user-card__name-row {
+  height: 16px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
 
-      .down-icon {
-        color: #68707b;
-        font-size: 7.5px;
-        transition: all 0.3s;
-      }
+.mine-user-card__account-toggle {
+  width: 12px;
+  height: 14px;
+  margin: 0 2px 0 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  color: var(--skin__neutral_2);
+  background: transparent;
+  font-size: 8px;
+  cursor: pointer;
+}
 
-      .user-info-show-name {
-        color: white;
-        margin: 0;
-        font-size: 12px;
-        display: block;
-        max-width: 110px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
+.mine-user-card__account-toggle .svg-icon {
+  transition: transform 0.2s ease;
+}
 
-      .copy-icon {
-        margin: 0 0 0 4px;
-        color: #f0c059;
-        font-size: 13px;
-        position: relative;
-      }
-    }
+.mine-user-card__sort--open {
+  transform: rotate(180deg);
+}
 
-    .username-id-currency {
-      display: flex;
-      align-items: center;
-      height: 20px;
+.mine-user-card__name {
+  max-width: min(250px, calc(100vw - 125px));
+  overflow: hidden;
+  color: var(--skin__lead);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-      .user-id {
-        font-size: 16px;
-        justify-content: flex-start;
-        display: flex;
-        align-items: center;
-        line-height: 16px;
+.mine-user-card__copy {
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  flex: none;
+}
 
-        .label {
-          margin-right: 5px;
-          color: #adb6c3;
-        }
+.mine-user-card__copy :deep(.mine-user-card__copy-icon) {
+  color: var(--skin__primary);
+  font-size: 15px;
+}
 
-        .id-text {
-          margin-right: 5px;
-          color: white;
-        }
+.mine-user-card__id-row {
+  height: 18px;
+  color: var(--skin__lead);
+  font-size: 16px;
+  line-height: 18px;
+}
 
-        .copt-text {
-          width: 15px;
-          font-size: 16px;
-          height: 15px;
-          color: #f0c059;
-          margin-bottom: 1px;
-        }
-      }
-    }
+.mine-user-card__id-label {
+  margin-right: 3px;
+  color: var(--skin__neutral_1);
+}
 
-    .sperator {
-      width: 1px;
-      height: 14px;
-      margin: 0 8px;
-      background: #ffffff33;
-    }
+.mine-user-card__id {
+  max-width: min(240px, calc(100vw - 140px));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-    .currency-box {
-      .currency {
-        width: 17px;
-        height: 17px;
-        font-size: 12px;
-      }
+.mine-user-card__copy :deep(.mine-user-card__copy-icon--id) {
+  font-size: 15px;
+}
 
-      .currency-info {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        position: relative;
+:global([dir='rtl']) .mine-user-card__avatar {
+  margin-right: 0;
+  margin-left: 8px;
+}
 
-        .currency-count {
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          max-width: 100px;
-          font-size: 16px;
-          margin: 0 0 0 4px;
-          color: white;
-          font-weight: normal;
-          height: 19px;
-          display: flex;
-          align-items: center;
-        }
-        .refresh-icon {
-          font-size: 17px;
-          margin-left: 5px;
-        }
-      }
-    }
-  }
+:global([dir='rtl']) .mine-user-card__account-toggle {
+  margin-right: 0;
+  margin-left: 2px;
+}
 
-  .animate__spin {
-    animation: spin 0.2s linear infinite; /* 2秒一次，匀速，无限循环 */
-  }
+:global([dir='rtl']) .mine-user-card__copy {
+  margin-right: 2px;
+  margin-left: 0;
 }
 </style>

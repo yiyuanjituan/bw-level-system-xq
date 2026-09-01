@@ -1,252 +1,403 @@
 <script setup lang="ts">
-import { $t } from "@/locales";
-import { computed, ref } from "vue";
-import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
-import useAuthStore from "@/store/modules/user";
-import router from "@/router";
-import { bus } from "@/utils/mitt";
+import { computed } from 'vue';
+import { $t } from '@/locales';
+import { showCustomDialog, showCustomToast } from '@/hooks/useCommon';
+import { bus } from '@/utils/mitt';
+import router from '@/router';
+import useAuthStore from '@/store/modules/user';
 
-defineOptions({
-  name: "MineGrid"
-});
+defineOptions({ name: 'MineGrid' });
 
 interface MineGridItem {
   key: string;
-  icon_1: string;
-  icon_2: string;
-  icon_3?: string;
+  icon: string;
+  activeIcon?: string;
   name: string;
-  url: string;
+  url?: string;
+  iconMode?: 'normal' | 'claim';
+  hiddenWhenLogout?: boolean;
+  badge?: string;
 }
 
-const props = withDefaults(defineProps<{
-  orderedKeys?: string[];
-}>(), {
-  orderedKeys: () => []
-});
+const props = withDefaults(
+  defineProps<{
+    orderedKeys?: string[];
+    showYuebao?: boolean;
+    interestRateText?: string;
+  }>(),
+  {
+    orderedKeys: () => [],
+    showYuebao: false,
+    interestRateText: ''
+  }
+);
 
-const list = ref<MineGridItem[]>([
+const emit = defineEmits<{
+  language: [];
+}>();
+
+const auth = useAuthStore();
+
+const menuItems = computed<MineGridItem[]>(() => [
   {
-    key: "forget",
-    icon_1: "style_2_icon_list_zhye",
-    icon_2: "style_2_icon_list_zhye2",
-    name: $t("找回余额"),
-    url: "/home/report?reportCurrent=4"
+    key: 'records',
+    icon: 'template-one-style_7_icon_zdjl',
+    activeIcon: 'template-one-style_7_icon_zdjl1',
+    name: $t('我的记录'),
+    url: '/home/report'
   },
   {
-    key: "zhmx",
-    icon_1: "style_2_icon_list_zhmx",
-    icon_2: "style_2_icon_list_zhmx2",
-    name: $t("账户明细"),
-    url: "/home/report?reportCurrent=3"
+    key: 'balanceRecovery',
+    icon: 'template-one-style_7_icon_zkq',
+    activeIcon: 'template-one-style_7_icon_zkq1',
+    name: $t('找回余额'),
+    url: '/home/report?reportCurrent=4'
   },
   {
-    key: "tzjl",
-    icon_1: "style_2_icon_list_tzjl",
-    icon_2: "style_2_icon_list_tzjl2",
-    name: $t("投注记录"),
-    url: "/home/report?reportCurrent=2"
+    key: 'accountDetails',
+    icon: 'template-one-style_7_icon_zdjl',
+    activeIcon: 'template-one-style_7_icon_zdjl1',
+    name: $t('账户明细'),
+    url: '/home/report?reportCurrent=3'
   },
   {
-    key: "txgl",
-    icon_1: "style_2_icon_list_txgl",
-    icon_2: "style_2_icon_list_txgl2",
-    name: $t("提现管理"),
-    url: "/home/withdraw?active=10"
+    key: 'betRecords',
+    icon: 'template-one-style_7_icon_zdjl',
+    activeIcon: 'template-one-style_7_icon_zdjl1',
+    name: $t('投注记录'),
+    url: '/home/report?reportCurrent=2'
   },
   {
-    key: "grbb",
-    icon_1: "style_2_icon_list_grbb",
-    icon_2: "style_2_icon_list_grbb2",
-    name: $t("个人报表"),
-    url: "/home/report?reportCurrent=1"
+    key: 'withdrawManage',
+    icon: 'template-one-style_7_icon_txgl',
+    activeIcon: 'template-one-style_7_icon_txgl1',
+    name: $t('提现管理'),
+    url: '/home/withdraw?active=10'
   },
   {
-    key: "vip",
-    icon_1: "style_2_icon_list_vip",
-    icon_2: "style_2_icon_list_vip2",
-    name: $t("VIP中心"),
-    url: "/home/vip"
+    key: 'personalReport',
+    icon: 'template-one-style_7_icon_zdjl',
+    activeIcon: 'template-one-style_7_icon_zdjl1',
+    name: $t('个人报表'),
+    url: '/home/report?reportCurrent=1'
   },
   {
-    key: "aqzx",
-    icon_1: "style_2_icon_list_aqzx",
-    icon_2: "style_2_icon_list_aqzx2",
-    name: $t("安全中心"),
-    url: "/home/security"
+    key: 'vip',
+    icon: 'template-one-style_7_icon_vip',
+    activeIcon: 'template-one-style_7_icon_vip1',
+    name: $t('VIP中心'),
+    url: '/home/vip'
   },
   {
-    key: "zdwm",
-    icon_1: "style_2_icon_list_zdwm",
-    icon_2: "style_2_icon_list_zdwm2",
-    name: $t("找到我们"),
-    url: "账户明细"
+    key: 'promote',
+    icon: 'template-one-style_7_icon_fxzq',
+    activeIcon: 'template-one-style_7_icon_fxzq1',
+    name: $t('分享赚钱'),
+    url: '/home/promote'
   },
   {
-    key: "fxzq",
-    icon_1: "style_2_icon_list_fxzq",
-    icon_2: "style_2_icon_list_fxzq2",
-    name: $t("分享赚钱"),
-    url: "/home/promote"
+    key: 'claim',
+    icon: 'comm_icon_dblp_1',
+    activeIcon: 'comm_icon_dblp_2',
+    iconMode: 'claim',
+    name: $t('第三方平台担保'),
+    url: '/home/claim'
   },
   {
-    key: "claim",
-    icon_1: "comm_icon_dblp_1",
-    icon_2: "comm_icon_dblp_2",
-    icon_3: "comm_icon_gou",
-    name: $t("担保理赔"),
-    url: "/home/claim"
+    key: 'plazza',
+    icon: 'template-one-style_7_icon_pyq',
+    activeIcon: 'template-one-style_7_icon_pyq1',
+    name: $t('发现'),
+    url: '/home/plazza'
   },
   {
-    key: "pyq",
-    icon_1: "style_2_icon_list_pyq",
-    icon_2: "style_2_icon_list_pyq2",
-    name: $t("发现"),
-    url: "/home/plazza"
+    key: 'profile',
+    icon: 'template-one-style_7_icon_list_grzl',
+    activeIcon: 'template-one-style_7_icon_list_grzl1',
+    name: $t('个人资料'),
+    url: '/home/setting'
   },
   {
-    key: "cjwt",
-    icon_1: "style_2_icon_list_cjwt",
-    icon_2: "style_2_icon_list_cjwt2",
-    name: $t("常见问题"),
-    url: "/home/notice?noticeType=4"
+    key: 'security',
+    icon: 'template-one-style_7_icon_aqzx',
+    name: $t('安全中心'),
+    url: '/home/security'
   },
   {
-    key: "yjfk",
-    icon_1: "style_2_icon_list_yjfk",
-    icon_2: "style_2_icon_list_yjfk2",
-    name: $t("有奖反馈"),
-    url: "/home/notice?noticeType=5"
+    key: 'findUs',
+    icon: 'template-one-style_7_icon_zdwm',
+    activeIcon: 'template-one-style_7_icon_zdwm1',
+    name: $t('找到我们')
   },
   {
-    key: "dlsb",
-    icon_1: "style_2_icon_list_dlsb",
-    icon_2: "style_2_icon_list_dlsb2",
-    name: $t("登录设备"),
-    url: "/home/device"
+    key: 'language',
+    icon: 'mine-template-two-list_xzyy',
+    name: $t('选择语言')
   },
   {
-    key: "aqtc",
-    icon_1: "style_2_icon_list_aqtc",
-    icon_2: "style_2_icon_list_aqtc2",
-    name: $t("安全退出"),
-    url: "账户明细"
+    key: 'faq',
+    icon: 'template-one-style_7_icon_cjwt',
+    activeIcon: 'template-one-style_7_icon_cjwt1',
+    name: $t('常见问题'),
+    url: '/home/notice?noticeType=4'
   },
+  {
+    key: 'feedback',
+    icon: 'template-one-style_7_icon_yjfk',
+    activeIcon: 'template-one-style_7_icon_yjfk1',
+    name: $t('有奖反馈'),
+    url: '/home/notice?noticeType=5'
+  },
+  {
+    key: 'devices',
+    icon: 'template-one-style_7_icon_dlsb',
+    activeIcon: 'template-one-style_7_icon_dlsb1',
+    name: $t('登录设备'),
+    url: '/home/device'
+  },
+  {
+    key: 'about',
+    icon: 'template-one-style_7_icon_gywm',
+    activeIcon: 'template-one-style_7_icon_gywm1',
+    name: $t('关于我们'),
+    url: '/about'
+  },
+  {
+    key: 'logout',
+    icon: 'template-one-style_7_icon_tc',
+    activeIcon: 'template-one-style_7_icon_tc1',
+    name: $t('安全退出'),
+    hiddenWhenLogout: true
+  }
 ]);
-const auth = useAuthStore()
+
 const displayList = computed<MineGridItem[]>(() => {
-  const baseList = auth.token
-    ? list.value
-    : list.value.filter(item => item.key !== "aqtc");
+  const menuItemMap = new Map(menuItems.value.map(item => [item.key, item]));
+  const orderedItems = props.orderedKeys.length
+    ? props.orderedKeys.flatMap(key => {
+        const menuItem = menuItemMap.get(key);
+        return menuItem ? [menuItem] : [];
+      })
+    : menuItems.value;
+  const visibleItems = orderedItems.filter(item => !item.hiddenWhenLogout || Boolean(auth.token));
 
-  if (!props.orderedKeys.length) return baseList;
-
-  const itemMap = new Map(baseList.map(item => [item.key, item]));
-  return props.orderedKeys.flatMap(key => {
-    const menuItem = itemMap.get(key);
-    return menuItem ? [menuItem] : [];
-  });
+  if (!props.showYuebao) return visibleItems;
+  return [
+    {
+      key: 'yuebao',
+      icon: 'template-one-style_7_icon_lxb',
+      activeIcon: 'template-one-style_7_icon_lxb1',
+      name: $t('利息宝'),
+      url: '/home/yuebao',
+      badge: props.interestRateText
+    },
+    ...visibleItems
+  ];
 });
 
 function safeLogOut() {
-  if (!auth.token) {
-    return;
-  }
+  if (!auth.token) return;
 
-  const options = {
-    title: $t("温馨提示"),
-    message: $t("是否退出当前账号?"),
+  showCustomDialog({
+    title: $t('温馨提示'),
+    message: $t('是否退出当前账号?'),
     showCancelButton: true,
-    confirmButtonText: '确认退出',
-    cancelButtonText: '我点错了',
+    confirmButtonText: $t('确认退出'),
+    cancelButtonText: $t('我点错了'),
     width: 300
-  }
+  }).then(result => {
+    if (!result) return;
 
-  showCustomDialog(options).then((result) => {
-    if (result) {
-      auth.logout()
-      showCustomToast({ type: 'success', message: $t("退出成功") })
-      setTimeout(() => {
-        router.replace('/')
-      }, 500)
-    }
-  })
+    auth.logout();
+    showCustomToast({ type: 'success', message: $t('退出成功') });
+    setTimeout(() => {
+      void router.replace('/');
+    }, 500);
+  });
 }
 
-const onTapItem = (item: MineGridItem) => {
-  if (item.key === 'aqtc') return safeLogOut()
-  if (item.key === 'zdwm') return bus.emit('findUs')
-
-  if (item.url) {
-    router.push(item.url)
+function handleSelect(menuItem: MineGridItem) {
+  if (menuItem.key === 'logout') {
+    safeLogOut();
+    return;
+  }
+  if (menuItem.key === 'findUs') {
+    bus.emit('findUs');
+    return;
+  }
+  if (menuItem.key === 'language') {
+    emit('language');
+    return;
+  }
+  if (menuItem.url) {
+    void router.push(menuItem.url);
   }
 }
 </script>
 
 <template>
-  <div v-if="displayList.length" class="grid-box">
-    <div class="grid-row">
-      <div
-        class="grid-item-box"
-        v-for="(i) in displayList"
-        :key="i.key"
-        @click="onTapItem(i)"
+  <section v-if="displayList.length" class="mine-feature-card">
+    <h2 class="mine-feature-card__title">{{ $t('快捷功能') }}</h2>
+    <ul class="mine-feature-card__grid" dir="ltr">
+      <li
+        v-for="menuItem in displayList"
+        :key="menuItem.key"
+        class="mine-feature-card__item"
+        role="button"
+        tabindex="0"
+        @click="handleSelect(menuItem)"
+        @keydown.enter.space.prevent="handleSelect(menuItem)"
       >
-        <div class="icon-box">
-          <svg-icon :name="i.icon_1" class="svg-icon text-[#68707B]" />
-          <svg-icon :name="i.icon_2" class="svg-icon text-[#F0C059]" />
-          <div v-if="i.icon_3" class="flex items-center w-[100%] h-[6.5px] justify-center pt-[7px] pl-[2px]">
-            <svg-icon :name="i.icon_3 || ''" class="svg-icon !text-[6.5px] text-white" />
-          </div>
-        </div>
-        <div class="item-text">{{ i.name }}</div>
-      </div>
-    </div>
-  </div>
+        <span class="mine-feature-card__icon" :class="{ 'mine-feature-card__icon--claim': menuItem.iconMode === 'claim' }">
+          <template v-if="menuItem.iconMode === 'claim'">
+            <svg-icon :name="menuItem.icon" class="mine-feature-card__icon-layer mine-feature-card__claim-first" />
+            <svg-icon :name="menuItem.activeIcon || ''" class="mine-feature-card__icon-layer mine-feature-card__claim-second" />
+            <svg-icon name="comm_icon_gou" class="mine-feature-card__claim-check" />
+          </template>
+          <template v-else>
+            <svg-icon :name="menuItem.icon" class="mine-feature-card__icon-layer mine-feature-card__icon-layer--base" />
+            <svg-icon
+              v-if="menuItem.activeIcon"
+              :name="menuItem.activeIcon"
+              class="mine-feature-card__icon-layer mine-feature-card__icon-layer--active"
+            />
+          </template>
+          <span v-if="menuItem.badge" class="mine-feature-card__badge">{{ menuItem.badge }}</span>
+        </span>
+        <span class="mine-feature-card__label">{{ menuItem.name }}</span>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped lang="less">
-.grid-box {
-  padding: 0 10px 10px;
+.mine-feature-card {
+  margin: 10px 12.5px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--skin__bg_2);
+  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.06);
+}
 
-  .grid-row {
-    padding: 20px 10px 10px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 7px;
-    background-color: #1c1e23;
-    border-radius: 7px;
-    box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.06);
-    .grid-item-box {
-      color: #adb6c3;
-      position: relative;
-      flex-direction: column;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      .icon-box {
-        position: relative;
-        width: 20px;
-        height: 20px;
-        .svg-icon {
-          position: absolute;
-          font-size: 20px;
-        }
-      }
-      .item-text {
-        line-height: 15px;
-        height: 30px;
-        display: -webkit-box;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: middle;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        font-size: 12px;
-        margin-top: 5px;
-      }
-    }
+.mine-feature-card__title {
+  margin: 0;
+  color: var(--skin__lead);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.mine-feature-card__grid {
+  margin: 0;
+  padding: 10px 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, 75px);
+  justify-content: space-between;
+  column-gap: 10px;
+  row-gap: 15px;
+  background: transparent;
+  list-style: none;
+}
+
+.mine-feature-card__item {
+  width: 75px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--skin__neutral_1);
+  text-align: center;
+  cursor: pointer;
+}
+
+.mine-feature-card__icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-feature-card__icon-layer {
+  position: absolute;
+  inset: 0;
+  font-size: 24px;
+}
+
+.mine-feature-card__icon-layer--base {
+  color: var(--skin__lead);
+}
+
+.mine-feature-card__icon-layer--active {
+  color: var(--skin__primary);
+}
+
+.mine-feature-card__icon--claim {
+  color: var(--skin__accent_1);
+}
+
+.mine-feature-card__claim-first {
+  color: var(--skin__accent_1);
+}
+
+.mine-feature-card__claim-second {
+  color: var(--skin__neutral_2);
+}
+
+.mine-feature-card__claim-check {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  color: #fff;
+  font-size: 6px;
+}
+
+.mine-feature-card__badge {
+  max-width: 44px;
+  height: 16px;
+  padding: 0 5px;
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  overflow: hidden;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--skin__accent_1);
+  font-size: 10px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.mine-feature-card__label {
+  width: 100%;
+  max-height: 33px;
+  margin-top: 5px;
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--skin__neutral_1);
+  font-size: 12px;
+  line-height: 16.5px;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 360px) {
+  .mine-feature-card__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 7px;
+  }
+
+  .mine-feature-card__item {
+    width: auto;
   }
 }
 </style>
