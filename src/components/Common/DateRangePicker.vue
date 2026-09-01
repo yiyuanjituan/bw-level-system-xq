@@ -183,16 +183,19 @@ watch(
 
     <div class="time-panel" :class="{ 'time-panel--fixed-picker': hasCustomPickerWidth }" :style="panelStyle">
       <div v-if="hasQuickModes" class="time-panel__quick">
-        <button
+        <div
           v-for="mode in visibleQuickModes"
           :key="mode"
           class="time-panel__quick-item"
           :class="{ 'time-panel__quick-item--active': draftMode === mode }"
-          type="button"
+          role="button"
+          tabindex="0"
+          :aria-pressed="draftMode === mode"
           @click="selectQuickMode(mode)"
+          @keydown.enter.space.prevent="selectQuickMode(mode)"
         >
           {{ QUICK_MODE_LABELS[mode] }}
-        </button>
+        </div>
       </div>
 
       <div class="time-panel__title">{{ $t("自定义") }}</div>
@@ -245,10 +248,11 @@ watch(
   align-items: center;
   gap: 6px;
   border: 1px solid var(--skin__border);
-  border-radius: 14px;
-  background: #191919;
+  border-radius: 9999px;
+  background: var(--skin__bg_2);
   color: var(--skin__neutral_2, var(--skin__lead));
   box-sizing: border-box;
+  transition: border-color 0.2s ease, color 0.2s ease;
 
   .time-trigger__text {
     flex: 1;
@@ -265,16 +269,17 @@ watch(
 }
 
 .time-trigger--active {
-  border-color: #dfbe5b;
-  color: #dfbe5b;
+  border-color: var(--skin__primary);
+  color: var(--skin__primary);
 
   .time-trigger__arrow {
-    color: #dfbe5b;
+    color: var(--skin__primary);
   }
 }
 
 .time-panel {
   width: var(--date-range-panel-width);
+  background: var(--skin__bg_2);
   border: var(--lobby__px) solid var(--skin__border);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
@@ -306,8 +311,8 @@ watch(
   }
 
   .time-panel__quick-item--active {
-    border-color: #dfbe5b;
-    color: #dfbe5b;
+    border-color: var(--skin__primary);
+    color: var(--skin__primary);
   }
 
   .time-panel__title {
@@ -381,7 +386,7 @@ watch(
 
   :deep(.van-picker-column) {
     font-size: 12px;
-    color: #6f6f6f;
+    color: var(--skin__neutral_2);
   }
 
   :deep(.van-picker__columns) {
@@ -389,7 +394,7 @@ watch(
   }
 
   :deep(.van-picker-column__item) {
-    color: #6f6f6f;
+    color: var(--skin__neutral_2);
     font-size: 12px;
   }
 
@@ -400,7 +405,7 @@ watch(
   }
 
   :deep(.van-picker__mask) {
-    background-image: linear-gradient(180deg, rgba(26, 26, 26, 0.94), rgba(26, 26, 26, 0.6)), linear-gradient(0deg, rgba(26, 26, 26, 0.94), rgba(26, 26, 26, 0.6));
+    background-image: linear-gradient(180deg, rgba(var(--skin__bg_2__toRgbString), 0.94), rgba(var(--skin__bg_2__toRgbString), 0.6)), linear-gradient(0deg, rgba(var(--skin__bg_2__toRgbString), 0.94), rgba(var(--skin__bg_2__toRgbString), 0.6));
   }
 
   :deep(.van-picker__frame) {

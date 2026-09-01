@@ -276,7 +276,7 @@ onMounted(() => {
         <div class="curIncomeWrapper">
           <div class="curIncomeItem">
             <div>
-              结算周期 <span class="text-white">{{ interestInfo?.display?.cycle_text }}</span>
+              结算周期 <span class="lead-text">{{ interestInfo?.display?.cycle_text }}</span>
             </div>
           </div>
           <div class="curIncomeItem !mb-[0px]">
@@ -372,7 +372,7 @@ onMounted(() => {
   overflow: hidden;
 
   .info-box {
-    background-color: #191919;
+    background-color: var(--skin__bg_2);
     border-radius: 0;
     padding: 20px 10px 0;
     width: 100%;
@@ -385,9 +385,10 @@ onMounted(() => {
       .principalWrapper {
         max-width: 60%;
         font-size: 15px;
+        color: var(--skin__lead);
 
         .label {
-          color: #656565;
+          color: var(--skin__neutral_2, var(--skin__lead));
           font-size: 11px;
           line-height: 1.45;
           margin-right: 5px;
@@ -397,7 +398,7 @@ onMounted(() => {
       .mobileButtonLine {
         display: flex;
         gap: 10px;
-        --van-button-warning-background: #ffaa09;
+        --van-button-warning-background: var(--skin__accent_3);
 
         :deep(.van-button) {
           width: 60px;
@@ -411,9 +412,13 @@ onMounted(() => {
           display: flex;
           width: 100%;
           margin-bottom: 10.5px;
-          color: #656565;
+          color: var(--skin__neutral_2);
           font-size: 11px;
           line-height: 1.45;
+        }
+
+        .lead-text {
+          color: var(--skin__lead);
         }
 
         .mg {
@@ -424,7 +429,7 @@ onMounted(() => {
           align-items: center;
 
           .strong {
-            color: #ffaa09;
+            color: var(--skin__accent_3);
             font-size: 15px;
             font-weight: 600;
           }
@@ -448,10 +453,10 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     --van-tabs-line-height: 35px;
-    --van-tabs-nav-background: #191919;
+    --van-tabs-nav-background: var(--skin__bg_2);
     --van-tab-font-size: 11px;
-    --van-tab-active-text-color: #dfbe5b;
-    --van-tab-text-color: white;
+    --van-tab-active-text-color: var(--skin__primary);
+    --van-tab-text-color: var(--skin__lead);
     --van-padding-xs: 0;
     --van-tabs-bottom-bar-height: 2px;
     --van-tabs-bottom-bar-width: 44px;
@@ -485,7 +490,7 @@ onMounted(() => {
         flex-direction: column;
         min-height: 0;
         padding: 10px;
-        background-color: #000000;
+        background-color: var(--skin__bg_1);
 
         .inner-box {
           height: 100%;
@@ -497,10 +502,10 @@ onMounted(() => {
           overflow: auto;
           min-height: 100px;
           border-radius: 5px;
-          background-color: #191919;
+          background-color: var(--skin__bg_2);
           font-size: 13px;
           line-height: 21px;
-          color: #656565;
+          color: var(--skin__neutral_2);
           box-shadow: 0 1.5px 3.5px #0000001f;
 
           .rule {
@@ -527,15 +532,15 @@ onMounted(() => {
       .filter-select :deep(.x-select) {
         height: 25px;
         padding: 0 10px;
-        border: 1px solid #242424;
+        border: 1px solid var(--skin__border);
         border-radius: 9999px;
-        background: #191919;
-        color: #656565;
+        background: var(--skin__bg_2);
+        color: var(--skin__neutral_2, var(--skin__primary));
       }
 
       .filter-select :deep(.x-select--focused) {
-        border-color: #dfbe5b;
-        color: #dfbe5b;
+        border-color: var(--skin__primary);
+        color: var(--skin__primary);
       }
 
       .filter-select :deep(.x-select__wrap) {
@@ -582,7 +587,7 @@ onMounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #656565;
+        color: var(--skin__neutral_2);
         font-size: 11px;
       }
 
@@ -591,7 +596,7 @@ onMounted(() => {
         height: 35px;
         border-radius: 4px;
         font-size: 10px;
-        color: #656565;
+        color: var(--skin__neutral_2);
         &:nth-child(2n) {
           background: var(--skin__bg_2);
         }
@@ -614,8 +619,8 @@ onMounted(() => {
         height: 40px;
         flex-shrink: 0;
         font-size: 12px;
-        color: #fff;
-        border: 1px solid #242424;
+        color: var(--skin__lead);
+        border: 1px solid var(--skin__border);
         background-color: var(--skin__bg_2);
       }
     }

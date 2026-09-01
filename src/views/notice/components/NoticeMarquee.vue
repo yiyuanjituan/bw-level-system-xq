@@ -255,7 +255,7 @@ onMounted(() => init());
   height: 100%;
   position: relative;
   overflow: auto;
-  background: #000;
+  background: var(--skin__bg_1);
   display: flex;
   flex-direction: column;
   width: 100%;

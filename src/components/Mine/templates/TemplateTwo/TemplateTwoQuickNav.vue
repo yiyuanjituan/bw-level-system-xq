@@ -84,7 +84,7 @@ function handleSelect(item: MineTemplateActionItem) {
 
 .mine-template-two-quick__item {
   min-width: 71px;
-  min-height: 66px;
+  //min-height: 66px;
   flex: 1 0 0;
   display: flex;
   flex-direction: column;

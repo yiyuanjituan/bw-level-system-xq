@@ -238,9 +238,16 @@ watch(
 .range-picker {
   display: inline-block;
   min-width: 65px;
+  height: 25px;
 
   :deep(.van-popover) {
     background: transparent;
+  }
+
+  :deep(.van-popover__wrapper) {
+    display: block;
+    width: 100%;
+    height: 25px;
   }
 
   :deep(.van-popover__content) {
@@ -255,8 +262,10 @@ watch(
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    width: 100%;
+    height: 25px;
     min-height: 25px;
-    padding: 0 10px 0 12px;
+    padding: 0 10px;
     border: 1px solid var(--skin__border);
     box-sizing: border-box;
     border-radius: 9999px;
@@ -286,6 +295,7 @@ watch(
   &__reference {
     display: block;
     width: 100%;
+    height: 25px;
   }
 
   &__panel {

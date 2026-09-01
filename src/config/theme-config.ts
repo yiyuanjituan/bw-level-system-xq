@@ -9,7 +9,7 @@ export interface ThemeVariableConfig {
 export const DEFAULT_THEME_TEMPLATE = 0;
 export const DEFAULT_MINE_TEMPLATE: MineTemplateName = "TemplateOne";
 export const DEFAULT_MINE_HERO_STYLE: MineHeroStyle = "blue";
-export const DEFAULT_GAME_IMAGE_DISPLAY: GameImageDisplay = "square";
+export const DEFAULT_GAME_IMAGE_DISPLAY: GameImageDisplay = "long";
 export const DEFAULT_THEME_PRESET = "theme-1";
 
 export const THEME_VARIABLE_CONFIGS: ThemeVariableConfig[] = [

@@ -67,7 +67,9 @@ export const applyThemeVariables = (themeConfig?: { variables?: Record<string, s
 const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
 const normalizeMineTemplate = (value: unknown): MineTemplateName => value === "TemplateTwo" ? "TemplateTwo" : "TemplateOne";
 const normalizeMineHeroStyle = (value: unknown): MineHeroStyle => value === "common" || value === "common82" ? value : "blue";
-const normalizeGameImageDisplay = (value: unknown): GameImageDisplay => value === "long" ? "long" : DEFAULT_GAME_IMAGE_DISPLAY;
+const normalizeGameImageDisplay = (value: unknown): GameImageDisplay => {
+  return value === "square" || value === "long" ? value : DEFAULT_GAME_IMAGE_DISPLAY;
+};
 const isPlainObject = (value: unknown): value is Record<string, any> => {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 };

@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import RangePicker from "./RangePicker.vue";
-import UiRadiusSelect from "@/components/UI/radius-select.vue";
 import { service } from "@/api/service";
 import router from "@/router";
 
@@ -187,22 +186,14 @@ onMounted(() => init());
     <div class="filter-container">
       <RangePicker v-model="formInfo.timeRange" :options="timeRangeOptions" />
 
-      <ui-radius-select
-        v-model="formInfo.status"
-        pop-class="w-[80px] h-[25px]"
-        :options="dayOptions"
-      >
-        <template #default="{ isShow, options, value }">
-          <div class="select-box" :class="{ 'select-box-active': isShow }">
-            <div class="select-single">
-              <div class="flex-1">{{ options[value]?.label }}</div>
-              <div class="right-box" :class="{ '!rotate-[90deg]': isShow }">
-                <svg-icon name="arrow-back" class-name="text-[10px]" />
-              </div>
-            </div>
-          </div>
-        </template>
-      </ui-radius-select>
+      <div class="notice-status-select">
+        <x-select
+          v-model="formInfo.status"
+          :options="dayOptions"
+          value-key="key"
+          placement="bottom"
+        />
+      </div>
 
       <div class="bind-search-box">
         <div class="flex-1 min-w-0">
@@ -297,38 +288,41 @@ onMounted(() => init());
     padding: 10px;
     gap: 10px;
 
-    .select-box {
-      height: 25px;
+    .notice-status-select {
+      flex: 0 0 80px;
       width: 80px;
       max-width: 100%;
-      overflow: hidden;
-      border: solid 1px #242424;
-      border-radius: 9999rem;
-      color: #656565;
-      font-size: 10px;
-      transition: all 0.3s;
 
-      &-active {
-        border-color: #dfbe5b;
-      }
-
-      .select-single {
-        position: relative;
-        display: flex;
-        align-items: center;
+      :deep(.x-select) {
         width: 100%;
-        height: 100%;
+        height: 25px;
+        min-height: 25px;
         padding: 0 10px;
-        box-sizing: border-box;
-        border-radius: 5px;
-        background-color: #191919;
+        border: 1px solid var(--skin__border);
+        border-radius: 9999px;
+        background: var(--skin__bg_2);
+        color: var(--skin__neutral_2);
+        font-size: 10px;
       }
 
-      .right-box {
-        margin-right: 3px;
+      :deep(.x-select--focused) {
+        border-color: var(--skin__primary);
+        color: var(--skin__primary);
+      }
+
+      :deep(.x-select__wrap) {
+        line-height: 25px;
+      }
+
+      :deep(.x-select__label),
+      :deep(.x-select__placeholder) {
+        color: inherit;
         font-size: 10px;
-        transform: rotate(-90deg);
-        transition: transform 0.3s linear;
+      }
+
+      :deep(.x-select__suffix) {
+        margin-left: 3px;
+        font-size: 10px;
       }
     }
 

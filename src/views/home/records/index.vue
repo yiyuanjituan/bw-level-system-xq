@@ -164,7 +164,6 @@ onMounted(() => refresh());
 
 <style scoped lang="less">
 .records-container {
-  background: black;
   display: flex;
   flex-direction: column;
 
@@ -189,7 +188,7 @@ onMounted(() => refresh());
         font-size: 12px;
         gap: 4px;
         line-height: 16px;
-        color: #656565;
+        color: var(--skin__neutral_2);
 
         .text {
           color: #ffaa09;
@@ -205,15 +204,15 @@ onMounted(() => refresh());
   .filter-select :deep(.x-select) {
     height: 25px;
     padding: 0 10px;
-    border: 1px solid #242424;
+    border: 1px solid var(--skin__border);
     border-radius: 9999px;
-    background: #191919;
-    color: #656565;
+    background: var(--skin__bg_2);
+    color: var(--skin__neutral_2);
   }
 
   .filter-select :deep(.x-select--focused) {
-    border-color: #dfbe5b;
-    color: #dfbe5b;
+    border-color: var(--skin__primary);
+    color: var(--skin__primary);
   }
 
   .filter-select :deep(.x-select__wrap) {
@@ -260,13 +259,13 @@ onMounted(() => refresh());
       .empty-text {
         text-align: center;
         max-width: 260px;
-        color: #656565;
+        color: var(--skin__neutral_2);
         font-size: 13px;
         margin-bottom: 30px;
       }
 
       .showAll {
-        color: #dfbe5b;
+        color: var(--skin__primary);
         display: inline-block;
       }
     }
@@ -277,7 +276,7 @@ onMounted(() => refresh());
 
       .list-item {
         width: 355px;
-        background-color: #191919;
+        background-color: var(--skin__bg_2);
         box-shadow: 0 1.5px 3.5px 0 #0000001f;
         display: flex;
         flex-direction: column;
@@ -286,7 +285,7 @@ onMounted(() => refresh());
         min-height: 55px;
         padding: 10px;
         border-radius: 7px;
-        color: #656565;
+        color: var(--skin__neutral_2);
         font-size: 10px;
 
         &:first-child {
@@ -297,7 +296,7 @@ onMounted(() => refresh());
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          color: #656565;
+          color: var(--skin__neutral_2);
           font-size: 11px;
 
           .name-text {
@@ -350,7 +349,7 @@ onMounted(() => refresh());
             display: flex;
             font-size: 10px;
             line-height: 1.6;
-            color: #656565;
+            color: var(--skin__neutral_2);
 
             .template {
               margin-left: 7px;
@@ -367,13 +366,13 @@ onMounted(() => refresh());
 
               .source-text {
                 cursor: pointer;
-                color: #dfbe5b;
+                color: var(--skin__primary);
               }
             }
           }
 
           .receiveStatus {
-            color: #1fe11f;
+            color: var(--skin__accent_1);
             font-size: 10px;
             line-height: 1.6;
             text-align: right;

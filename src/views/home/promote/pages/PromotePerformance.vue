@@ -128,16 +128,18 @@ watch(
         <template #text="{ text }">
           <span class="performance-empty-text">
             <span>{{ text }}</span>
-            <button
+            <div
               class="performance-retry"
-              type="button"
+              role="button"
+              tabindex="0"
               :aria-label="$t('重新加载')"
               @click="handleRetry"
+              @keydown.enter.space.prevent="handleRetry"
             >
               <svg viewBox="0 0 28 28" aria-hidden="true">
                 <path d="M0 18.97l9.55-.16-2.4 3.42a10.75 10.75 0 1 0-4.05-8.4c0 .31.01.62.04.92H.06c-.02-.3-.03-.61-.03-.92A13.83 13.83 0 1 1 5.39 24.76L3.11 28Z" />
               </svg>
-            </button>
+            </div>
           </span>
         </template>
       </ui-empty>
@@ -227,6 +229,7 @@ watch(
   height: 14px;
   padding: 0;
   color: var(--skin__primary);
+  cursor: pointer;
 
   svg {
     width: 100%;

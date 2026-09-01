@@ -3,11 +3,26 @@ import useAppStore, { applyThemeVariables } from '@/store/modules/app';
 
 export function isThemePreviewMode() {
   if (typeof window === 'undefined') return false;
+  return getThemePreviewParam('preview') === '1';
+}
+
+function getThemePreviewParam(name: string) {
   const hashQuery = window.location.hash.includes('?')
     ? window.location.hash.slice(window.location.hash.indexOf('?') + 1)
     : '';
-  return new URLSearchParams(window.location.search).get('preview') === '1'
-    || new URLSearchParams(hashQuery).get('preview') === '1';
+  return new URLSearchParams(window.location.search).get(name)
+    || new URLSearchParams(hashQuery).get(name)
+    || '';
+}
+
+function normalizeHttpOrigin(value: string) {
+  if (!value) return '';
+  try {
+    const parsedUrl = new URL(value);
+    return ['http:', 'https:'].includes(parsedUrl.protocol) ? parsedUrl.origin : '';
+  } catch {
+    return '';
+  }
 }
 
 interface ThemePreviewPayload {
@@ -16,6 +31,7 @@ interface ThemePreviewPayload {
   variables?: Record<string, string>;
   assets?: {
     mineHeroStyle?: 'blue' | 'common' | 'common82';
+    gameImageDisplay?: 'square' | 'long';
   };
 }
 
@@ -27,7 +43,9 @@ export function initThemePreviewBridge(pinia: Pinia) {
   if (!isThemePreviewMode()) return;
 
   const app = useAppStore(pinia);
-  const parentOrigin = document.referrer ? new URL(document.referrer).origin : '';
+  // 优先使用后台显式传入的来源，referrer 被浏览器策略移除时仍能完成跨域握手。
+  const parentOrigin = normalizeHttpOrigin(getThemePreviewParam('parentOrigin'))
+    || normalizeHttpOrigin(document.referrer);
 
   const applyPayload = (payload?: ThemePreviewPayload) => {
     if (!payload) return;
@@ -39,6 +57,9 @@ export function initThemePreviewBridge(pinia: Pinia) {
 
     if (payload.assets?.mineHeroStyle === 'blue' || payload.assets?.mineHeroStyle === 'common' || payload.assets?.mineHeroStyle === 'common82') {
       app.mineHeroStyle = payload.assets.mineHeroStyle;
+    }
+    if (payload.assets?.gameImageDisplay === 'square' || payload.assets?.gameImageDisplay === 'long') {
+      app.gameImageDisplay = payload.assets.gameImageDisplay;
     }
   };
 

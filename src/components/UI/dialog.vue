@@ -14,6 +14,7 @@ export interface IProps {
   onConfirm?: () => void;
   onCancel?: () => void;
   onClose?: () => void;
+  zIndex?: number | string;
   titleColor?: string;
   width?: number | string;
   showClose?: boolean;
