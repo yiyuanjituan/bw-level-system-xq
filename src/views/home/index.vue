@@ -6,6 +6,7 @@ import HomeNotice from '@/components/Home/Notice.vue';
 import HomeGameList from '@/components/Home/GameList.vue';
 import HomeFloat from '@/components/Home/Float.vue';
 import HomeBackTop from '@/components/Home/BackTop.vue';
+import HomeFooter from '@/components/Home/Footer.vue';
 import UHome from '@/views/home/u-series.vue';
 import useAppStore from '@/store/modules/app';
 
@@ -45,11 +46,16 @@ onBeforeUnmount(() => {
         <template v-if="section.visible">
           <HomeBanner v-if="section.key === 'banner'" />
           <HomeNotice v-else-if="section.key === 'notice'" />
-          <section v-else-if="section.key === 'gameList'" class="home-page__game-list">
+          <section
+            v-else-if="section.key === 'gameList'"
+            class="home-page__game-list"
+            data-home-game-section
+          >
             <HomeGameList />
           </section>
         </template>
       </template>
+      <HomeFooter />
     </main>
     <HomeBackTop target="#scroll-box" :is-put="isHomeScrolling" />
     <HomeFloat :is-put="isHomeScrolling" />

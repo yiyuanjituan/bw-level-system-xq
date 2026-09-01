@@ -7,7 +7,7 @@ import HomeBackTop from "@/components/Home/BackTop.vue";
 import UHeader from "@/components/Home/UHeader.vue";
 import UQuickNav from "@/components/Home/UQuickNav.vue";
 import UGameList from "@/components/Home/UGameList.vue";
-import UContact from "@/components/Home/UContact.vue";
+import HomeFooter from "@/components/Home/Footer.vue";
 
 defineOptions({
   name: "UHome"
@@ -44,8 +44,8 @@ onBeforeUnmount(() => {
       </section>
       <HomeNotice class="u-home__notice" />
       <UQuickNav />
-      <UGameList />
-      <UFooterBox />
+      <UGameList data-home-game-section />
+      <HomeFooter />
     </main>
     <HomeBackTop target="#u-home-scroll" :is-put="isHomeScrolling" />
     <HomeFloat :is-put="isHomeScrolling" />

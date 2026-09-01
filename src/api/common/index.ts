@@ -51,8 +51,29 @@ export interface HomePageSection {
   visible: boolean;
 }
 
+export interface HomeFooterContactItem {
+  image: string;
+  title: string;
+  url: string;
+}
+
+export interface HomeFooterConfig {
+  navigation: { visible: boolean };
+  license: { visible: boolean };
+  contacts: {
+    visible: boolean;
+    title: string;
+    items: HomeFooterContactItem[];
+  };
+  richText: {
+    visible: boolean;
+    content: string;
+  };
+}
+
 export interface HomePageConfig {
   gameImageDisplay: GameImageDisplay;
+  footer: HomeFooterConfig;
 }
 
 export interface HomePageLayout {

@@ -8,10 +8,12 @@ import {
 } from "@/config/theme-config";
 import {
   DEFAULT_GAME_IMAGE_DISPLAY,
+  DEFAULT_HOME_FOOTER_CONFIG,
   DEFAULT_HOME_PAGE_SECTIONS,
   DEFAULT_MINE_HERO_STYLE,
   DEFAULT_MINE_PAGE_LAYOUT,
   DEFAULT_MINE_TEMPLATE,
+  cloneHomeFooterConfig,
   normalizeHomePageLayout,
   normalizeMinePageLayout,
 } from "@/config/page-config";
@@ -132,6 +134,7 @@ export const useAppStore = defineStore('app', () => {
   const mineHeroImage = ref('')
   const gameImageDisplay = ref<GameImageDisplay>(DEFAULT_GAME_IMAGE_DISPLAY)
   const homePageSections = ref<HomePageSection[]>(DEFAULT_HOME_PAGE_SECTIONS.map(section => ({ ...section })))
+  const homeFooterConfig = ref(cloneHomeFooterConfig(DEFAULT_HOME_FOOTER_CONFIG))
   const homePageLayoutVersion = ref(0)
   const minePageSections = ref<MinePageSection[]>(DEFAULT_MINE_PAGE_LAYOUT.sections.map(section => ({ ...section })))
   const mineQuickActions = ref<MineQuickAction[]>(DEFAULT_MINE_PAGE_LAYOUT.config.quickActions.map(item => ({ ...item })))
@@ -153,6 +156,7 @@ export const useAppStore = defineStore('app', () => {
     mineHeroImage.value = minePageLayout.config.heroImage || ''
     gameImageDisplay.value = homePageLayout.config.gameImageDisplay
     homePageSections.value = homePageLayout.sections.map(section => ({ ...section }))
+    homeFooterConfig.value = cloneHomeFooterConfig(homePageLayout.config.footer)
     minePageSections.value = minePageLayout.sections.map(section => ({ ...section }))
     mineQuickActions.value = minePageLayout.config.quickActions.map(item => ({ ...item }))
     mineMenuItems.value = minePageLayout.config.menuItems.map(item => ({ ...item }))
@@ -171,7 +175,10 @@ export const useAppStore = defineStore('app', () => {
         pageLayouts: {
           home: {
             sections: homePageSections.value.map(section => ({ ...section })),
-            config: { gameImageDisplay: gameImageDisplay.value }
+            config: {
+              gameImageDisplay: gameImageDisplay.value,
+              footer: cloneHomeFooterConfig(homeFooterConfig.value)
+            }
           },
           mine: {
             sections: minePageSections.value.map(section => ({ ...section })),
@@ -195,6 +202,7 @@ export const useAppStore = defineStore('app', () => {
       // 使用新数组整体替换布局，全局缓存同时供首页和子游戏页消费。
       homePageSections.value = homePageLayout.sections.map(section => ({ ...section }))
       gameImageDisplay.value = homePageLayout.config.gameImageDisplay
+      homeFooterConfig.value = cloneHomeFooterConfig(homePageLayout.config.footer)
       homePageLayoutVersion.value += 1
       return
     }
@@ -297,6 +305,7 @@ export const useAppStore = defineStore('app', () => {
     mineHeroImage,
     gameImageDisplay,
     homePageSections,
+    homeFooterConfig,
     homePageLayoutVersion,
     minePageSections,
     mineQuickActions,
@@ -320,7 +329,7 @@ export const useAppStore = defineStore('app', () => {
   }
 }, {
   persist: {
-    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "mineHeroImage", "gameImageDisplay", "homePageSections", "homePageLayoutVersion", "minePageSections", "mineQuickActions", "mineMenuItems", "minePageLayoutVersion", "appInfo.theme_config"],
+    omit: ["isAppReady", "appLoadingProgress", "appLoadingStatus", "themeTemplate", "mineTemplate", "mineHeroStyle", "mineHeroImage", "gameImageDisplay", "homePageSections", "homeFooterConfig", "homePageLayoutVersion", "minePageSections", "mineQuickActions", "mineMenuItems", "minePageLayoutVersion", "appInfo.theme_config"],
     afterHydrate: ({ store }) => {
       (store as any).isAppReady = false;
       (store as any).appLoadingProgress = 6;
@@ -332,6 +341,7 @@ export const useAppStore = defineStore('app', () => {
       (store as any).mineHeroImage = '';
       (store as any).gameImageDisplay = DEFAULT_GAME_IMAGE_DISPLAY;
       (store as any).homePageSections = DEFAULT_HOME_PAGE_SECTIONS.map(section => ({ ...section }));
+      (store as any).homeFooterConfig = cloneHomeFooterConfig(DEFAULT_HOME_FOOTER_CONFIG);
       (store as any).homePageLayoutVersion = 0;
       (store as any).minePageSections = DEFAULT_MINE_PAGE_LAYOUT.sections.map(section => ({ ...section }));
       (store as any).mineQuickActions = DEFAULT_MINE_PAGE_LAYOUT.config.quickActions.map(item => ({ ...item }));

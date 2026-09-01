@@ -1,5 +1,6 @@
 import type {
   GameImageDisplay,
+  HomeFooterConfig,
   HomePageConfig,
   HomePageLayout,
   HomePageSection,
@@ -22,8 +23,22 @@ export const DEFAULT_HOME_PAGE_SECTIONS: HomePageSection[] = HOME_PAGE_SECTION_K
   key,
   visible: true,
 }));
+export const DEFAULT_HOME_FOOTER_CONFIG: HomeFooterConfig = {
+  navigation: { visible: true },
+  license: { visible: true },
+  contacts: {
+    visible: false,
+    title: "联系我们",
+    items: [],
+  },
+  richText: {
+    visible: true,
+    content: "",
+  },
+};
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
   gameImageDisplay: DEFAULT_GAME_IMAGE_DISPLAY,
+  footer: cloneHomeFooterConfig(DEFAULT_HOME_FOOTER_CONFIG),
 };
 export const DEFAULT_HOME_PAGE_LAYOUT: HomePageLayout = {
   sections: DEFAULT_HOME_PAGE_SECTIONS.map(section => ({ ...section })),
@@ -141,7 +156,71 @@ export function normalizeHomePageConfig(value: unknown): HomePageConfig {
   const source = isPlainObject(value) ? value : {};
   return {
     gameImageDisplay: source.gameImageDisplay === "square" ? "square" : DEFAULT_GAME_IMAGE_DISPLAY,
+    footer: normalizeHomeFooterConfig(source.footer),
   };
+}
+
+export function cloneHomeFooterConfig(value: HomeFooterConfig): HomeFooterConfig {
+  return {
+    navigation: { ...value.navigation },
+    license: { ...value.license },
+    contacts: {
+      ...value.contacts,
+      items: value.contacts.items.map(contact => ({ ...contact })),
+    },
+    richText: { ...value.richText },
+  };
+}
+
+export function normalizeHomeFooterConfig(value: unknown): HomeFooterConfig {
+  const source = isPlainObject(value) ? value : {};
+  const contacts = isPlainObject(source.contacts) ? source.contacts : {};
+  const richText = isPlainObject(source.richText) ? source.richText : {};
+  const contactItems = Array.isArray(contacts.items)
+    ? contacts.items.slice(0, 12).reduce<HomeFooterConfig["contacts"]["items"]>((items, contact) => {
+      if (!isPlainObject(contact)) return items;
+      const image = normalizeFooterUrl(contact.image);
+      const title = normalizeText(contact.title, 100);
+      const url = normalizeFooterUrl(contact.url);
+      if (image && title) items.push({ image, title, url });
+      return items;
+    }, [])
+    : DEFAULT_HOME_FOOTER_CONFIG.contacts.items.map(contact => ({ ...contact }));
+
+  return {
+    navigation: { visible: !isPlainObject(source.navigation) || source.navigation.visible !== false },
+    license: { visible: !isPlainObject(source.license) || source.license.visible !== false },
+    contacts: {
+      visible: typeof contacts.visible === "boolean"
+        ? contacts.visible
+        : DEFAULT_HOME_FOOTER_CONFIG.contacts.visible,
+      title: normalizeText(contacts.title, 100) || DEFAULT_HOME_FOOTER_CONFIG.contacts.title,
+      items: contactItems,
+    },
+    richText: {
+      visible: richText.visible !== false,
+      content: typeof richText.content === "string"
+        ? richText.content.slice(0, 100000)
+        : DEFAULT_HOME_FOOTER_CONFIG.richText.content,
+    },
+  };
+}
+
+function normalizeText(value: unknown, maxLength: number) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function normalizeFooterUrl(value: unknown) {
+  const url = normalizeText(value, 2048);
+  if (!url) return "";
+  if (url.startsWith("/") && !url.startsWith("//")) return url;
+
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:" ? url : "";
+  } catch {
+    return "";
+  }
 }
 
 export function normalizeHomePageLayout(value: unknown): HomePageLayout {
