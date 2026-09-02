@@ -187,7 +187,7 @@ function handleSelect(option: SelectOption) {
   box-sizing: border-box;
 
   &--focused {
-    border-color: #f0c059;
+    border-color: var(--skin__primary);
   }
 
   &--disabled {

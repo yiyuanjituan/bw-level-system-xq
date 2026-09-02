@@ -337,7 +337,7 @@
   "请输入正确的手机验证码": "Please enter a valid mobile verification code",
   "请输入正确验证码": "Please enter a valid verification code",
   "请输入支付金额": "Please enter payment amount",
-  "请输入Telegram账号，例如@xxxx": "Please enter Telegram account, e.g., @xxxx",
+  "请输入Telegram账号，例如@xxxx": "Please enter Telegram account, e.g., {'@'}xxxx",
   "请输入WhatsApp号": "Please enter WhatsApp number",
   "请添加图片或视频证明材料": "Please add image or video proof",
   "请填写发卡地址": "Please enter card issuing address",

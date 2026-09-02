@@ -305,7 +305,7 @@ const inputClasses = computed(() => [
   box-sizing: border-box;
 
   &.ui-input--focused {
-    border-color: #f0c059;
+    border-color: var(--skin__primary);
   }
 
   &.ui-input--disabled {
@@ -445,7 +445,7 @@ const inputClasses = computed(() => [
       transition: color 0.2s;
 
       &--active {
-        color: #f0c059;
+        color: var(--skin__primary);
       }
     }
 
@@ -464,7 +464,7 @@ const inputClasses = computed(() => [
     transition: color 0.2s;
 
     &:hover {
-      color: #f0c059;
+      color: var(--skin__primary);
     }
 
     svg {
@@ -482,7 +482,7 @@ const inputClasses = computed(() => [
     transition: color 0.2s;
 
     &:hover {
-      color: #f0c059;
+      color: var(--skin__primary);
     }
   }
 }

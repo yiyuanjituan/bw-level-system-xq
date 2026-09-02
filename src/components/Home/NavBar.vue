@@ -233,7 +233,7 @@ async function updateWallet() {
 }
 
 .home-download-tip__logo {
-  width: 90px;
+  max-width: 90px;
   height: 25px;
   flex: none;
   background-color: transparent;

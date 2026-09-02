@@ -206,7 +206,7 @@ onMounted(() => init());
                         <img src="@/assets/common/img_rwbx_3c.avif" alt="" v-if="index == 2" class="!w-[50px]" @click.stop="handleGetBox(item)" />
                         <img src="@/assets/common/img_rwbx_4c.avif" alt="" v-if="index == 3" class="!w-[50px]" @click.stop="handleGetBox(item)" />
                       </template>
-                      <span class="progressIndex">{{ index + 1 }}</span>
+                      <span class="progressIndex">{{ Number(index) + 1 }}</span>
                     </div>
                   </template>
                   <div class="activityBoxTip">

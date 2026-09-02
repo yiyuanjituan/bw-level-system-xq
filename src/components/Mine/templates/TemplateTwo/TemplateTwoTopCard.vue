@@ -79,6 +79,8 @@ const emit = defineEmits<{
 
 <style scoped lang="less">
 .mine-template-two-top-card {
+  position: relative;
+  z-index: 3;
   width: 100%;
   padding: 35px 0 0;
   box-sizing: border-box;

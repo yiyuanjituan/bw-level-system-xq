@@ -7,8 +7,8 @@ defineOptions({
   name: "DateRangePicker"
 });
 
-type DateRangeMode = "today" | "yesterday" | "custom";
-type QuickMode = Extract<DateRangeMode, "today" | "yesterday">;
+type DateRangeMode = "all" | "today" | "yesterday" | "custom";
+type QuickMode = Extract<DateRangeMode, "all" | "today" | "yesterday">;
 
 export interface DateRangeValue {
   mode: DateRangeMode;
@@ -20,6 +20,7 @@ export interface DateRangeValue {
 }
 
 const QUICK_MODE_LABELS: Record<QuickMode, string> = {
+  all: "全部",
   today: "今日",
   yesterday: "昨日"
 };
@@ -91,6 +92,11 @@ function createRange(mode: DateRangeMode, startDate: string, endDate: string) {
 }
 
 function createPresetRange(mode: QuickMode) {
+  if (mode === "all") {
+    const endDay = dayjs();
+    return createRange(mode, endDay.subtract(89, "day").format("YYYY-MM-DD"), endDay.format("YYYY-MM-DD"));
+  }
+
   const targetDate = mode === "yesterday" ? dayjs().subtract(1, "day") : dayjs();
   return createRange(mode, targetDate.format("YYYY-MM-DD"), targetDate.format("YYYY-MM-DD"));
 }
@@ -110,7 +116,7 @@ const panelStyle = computed(() => ({
   "--date-range-panel-width": resolvedPanelWidth.value,
   ...(hasCustomPickerWidth.value ? { "--date-range-picker-width": resolvedPickerWidth.value } : {})
 }));
-const visibleQuickModes = computed(() => props.quickModes.filter(mode => mode === "today" || mode === "yesterday"));
+const visibleQuickModes = computed(() => props.quickModes.filter(mode => ["all", "today", "yesterday"].includes(mode)));
 const hasQuickModes = computed(() => visibleQuickModes.value.length > 0);
 
 function togglePopover() {

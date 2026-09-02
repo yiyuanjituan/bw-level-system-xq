@@ -170,7 +170,7 @@ defineExpose({
       --van-padding-xs: 0px;
       --van-tabs-bottom-bar-width: 80px;
       --van-tabs-bottom-bar-height: 2px;
-      --van-tab-text-color: white;
+      --van-tab-text-color: var(--skin__lead);
 
       height: 100%;
       overflow: hidden;

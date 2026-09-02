@@ -129,7 +129,7 @@ defineExpose({
             <span
               class="inline-flex items-center"
               @click.stop="getSmsCode"
-              :class="[smsTime > 0 && isPhone && modelValue.accountType == 'phone' ? '' : 'text-[#F0C059]']"
+              :class="[smsTime > 0 && isPhone && modelValue.accountType == 'phone' ? '' : 'main-text']"
             >
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
               {{ smsTime > 0 ? `${smsTime}秒后重发` : "获取验证码" }}

@@ -140,7 +140,7 @@ defineExpose({
       <x-form-item prop="sms_code" v-if="checkInputIsPhone && modelValue.type == 'sms'">
         <x-input prefix="sms" required :placeholder="$t('请输入手机验证码')" v-model="modelValue.sms_code">
           <template #suffix>
-            <span class="inline-flex items-center" @click.stop="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'text-[#F0C059]']">
+            <span class="inline-flex items-center" @click.stop="getSmsCode" :class="[(smsTime>0&&checkInputIsPhone)?'':'main-text']">
               <svg-icon name="loading" class-name="mr-[4px] loading-icon" v-if="smsLoading" />
               {{ smsTime > 0 ? `${smsTime}秒后重发` : '获取验证码' }}
             </span>
@@ -160,7 +160,7 @@ defineExpose({
       <x-form-item prop="invite_code">
         <x-input prefix="invite_code" v-model="modelValue.invite_code" :placeholder="$t('请输入您的邀请码')">
           <template #suffix>
-            <span class="text-[#F0C059] text-[11px] cursor-pointer" @click="copyToForm">{{ $t("粘贴") }}</span>
+            <span class="main-text text-[11px] cursor-pointer" @click="copyToForm">{{ $t("粘贴") }}</span>
           </template>
         </x-input>
       </x-form-item>

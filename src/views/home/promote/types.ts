@@ -58,6 +58,11 @@ export interface PromoteCommissionParams {
 
 export interface PromoteCommissionResponse {
   list: PromoteCommissionRecord[];
+  summary: {
+    commission: number;
+    directCommission: number;
+    otherCommission: number;
+  };
   pageSize: number;
   more: boolean;
   nextCursorId: number | null;

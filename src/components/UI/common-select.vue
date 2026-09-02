@@ -372,7 +372,7 @@ const handleBlur = () => {
   }
 
   &.is-focus {
-    border-color: #f0c059;
+    border-color: var(--skin__primary);
   }
 
   &.is-disabled {
@@ -493,7 +493,7 @@ const handleBlur = () => {
       outline: none;
 
       &:focus {
-        border-color: #f0c059;
+        border-color: var(--skin__primary);
       }
 
       &::placeholder {

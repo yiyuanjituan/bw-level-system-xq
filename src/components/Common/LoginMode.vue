@@ -1,109 +1,157 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { loginProps } from "@/enums/props";
+import type { loginProps } from "@/enums/props";
+
 defineOptions({
-  name: "login-mode",
-})
-const checked = ref<loginProps['type']>()
-interface Props {
-  modelValue: string
-}
-
-const emit = defineEmits(['update:modelValue'])
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
+  name: "login-mode"
 });
-function handleChange(e: loginProps['type']) {
-  checked.value = e;
-  emit('update:modelValue', checked.value)
+
+type LoginMode = loginProps["type"];
+
+interface Props {
+  modelValue: LoginMode;
 }
 
-watch(() => props.modelValue, (val: any) => {
-  checked.value = val;
-}, { immediate: true });
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: "password"
+});
+const emit = defineEmits<{
+  (event: "update:modelValue", value: LoginMode): void;
+}>();
+const checked = ref<LoginMode>(props.modelValue);
 
+function handleChange(mode: LoginMode) {
+  if (checked.value === mode) {
+    return;
+  }
+
+  checked.value = mode;
+  emit("update:modelValue", mode);
+}
+
+function handleKeydown(event: KeyboardEvent, mode: LoginMode) {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    handleChange(mode);
+  }
+}
+
+watch(
+  () => props.modelValue,
+  value => {
+    checked.value = value;
+  }
+);
 </script>
 
 <template>
-  <div class="switch-box">
-    <van-radio-group v-model="checked" shape="square" direction="horizontal" @change="handleChange">
-      <van-radio name="password" checked-color="#F0C059" style="color: #874404">
-        <template #icon="props">
-          <div class="check-icon" :class="{ 'is-checked': props.checked, '!text-[#68707B]': !props.checked }">
-            <svg-icon name="password_register" class-name="check-icon-gou" />
-          </div>
-        </template>
-        {{ $t("密码登录") }}
-      </van-radio>
-      <van-radio name="sms" checked-color="#F0C059" style="color: #874404">
-        <template #icon="props">
-          <div class="check-icon" :class="{ 'is-checked': props.checked, '!text-[#68707B]': !props.checked }">
-            <svg-icon name="sms_register" class-name="check-icon-sms" />
-          </div>
-        </template>
-        {{ $t("验证码登录") }}
-      </van-radio>
-    </van-radio-group>
-  </div>
+  <section class="switch-box account-switch-sub-type" data-theme-indent="false">
+    <ul class="list" role="radiogroup">
+      <li
+        class="item"
+        :class="{ checked: checked === 'password', 'account-sub-type-checked': checked === 'password' }"
+        role="radio"
+        :aria-checked="checked === 'password'"
+        tabindex="0"
+        @click="handleChange('password')"
+        @keydown="handleKeydown($event, 'password')"
+      >
+        <span class="switch-inner">
+          <span class="icon account-sub-type-icon">
+            <svg-icon name="password_register" class-name="mode-icon" />
+          </span>
+          <span>{{ $t("密码登录") }}</span>
+        </span>
+      </li>
+      <li
+        class="item"
+        :class="{ checked: checked === 'sms', 'account-sub-type-checked': checked === 'sms' }"
+        role="radio"
+        :aria-checked="checked === 'sms'"
+        tabindex="0"
+        @click="handleChange('sms')"
+        @keydown="handleKeydown($event, 'sms')"
+      >
+        <span class="switch-inner">
+          <span class="icon account-sub-type-icon">
+            <svg-icon name="sms_register" class-name="mode-icon" />
+          </span>
+          <span>{{ $t("验证码登录") }}</span>
+        </span>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped lang="less">
 .switch-box {
-  --van-radio-border-color: #313843;
-  --van-radio-size: 16px;
-  --van-radio-label-margin: 5px;
-  --van-radio-label-color: white;
-  font-size: 9px;
-  height: 15px;
-  margin-bottom: 10px;
-  padding-left: 22px;
-  position: relative;
+  color: var(--skin__lead);
+  font-size: 11px;
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: -6px;
-    left: 8px;
-    width: 10px;
-    height: 13px;
-    border-bottom: 1px solid #313843;
-    border-left: 1px solid #313843;
+  .list {
+    display: flex;
+    align-items: flex-start;
+    min-height: 13px;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
   }
 
-  .check-icon {
-    border-radius: 999999px;
-    width: 15px;
-    height: 15px;
-    box-sizing: border-box;
-    border: 1px solid var(--van-radio-border-color);
+  .item {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    min-width: 0;
+    margin-right: 10px;
+    cursor: pointer;
+    user-select: none;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--skin__primary);
+      outline-offset: 2px;
+    }
+
+    &.checked {
+      color: var(--skin__primary);
+
+      .icon {
+        color: var(--skin__text_primary);
+        background-color: var(--skin__primary);
+        border: 0 none;
+      }
+    }
+  }
+
+  .switch-inner {
     display: flex;
     align-items: center;
+    min-width: 0;
+    line-height: 15px;
+  }
+
+  .icon {
+    display: flex;
+    flex: 0 0 15px;
+    align-items: center;
     justify-content: center;
-
-    &.is-checked {
-      border: 0 solid var(--van-radio-border-color);
-      background-color: #f0c059;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .check-icon-gou {
-      width: 15px;
-      height: 15px;
-    }
-    .check-icon-sms {
-      width: 13px;
-      height: 13px;
-    }
-  }
-  :deep(.van-radio) {
-    flex: 1;
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+    box-sizing: border-box;
+    color: var(--skin__neutral_2);
+    line-height: 1;
+    background-color: var(--skin__bg_2);
+    border: var(--lobby__px) solid var(--skin__border);
+    border-radius: 9999px;
   }
 
-  :deep(div[aria-checked="true"]) {
-    .van-radio__label {
-      color: #F0C059 !important;
-    }
+  .mode-icon {
+    width: 15px;
+    height: 15px;
   }
 }
 </style>

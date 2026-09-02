@@ -207,6 +207,28 @@ const defaultMenuGroups = computed<MineTemplateMenuGroup[]>(() => [
   }
 ]);
 
+function splitMenuGroups(groups: MineTemplateMenuGroup[]) {
+  return groups.flatMap(group => {
+    const splitGroups: MineTemplateActionItem[][] = [];
+    let currentGroupType: "finance" | "service" | undefined;
+
+    group.items.forEach(menuItem => {
+      const groupType = menuItem.key === "records" || menuItem.key === "withdraw-manage" ? "finance" : "service";
+      if (currentGroupType !== groupType) {
+        splitGroups.push([]);
+        currentGroupType = groupType;
+      }
+      splitGroups[splitGroups.length - 1].push(menuItem);
+    });
+
+    return splitGroups.map((items, index) => ({
+      ...group,
+      key: `${group.key}-${index}`,
+      items
+    }));
+  });
+}
+
 const quickActions = computed(() => {
   if (props.quickActions?.length) return props.quickActions;
 
@@ -220,7 +242,7 @@ const quickActions = computed(() => {
 const menuGroups = computed(() => {
   let visibleGroups: MineTemplateMenuGroup[];
   if (props.menuGroups?.length) {
-    visibleGroups = props.menuGroups;
+    visibleGroups = splitMenuGroups(props.menuGroups);
   } else {
     const menuItemMap = new Map(
       defaultMenuGroups.value.flatMap(group => group.items).map(item => [MENU_KEY_TO_CANONICAL[item.key], item])
@@ -230,18 +252,8 @@ const menuGroups = computed(() => {
       return configItem.visible !== false && menuItem ? [menuItem] : [];
     });
 
-    // 装修配置是扁平菜单，但提现管理与分享赚钱属于不同业务分组，需要保留中间留白。
-    const configuredGroups: MineTemplateMenuGroup[] = [];
-    let currentGroupType: "finance" | "service" | undefined;
-    orderedItems.forEach(menuItem => {
-      const groupType = menuItem.key === "records" || menuItem.key === "withdraw-manage" ? "finance" : "service";
-      if (currentGroupType !== groupType) {
-        configuredGroups.push({ key: `configured-${configuredGroups.length}`, items: [] });
-        currentGroupType = groupType;
-      }
-      configuredGroups[configuredGroups.length - 1].items.push(menuItem);
-    });
-    visibleGroups = configuredGroups.filter(group => group.items.length);
+    // 装修配置是扁平菜单，按业务边界拆组后才能在提现管理与分享赚钱之间渲染留白。
+    visibleGroups = splitMenuGroups(orderedItems.length ? [{ key: "configured", items: orderedItems }] : []);
   }
 
   if (loginState.value) return visibleGroups;

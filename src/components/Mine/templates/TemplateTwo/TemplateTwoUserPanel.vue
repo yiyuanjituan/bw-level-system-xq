@@ -113,7 +113,7 @@ watch(
                 @click="isShowInfo = !isShowInfo"
                 @keydown.enter.space.prevent="isShowInfo = !isShowInfo"
               >
-                <svg-icon name="arrow-down" />
+                <svg-icon name="comm_icon_sort" class-name="!text-[4px]" />
               </span>
               <MineShowInfo v-if="isShowInfo" @close="isShowInfo = false" />
             </span>
@@ -233,6 +233,8 @@ watch(
 }
 
 .mine-template-two-user__account {
+  position: relative;
+  z-index: 2;
   min-height: 14px;
   margin-bottom: 4px;
 }
@@ -258,20 +260,25 @@ watch(
 }
 
 .mine-template-two-user__toggle {
-  width: 9px;
-  height: 9px;
+  width: 13px;
+  height: 8px;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--skin__neutral_2);
-  font-size: 8px;
-  transform: rotate(90deg);
+  font-size: 13px;
+  transform: rotate(0deg);
   transition: transform 0.2s;
   cursor: pointer;
 
+  :deep(svg) {
+    width: 13px;
+    height: 8px;
+  }
+
   &--active {
-    transform: rotate(270deg);
+    transform: rotate(180deg);
   }
 }
 
@@ -292,6 +299,8 @@ watch(
 }
 
 .mine-template-two-user__sub-info {
+  position: relative;
+  z-index: 1;
   height: 20px;
   font-size: 16px;
 }
@@ -311,9 +320,10 @@ watch(
 }
 
 .mine-template-two-user__id-value {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 0 0 auto;
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
 }
 

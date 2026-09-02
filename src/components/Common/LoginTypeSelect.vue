@@ -52,7 +52,7 @@ watch(() => props.modelValue, (val: any) => {
   --van-radio-border-color: #313843;
   --van-radio-size: 16px;
   --van-radio-label-margin: 5px;
-  --van-radio-label-color: white;
+  --van-radio-label-color: var(--skin__lead);
   font-size: 11px;
   height: 26px;
 
@@ -63,7 +63,7 @@ watch(() => props.modelValue, (val: any) => {
     border: 1px solid var(--van-radio-border-color);
     &.is-checked {
       border: 0 solid var(--van-radio-border-color);
-      background-color: #f0c059;
+      background-color: var(--skin__primary);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -71,7 +71,7 @@ watch(() => props.modelValue, (val: any) => {
     .check-icon-gou {
       width: 12px;
       height: 12px;
-      color: #874404 !important;
+      color: white !important;
     }
   }
   :deep(.van-radio) {
@@ -80,7 +80,7 @@ watch(() => props.modelValue, (val: any) => {
 
   :deep(div[aria-checked="true"]) {
     .van-radio__label {
-      color: #F0C059 !important;
+      color: var(--skin__primary) !important;
     }
   }
 }

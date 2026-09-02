@@ -544,7 +544,7 @@ watch(
         <div class="input-box">
           <x-input v-model="inputAmount" class="input-input" :placeholder="inputPlaceholder">
             <template #prefix>
-              <span class="text-[white]">{{ inputPrefix }}</span>
+              <span class="" style="color: var(--skin__lead)">{{ inputPrefix }}</span>
             </template>
           </x-input>
           <div v-if="activeGroup.type == 2" class="change-pay-mode" @click="handleChangePayMode">

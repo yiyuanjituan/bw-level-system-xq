@@ -18,11 +18,16 @@
     <div id="app"></div>
     <script src="%VITE_PUBLIC_PATH%runtime-config.js"></script>
     <script type="module" src="/src/main.ts"></script>
-    <script src="//cdn.jsdelivr.net/npm/eruda" defer></script>
-    <script defer>
-      document.addEventListener('DOMContentLoaded', function() {
-        eruda.init();
-      });
-    </script>
+    <% if (ENABLE_ERUDA === "true") { %>
+      <script src="//cdn.jsdelivr.net/npm/eruda" defer></script>
+      <script defer>
+        document.addEventListener("DOMContentLoaded", function () {
+          // 仅在调试脚本加载成功时初始化，避免第三方脚本异常阻断页面恢复。
+          if (window.eruda && typeof window.eruda.init === "function") {
+            window.eruda.init();
+          }
+        });
+      </script>
+    <% } %>
   </body>
 </html>
