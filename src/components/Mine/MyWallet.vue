@@ -19,7 +19,7 @@ function onRefresh() {
 <template>
   <div class="currency-info-box">
     <div class="currency-icon">
-      <div class="w-[15px] h-[15px] rounded-full text-[0px] overflow-hidden">
+      <div class="w-[15px] h-[15px] text-[0px] overflow-hidden">
         <van-image width="100%" height="100%" :src="currencyInfo?.icon" round>
           <template v-slot:error></template>
         </van-image>

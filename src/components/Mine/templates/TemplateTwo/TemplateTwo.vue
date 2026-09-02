@@ -229,7 +229,19 @@ const menuGroups = computed(() => {
       const menuItem = menuItemMap.get(configItem.key);
       return configItem.visible !== false && menuItem ? [menuItem] : [];
     });
-    visibleGroups = orderedItems.length ? [{ key: "configured", items: orderedItems }] : [];
+
+    // 装修配置是扁平菜单，但提现管理与分享赚钱属于不同业务分组，需要保留中间留白。
+    const configuredGroups: MineTemplateMenuGroup[] = [];
+    let currentGroupType: "finance" | "service" | undefined;
+    orderedItems.forEach(menuItem => {
+      const groupType = menuItem.key === "records" || menuItem.key === "withdraw-manage" ? "finance" : "service";
+      if (currentGroupType !== groupType) {
+        configuredGroups.push({ key: `configured-${configuredGroups.length}`, items: [] });
+        currentGroupType = groupType;
+      }
+      configuredGroups[configuredGroups.length - 1].items.push(menuItem);
+    });
+    visibleGroups = configuredGroups.filter(group => group.items.length);
   }
 
   if (loginState.value) return visibleGroups;

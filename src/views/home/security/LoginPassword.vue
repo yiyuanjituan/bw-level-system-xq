@@ -107,7 +107,7 @@ async function handleSubmit() {
   height: 100%;
   min-height: 0;
   color: var(--skin__lead, #fff);
-  background: #000;
+  background: var(--skin__bg_1);
 }
 
 .login-password-page__main {

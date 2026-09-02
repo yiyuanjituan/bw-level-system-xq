@@ -213,7 +213,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: var(--skin__bg_1, #000);
 }
 
 .app-loading__dots {
@@ -232,7 +232,7 @@ onBeforeUnmount(() => {
     height: 10px;
     border-radius: 50%;
     list-style-type: none;
-    background: #fff;
+    background: var(--skin__lead);
   }
 
   .a {

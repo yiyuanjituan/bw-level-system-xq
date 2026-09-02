@@ -243,7 +243,7 @@ async function handleSubmit() {
   height: 100%;
   min-height: 0;
   color: var(--skin__lead, #fff);
-  background: #000;
+  background: var(--skin__bg_1);
 }
 
 .pay-password-page__main {
@@ -320,7 +320,7 @@ async function handleSubmit() {
   justify-content: center;
   width: 13px;
   height: 13px;
-  color: var(--skin__lead, #fff);
+  color: #fff;
   font-size: 8px;
   line-height: 13px;
   background: var(--skin__accent_2, #f84673);
