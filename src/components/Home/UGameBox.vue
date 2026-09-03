@@ -2,7 +2,12 @@
 import { computed, ref } from "vue";
 import type { SwipeInstance } from "vant";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
-import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
+import {
+  getHomeGameImage,
+  shouldShowHomeGameName,
+  type HomeGameRecord,
+  type HomeGameSectionRecord
+} from "@/components/Home/types";
 import arrowIcon from "@/assets/home/u-series/img_scroll_tkjt.png";
 import nameShade from "@/assets/home/u-series/img_rm_shade.png";
 import favoriteIcon from "@/assets/home/btn_sc_off_2.avif";
@@ -43,6 +48,10 @@ const canSlideNext = computed(() => activeSlideIndex.value < gameList.value.leng
 
 function isGameOpen(record: HomeGameRecord) {
   return record.isOpen === true || record.isOpen === 1 || record.isOpen === "1";
+}
+
+function getCardImage(record: HomeGameRecord) {
+  return getHomeGameImage(record, props.variant === "featured" ? "long" : "square");
 }
 
 function selectGame(record: HomeGameRecord) {
@@ -136,8 +145,8 @@ function scrollToFeatured(index: number) {
                         class="lobby-image lobby-image--use-bg lobby-image--skeleton poster-image poster-box-core vertical-bottom-name"
                         @click.stop="selectGame(game)"
                       >
-                        <HomeSkeletonImage :src="game.image" :alt="String(game.name ?? '')" />
-                        <div class="game-platform-name">
+                        <HomeSkeletonImage :src="getCardImage(game)" :alt="String(game.name ?? '')" />
+                        <div v-if="shouldShowHomeGameName(game)" class="game-platform-name">
                           <span
                             class="lobby-image lobby-image--use-bg name-bg"
                             :style="{ backgroundImage: `url(${nameShade})` }"
@@ -200,7 +209,8 @@ function scrollToFeatured(index: number) {
               class="lobby-image lobby-image--use-bg lobby-image--skeleton poster-image poster-img-box-core square-below-name"
               @click.stop="selectGame(game)"
             >
-              <HomeSkeletonImage :src="game.image" :alt="String(game.name ?? '')" />
+              <HomeSkeletonImage :src="getCardImage(game)" :alt="String(game.name ?? '')" />
+              <span v-if="shouldShowHomeGameName(game)" class="poster-name">{{ game.name }}</span>
               <section v-if="!isGameOpen(game)" class="mask-maintain position-center" aria-hidden="true">
                 <img class="lobby-image lobby-image--use-bg maintain-icon" :src="maintenanceIcon" alt="" />
               </section>
@@ -462,6 +472,23 @@ function scrollToFeatured(index: number) {
   width: 100%;
   height: 100%;
   border-radius: inherit;
+}
+
+.poster-name {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  padding: 2px;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(7px, calc(var(--card-benchmark) * 0.13), 10px);
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72));
 }
 
 .poster-box-core {

@@ -15,6 +15,7 @@ import { $t } from "@/locales";
 import UiEmpty from "@/components/UI/empty.vue";
 import useDataStore from "@/store/modules/data";
 import useAuthStore from "@/store/modules/user";
+import { getHomeGameImage, shouldShowHomeGameName, type HomeGameRecord } from "@/components/Home/types";
 
 const showNext = ref<boolean>(false);
 const route = useRoute();
@@ -102,6 +103,10 @@ function isEnabledFlag(value: unknown) {
 
 function isGameOpen(record: any) {
   return isEnabledFlag(record?.isOpen);
+}
+
+function getCardImage(record: HomeGameRecord) {
+  return getHomeGameImage(record, isLongImageDisplay.value ? "long" : "square");
 }
 
 function isRecommendGame(record: any) {
@@ -256,8 +261,11 @@ async function handleChangeTab(record: any) {
 
 watch(() => route.fullPath, () => init());
 
-function enterGame(record: any) {
-  appData.setEnterInfo(record.venueId, record.id, isTrialPage.value ? 1 : undefined);
+function enterGame(record: HomeGameRecord) {
+  const isVenueEntry = record.entryMode === "venue";
+  const venueId = record.entryVenueId ?? record.venueId;
+  const gameId = isVenueEntry ? undefined : (record.entryGameId ?? record.id);
+  appData.setEnterInfo(venueId, gameId, isTrialPage.value ? 1 : undefined);
   if (!isTrialPage.value) {
     auth.updateInfo();
   }
@@ -363,13 +371,13 @@ onMounted(() => {
                 <ui-empty v-if="!isLoading && gameList.length == 0" />
                 <div class="scroll-box" v-if="gameList.length > 0">
                   <div class="grid-box">
-                    <template v-for="item in paginatedGameList" :key="item.id">
+                    <template v-for="item in paginatedGameList" :key="item.entryKey ?? item.id">
                       <div
                         class="card-item"
                         @click="handleGameClick(item)"
                       >
-                        <div class="card-image">
-                          <home-skeleton-image :src="item.image" :alt="String(item.name ?? '')" class="poster-image" />
+                        <div class="card-image" :class="{ 'card-image--show-name': shouldShowHomeGameName(item) }">
+                          <home-skeleton-image :src="getCardImage(item)" :alt="String(item.name ?? '')" class="poster-image" />
                           <div class="thumb-icon" v-if="isRecommendGame(item)"></div>
                           <div class="collect-icon">
                             <img src="@/assets/home/btn_sc_off_2.avif" alt="" class="collect-img" v-if="true" />
@@ -378,11 +386,11 @@ onMounted(() => {
                           <div class="disabled-box" @click.stop="showTip" v-if="!isGameOpen(item)">
                             <div class="disabled-icon"></div>
                           </div>
-                          <section class="card-title card-title--overlay" v-if="isLongImageDisplay && !isLotteryOrSportsPage">
+                          <section class="card-title card-title--overlay" v-if="isLongImageDisplay && shouldShowHomeGameName(item)">
                             <h4 class="name-inner">{{ item.name }}</h4>
                           </section>
                         </div>
-                        <section class="card-title" v-if="!isLongImageDisplay && !isLotteryOrSportsPage">
+                        <section class="card-title" v-if="!isLongImageDisplay && shouldShowHomeGameName(item)">
                           <h4 class="name-inner">{{ item.name }}</h4>
                         </section>
                       </div>
@@ -850,7 +858,7 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.detail--long-image .card-image::after {
+.detail--long-image .card-image--show-name::after {
   position: absolute;
   right: 0;
   bottom: 0;

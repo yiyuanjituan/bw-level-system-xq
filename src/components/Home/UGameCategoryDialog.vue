@@ -2,7 +2,12 @@
 import { computed, nextTick, ref, watch } from "vue";
 import { $t } from "@/locales";
 
-import type { HomeGameRecord, HomeGameSectionRecord } from "@/components/Home/types";
+import {
+  getHomeGameImage,
+  shouldShowHomeGameName,
+  type HomeGameRecord,
+  type HomeGameSectionRecord
+} from "@/components/Home/types";
 import arrowIcon from "@/assets/home/u-series/img_scroll_tkjt.png";
 import favoriteIcon from "@/assets/home/btn_sc_off_2.avif";
 import maintenanceIcon from "@/assets/home/u-series/img_whz_style_1.png";
@@ -106,7 +111,7 @@ function getBackgroundImageStyle(source?: string) {
 function getPosterImageStyle(game: HomeGameRecord) {
   return {
     "--poster-image-border-base-radius": "calc(var(--card-benchmark) * 0.137)",
-    ...getBackgroundImageStyle(game.image),
+    ...getBackgroundImageStyle(getHomeGameImage(game, "square")),
   };
 }
 
@@ -224,7 +229,7 @@ watch(
                       </section>
                     </div>
 
-                    <div class="game-name-normal line-one">
+                    <div v-if="shouldShowHomeGameName(game)" class="game-name-normal line-one">
                       <h4 class="name-inner">{{ game.name }}</h4>
                     </div>
                   </div>

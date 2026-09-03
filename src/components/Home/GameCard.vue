@@ -2,7 +2,11 @@
 import { computed } from "vue";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import type { GameImageDisplay } from "@/api/common";
-import type { HomeGameRecord } from "@/components/Home/types";
+import {
+  getHomeGameImage,
+  shouldShowHomeGameName,
+  type HomeGameRecord
+} from "@/components/Home/types";
 
 defineOptions({
   name: "HomeGameCard"
@@ -22,6 +26,8 @@ const emit = defineEmits<{
 
 const isDisabled = computed(() => Number(props.game.isOpen) === 0);
 const isLongImageDisplay = computed(() => props.imageDisplay === "long");
+const imageSource = computed(() => getHomeGameImage(props.game, props.imageDisplay));
+const showName = computed(() => Boolean(props.game.name) && shouldShowHomeGameName(props.game));
 const displayClass = computed(() => (
   isLongImageDisplay.value ? "home-game-card--long-image" : "home-game-card--square-image"
 ));
@@ -40,15 +46,15 @@ function handleClick() {
   <button
     type="button"
     class="home-game-card"
-    :class="[displayClass, { 'home-game-card--disabled': isDisabled }]"
+    :class="[displayClass, { 'home-game-card--disabled': isDisabled, 'home-game-card--show-name': showName }]"
     :aria-label="game.name || '游戏'"
     :aria-disabled="isDisabled"
     @click="handleClick"
   >
     <span class="home-game-card__visual">
       <home-skeleton-image
-        v-if="game.image"
-        :src="game.image"
+        v-if="imageSource"
+        :src="imageSource"
         alt=""
         class="home-game-card__image"
         fit="cover"
@@ -59,7 +65,7 @@ function handleClick() {
       </span>
     </span>
 
-    <span v-if="game.name" class="home-game-card__name">
+    <span v-if="showName" class="home-game-card__name">
       {{ game.name }}
     </span>
   </button>
@@ -118,7 +124,7 @@ function handleClick() {
   border-radius: inherit;
 }
 
-.home-game-card--long-image .home-game-card__visual::after {
+.home-game-card--long-image.home-game-card--show-name .home-game-card__visual::after {
   position: absolute;
   right: 0;
   bottom: 0;
