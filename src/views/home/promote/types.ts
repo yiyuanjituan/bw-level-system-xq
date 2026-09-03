@@ -30,6 +30,11 @@ export interface PromoteInfo {
     validMemberBetAmount: number;
     highestCommissionRate: number;
   };
+  commissionSummary: {
+    receivedCommission: number;
+    unclaimedCommission: number;
+    totalCommission: number;
+  };
   ruleGroups: PromoteRuleGroup[];
   inviteLinks: string[];
 }
@@ -39,6 +44,8 @@ export interface PromoteCommissionRecord {
   settlementDate: string;
   subordinateCount: number;
   validSubordinateCount: number;
+  directMemberCount: number;
+  otherMemberCount: number;
   performance: number;
   directCommission: number;
   otherCommission: number;
@@ -70,6 +77,41 @@ export interface PromoteCommissionResponse {
   endTime: number;
 }
 
+export interface PromoteCommissionDirectMember {
+  memberId: number;
+  userIdx: number;
+  vipLevel: number;
+  netProfit: number;
+  winLoseAmount: number;
+  rewardAmount: number;
+  discountAmount: number;
+  validBetAmount: number;
+  thirdPartyCost: number;
+  feeAmount: number;
+}
+
+export interface PromoteCommissionDirectDetailParams {
+  settlementId: number;
+  size: number;
+  cursorId?: number;
+}
+
+export interface PromoteCommissionDirectDetailResponse {
+  settlementId: number;
+  agentMode: number;
+  settlementDate: string;
+  directPerformance: number;
+  carryInAmount: number;
+  currentPerformance: number;
+  commissionRate: number;
+  directCommission: number;
+  directMemberCount: number;
+  list: PromoteCommissionDirectMember[];
+  pageSize: number;
+  more: boolean;
+  nextCursorId: number | null;
+}
+
 export interface PromotePerformanceRecord {
   id: number;
   statisticDate: string;
@@ -90,6 +132,11 @@ export interface PromotePerformanceParams {
 
 export interface PromotePerformanceResponse {
   list: PromotePerformanceRecord[];
+  summary: {
+    totalPerformance: number;
+    directPerformance: number;
+    otherPerformance: number;
+  };
   pageSize: number;
   more: boolean;
   nextCursorId: number | null;

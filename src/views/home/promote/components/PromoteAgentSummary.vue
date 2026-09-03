@@ -32,11 +32,18 @@ const props = withDefaults(
   }
 );
 
+defineEmits<{
+  claim: [];
+}>();
+
 const nowTimestamp = ref(Date.now());
 let countdownTimer: ReturnType<typeof setInterval> | undefined;
 
 const auditMultipleText = computed(() =>
   Number(props.auditMultiple || 0).toFixed(2)
+);
+const canClaimCommission = computed(
+  () => Number(props.unclaimedCommission) > 0
 );
 const settlementDate = computed(() =>
   props.nextSettlementTimestamp
@@ -120,7 +127,13 @@ onBeforeUnmount(() => {
           <span class="agent-summary__col"><label>已领取</label><strong>{{ receivedCommission }}</strong></span>
           <span class="agent-summary__col agent-summary__col--claim">
             <span><label>待领取</label><strong class="agent-summary__amount">{{ unclaimedCommission }}</strong></span>
-            <button type="button" disabled>领 取</button>
+            <x-button
+              class="agent-summary__claim-button"
+              type="primary"
+              size="mini"
+              :disabled="!canClaimCommission"
+              @click="$emit('claim')"
+            >领 取</x-button>
           </span>
         </div>
         <div class="agent-summary__row">
@@ -395,20 +408,11 @@ onBeforeUnmount(() => {
     align-items: center;
     width: 105px;
   }
+}
 
-  button {
-    position: relative;
-    width: 50px;
-    height: 20px;
-    margin-left: auto;
-    border: 0;
-    border-radius: 4px;
-    color: #191919;
-    font-size: 9px;
-    line-height: 20px;
-    background: #656565;
-    opacity: 1;
-  }
+.agent-summary__claim-button {
+  flex: none;
+  margin-left: auto;
 }
 
 .agent-summary__amount {

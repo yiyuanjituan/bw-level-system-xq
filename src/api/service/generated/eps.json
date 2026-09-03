@@ -5,6 +5,11 @@
     "api": [
       {
         "method": "post",
+        "path": "/receiveAllSpecialInviteRewards",
+        "summary": "一键领取邀请红包"
+      },
+      {
+        "method": "post",
         "path": "/receiveSpecialInviteReward",
         "summary": "领取邀请红包"
       },
@@ -642,6 +647,11 @@
         "method": "post",
         "path": "/subordinateBettingDetail",
         "summary": "代理下级投注明细"
+      },
+      {
+        "method": "post",
+        "path": "/commissionDirectDetail",
+        "summary": "代理直属佣金明细"
       },
       {
         "method": "post",

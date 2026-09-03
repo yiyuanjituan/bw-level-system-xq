@@ -1,29 +1,46 @@
 <script setup lang="ts">
-withDefaults(
+import { computed } from "vue";
+
+const props = withDefaults(
   defineProps<{
     activityTitle?: string;
     totalReward?: string;
     validInvites?: string;
     unclaimedReward?: string;
+    claiming?: boolean;
   }>(),
   {
     activityTitle: "邀请红包活动",
     totalReward: "0.00",
     validInvites: "0",
-    unclaimedReward: "0.00"
+    unclaimedReward: "0.00",
+    claiming: false
   }
 );
 
 const emit = defineEmits<{
   openActivity: [];
+  claim: [];
 }>();
+
+const canClaim = computed(() => Number(props.unclaimedReward) > 0);
 </script>
 
 <template>
   <section class="activity-reward">
     <header class="activity-reward__header">
       <span>活动累计奖励</span>
-      <div><strong>{{ totalReward }}</strong><button type="button" disabled>一键领取</button></div>
+      <div>
+        <strong>{{ totalReward }}</strong>
+        <x-button
+          class="activity-reward__claim-all"
+          type="primary"
+          size="small"
+          :disabled="!canClaim"
+          :loading="claiming"
+          @click="emit('claim')"
+        >一键领取</x-button>
+      </div>
     </header>
 
     <div class="activity-reward__tab">
@@ -34,7 +51,14 @@ const emit = defineEmits<{
     <div class="activity-reward__row">
       <span><label>邀请有效人数</label><strong>{{ validInvites }}</strong></span>
       <span><label>待领取</label><strong class="activity-reward__amount">{{ unclaimedReward }}</strong></span>
-      <button type="button" class="activity-reward__claim" disabled>{{ $t("领 取") }}</button>
+      <x-button
+        class="activity-reward__claim"
+        type="primary"
+        size="mini"
+        :disabled="!canClaim"
+        :loading="claiming"
+        @click="emit('claim')"
+      >{{ $t("领 取") }}</x-button>
       <button
         type="button"
         class="activity-reward__link"
@@ -88,17 +112,10 @@ const emit = defineEmits<{
     font-size: 11px;
     font-weight: 400;
   }
+}
 
-  button {
-    width: 60px;
-    height: 25px;
-    border: 0;
-    border-radius: 5px;
-    color: #191919;
-    font-size: 10px;
-    line-height: 25px;
-    background: #656565;
-  }
+.activity-reward__claim-all {
+  flex: none;
 }
 
 .activity-reward__tab {
@@ -167,20 +184,10 @@ const emit = defineEmits<{
     color: var(--skin__lead);
     font-weight: 400;
   }
+}
 
-  .activity-reward__claim {
-    width: 50px;
-    height: 20px;
-    border: 0;
-    border-radius: 4px;
-    color: #191919;
-    font-size: 9px;
-    line-height: 20px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    background: #656565;
-  }
+.activity-reward__claim {
+  flex: none;
 }
 
 .activity-reward__link {
@@ -196,7 +203,6 @@ const emit = defineEmits<{
   color: var(--skin__neutral_2);
   cursor: pointer;
   background: transparent;
-
 }
 
 :deep(.activity-reward__arrow) {

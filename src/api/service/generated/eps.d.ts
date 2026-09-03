@@ -326,6 +326,11 @@ declare namespace Eps {
 
 	interface ActivityData {
 		/**
+			 * 一键领取邀请红包
+			 */
+			receiveAllSpecialInviteRewards(data?: any): Promise<any>;
+
+		/**
 			 * 领取邀请红包
 			 */
 			receiveSpecialInviteReward(data?: any): Promise<any>;
@@ -368,12 +373,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { receiveSpecialInviteReward: string; specialInviteSummary: string; vitalityRecordList: string; specialInviteData: string; taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
+		permission: { receiveAllSpecialInviteRewards: string; receiveSpecialInviteReward: string; specialInviteSummary: string; vitalityRecordList: string; specialInviteData: string; taskConfigData: string; getTaskReward: string; taskListData: string; getBoxReward: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { receiveSpecialInviteReward: boolean; specialInviteSummary: boolean; vitalityRecordList: boolean; specialInviteData: boolean; taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
+		_permission: { receiveAllSpecialInviteRewards: boolean; receiveSpecialInviteReward: boolean; specialInviteSummary: boolean; vitalityRecordList: boolean; specialInviteData: boolean; taskConfigData: boolean; getTaskReward: boolean; taskListData: boolean; getBoxReward: boolean; };
 
 		request: Service["request"];
 	}
@@ -1320,6 +1325,11 @@ declare namespace Eps {
 			subordinateBettingDetail(data?: any): Promise<any>;
 
 		/**
+			 * 代理直属佣金明细
+			 */
+			commissionDirectDetail(data?: any): Promise<any>;
+
+		/**
 			 * 代理下级财务统计
 			 */
 			subordinateFinanceInfo(data?: any): Promise<any>;
@@ -1367,12 +1377,12 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { subordinateBettingDetail: string; subordinateFinanceInfo: string; subordinateReceiveInfo: string; receiveCommission: string; subordinateDetail: string; performanceInfo: string; subordinateInfo: string; commissionInfo: string; promoteInfo: string; dataInfo: string; };
+		permission: { subordinateBettingDetail: string; commissionDirectDetail: string; subordinateFinanceInfo: string; subordinateReceiveInfo: string; receiveCommission: string; subordinateDetail: string; performanceInfo: string; subordinateInfo: string; commissionInfo: string; promoteInfo: string; dataInfo: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { subordinateBettingDetail: boolean; subordinateFinanceInfo: boolean; subordinateReceiveInfo: boolean; receiveCommission: boolean; subordinateDetail: boolean; performanceInfo: boolean; subordinateInfo: boolean; commissionInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
+		_permission: { subordinateBettingDetail: boolean; commissionDirectDetail: boolean; subordinateFinanceInfo: boolean; subordinateReceiveInfo: boolean; receiveCommission: boolean; subordinateDetail: boolean; performanceInfo: boolean; subordinateInfo: boolean; commissionInfo: boolean; promoteInfo: boolean; dataInfo: boolean; };
 
 		request: Service["request"];
 	}

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { getSpecialInviteSummary, type SpecialInviteSummary } from "@/api/common";
+import {
+  getSpecialInviteSummary,
+  receiveAllSpecialInviteRewards,
+  type SpecialInviteSummary
+} from "@/api/common";
+import { showCustomToast } from "@/hooks/useCommon";
 import goldLevelTwoIcon from "@/assets/home/promote/level-gold-2.avif";
 import goldLevelIcon from "@/assets/home/promote/level-gold.avif";
 import silverLevelIcon from "@/assets/home/promote/level-silver.avif";
@@ -19,7 +24,7 @@ const props = defineProps<{
 const router = useRouter();
 
 defineEmits<{
-  selectTab: [active: "createSubordinate" | "rebateRatio"];
+  selectTab: [active: "commission" | "createSubordinate" | "rebateRatio"];
 }>();
 
 interface PromoteBroadcastItem {
@@ -40,6 +45,7 @@ const emptyActivityReward = (): SpecialInviteSummary => ({
   unclaimedReward: 0
 });
 const activityReward = ref<SpecialInviteSummary>(emptyActivityReward());
+const claimingActivityReward = ref(false);
 
 function formatMoney(value: unknown) {
   const amount = Number(value);
@@ -59,6 +65,52 @@ function openActivityDetail() {
   });
 }
 
+async function loadActivityReward() {
+  const summary = await getSpecialInviteSummary();
+  activityReward.value = summary?.available ? summary : emptyActivityReward();
+}
+
+async function claimAllActivityRewards() {
+  if (
+    claimingActivityReward.value ||
+    Number(activityReward.value.unclaimedReward) <= 0
+  ) return;
+
+  claimingActivityReward.value = true;
+  try {
+    const result = await receiveAllSpecialInviteRewards();
+    const receivedAmount = Number(result.amount) || 0;
+    if (result.count <= 0 || receivedAmount <= 0) {
+      await loadActivityReward().catch(() => undefined);
+      showCustomToast({ type: "warning", message: "暂无可领取的活动奖励" });
+      return;
+    }
+
+    // 领取接口已成功后先同步本地金额，随后再以服务端汇总结果校准。
+    activityReward.value = {
+      ...activityReward.value,
+      totalReward: Number(
+        (Number(activityReward.value.totalReward) + receivedAmount).toFixed(2)
+      ),
+      unclaimedReward: Math.max(
+        Number(
+          (Number(activityReward.value.unclaimedReward) - receivedAmount).toFixed(2)
+        ),
+        0
+      )
+    };
+    await loadActivityReward().catch(() => undefined);
+    showCustomToast({
+      type: "success",
+      message: `成功领取${formatMoney(receivedAmount)}元`
+    });
+  } catch {
+    // 请求拦截器会展示后端返回的具体失败原因。
+  } finally {
+    claimingActivityReward.value = false;
+  }
+}
+
 watch(
   isLoggedIn,
   loggedIn => {
@@ -67,10 +119,7 @@ watch(
       return;
     }
 
-    void getSpecialInviteSummary()
-      .then(summary => {
-        activityReward.value = summary?.available ? summary : emptyActivityReward();
-      })
+    void loadActivityReward()
       .catch(() => {
         activityReward.value = emptyActivityReward();
       });
@@ -104,6 +153,10 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       :settlement-cycle-name="info?.config.settlementCycleName || ''"
       :next-settlement-timestamp="info?.config.nextSettlementTimestamp || 0"
       :highest-commission-rate="info?.config.highestCommissionRate ?? 0"
+      :received-commission="formatMoney(info?.commissionSummary?.receivedCommission)"
+      :unclaimed-commission="formatMoney(info?.commissionSummary?.unclaimedCommission)"
+      :total-commission="formatMoney(info?.commissionSummary?.totalCommission)"
+      @claim="$emit('selectTab', 'commission')"
     />
     <promote-invite-share
       :show-invite-code="isLoggedIn"
@@ -120,6 +173,8 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
       :total-reward="formatMoney(activityReward.totalReward)"
       :valid-invites="String(activityReward.validInviteCount)"
       :unclaimed-reward="formatMoney(activityReward.unclaimedReward)"
+      :claiming="claimingActivityReward"
+      @claim="claimAllActivityRewards"
       @open-activity="openActivityDetail"
     />
   </div>

@@ -2,6 +2,8 @@ import { http } from "@/utils/http";
 import { ContentTypeEnum } from "@/enums/requestEnum";
 import type {
   PromoteBettingDetailResponse,
+  PromoteCommissionDirectDetailParams,
+  PromoteCommissionDirectDetailResponse,
   PromoteCommissionParams,
   PromoteCommissionResponse,
   PromoteDataResponse,
@@ -451,6 +453,16 @@ export function receiveSpecialInviteReward(rewardId: number): Promise<{ amount: 
   });
 }
 
+export function receiveAllSpecialInviteRewards(): Promise<{
+  amount: number;
+  count: number;
+}> {
+  return http.request<{ amount: number; count: number }>({
+    url: "/app/activity/data/receiveAllSpecialInviteRewards",
+    method: "post"
+  });
+}
+
 export function getActivityRecords(data: any): Promise<any> {
   return http.request({
     url: "/app/v1/activity/records",
@@ -703,6 +715,16 @@ export function getPromoteCommission(
 ): Promise<PromoteCommissionResponse> {
   return http.request<PromoteCommissionResponse>({
     url: "/app/v1/agent/commissionInfo",
+    method: "post",
+    data
+  });
+}
+
+export function getPromoteCommissionDirectDetail(
+  data: PromoteCommissionDirectDetailParams
+): Promise<PromoteCommissionDirectDetailResponse> {
+  return http.request<PromoteCommissionDirectDetailResponse>({
+    url: "/app/v1/agent/commissionDirectDetail",
     method: "post",
     data
   });
