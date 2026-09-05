@@ -15,6 +15,15 @@ export interface ThemeVariableConfig {
 export const DEFAULT_THEME_TEMPLATE = 0;
 export const DEFAULT_THEME_PRESET = "theme-1";
 
+/** 前台首页模板：0 星系集团（默认）、1 U投系列、2 基础模板 */
+export type ThemeTemplate = 0 | 1 | 2;
+
+/** 将后端 theme 字段归一化为合法模板值，未知值回退默认模板（星系集团）。 */
+export const normalizeThemeTemplate = (value: unknown): ThemeTemplate => {
+  const theme = Number(value);
+  return theme === 1 || theme === 2 ? theme : DEFAULT_THEME_TEMPLATE;
+};
+
 export const THEME_VARIABLE_CONFIGS: ThemeVariableConfig[] = [
   { name: "--skin__bg_1", label: "页面背景", defaultValue: "#000000" },
   { name: "--skin__bg_2", label: "卡片背景", defaultValue: "#191919" },
@@ -93,7 +102,7 @@ export function normalizeThemeConfig(value?: Partial<ThemeConfigResponse> | null
   });
 
   return {
-    theme: Number(source.theme) === 1 ? 1 : DEFAULT_THEME_TEMPLATE,
+    theme: normalizeThemeTemplate(source.theme),
     templateTag: typeof source.templateTag === "string" ? source.templateTag : "",
     preset: typeof source.preset === "string" && source.preset.trim()
       ? source.preset.trim()

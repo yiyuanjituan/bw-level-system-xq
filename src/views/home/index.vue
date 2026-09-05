@@ -8,6 +8,7 @@ import HomeFloat from '@/components/Home/Float.vue';
 import HomeBackTop from '@/components/Home/BackTop.vue';
 import HomeFooter from '@/components/Home/Footer.vue';
 import UHome from '@/views/home/u-series.vue';
+import BasicHome from '@/views/home/basic.vue';
 import useAppStore from '@/store/modules/app';
 
 const app = useAppStore();
@@ -39,6 +40,7 @@ onBeforeUnmount(() => {
 
 <template>
   <UHome v-if="app.themeTemplate === 1" key="u-series" />
+  <BasicHome v-else-if="app.themeTemplate === 2" key="basic" />
   <div v-else key="galaxy" class="home-page">
     <HomeNavBar />
     <main class="home-page__scroll" id="scroll-box" @scroll="handleHomeScroll">

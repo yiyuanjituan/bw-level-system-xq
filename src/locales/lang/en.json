@@ -1,4 +1,5 @@
 {
+  "暂无游戏": "No games available",
   "tips": {
     "maintenance": "The game is currently under maintenance"
   },
@@ -636,6 +637,10 @@
   "棋牌": "Card Games",
   "电竞": "Esports",
   "热门": "Popular",
+  "操作失败": "Operation failed",
+  "展开": "Expand",
+  "收起": "Collapse",
+  "另有{count}款游戏": "{count} more games",
   "最近": "Recent",
   "游戏": "Game",
   "活动": "Promotions",

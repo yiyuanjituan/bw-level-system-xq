@@ -4,7 +4,9 @@ import { getCommonInfo, getConfig, getThemeConfig } from "@/api/common";
 import type { GameImageDisplay, HomePageSection, MineHeroStyle, MineMenuItem, MinePageSection, MineQuickAction, MineTemplateName, ThemeConfigResponse } from "@/api/common";
 import {
   DEFAULT_THEME_TEMPLATE,
-  normalizeThemeConfig
+  normalizeThemeConfig,
+  normalizeThemeTemplate,
+  type ThemeTemplate,
 } from "@/config/theme-config";
 import {
   DEFAULT_GAME_IMAGE_DISPLAY,
@@ -72,7 +74,6 @@ export const applyThemeVariables = (themeConfig?: { variables?: Record<string, s
   });
 };
 
-const normalizeThemeTemplate = (value: unknown): 0 | 1 => Number(value) === 1 ? 1 : 0;
 const isPlainObject = (value: unknown): value is Record<string, any> => {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 };
@@ -128,7 +129,7 @@ export const useAppStore = defineStore('app', () => {
   const isAppReady = ref(false)
   const appLoadingProgress = ref(6)
   const appLoadingStatus = ref("正在启动应用")
-  const themeTemplate = ref<0 | 1>(DEFAULT_THEME_TEMPLATE)
+  const themeTemplate = ref<ThemeTemplate>(DEFAULT_THEME_TEMPLATE)
   const mineTemplate = ref<MineTemplateName>(DEFAULT_MINE_TEMPLATE)
   const mineHeroStyle = ref<MineHeroStyle>(DEFAULT_MINE_HERO_STYLE)
   const mineHeroImage = ref('')
