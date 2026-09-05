@@ -15,6 +15,7 @@ export interface HomeGameRecord {
   square_image?: string;
   short_image?: string;
   isShowName?: string | number | boolean | null;
+  favorite?: boolean;
   isOpen?: string | number | boolean;
   [key: string]: unknown;
 }

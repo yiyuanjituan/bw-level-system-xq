@@ -1423,6 +1423,16 @@ declare namespace Eps {
 
 	interface V1Game {
 		/**
+			 * 获取带收藏状态的试玩游戏列表
+			 */
+			getTrialGameList(data?: any): Promise<any>;
+
+		/**
+			 * 根据场馆获取带收藏状态的游戏列表
+			 */
+			getGameById(data?: any): Promise<any>;
+
+		/**
 			 * 用户余额回归
 			 */
 			userMoneyIn(data?: any): Promise<any>;
@@ -1435,19 +1445,19 @@ declare namespace Eps {
 		/**
 		 * 权限标识
 		 */
-		permission: { userMoneyIn: string; getGameUrl: string; };
+		permission: { getTrialGameList: string; getGameById: string; userMoneyIn: string; getGameUrl: string; };
 
 		/**
 		 * 权限状态
 		 */
-		_permission: { userMoneyIn: boolean; getGameUrl: boolean; };
+		_permission: { getTrialGameList: boolean; getGameById: boolean; userMoneyIn: boolean; getGameUrl: boolean; };
 
 		request: Service["request"];
 	}
 
 	interface V1Moments {
 		/**
-			 * 设置朋友圈游戏收藏状态
+			 * 设置游戏或场馆收藏状态
 			 */
 			setGameFavorite(data?: any): Promise<any>;
 

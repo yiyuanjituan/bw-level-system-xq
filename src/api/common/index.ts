@@ -332,7 +332,7 @@ export function getHomeApiData(data?: object): Promise<any> {
 
 export function getGameListById(data: any): Promise<any> {
   return http.request({
-    url: "/open/v1/game/getGameById",
+    url: "/app/v1/game/getGameById",
     method: "post",
     data: data
   });
@@ -350,7 +350,7 @@ export interface TrialGameListResponse {
 
 export function getTrialGameList(data: TrialGameListParams): Promise<TrialGameListResponse> {
   return http.request<TrialGameListResponse>({
-    url: "/open/v1/game/getTrialGameList",
+    url: "/app/v1/game/getTrialGameList",
     method: "post",
     data
   });
@@ -561,11 +561,20 @@ export function setMomentsFavorite(postId: number, favorited: boolean): Promise<
   });
 }
 
-export function setMomentsGameFavorite(gameId: string | number, favorite: boolean): Promise<unknown> {
+export function setMomentsGameFavorite(
+  entryId: string | number,
+  favorite: boolean,
+  entryMode: "game" | "venue" = "game"
+): Promise<unknown> {
   return http.request({
     url: "/app/v1/moments/setGameFavorite",
     method: "post",
-    data: { gameId, favorited: favorite },
+    data: {
+      entryId,
+      entryMode,
+      gameId: entryMode === "game" ? entryId : undefined,
+      favorited: favorite
+    },
     headers: { "Content-Type": ContentTypeEnum.JSON }
   });
 }

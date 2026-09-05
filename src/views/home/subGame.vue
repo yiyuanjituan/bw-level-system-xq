@@ -9,7 +9,12 @@ import { computed, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import useAppStore from "@/store/modules/app";
 import router from "@/router";
-import { getGameListById, getTrialGameList, type TrialGameListResponse } from "@/api/common";
+import {
+  getGameListById,
+  getTrialGameList,
+  setMomentsGameFavorite,
+  type TrialGameListResponse
+} from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import { $t } from "@/locales";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -38,6 +43,7 @@ const typeDataMap: Record<string, { name: string; image?: string }> = {
   "101": { name: "收藏" }
 };
 const currentPage = ref(1);
+const pendingFavoriteEntryKeys = ref<string[]>([]);
 const trialGameList = ref<TrialGameListResponse["gameList"]>([]);
 const trialGameCache = new Map<string, TrialGameListResponse>();
 const enum // 使用枚举定义
@@ -114,6 +120,57 @@ function isRecommendGame(record: any) {
     || isEnabledFlag(record?.isRecommend)
     || isEnabledFlag(record?.is_recommend)
     || isEnabledFlag(record?.recommend);
+}
+
+function getFavoriteEntry(record: HomeGameRecord) {
+  const entryMode = record.entryMode === "venue" || record.gameMode === "venue"
+    ? "venue"
+    : "game";
+  const entryId = entryMode === "venue"
+    ? record.entryVenueId ?? record.id
+    : record.entryGameId ?? record.id;
+  const normalizedEntryId = Number(entryId);
+  if (!Number.isInteger(normalizedEntryId) || normalizedEntryId <= 0) return null;
+
+  return {
+    entryMode,
+    entryId: normalizedEntryId,
+    entryKey: record.entryKey || `${entryMode}:${normalizedEntryId}`
+  } as const;
+}
+
+function isFavoritePending(record: HomeGameRecord) {
+  const favoriteEntry = getFavoriteEntry(record);
+  return favoriteEntry
+    ? pendingFavoriteEntryKeys.value.includes(favoriteEntry.entryKey)
+    : false;
+}
+
+async function toggleGameFavorite(record: HomeGameRecord) {
+  const favoriteEntry = getFavoriteEntry(record);
+  if (!favoriteEntry || isFavoritePending(record)) return;
+
+  const previousFavorite = Boolean(record.favorite);
+  const nextFavorite = !previousFavorite;
+  pendingFavoriteEntryKeys.value.push(favoriteEntry.entryKey);
+  record.favorite = nextFavorite;
+
+  try {
+    await setMomentsGameFavorite(
+      favoriteEntry.entryId,
+      nextFavorite,
+      favoriteEntry.entryMode
+    );
+    if (!nextFavorite && rightKey.value === RightKeyEnum.COLLECT && !isTrialPage.value) {
+      loadGameListData();
+    }
+  } catch {
+    record.favorite = previousFavorite;
+  } finally {
+    pendingFavoriteEntryKeys.value = pendingFavoriteEntryKeys.value.filter(
+      entryKey => entryKey !== favoriteEntry.entryKey
+    );
+  }
 }
 
 function updateActiveKey(key: any) {
@@ -379,10 +436,18 @@ onMounted(() => {
                         <div class="card-image" :class="{ 'card-image--show-name': shouldShowHomeGameName(item) }">
                           <home-skeleton-image :src="getCardImage(item)" :alt="String(item.name ?? '')" class="poster-image" />
                           <div class="thumb-icon" v-if="isRecommendGame(item)"></div>
-                          <div class="collect-icon">
-                            <img src="@/assets/home/btn_sc_off_2.avif" alt="" class="collect-img" v-if="true" />
-                            <img src="@/assets/home/btn_sc_on_2.avif" alt="" class="collect-img" v-if="false" />
-                          </div>
+                          <button
+                            type="button"
+                            class="collect-icon"
+                            :class="{ 'collect-icon--pending': isFavoritePending(item) }"
+                            :aria-label="item.favorite ? '取消收藏' : '收藏游戏'"
+                            :aria-busy="isFavoritePending(item)"
+                            :disabled="isFavoritePending(item)"
+                            @click.stop="toggleGameFavorite(item)"
+                          >
+                            <img src="@/assets/home/btn_sc_off_2.avif" alt="" class="collect-img" v-if="!item.favorite" />
+                            <img src="@/assets/home/btn_sc_on_2.avif" alt="" class="collect-img" v-else />
+                          </button>
                           <div class="disabled-box" @click.stop="showTip" v-if="!isGameOpen(item)">
                             <div class="disabled-icon"></div>
                           </div>
@@ -833,10 +898,6 @@ onMounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
-.card-item:active {
-  transform: scale(0.98);
-}
-
 .card-image {
   position: relative;
   display: flex;
@@ -962,8 +1023,16 @@ onMounted(() => {
   height: fit-content;
   margin: -3px;
   padding: 3px;
+  appearance: none;
+  background: transparent;
+  border: 0;
   line-height: 0;
   cursor: pointer;
+}
+
+.collect-icon--pending {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .collect-img {

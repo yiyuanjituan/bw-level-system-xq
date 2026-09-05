@@ -732,6 +732,16 @@
     "api": [
       {
         "method": "post",
+        "path": "/getTrialGameList",
+        "summary": "获取带收藏状态的试玩游戏列表"
+      },
+      {
+        "method": "post",
+        "path": "/getGameById",
+        "summary": "根据场馆获取带收藏状态的游戏列表"
+      },
+      {
+        "method": "post",
         "path": "/userMoneyIn",
         "summary": "用户余额回归"
       },
@@ -749,7 +759,7 @@
       {
         "method": "post",
         "path": "/setGameFavorite",
-        "summary": "设置朋友圈游戏收藏状态"
+        "summary": "设置游戏或场馆收藏状态"
       },
       {
         "method": "post",
