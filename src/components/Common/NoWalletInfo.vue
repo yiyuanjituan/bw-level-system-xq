@@ -44,15 +44,15 @@ const formRules = ref<XFormRules>({
           return;
         }
         if (!Number.isInteger(amount) || amount < Number(props.walletData.noWalletInfo?.min)) {
-          callback(new Error(`提现金额必须大于${Number(props.walletData.noWalletInfo?.min)}`));
+          callback(new Error($t("提现金额必须大于{min}", { min: Number(props.walletData.noWalletInfo?.min) })));
           return;
         }
         if (!Number.isInteger(amount) || amount > Number(auth.user.money)) {
-          callback(new Error(`余额不足`));
+          callback(new Error($t("余额不足")));
           return;
         }
         if (!Number.isInteger(amount) || amount > Number(props.walletData.noWalletInfo?.max)) {
-          callback(new Error(`提现金额必须小于${Number(props.walletData.noWalletInfo?.max)}`));
+          callback(new Error($t("提现金额必须小于{max}", { max: Number(props.walletData.noWalletInfo?.max) })));
           return;
         }
 
@@ -158,16 +158,16 @@ onMounted(() => init());
   </div>
   <template v-else>
     <div class="no-wallet-bind" v-if="walletInfo && Number(walletInfo?.bind) != 1">
-      <div class="bindTips"><span>已有账号，可登录绑定</span><span>首次使用？只需设置支付密码</span></div>
+      <div class="bindTips"><span>{{ $t("已有账号，可登录绑定") }}</span><span>{{ $t("首次使用，只需设置支付密码") }}</span></div>
       <div class="content">
         <div class="bind">
-          <x-button type="primary" plain @click="handleBindNoWallet">立即绑定</x-button>
+          <x-button type="primary" plain @click="handleBindNoWallet">{{ $t("立即绑定") }}</x-button>
         </div>
         <div class="setting">
-          <x-button type="primary" :loading="noWalletSettingLoading" @click="createBindUserByNo">立即设置</x-button>
+          <x-button type="primary" :loading="noWalletSettingLoading" @click="createBindUserByNo">{{ $t("立即设置") }}</x-button>
         </div>
       </div>
-      <div class="intro">用NO钱包：赚积分，抽大奖，最高<span>88,888.88CNY</span></div>
+      <div class="intro">{{ $t("用NO钱包，赚积分，抽大奖，最高") }}<span>88,888.88CNY</span></div>
       <section class="guaranteedClaimsTips">
         <p class="">
           <span class="verify-icon">
@@ -175,11 +175,11 @@ onMounted(() => init());
             <custom-svg-image src="@/assets/common/comm_icon_dblp_1.svg" class="icon-s" />
             <custom-svg-image src="@/assets/common/comm_icon_dblp_2.svg" class-name="icon-s" />
           </span>
-          <span> 本站由第三方担保机构“NO钱包”提供<span class="colorAccent1">全方位保障</span> </span>
+          <span> {{ $t("本站由第三方担保机构“NO钱包”提供") }}<span class="colorAccent1">{{ $t("全方位保障") }}</span> </span>
           <span>，</span>
-          <span>支持查验网址和理赔服务<span>，</span></span>
-          <span>资金可安心存在账户<span>，</span>详见</span>
-          <span class="openUrl">担保规则</span>。
+          <span>{{ $t("支持查验网址和理赔服务") }}<span>，</span></span>
+          <span>{{ $t("资金可安心存在账户") }}<span>，</span>{{ $t("详见") }}</span>
+          <span class="openUrl">{{ $t("担保规则") }}</span>。
         </p>
       </section>
     </div>
@@ -187,13 +187,13 @@ onMounted(() => init());
       <div class="wallet-info">
         <div class="balance">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" srcset="" class="icon" />
-          <span class="label">钱包余额</span>
+          <span class="label">{{ $t("钱包余额") }}</span>
           <span class="noBalance">{{ formatMoney(walletInfo.rmbBalance) }}</span>
-          <x-button size="mini">挂单出售</x-button>
+          <x-button size="mini">{{ $t("挂单出售") }}</x-button>
         </div>
         <div class="account">
           (
-          <span class="label">已绑定NO钱包账号</span><span class="noId">{{ walletInfo.qAccount }}</span>
+          <span class="label">{{ $t("已绑定NO钱包账号") }}</span><span class="noId">{{ walletInfo.qAccount }}</span>
           <span class="ml-[1px] w-[15px]"><copy :text="walletInfo.qAccount" class-name="!text-[12px]" /></span>
           )
         </div>
@@ -204,7 +204,7 @@ onMounted(() => init());
             <span class="item__label-text">{{ $t("提现金额") }}</span>
           </span>
           <x-input
-            :placeholder="`最低${Number(walletData.noWalletInfo?.min)}，最高${Number(walletData.noWalletInfo?.max)}`"
+            :placeholder="$t('最低{min}，最高{max}', { min: Number(walletData.noWalletInfo?.min), max: Number(walletData.noWalletInfo?.max) })"
             v-model="formModel.bindWithdrawNum"
             type="number"
           >

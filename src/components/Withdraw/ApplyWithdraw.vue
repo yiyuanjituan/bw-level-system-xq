@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, provide, ref } from 'vue';
+import { $t } from '@/locales';
 import { storeToRefs } from 'pinia';
 import useAuthStore from '@/store/modules/user';
 import useWithdrawStore from '@/store/modules/withdraw';
@@ -13,14 +14,14 @@ const withdrawStore = useWithdrawStore();
 const { withdrawInfo, userCardList } = storeToRefs(withdrawStore);
 const typeList = computed(() => {
   return withdrawStore.withdrawInfo.isHaveNo ? [
-    { id: 0, name: '钱包' },
-    { id: 1, name: '正常提现' },
-    { id: 2, name: '转为数字货币' },
-    { id: 3, name: '三方钱包' }
+    { id: 0, name: $t('钱包') },
+    { id: 1, name: $t('正常提现') },
+    { id: 2, name: $t('转为数字货币') },
+    { id: 3, name: $t('三方钱包') }
   ] : [
-    { id: 1, name: '正常提现' },
-    { id: 2, name: '转为数字货币' },
-    { id: 3, name: '三方钱包' }
+    { id: 1, name: $t('正常提现') },
+    { id: 2, name: $t('转为数字货币') },
+    { id: 3, name: $t('三方钱包') }
   ];
 })
 const selectTypeId = ref(0);
@@ -47,7 +48,7 @@ onMounted(() => updateWallet());
       <div class="withdraw-info-main">
         <div class="withdraw-info">
           <div class="left">
-            余额&nbsp;<span class="currency">{{ auth.user.money }}</span
+            {{ $t("余额") }}&nbsp;<span class="currency">{{ auth.user.money }}</span
             >&nbsp;
             <div class="refresh-icon" :class="[walletIsLoading ? 'ml-[4px] animate__spin' : 'ml-[4px]']" @click="updateWallet">
               <svg width="1em" height="1em" fill="#F0C059" class="">

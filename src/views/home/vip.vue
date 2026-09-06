@@ -27,13 +27,13 @@ onMounted(() => init());
     <div class="main-box">
       <div class="vip-swiper">
         <img src="/siteadmin/active/img_vip_card_bg.avif" alt="" srcset="" class="bg-box" />
-        <span class="vip-current-level">当前等级</span>
+        <span class="vip-current-level">{{ $t("当前等级") }}</span>
         <div class="vip-info-wrapper">
           <div class="vip-info">
             <div class="vip-level">
               <span class="vip-level-x">VIP {{ vipInfo.level }}</span>
               <span class="vip-level-up" @click="handleToUpLevel">
-                去升级<svg-icon name="arrow-back" class-name="ml-[1px] text-[7px] rotate-[180deg]" />
+                {{ $t("去升级") }}<svg-icon name="arrow-back" class-name="ml-[1px] text-[7px] rotate-[180deg]" />
               </span>
             </div>
             <div class="item-progress">
@@ -46,7 +46,7 @@ onMounted(() => init());
             </div>
             <div class="item-text">
               <div class="text">
-                还需投注<b>{{ formatMoney(vipInfo.upNeedFlow) }}</b>
+                {{ $t("还需投注") }}<b>{{ formatMoney(vipInfo.upNeedFlow) }}</b>
               </div>
             </div>
           </div>

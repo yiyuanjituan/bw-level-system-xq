@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteSubordinates } from "@/api/common";
@@ -19,13 +20,13 @@ interface FooterItem {
 
 const DEFAULT_PAGE_SIZE = 20;
 const sortOptions = [
-  { label: "有效投注排序", value: "validBet" },
-  { label: "累计输赢排序", value: "profitLose" }
+  { label: $t("有效投注排序"), value: "validBet" },
+  { label: $t("累计输赢排序"), value: "profitLose" }
 ];
 const today = dayjs();
 const defaultTimeRange: AccountTimeRange = {
   mode: "custom",
-  label: "全部",
+  label: $t("全部"),
   startTime: today.subtract(89, "day").startOf("day").unix(),
   endTime: today.endOf("day").unix(),
   startDate: today.subtract(89, "day").format("YYYY-MM-DD"),
@@ -53,12 +54,12 @@ const hasMembers = computed(() => members.value.length > 0);
 const footerItems = computed<FooterItem[]>(() => {
   const current = summary.value;
   return [
-    { label: "直属有效投注", value: formatMoney(current?.directValidBet) },
-    { label: "直属输赢", value: formatMoney(current?.directProfitLose) },
-    { label: "其他有效投注", value: formatMoney(current?.otherValidBet) },
-    { label: "其他输赢", value: formatMoney(current?.otherProfitLose) },
-    { label: "总有效投注", value: formatMoney(current?.totalValidBet) },
-    { label: "总输赢", value: formatMoney(current?.totalProfitLose) }
+  { label: $t("直属有效投注"), value: formatMoney(current?.directValidBet) },
+  { label: $t("直属输赢"), value: formatMoney(current?.directProfitLose) },
+  { label: $t("其他有效投注"), value: formatMoney(current?.otherValidBet) },
+  { label: $t("其他输赢"), value: formatMoney(current?.otherProfitLose) },
+  { label: $t("总有效投注"), value: formatMoney(current?.totalValidBet) },
+  { label: $t("总输赢"), value: formatMoney(current?.totalProfitLose) }
   ];
 });
 
@@ -224,7 +225,7 @@ watch(
       <div v-if="loading && !hasMembers" class="state"><ui-loading /></div>
       <ui-empty
         v-else-if="!hasMembers"
-        :text="requestFailed ? '加载失败，请重试' : '暂无内容'"
+      :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')"
       >
         <template #text="{ text }">
           <span class="empty-text">
@@ -266,13 +267,13 @@ watch(
               </div>
             </span>
             <span class="member-column">
-              <label>他的下级</label>
+            <label>{{ $t("他的下级") }}</label>
               <span class="number value">{{ formatCount(member.directChildCount) }}</span>
             </span>
           </div>
           <div class="member-row">
             <span class="member-column">
-              <label>有效投注</label>
+          <label>{{ $t("有效投注") }}</label>
               <button
                 class="number value member-link"
                 type="button"
@@ -280,10 +281,10 @@ watch(
               >
                 {{ formatMoney(member.validBet) }}
               </button>
-              <span>({{ formatCount(member.validBetCount) }}次)</span>
+              <span>({{ formatCount(member.validBetCount) }}{{ $t("次") }})</span>
             </span>
             <span class="member-column">
-              <label>累计输赢</label>
+          <label>{{ $t("累计输赢") }}</label>
               <span class="number value" :class="getWinLossClass(member.profitLose)">
                 {{ formatMoney(member.profitLose) }}
               </span>
@@ -292,7 +293,7 @@ watch(
         </div>
 
         <div v-if="requestFailed" class="load-error" @click="handleRetry">
-          加载失败，点击重试
+          {{ $t("加载失败，点击重试") }}
         </div>
       </van-list>
     </div>
@@ -302,7 +303,7 @@ watch(
         <svg class="footer-arrow" viewBox="0 0 23 16" aria-hidden="true">
           <path d="M11.5 16 0 3.36 3.06 0l8.44 9.27L19.94 0 23 3.36Z" />
         </svg>
-        {{ footerCollapsed ? "显示" : "隐藏" }}
+        {{ footerCollapsed ? $t("显示") : $t("隐藏") }}
       </button>
       <div class="footer-content">
         <span v-for="footerItem in footerItems" :key="footerItem.label" class="footer-item">

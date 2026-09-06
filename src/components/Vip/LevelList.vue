@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
   <div class="level-list">
     <div class="receive-reward">
       <div class="item">
-        <span class="text">待领取</span>
+        <span class="text">{{ $t("待领取") }}</span>
         <span class="amount">{{ formatMoney(props.info.awaitGetNum) }}</span>
         <div class="refresh">
           <div class="loadingIcon" @click="onRefresh">
@@ -104,14 +104,14 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="item">
-        <span class="text">累计奖金</span>
+        <span class="text">{{ $t("累计奖金") }}</span>
         <span class="amount">{{ formatMoney(props.info.userGetNum) }}</span>
       </div>
     </div>
     <div class="main-box" ref="mainBoxRef">
       <div class="level-header">
-        <span class="level">等级</span>
-        <span class="power">奖励/特权</span>
+        <span class="level">{{ $t("等级") }}</span>
+        <span class="power">{{ $t("奖励/特权") }}</span>
       </div>
       <div
         class="list-item"
@@ -120,7 +120,7 @@ onBeforeUnmount(() => {
         :key="index"
         :ref="setRefs(getLevelRefName(item.level))"
       >
-        <span class="item-current" v-if="userLevel == item.level">当前</span>
+        <span class="item-current" v-if="userLevel == item.level">{{ $t("当前") }}</span>
         <div class="vip-info">
           <div class="level-image">
             <img
@@ -145,22 +145,22 @@ onBeforeUnmount(() => {
         <div class="item-content">
           <div class="summary" @click="item.isExpanded = !item.isExpanded">
             <div class="bonus-info">
-              {{ item.isExpanded ? '最低可获得奖金' : '总奖金' }}
+              {{ $t(item.isExpanded ? "最低可获得奖金" : "总奖金") }}
               <span class="bonus-amount">
                 {{ formatMoney(Number(item.upAmount) + Number(item.weekAmount) + Number(item.monthAmount) + Number(item.dayAmount)) }}
               </span>
             </div>
-            <div class="toggle">展开<svg-icon name="arrow-down" class-name="arrow-icon" /></div>
+            <div class="toggle">{{ $t("展开") }}<svg-icon name="arrow-down" class-name="arrow-icon" /></div>
           </div>
           <div class="reward-list" v-if="item.isExpanded">
             <div class="reward-item" v-if="Number(item.dayAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_rfl_1.avif" class="reward-icon" />
               <div class="item">
                 <div class="label">
-                  <span>日工资</span><b class="reward">+{{ formatMoney(item.dayAmount) }}</b>
+                  <span>{{ $t("日工资") }}</span><b class="reward">+{{ formatMoney(item.dayAmount) }}</b>
                 </div>
                 <div class="progress">
-                  每日投注<span class="text">{{ formatMoney(item.dayFlow, false) }}</span>
+                  {{ $t("每日投注") }}<span class="text">{{ formatMoney(item.dayFlow, false) }}</span>
                 </div>
               </div>
               <x-button
@@ -170,18 +170,18 @@ onBeforeUnmount(() => {
                 v-if="item.isCanDayAmount"
                 @click="handleGetUpLevelReward(item, 1)"
                 :loading="item.isLoading_1"
-                >领取</x-button
+                >{{ $t("领取") }}</x-button
               >
-              <x-button size="small" class="btn" v-if="!item.isCanDayAmount" @click="jumpToGame">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanDayAmount" @click="jumpToGame">{{ $t("去游戏") }}</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.weekAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_zfl_1.avif" class="reward-icon" />
               <div class="item">
                 <div class="label">
-                  <span>周工资</span><b class="reward">+{{ formatMoney(item.weekAmount) }}</b>
+                  <span>{{ $t("周工资") }}</span><b class="reward">+{{ formatMoney(item.weekAmount) }}</b>
                 </div>
                 <div class="progress">
-                  每周投注<span class="text">{{ formatMoney(item.weekFlow, false) }}</span>
+                  {{ $t("每周投注") }}<span class="text">{{ formatMoney(item.weekFlow, false) }}</span>
                 </div>
               </div>
               <x-button
@@ -191,18 +191,18 @@ onBeforeUnmount(() => {
                 v-if="item.isCanWeekAmount"
                 @click="handleGetUpLevelReward(item, 2)"
                 :loading="item.isLoading_2"
-                >领取</x-button
+                >{{ $t("领取") }}</x-button
               >
-              <x-button size="small" class="btn" v-if="!item.isCanWeekAmount" @click="jumpToGame">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanWeekAmount" @click="jumpToGame">{{ $t("去游戏") }}</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.monthAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_yfl_1.avif" class="reward-icon" />
               <div class="item">
                 <div class="label">
-                  <span>月工资</span><b class="reward">+{{ formatMoney(item.monthAmount) }}</b>
+                  <span>{{ $t("月工资") }}</span><b class="reward">+{{ formatMoney(item.monthAmount) }}</b>
                 </div>
                 <div class="progress">
-                  每月投注<span class="text">{{ formatMoney(item.monthFlow, false) }}</span>
+                  {{ $t("每月投注") }}<span class="text">{{ formatMoney(item.monthFlow, false) }}</span>
                 </div>
               </div>
               <x-button
@@ -212,22 +212,22 @@ onBeforeUnmount(() => {
                 v-if="item.isCanMonthAmount"
                 @click="handleGetUpLevelReward(item, 3)"
                 :loading="item.isLoading_3"
-                >领取</x-button
+                >{{ $t("领取") }}</x-button
               >
-              <x-button size="small" class="btn" v-if="!item.isCanMonthAmount" @click="jumpToGame">去游戏</x-button>
+              <x-button size="small" class="btn" v-if="!item.isCanMonthAmount" @click="jumpToGame">{{ $t("去游戏") }}</x-button>
             </div>
             <div class="reward-item" v-if="Number(item.upAmount) > 0">
               <img alt="" src="@/assets/common/icon_vip_jjjj_1.avif" class="reward-icon" />
               <div class="item">
                 <div class="label">
-                  <span>晋级奖金</span><b class="reward">+{{ formatMoney(item.upAmount) }}</b>
+                  <span>{{ $t("晋级奖金") }}</span><b class="reward">+{{ formatMoney(item.upAmount) }}</b>
                 </div>
                 <div class="progress">
-                  晋级再投注<span class="text">{{ formatMoney(item.upFlow, false) }}</span>
+                  {{ $t("晋级再投注") }}<span class="text">{{ formatMoney(item.upFlow, false) }}</span>
                 </div>
               </div>
               <template v-if="item.isReceivedUpLevelAmount">
-                <x-button size="small" class="btn" :disabled="true">已领取</x-button>
+                <x-button size="small" class="btn" :disabled="true">{{ $t("已领取") }}</x-button>
               </template>
               <template v-if="!item.isReceivedUpLevelAmount">
                 <x-button
@@ -238,24 +238,24 @@ onBeforeUnmount(() => {
                   v-if="item.isCanGetUpLevelAmount"
                   @click="handleGetUpLevelReward(item)"
                 >
-                  领取
+                  {{ $t("领取") }}
                 </x-button>
-                <x-button size="small" class="btn" v-if="!item.isCanGetUpLevelAmount" @click="jumpToGame">去游戏</x-button>
+                <x-button size="small" class="btn" v-if="!item.isCanGetUpLevelAmount" @click="jumpToGame">{{ $t("去游戏") }}</x-button>
               </template>
             </div>
             <div class="reward-item items-start">
               <img alt="" src="@/assets/common/icon_vip_tq_1.avif" class="reward-icon" />
               <div class="item">
-                <div class="label"><span>VIP特权</span></div>
+                <div class="label"><span>{{ $t("VIP特权") }}</span></div>
                 <div class="progress texts">
                   <div class="">
-                    日提现总额<b>{{ Number(item.dayWithdrawTotal) == -1 ? '不限制' : formatMoney(item.dayWithdrawTotal) }}</b>
+                    {{ $t("日提现总额") }}<b>{{ Number(item.dayWithdrawTotal) == -1 ? $t("不限制") : formatMoney(item.dayWithdrawTotal) }}</b>
                   </div>
                   <div class="">
-                    日提现次数<b>{{ Number(item.dayWithdrawNum) == -1 ? '不限制' : formatMoney(item.dayWithdrawNum, false) }}</b>
+                    {{ $t("日提现次数") }}<b>{{ Number(item.dayWithdrawNum) == -1 ? $t("不限制") : formatMoney(item.dayWithdrawNum, false) }}</b>
                   </div>
                   <div class="">
-                    日免手续费笔数<b>{{ Number(item.dayNoFeeNum) == -1 ? '不限制' : `${formatMoney(item.dayNoFeeNum, false)}笔` }}</b>
+                    {{ $t("日免手续费笔数") }}<b>{{ Number(item.dayNoFeeNum) == -1 ? $t("不限制") : `${formatMoney(item.dayNoFeeNum, false)}${$t("笔")}` }}</b>
                   </div>
                 </div>
               </div>

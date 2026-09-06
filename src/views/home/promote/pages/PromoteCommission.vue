@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteCommission } from "@/api/common";
@@ -21,7 +22,7 @@ const DEFAULT_PAGE_SIZE = 20;
 const today = dayjs();
 const selectedTimeRange = ref<DateRangeValue>({
   mode: "all",
-  label: "全部",
+  label: $t("全部"),
   startTime: today.subtract(89, "day").startOf("day").unix(),
   endTime: today.endOf("day").unix(),
   startDate: today.subtract(89, "day").format("YYYY-MM-DD"),
@@ -53,7 +54,7 @@ const countdownParts = computed(() => {
   const pad = (value: number) => String(value).padStart(2, "0");
 
   return {
-    days: `${days}天`,
+    days: `${days}${$t("天")}`,
     clock: `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
   };
 });
@@ -188,11 +189,11 @@ onBeforeUnmount(() => {
     <section class="settlement-summary">
       <div class="settlement-summary__content">
         <span class="settlement-summary__item">
-          <label>结算周期</label>
+          <label>{{ $t("结算周期") }}</label>
           <span class="settlement-summary__value">{{ settlementCycleName }}</span>
         </span>
         <span class="settlement-summary__item">
-          <label>距离下次结算</label>
+          <label>{{ $t("距离下次结算") }}</label>
           <span class="settlement-summary__countdown">
             <i>{{ countdownParts.days }}</i>
             <i v-if="countdownParts.clock">{{ countdownParts.clock }}</i>
@@ -208,7 +209,7 @@ onBeforeUnmount(() => {
 
       <div class="commission-list">
         <div v-if="loading && !hasRecords" class="commission-state"><ui-loading /></div>
-        <ui-empty v-else-if="!hasRecords" :text="requestFailed ? '加载失败，请重试' : '暂无内容'">
+        <ui-empty v-else-if="!hasRecords" :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')">
           <template #text="{ text }">
             <span class="commission-empty-text">
               <span>{{ text }}</span>
@@ -230,21 +231,21 @@ onBeforeUnmount(() => {
           <article v-for="record in records" :key="record.id" class="commission-record">
             <div class="commission-record__row">
               <span class="commission-record__column">
-                <label>结算日</label>
+                <label>{{ $t("结算日") }}</label>
                 <span class="commission-record__value">{{ formatSettlementDate(record.settlementDate) }}</span>
               </span>
               <span class="commission-record__column">
-                <label>总佣金</label>
+                <label>{{ $t("总佣金") }}</label>
                 <span class="commission-record__value commission-record__value--highlight">{{ formatMoney(record.commission) }}</span>
               </span>
             </div>
             <div class="commission-record__row">
               <span class="commission-record__column">
-                <label>直属佣金</label>
+                <label>{{ $t("直属佣金") }}</label>
                 <button
                   type="button"
                   class="commission-record__amount commission-record__amount--link"
-                  :aria-label="`查看${formatMoney(record.directCommission)}直属佣金明细`"
+                  :aria-label="$t('查看直属佣金明细', { amount: formatMoney(record.directCommission) })"
                   @click="openDirectCommission(record)"
                 >
                   <span class="commission-record__value commission-record__value--highlight">{{ formatMoney(record.directCommission) }}</span>
@@ -252,7 +253,7 @@ onBeforeUnmount(() => {
                 </button>
               </span>
               <span class="commission-record__column">
-                <label>其他佣金</label>
+                <label>{{ $t("其他佣金") }}</label>
                 <span class="commission-record__amount">
                   <span class="commission-record__value commission-record__value--highlight">{{ formatMoney(record.otherCommission) }}</span>
                   <span>({{ getOtherMemberCount(record) }})</span>
@@ -275,19 +276,19 @@ onBeforeUnmount(() => {
         @click="footerCollapsed = !footerCollapsed"
       >
         <svg-icon name="promote-collapse-arrow" class="commission-footer__arrow" />
-        {{ footerCollapsed ? "展示" : "收起" }}
+        {{ footerCollapsed ? $t("展示") : $t("收起") }}
       </button>
       <div class="commission-footer__content">
         <span class="commission-footer__item">
-          <label>总佣金</label>
+          <label>{{ $t("总佣金") }}</label>
           <span>{{ formatMoney(summary.commission) }}</span>
         </span>
         <span class="commission-footer__item">
-          <label>直属佣金</label>
+          <label>{{ $t("直属佣金") }}</label>
           <span>{{ formatMoney(summary.directCommission) }}</span>
         </span>
         <span class="commission-footer__item">
-          <label>其他佣金</label>
+          <label>{{ $t("其他佣金") }}</label>
           <span>{{ formatMoney(summary.otherCommission) }}</span>
         </span>
       </div>

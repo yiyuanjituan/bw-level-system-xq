@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { $t } from "@/locales";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { service } from "@/api/service";
 import { showCustomToast } from "@/hooks/useCommon";
 
@@ -18,16 +18,16 @@ const formModel = reactive({
   content: "",
 });
 
-const questionTypeOptions = [
-  { id: '游戏问题', label: "游戏问题" },
-  { id: '登录注册', label: "登录注册" },
-  { id: '活动问题', label: "活动问题" },
-  { id: '代理问题', label: "代理问题" },
-  { id: '充值问题', label: "充值问题" },
-  { id: '提现问题', label: "提现问题" },
-  { id: '优化建议', label: "优化建议" },
-  { id: '其他建议', label: "其他建议" },
-];
+const questionTypeOptions = computed(() => [
+  { id: '游戏问题', label: $t("游戏问题") },
+  { id: '登录注册', label: $t("登录注册") },
+  { id: '活动问题', label: $t("活动问题") },
+  { id: '代理问题', label: $t("代理问题") },
+  { id: '充值问题', label: $t("充值问题") },
+  { id: '提现问题', label: $t("提现问题") },
+  { id: '优化建议', label: $t("优化建议") },
+  { id: '其他建议', label: $t("其他建议") },
+]);
 
 async function handleSubmit() {
   if (isLoading.value) return;

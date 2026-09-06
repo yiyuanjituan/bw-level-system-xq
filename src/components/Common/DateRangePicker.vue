@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
+import { $t } from "@/locales";
 import { formatResponsiveSize } from "@/utils/viewport";
 
 defineOptions({
@@ -19,11 +20,11 @@ export interface DateRangeValue {
   endDate: string;
 }
 
-const QUICK_MODE_LABELS: Record<QuickMode, string> = {
-  all: "全部",
-  today: "今日",
-  yesterday: "昨日"
-};
+const quickModeLabels = computed<Record<QuickMode, string>>(() => ({
+  all: $t("全部"),
+  today: $t("今日"),
+  yesterday: $t("昨日")
+}));
 
 const DEFAULT_PICKER_WIDTH = 152;
 const DEFAULT_PANEL_WIDTH = 355;
@@ -79,7 +80,7 @@ function createRange(mode: DateRangeMode, startDate: string, endDate: string) {
   const normalizedEndDate = normalizedEndDay.format("YYYY-MM-DD");
   const label = mode === "custom"
     ? `${normalizedStartDay.format("MM/DD")}-${normalizedEndDay.format("MM/DD")}`
-    : QUICK_MODE_LABELS[mode];
+    : quickModeLabels.value[mode];
 
   return {
     mode,
@@ -200,7 +201,7 @@ watch(
           @click="selectQuickMode(mode)"
           @keydown.enter.space.prevent="selectQuickMode(mode)"
         >
-          {{ QUICK_MODE_LABELS[mode] }}
+          {{ quickModeLabels[mode] }}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
 import { service } from "@/api/service";
+import { $t } from "@/locales";
 
 dayjs.extend(isoWeek);
 
@@ -26,7 +27,7 @@ interface TaskRecordState {
 type TimeFilterValue = "all" | "today" | "yesterday" | "this-week" | "last-week" | "this-month" | "last-month";
 
 type TimeOption = {
-  label: string;
+  labelKey: I18nType.I18nKey;
   value: TimeFilterValue;
   startTime: number;
   endTime: number;
@@ -36,51 +37,51 @@ const DEFAULT_TIME_FILTER: TimeFilterValue = "today";
 const DEFAULT_TAB_KEY = 1;
 const PAGE_LIMIT = 20;
 
-const typeList = [
-  { key: 1, name: "已获得" },
-  { key: 2, name: "已使用" },
-  { key: 3, name: "已过期" }
-];
+const typeList = computed(() => [
+  { key: 1, name: $t("已获得") },
+  { key: 2, name: $t("已使用") },
+  { key: 3, name: $t("已过期") }
+]);
 
 const timeOptions: TimeOption[] = [
   {
-    label: "全部",
+    labelKey: "全部",
     value: "all",
     startTime: 0,
     endTime: 0
   },
   {
-    label: "今日",
+    labelKey: "今日",
     value: "today",
     startTime: dayjs().startOf("day").unix(),
     endTime: dayjs().endOf("day").unix()
   },
   {
-    label: "昨日",
+    labelKey: "昨日",
     value: "yesterday",
     startTime: dayjs().subtract(1, "day").startOf("day").unix(),
     endTime: dayjs().subtract(1, "day").endOf("day").unix()
   },
   {
-    label: "本周",
+    labelKey: "本周",
     value: "this-week",
     startTime: dayjs().startOf("isoWeek").unix(),
     endTime: dayjs().endOf("isoWeek").unix()
   },
   {
-    label: "上周",
+    labelKey: "上周",
     value: "last-week",
     startTime: dayjs().subtract(1, "week").startOf("isoWeek").unix(),
     endTime: dayjs().subtract(1, "week").endOf("isoWeek").unix()
   },
   {
-    label: "本月",
+    labelKey: "本月",
     value: "this-month",
     startTime: dayjs().startOf("month").unix(),
     endTime: dayjs().endOf("month").unix()
   },
   {
-    label: "上月",
+    labelKey: "上月",
     value: "last-month",
     startTime: dayjs().subtract(1, "month").startOf("month").unix(),
     endTime: dayjs().subtract(1, "month").endOf("month").unix()
@@ -101,9 +102,17 @@ const { width: windowWidth } = useWindowSize();
 
 const dialogWidth = computed(() => (348 / 375) * windowWidth.value);
 const hasListData = computed(() => recordState.value.list.length > 0);
-const selectedTimeOption = computed(() => timeOptions.find(item => item.value === timeFilterValue.value) as TimeOption);
+const translatedTimeOptions = computed(() => timeOptions.map(item => ({
+  ...item,
+  label: $t(item.labelKey)
+})));
+const selectedTimeOption = computed(() => translatedTimeOptions.value.find(item => item.value === timeFilterValue.value)!);
 const shouldShowSeeMore = computed(() => timeFilterValue.value === "today" && !isLoading.value && !hasListData.value);
-const emptyStateText = computed(() => (timeFilterValue.value === "all" ? "暂无记录" : `${selectedTimeOption.value.label}暂无记录`));
+const emptyStateText = computed(() => (
+  timeFilterValue.value === "all"
+    ? $t("暂无记录")
+    : $t("暂无{label}记录", { label: selectedTimeOption.value.label })
+));
 
 function openDialog() {
   activeTab.value = DEFAULT_TAB_KEY;
@@ -201,7 +210,7 @@ defineExpose({
     <van-dialog v-model:show="show" :show-cancel-button="false" :width="dialogWidth" destroy-on-close>
       <div class="task-record-container">
         <div class="header-box">
-          <span class="header-title">活跃度记录</span>
+          <span class="header-title">{{ $t("活跃度记录") }}</span>
         </div>
         <div class="content-box">
           <x-tabs v-model="activeTab" shrink animated auto-height>
@@ -209,10 +218,10 @@ defineExpose({
               <div class="tab-con">
                 <div class="select-wrapper">
                   <div class="time-picker">
-                    <x-select v-model="timeFilterValue" :options="timeOptions" value-key="value" placement="bottom" fit-option-width />
+                    <x-select v-model="timeFilterValue" :options="translatedTimeOptions" value-key="value" placement="bottom" fit-option-width />
                   </div>
                   <div class="total-amount-wrapper">
-                    <span class="total-amount-text">累计活跃度</span>
+                    <span class="total-amount-text">{{ $t("累计活跃度") }}</span>
                     <span class="total-amount">
                       <svg-icon name="comm_icon_shy" class-name="mr-[2px]" />
                       {{ recordState.totalAmount }}
@@ -229,21 +238,21 @@ defineExpose({
                       <div class="item-top">
                         <span>{{ record.remark }}</span>
                         <span class="active">
-                          活跃度
+                          {{ $t("活跃度") }}
                           <svg-icon name="comm_icon_shy" class-name="mr-[2px]" style="color: var(--skin__accent_1)" />
                           <span class="text">{{ record.changeAmount }}</span>
                         </span>
                       </div>
                       <div class="item-bottom">
-                        <span class="time" v-if="activeTab == 1">获得时间</span>
-                        <span class="time" v-if="activeTab == 2">使用时间</span>
-                        <span class="time" v-if="activeTab == 3">过期时间</span>
+                        <span class="time" v-if="activeTab == 1">{{ $t("获得时间") }}</span>
+                        <span class="time" v-if="activeTab == 2">{{ $t("使用时间") }}</span>
+                        <span class="time" v-if="activeTab == 3">{{ $t("过期时间") }}</span>
                         <span>{{ record.createTime }}</span>
                       </div>
                     </div>
 
                     <div v-if="hasMore" class="load-more-box">
-                      <span class="load-more-text">{{ isLoading ? "加载中..." : "上滑查看更多" }}</span>
+                      <span class="load-more-text">{{ isLoading ? $t("加载中...") : $t("上滑查看更多") }}</span>
                     </div>
                   </div>
 

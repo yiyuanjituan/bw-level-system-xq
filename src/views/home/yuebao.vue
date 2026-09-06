@@ -5,7 +5,7 @@ import UiEmpty from "@/components/UI/empty.vue";
 import UiLoading from "@/components/UI/loading.vue";
 import InterestEnterPop from "./components/InterestEnterPop.vue";
 import { showCustomToast } from "@/hooks/useCommon";
-import { nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { formatMoney, getYuEBaoRichText } from "@/utils/common";
@@ -28,39 +28,39 @@ function refreshInfo() {
   });
 }
 
-const dayOptions = ref([
+const dayOptions = computed(() => [
   {
-    label: "今日",
+    label: $t("今日"),
     value: 0,
     start_time: dayjs().startOf("day").unix(),
     end_time: dayjs().endOf("day").unix()
   },
   {
-    label: "昨日",
+    label: $t("昨日"),
     value: 1,
     start_time: dayjs().startOf("day").subtract(1, "day").unix(),
     end_time: dayjs().endOf("day").subtract(1, "day").unix()
   },
   {
-    label: "本周",
+    label: $t("本周"),
     value: 2,
     start_time: dayjs().startOf("isoWeek").unix(),
     end_time: dayjs().endOf("isoWeek").unix()
   },
   {
-    label: "上周",
+    label: $t("上周"),
     value: 3,
     start_time: dayjs().startOf("isoWeek").subtract(7, "day").unix(),
     end_time: dayjs().endOf("isoWeek").subtract(7, "day").unix()
   },
   {
-    label: "本月",
+    label: $t("本月"),
     value: 4,
     start_time: dayjs().startOf("month").unix(),
     end_time: dayjs().endOf("month").unix()
   },
   {
-    label: "上月",
+    label: $t("上月"),
     value: 5,
     start_time: dayjs().startOf("month").subtract(1, "month").unix(),
     end_time: dayjs().endOf("month").subtract(1, "month").unix()
@@ -68,12 +68,12 @@ const dayOptions = ref([
 ]);
 const interestInfo = ref<any>({});
 // 状态提醒
-const statusOptions = ref([
-  { label: "全部", value: 0 },
-  { label: "转入", value: 1 },
-  { label: "转出", value: 2 },
-  { label: "领取收入", value: 3 },
-  { label: "系统转出", value: 4 }
+const statusOptions = computed(() => [
+  { label: $t("全部"), value: 0 },
+  { label: $t("转入"), value: 1 },
+  { label: $t("转出"), value: 2 },
+  { label: $t("领取收入"), value: 3 },
+  { label: $t("系统转出"), value: 4 }
 ]);
 const daySelectIndex = ref(0);
 const statusSelectIndex = ref(0);
@@ -254,13 +254,13 @@ onMounted(() => {
     <div class="info-box">
       <div class="info-item">
         <div class="principalWrapper">
-          <span class="label">已存入</span>
-          <ui-badge :content="`年利率${interestInfo?.config?.year_scale}%`" :size="[-6, -10]">
+          <span class="label">{{ $t("已存入") }}</span>
+          <ui-badge :content="$t('年利率{rate}%', { rate: interestInfo?.config?.year_scale })" :size="[-6, -10]">
             {{ formatMoney(interestInfo?.deposit?.money) }}
           </ui-badge>
         </div>
         <div class="mobileButtonLine">
-          <x-button type="warning" @click="openInterestEnterPopup" size="small">转 入</x-button>
+          <x-button type="warning" @click="openInterestEnterPopup" size="small">{{ $t("转入") }}</x-button>
           <x-button
             type="success"
             size="small"
@@ -268,7 +268,7 @@ onMounted(() => {
             @click="handleTransOut"
             :loading="transOutLoading"
           >
-            转 出
+            {{ $t("转出") }}
           </x-button>
         </div>
       </div>
@@ -276,12 +276,12 @@ onMounted(() => {
         <div class="curIncomeWrapper">
           <div class="curIncomeItem">
             <div>
-              结算周期 <span class="lead-text">{{ interestInfo?.display?.cycle_text }}</span>
+              {{ $t("结算周期") }} <span class="lead-text">{{ interestInfo?.display?.cycle_text }}</span>
             </div>
           </div>
           <div class="curIncomeItem !mb-[0px]">
             <div class="mg">
-              待领取<span class="strong">{{ formatMoney(Math.max(interestInfo.deposit?.await_get, 0)) }}</span>
+              {{ $t("待领取") }}<span class="strong">{{ formatMoney(Math.max(interestInfo.deposit?.await_get, 0)) }}</span>
               {{ $t("（已领取") }}
               {{ formatMoney(Number(interestInfo.deposit?.total_get) - Number(interestInfo.deposit?.await_get)) }}）
               <svg-icon name="refresh" class-name="text-[#DFBE5B]" @click="refreshInfo" />
@@ -295,7 +295,7 @@ onMounted(() => {
             size="small"
             @click="handleGetMoney"
           >
-            领 取
+            {{ $t("领取") }}
           </x-button>
         </div>
       </div>
@@ -306,7 +306,7 @@ onMounted(() => {
           <div class="radius-box">
             <div class="inner-box">
               <div class="absolute top-0">
-                <div class="rule" v-html="getYuEBaoRichText(interestInfo) || '后台暂未配置文案'"></div>
+                <div class="rule" v-html="getYuEBaoRichText(interestInfo) || $t('后台暂未配置文案')"></div>
               </div>
             </div>
           </div>
@@ -323,16 +323,16 @@ onMounted(() => {
                 </div>
               </div>
               <div class="flex items-center text-[11px] lh-[13px]">
-                <span class="text-[#656565]">累计收益</span>
+                <span class="text-[#656565]">{{ $t("累计收益") }}</span>
                 <span class="text-[#FFAA09]">{{ formatMoney(interestInfo.deposit?.total_get) }}</span>
               </div>
             </div>
 
             <div class="listWrapper">
               <div class="listItem head">
-                <div>时间</div>
-                <div>类型</div>
-                <div>金额</div>
+                <div>{{ $t("时间") }}</div>
+                <div>{{ $t("类型") }}</div>
+                <div>{{ $t("金额") }}</div>
               </div>
               <div v-if="interestRecordsLoading && !interestRecordList.length" class="listLoading">
                 <ui-loading />

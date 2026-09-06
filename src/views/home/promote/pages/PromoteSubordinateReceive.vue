@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteSubordinateReceive } from "@/api/common";
@@ -23,16 +24,16 @@ interface FooterItem {
 
 const DEFAULT_PAGE_SIZE = 20;
 const sortOptions: Array<{ label: string; value: ReceiveSortField }> = [
-  { label: "合计领取排序", value: "totalReward" },
-  { label: "返水领取排序", value: "returnGold" },
-  { label: "活动领取排序", value: "activityReward" },
-  { label: "任务领取排序", value: "taskReward" },
-  { label: "代理佣金排序", value: "agentCommission" }
+  { label: $t("合计领取排序"), value: "totalReward" },
+  { label: $t("返水领取排序"), value: "returnGold" },
+  { label: $t("活动领取排序"), value: "activityReward" },
+  { label: $t("任务领取排序"), value: "taskReward" },
+  { label: $t("代理佣金排序"), value: "agentCommission" }
 ];
 const today = dayjs();
 const defaultTimeRange: AccountTimeRange = {
   mode: "custom",
-  label: "全部",
+  label: $t("全部"),
   startTime: today.subtract(89, "day").startOf("day").unix(),
   endTime: today.endOf("day").unix(),
   startDate: today.subtract(89, "day").format("YYYY-MM-DD"),
@@ -70,10 +71,10 @@ const hasMembers = computed(() => members.value.length > 0);
 const currentParent = computed(() => childStack.value[childStack.value.length - 1] ?? null);
 const otherCoupons = computed(() => selectedOtherMember.value?.otherCoupons ?? []);
 const footerItems = computed<FooterItem[]>(() => [
-  { label: "活动领取", value: formatMoney(summary.value?.totalActivityReward) },
-  { label: "返水领取", value: formatMoney(summary.value?.totalReturnGold) },
-  { label: "任务领取", value: formatMoney(summary.value?.totalTaskReward) },
-  { label: "代理佣金", value: formatMoney(summary.value?.totalAgentCommission) }
+  { label: $t("活动领取"), value: formatMoney(summary.value?.totalActivityReward) },
+  { label: $t("返水领取"), value: formatMoney(summary.value?.totalReturnGold) },
+  { label: $t("任务领取"), value: formatMoney(summary.value?.totalTaskReward) },
+  { label: $t("代理佣金"), value: formatMoney(summary.value?.totalAgentCommission) }
 ]);
 
 function formatMoney(value: unknown) {
@@ -100,7 +101,7 @@ function normalizeMember(source: any): PromoteSubordinateReceive {
     totalOther: Number(source?.totalOther) || 0,
     totalReward: Number(source?.totalReward) || 0,
     otherCoupons: otherCouponList.map((coupon: PromoteSubordinateReceiveOtherCoupon) => ({
-      otherName: String(coupon?.otherName || "其他奖励"),
+      otherName: String(coupon?.otherName || $t("其他奖励")),
       otherAmount: Number(coupon?.otherAmount) || 0
     }))
   };
@@ -297,7 +298,7 @@ watch(
 
     <div class="member-list" :class="{ 'member-list--with-footer': summary && summary.totalRecords > 0 }">
       <div v-if="loading && !hasMembers" class="state"><ui-loading /></div>
-      <ui-empty v-else-if="!hasMembers" :text="requestFailed ? '加载失败，请重试' : '暂无内容'">
+      <ui-empty v-else-if="!hasMembers" :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')">
         <template #text="{ text }">
           <span class="empty-text">
             <span>{{ text }}</span>
@@ -318,7 +319,7 @@ watch(
           @open-children="openChildren"
           @open-other="openOther"
         />
-        <div v-if="requestFailed" class="load-error" @click="handleRetry">加载失败，点击重试</div>
+        <div v-if="requestFailed" class="load-error" @click="handleRetry">{{ $t("加载失败，点击重试") }}</div>
       </van-list>
     </div>
 
@@ -329,7 +330,7 @@ watch(
     >
       <button class="footer-toggle" type="button" @click="footerCollapsed = !footerCollapsed">
         <svg class="footer-arrow" viewBox="0 0 23 16" aria-hidden="true"><path d="M11.5 16 0 3.36 3.06 0l8.44 9.27L19.94 0 23 3.36Z" /></svg>
-        {{ footerCollapsed ? "展示" : "收起" }}
+        {{ footerCollapsed ? $t("展示") : $t("收起") }}
       </button>
       <div class="footer-content">
         <span v-for="footerItem in footerItems" :key="footerItem.label" class="footer-item">
@@ -354,14 +355,14 @@ watch(
       <template #title>
         <div class="dialog-title">
           <button v-if="childStack.length > 1" type="button" class="back-button" :aria-label="$t('返回上一级')" @click="goBackChild">‹</button>
-          <span>{{ currentParent?.userIdx }}的下级</span>
+          <span>{{ currentParent?.userIdx }}{{ $t("的下级") }}</span>
         </div>
       </template>
       <div class="child-content">
         <div class="dialog-date">{{ $t("日期") }} {{ selectedTimeRange.startDate }} - {{ selectedTimeRange.endDate }}</div>
         <div class="child-list">
           <div v-if="childLoading && childMembers.length === 0" class="dialog-state"><ui-loading /></div>
-          <ui-empty v-else-if="childMembers.length === 0" :text="childFailed ? '加载失败，请重试' : '暂无内容'">
+          <ui-empty v-else-if="childMembers.length === 0" :text="childFailed ? $t('加载失败，请重试') : $t('暂无内容')">
             <template #text="{ text }">
               <span class="empty-text">
                 <span>{{ text }}</span>
@@ -387,7 +388,7 @@ watch(
               @open-children="openChildren"
               @open-other="openOther"
             />
-            <button v-if="childFailed" type="button" class="dialog-retry" @click="loadChildMembers(childMembers.length === 0)">加载失败，点击重试</button>
+            <button v-if="childFailed" type="button" class="dialog-retry" @click="loadChildMembers(childMembers.length === 0)">{{ $t("加载失败，点击重试") }}</button>
           </van-list>
         </div>
       </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed } from "vue";
 import goldLevelTwoIcon from "@/assets/home/promote/level-gold-2.avif";
 import goldLevelIcon from "@/assets/home/promote/level-gold.avif";
@@ -85,11 +86,11 @@ const broadcastItems = computed(() =>
             <img :src="broadcastItem.levelIcon" alt="" decoding="async" loading="lazy" />
           </span>
           <p class="promote-broadcast__account">
-            代理ID: <span>{{ broadcastItem.account }}</span>
+            {{ $t("代理ID") }}: <span>{{ broadcastItem.account }}</span>
           </p>
           <span class="promote-broadcast__space">&nbsp;</span>
           <p class="promote-broadcast__commission">
-            今日获得佣金:
+            {{ $t("今日获得佣金") }}:
             <span>{{ broadcastItem.commission }}</span>
           </p>
         </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
@@ -39,7 +40,7 @@ const emptyActivityReward = (): SpecialInviteSummary => ({
   activityId: 0,
   activityType: 0,
   specialActivity: 15,
-  activityTitle: "邀请红包活动",
+  activityTitle: $t("邀请红包活动"),
   totalReward: 0,
   validInviteCount: 0,
   unclaimedReward: 0
@@ -82,7 +83,7 @@ async function claimAllActivityRewards() {
     const receivedAmount = Number(result.amount) || 0;
     if (result.count <= 0 || receivedAmount <= 0) {
       await loadActivityReward().catch(() => undefined);
-      showCustomToast({ type: "warning", message: "暂无可领取的活动奖励" });
+      showCustomToast({ type: "warning", message: $t("暂无可领取的活动奖励") });
       return;
     }
 
@@ -102,7 +103,7 @@ async function claimAllActivityRewards() {
     await loadActivityReward().catch(() => undefined);
     showCustomToast({
       type: "success",
-      message: `成功领取${formatMoney(receivedAmount)}元`
+      message: $t("成功领取{amount}元", { amount: formatMoney(receivedAmount) })
     });
   } catch {
     // 请求拦截器会展示后端返回的具体失败原因。
@@ -148,7 +149,7 @@ const leadingBroadcastItems: PromoteBroadcastItem[] = [
     <promote-agent-summary
       :logged-in="isLoggedIn"
       :platform-id="info?.user?.account || ''"
-      :agent-mode-name="info?.config.agentModeName || '加载中'"
+      :agent-mode-name="info?.config.agentModeName || $t('加载中')"
       :audit-multiple="info?.config.auditMultiplier ?? 0"
       :settlement-cycle-name="info?.config.settlementCycleName || ''"
       :next-settlement-timestamp="info?.config.nextSettlementTimestamp || 0"

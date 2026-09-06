@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { $t } from '@/locales';
+import { computed, onMounted, ref } from 'vue';
 import { service } from '@/api/service';
 import { formatMoney } from '@/utils/common';
 import UiEmpty from '@/components/UI/empty.vue';
@@ -9,20 +10,24 @@ import useAuthStore from '@/store/modules/user';
 
 const auth = useAuthStore();
 const isRefreshLoading = ref(false);
-const typeOptions: { label: string; value: string | number; image?: string }[] = [
-  { label: '电子', value: 3, image: 'game-icon_dtfl_dz_0' },
-  { label: '真人', value: 1, image: 'game-icon_dtfl_zr_0' },
-  { label: '捕鱼', value: 2, image: 'game-icon_dtfl_by_0' },
-  { label: '彩票', value: 4, image: 'game-icon_dtfl_cp_0' },
-  { label: '体育', value: 5, image: 'game-icon_dtfl_ty_0' },
-  { label: '棋牌', value: 6, image: 'game-icon_dtfl_qp_0' },
-  { label: '电竞', value: 7, image: 'game-icon_dtfl_dianjing_0' }
-];
+const typeOptions = computed(() => [
+  { label: $t('电子'), value: 3, image: 'game-icon_dtfl_dz_0' },
+  { label: $t('真人'), value: 1, image: 'game-icon_dtfl_zr_0' },
+  { label: $t('捕鱼'), value: 2, image: 'game-icon_dtfl_by_0' },
+  { label: $t('彩票'), value: 4, image: 'game-icon_dtfl_cp_0' },
+  { label: $t('体育'), value: 5, image: 'game-icon_dtfl_ty_0' },
+  { label: $t('棋牌'), value: 6, image: 'game-icon_dtfl_qp_0' },
+  { label: $t('电竞'), value: 7, image: 'game-icon_dtfl_dianjing_0' }
+]);
 const activeTypeData = ref<number>(3);
 const listData = ref<any[]>([]);
 const awaitNum = ref<number>(0);
 const { refs, setRefs } = useRefs();
 const isLoadingGetReward = ref<boolean>(false);
+
+function formatCategoryLabel(label: string) {
+  return /[\u3400-\u9fff]/.test(label) ? label.split('').join('\u00a0') : label;
+}
 
 function refreshListData() {
   getData();
@@ -58,7 +63,7 @@ function handleGetCashBack() {
     .receiveCashBack()
     .then(res => {
       refs['receiveSuccess']?.open({
-        messageText: '恭喜您，获得奖励！',
+        messageText: $t('恭喜您，获得奖励！'),
         iconType: 'coin',
         award: `+${res.amount}`
       });
@@ -75,7 +80,7 @@ onMounted(() => getData());
   <div class="cash-back-container">
     <div class="sub-info">
       <div class="data">
-        <div>今日可领取</div>
+        <div>{{ $t('今日可领取') }}</div>
         <div class="amount">
           <span class="value">{{ formatMoney(awaitNum) }}</span>
         </div>
@@ -91,7 +96,7 @@ onMounted(() => getData());
                   <img src="https://146.103.80.124:5001/siteadmin/layoutDesign/2007366585621889025.png" alt="" srcset="" v-if="false" />
                   <svg-icon :name="i.image" />
                 </div>
-                <div class="sidebar-common-tab-name">{{ i.label.split('').join('&nbsp;') }}</div>
+                <div class="sidebar-common-tab-name">{{ formatCategoryLabel(i.label) }}</div>
               </div>
             </div>
           </div>
@@ -103,7 +108,7 @@ onMounted(() => getData());
               :disabled="awaitNum <= 0"
               :loading="isLoadingGetReward"
               @click="handleGetCashBack"
-              >一键领取</x-button
+              >{{ $t('一键领取') }}</x-button
             >
             <x-button
               class="mt-[10px]"
@@ -112,7 +117,7 @@ onMounted(() => getData());
               type="primary"
               @click="router.push('/home/records')"
             >
-              领取记录
+              {{ $t('领取记录') }}
             </x-button>
             <x-button
               class="mt-[10px]"
@@ -124,7 +129,7 @@ onMounted(() => getData());
               :loading="isRefreshLoading"
             >
               <template #icon><svg-icon name="comm_icon_retry" /></template>
-              刷新奖励
+              {{ $t('刷新奖励') }}
             </x-button>
           </div>
         </div>
@@ -136,13 +141,13 @@ onMounted(() => getData());
                   <div class="centerLeft">
                     <img :src="item.short_image" alt="." class="icon" />
                     <div class="item">
-                      <label>有效投注</label>
+                      <label>{{ $t('有效投注') }}</label>
                       <span class="lead">{{ formatMoney(item.betAmount) }}</span>
                     </div>
                   </div>
                   <div class="centerRight">
                     <div class="item">
-                      <label>返水比例</label>
+                      <label>{{ $t('返水比例') }}</label>
                       <span class="lead">{{ item.scale }}%</span>
                     </div>
                   </div>
@@ -151,7 +156,7 @@ onMounted(() => getData());
                   <span class="upgradeVip" v-if="item.nextLevel == item.level">{{ $t("当前反水比例") }}{{ item.nextScale }}%</span>
                   <span class="upgradeVip" v-if="item.nextLevel != item.level">{{ $t("升级到VIP") }}{{ item.nextLevel }}{{ $t("可") }}{{ item.nextScale }}%</span>
                   <p>
-                    <label>可领取</label><span class="receiveAmt">{{ formatMoney(item.amount) }}</span>
+                    <label>{{ $t('可领取') }}</label><span class="receiveAmt">{{ formatMoney(item.amount) }}</span>
                   </p>
                 </div>
               </div>

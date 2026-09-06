@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { computed, ref, useSlots, watch } from "vue";
+import { $t } from "@/locales";
 
 dayjs.extend(isoWeek);
 
@@ -12,50 +13,50 @@ export interface RangeOption {
   endTime: number;
 }
 
-const defaultOptions: RangeOption[] = [
+const defaultOptions = computed<RangeOption[]>(() => [
   {
-    text: "今日",
+    text: $t("今日"),
     value: "today",
     startTime: dayjs().startOf("day").unix(),
     endTime: dayjs().endOf("day").unix()
   },
   {
-    text: "昨日",
+    text: $t("昨日"),
     value: "yesterday",
     startTime: dayjs().subtract(1, "day").startOf("day").unix(),
     endTime: dayjs().subtract(1, "day").endOf("day").unix()
   },
   {
-    text: "本周",
+    text: $t("本周"),
     value: "this-week",
     startTime: dayjs().startOf("isoWeek").unix(),
     endTime: dayjs().endOf("isoWeek").unix()
   },
   {
-    text: "上周",
+    text: $t("上周"),
     value: "last-week",
     startTime: dayjs().subtract(1, "week").startOf("isoWeek").unix(),
     endTime: dayjs().subtract(1, "week").endOf("isoWeek").unix()
   },
   {
-    text: "本月",
+    text: $t("本月"),
     value: "this-month",
     startTime: dayjs().startOf("month").unix(),
     endTime: dayjs().endOf("month").unix()
   },
   {
-    text: "上月",
+    text: $t("上月"),
     value: "last-month",
     startTime: dayjs().subtract(1, "month").startOf("month").unix(),
     endTime: dayjs().subtract(1, "month").endOf("month").unix()
   },
   {
-    text: "全部",
+    text: $t("全部"),
     value: "all",
     startTime: 0,
     endTime: 0
   }
-];
+]);
 
 interface Props {
   options?: RangeOption[];
@@ -72,7 +73,7 @@ const emit = defineEmits<{
 }>();
 
 const rangeOptions = computed(() => {
-  return props.options?.length ? props.options : defaultOptions;
+  return props.options?.length ? props.options : defaultOptions.value;
 });
 
 // 保持稳定的兜底选项，避免外部传入无效值时无法映射到可用范围。

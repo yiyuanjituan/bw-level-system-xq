@@ -154,8 +154,8 @@ watch(
         <ui-loading />
       </div>
       <div v-else-if="failed" class="state error">
-        <span>加载失败</span>
-        <button type="button" @click="loadDetail">重新加载</button>
+        <span>{{ $t("加载失败") }}</span>
+        <button type="button" @click="loadDetail">{{ $t("重新加载") }}</button>
       </div>
       <template v-else-if="detail">
         <div class="base-info">
@@ -173,40 +173,40 @@ watch(
               </span>
             </span>
             <span class="col">
-              <label>账号状态</label>
+              <label>{{ $t("账号状态") }}</label>
               <span
                 class="number value _number-column_1ngn0_59"
                 :class="detail.status === 1 ? '_number-column-green_1ngn0_76' : '_number-column-red_1ngn0_82'"
-              >{{ detail.status === 1 ? "正常" : "停用" }}</span>
+              >{{ detail.status === 1 ? $t("正常") : $t("停用") }}</span>
             </span>
           </div>
           <div class="row">
             <span class="col">
-              <label>当前</label>
+              <label>{{ $t("当前") }}</label>
               <span>
                 <span
                   class="number value _number-column_1ngn0_59"
                   :class="{ '_number-column-green_1ngn0_76': detail.online === 1 }"
-                >{{ detail.online === 1 ? "在线" : "离线" }}</span>
+                >{{ detail.online === 1 ? $t("在线") : $t("离线") }}</span>
               </span>
             </span>
-            <span class="col"><label>登录次数</label><span><span class="number value">{{ detail.loginTimes }}</span></span></span>
+            <span class="col"><label>{{ $t("登录次数") }}</label><span><span class="number value">{{ detail.loginTimes }}</span></span></span>
           </div>
           <div class="row">
-            <span class="col"><label>登录日期</label><span><span class="value">{{ formatDate(detail.lastLoginTime) }}</span></span></span>
-            <span class="col"><label>注册日期</label><span><span class="value">{{ formatDate(detail.regTime) }}</span></span></span>
+            <span class="col"><label>{{ $t("登录日期") }}</label><span><span class="value">{{ formatDate(detail.lastLoginTime) }}</span></span></span>
+            <span class="col"><label>{{ $t("注册日期") }}</label><span><span class="value">{{ formatDate(detail.regTime) }}</span></span></span>
           </div>
         </div>
 
         <div v-for="section in sections" :key="section.title" class="data-section">
           <p>{{ section.title }}</p>
           <div class="row">
-            <span class="col"><label>充值金额</label><span class="value"><span class="number">{{ formatMoney(section.value?.deposit) }}</span></span></span>
-            <span class="col"><label>提现金额</label><span class="value"><span class="number">{{ formatMoney(section.value?.withdraw) }}</span></span></span>
+            <span class="col"><label>{{ $t("充值金额") }}</label><span class="value"><span class="number">{{ formatMoney(section.value?.deposit) }}</span></span></span>
+            <span class="col"><label>{{ $t("提现金额") }}</label><span class="value"><span class="number">{{ formatMoney(section.value?.withdraw) }}</span></span></span>
           </div>
           <div class="row">
             <span class="col">
-              <label>充提差额</label>
+              <label>{{ $t("充提差额") }}</label>
               <span class="value">
                 <span
                   class="number number-column-value _number-column_1ngn0_59"
@@ -214,12 +214,12 @@ watch(
                 >{{ formatMoney(section.value?.difference) }}</span>
               </span>
             </span>
-            <span class="col"><label>领取优惠</label><span class="value"><span class="number">{{ formatMoney(section.value?.discount) }}</span></span></span>
+            <span class="col"><label>{{ $t("领取优惠") }}</label><span class="value"><span class="number">{{ formatMoney(section.value?.discount) }}</span></span></span>
           </div>
           <div class="row">
-            <span class="col"><label>有效投注</label><span class="value"><span class="number">{{ formatMoney(section.value?.validBet) }}</span></span></span>
+            <span class="col"><label>{{ $t("有效投注") }}</label><span class="value"><span class="number">{{ formatMoney(section.value?.validBet) }}</span></span></span>
             <span class="col">
-              <label>输赢金额</label>
+              <label>{{ $t("输赢金额") }}</label>
               <span class="value">
                 <span
                   class="number number-column-value _number-column_1ngn0_59"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed } from "vue";
 
 const props = withDefaults(
@@ -10,7 +11,7 @@ const props = withDefaults(
     claiming?: boolean;
   }>(),
   {
-    activityTitle: "邀请红包活动",
+    activityTitle: $t("邀请红包活动"),
     totalReward: "0.00",
     validInvites: "0",
     unclaimedReward: "0.00",
@@ -29,7 +30,7 @@ const canClaim = computed(() => Number(props.unclaimedReward) > 0);
 <template>
   <section class="activity-reward">
     <header class="activity-reward__header">
-      <span>活动累计奖励</span>
+      <span>{{ $t("活动累计奖励") }}</span>
       <div>
         <strong>{{ totalReward }}</strong>
         <x-button
@@ -39,7 +40,7 @@ const canClaim = computed(() => Number(props.unclaimedReward) > 0);
           :disabled="!canClaim"
           :loading="claiming"
           @click="emit('claim')"
-        >一键领取</x-button>
+        >{{ $t("一键领取") }}</x-button>
       </div>
     </header>
 
@@ -49,8 +50,8 @@ const canClaim = computed(() => Number(props.unclaimedReward) > 0);
     </div>
 
     <div class="activity-reward__row">
-      <span><label>邀请有效人数</label><strong>{{ validInvites }}</strong></span>
-      <span><label>待领取</label><strong class="activity-reward__amount">{{ unclaimedReward }}</strong></span>
+      <span><label>{{ $t("邀请有效人数") }}</label><strong>{{ validInvites }}</strong></span>
+      <span><label>{{ $t("待领取") }}</label><strong class="activity-reward__amount">{{ unclaimedReward }}</strong></span>
       <x-button
         class="activity-reward__claim"
         type="primary"

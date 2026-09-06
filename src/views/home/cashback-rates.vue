@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { $t } from '@/locales';
 import UiLoading from '@/components/UI/loading.vue';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { handleBack } from '@/utils/common';
 import { service } from '@/api/service';
@@ -14,19 +15,19 @@ const activeCodeId = ref<number | string>('');
 const currentLevel = ref(0);
 const detailList = ref<any[]>([]);
 const isPageLoading = ref(true);
-const typeOptions: any[] = [
-  { label: '真人', value: 1 },
-  { label: '捕鱼', value: 2 },
-  { label: '电子', value: 3 },
-  { label: '彩票', value: 4 },
-  { label: '体育', value: 5 },
-  { label: '棋牌', value: 6 },
-  { label: '电竞', value: 7 }
-];
+const typeOptions = computed(() => [
+  { label: $t('真人'), value: 1 },
+  { label: $t('捕鱼'), value: 2 },
+  { label: $t('电子'), value: 3 },
+  { label: $t('彩票'), value: 4 },
+  { label: $t('体育'), value: 5 },
+  { label: $t('棋牌'), value: 6 },
+  { label: $t('电竞'), value: 7 }
+]);
 const codeOptions = ref<any[]>([]);
 
 function getTypeLabel(type: number) {
-  return typeOptions.find(item => item.value === type)?.label;
+  return typeOptions.value.find(item => item.value === type)?.label;
 }
 
 async function syncRouteQuery(gameCategory: number, gameSecondCateId: number | string) {
@@ -114,10 +115,10 @@ onMounted(() => init());
           </div>
         </div>
         <div class="thead-item">
-          <div class="thead-cell">VIP等级</div>
+          <div class="thead-cell">{{ $t('VIP等级') }}</div>
         </div>
         <div class="thead-item">
-          <div class="thead-cell">返水比例</div>
+          <div class="thead-cell">{{ $t('返水比例') }}</div>
         </div>
       </div>
 

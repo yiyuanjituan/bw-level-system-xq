@@ -4,6 +4,7 @@ import { useWindowSize } from '@vant/use';
 import { getFindUsData } from '@/api/common';
 import { formatMoney } from '@/utils/common';
 import { desensitizeWithLodash } from '@/hooks/useCommon';
+import { $t } from '@/locales';
 
 const show = ref(false);
 const params = ref<any>({});
@@ -33,7 +34,7 @@ defineExpose({
       <div class="dialog-container">
         <div class="dialog__header">
           <div class="title">
-            <div class="tips-title">提现通知</div>
+            <div class="tips-title">{{ $t("提现通知") }}</div>
           </div>
         </div>
         <div class="content">
@@ -41,22 +42,22 @@ defineExpose({
             <div class="status-icon success-bg">
               <img src="/siteadmin/skin/lobby_asset/comm_icon_pay_1.avif" alt="" srcset="" />
             </div>
-            <div class="status-text">提现成功</div>
+            <div class="status-text">{{ $t("提现成功") }}</div>
             <ul>
               <li>
-                <span>提现金额</span>
+                <span>{{ $t("提现金额") }}</span>
                 <p>{{ formatMoney(remoteData.money) }}<span class="member-currency">CNY</span></p>
               </li>
               <li>
-                <span>手续费</span>
+                <span>{{ $t("手续费") }}</span>
                 <p>{{ formatMoney(remoteData.fee) }}<span class="member-currency">CNY</span></p>
               </li>
               <li>
-                <span>实际到账</span>
+                <span>{{ $t("实际到账") }}</span>
                 <p>{{ formatMoney(remoteData.money) }}<span class="member-currency">CNY</span></p>
               </li>
               <li class="!items-center">
-                <span>提现到</span>
+                <span>{{ $t("提现到") }}</span>
                 <p class="flex !items-center">
                   <img :src="remoteData.bank_icon" alt="" srcset="" class="logo" />
                   <span>

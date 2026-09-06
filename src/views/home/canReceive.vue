@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { onMounted, ref } from "vue";
 import dayjs from "dayjs";
 import UiEmpty from "@/components/UI/empty.vue";
@@ -45,6 +46,34 @@ function formatTime(value?: string | null) {
   return dayjs(value).format("YYYY/MM/DD HH:mm");
 }
 
+function getRewardName(name?: string | null) {
+  if (!name) return "";
+
+  const dynamicTask = name.match(/^累计(投注|充值|亏损)≥(.+)$/);
+  if (dynamicTask) {
+    const keyMap = {
+      投注: "累计投注≥{amount}",
+      充值: "累计充值≥{amount}",
+      亏损: "累计亏损≥{amount}"
+    } as const;
+    return $t(keyMap[dynamicTask[1] as keyof typeof keyMap], { amount: dynamicTask[2] });
+  }
+
+  const translatableNames = new Set(["注册账号", "首次安装APP", "参与首存", "设置取款密码", "利息宝首存", "绑定钱包", "首次提现", "绑定社交账号", "任务奖励", "活动奖励", "VIP奖励", "返水奖励", "利息宝收益"]);
+  return translatableNames.has(name) ? $t(name as any) : name;
+}
+
+function getSourceName(name?: string | null) {
+  const sourceNameMap: Record<string, string> = {
+    任务奖励: "任务奖励",
+    活动奖励: "活动奖励",
+    VIP奖励: "VIP奖励",
+    返水奖励: "返水奖励",
+    利息宝: "利息宝"
+  };
+  return name && sourceNameMap[name] ? $t(sourceNameMap[name] as any) : name || "";
+}
+
 onMounted(() => loadData());
 </script>
 
@@ -58,10 +87,10 @@ onMounted(() => loadData());
         <div v-if="isLoading" class="loading-box">
           <ui-loading />
         </div>
-        <ui-empty v-else-if="rewardList.length === 0" text="" />
+        <ui-empty v-else-if="rewardList.length === 0" :text="$t('暂无内容')" />
         <div v-for="reward in rewardList" :key="reward.key" class="item-box">
           <div class="item-info">
-            <div class="name">{{ reward.name }}</div>
+            <div class="name">{{ getRewardName(reward.name) }}</div>
             <div class="rewards">
               <div v-if="reward.vitality > 0" class="rewards-item">
                 <svg-icon name="comm_icon_shy" class-name="text-[12px]"></svg-icon>
@@ -79,8 +108,8 @@ onMounted(() => loadData());
             <div class="source">
               <span v-if="formatTime(reward.createTime)" class="time">{{ formatTime(reward.createTime) }}</span>
               <span class="template">
-                <span class="activeTypeName">来源:</span>
-                <span class="source-text">{{ reward.sourceName }}</span>
+                <span class="activeTypeName">{{ $t("来源") }}:</span>
+                <span class="source-text">{{ getSourceName(reward.sourceName) }}</span>
               </span>
             </div>
             <div class="receive-btn-box">

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import dayjs from "dayjs";
-import { nextTick, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import UiLoading from "@/components/UI/loading.vue";
 import { service } from "@/api/service";
 import { showCustomToast } from "@/hooks/useCommon";
+import { $t } from "@/locales";
 
 type RewardItem = {
   id?: number | string;
@@ -24,20 +25,30 @@ type RewardItem = {
 
 const PAGE_SIZE = 10;
 const LOAD_MORE_OFFSET = 40;
-const TEXT = {
-  defaultTitle: "反馈内容",
-  empty: "暂无反馈",
-  feedbackId: "反馈ID:",
-  noMore: "没有更多了",
-  loadFailed: "加载失败",
-  retryLoadFailed: "加载失败，点击重试",
-  retryNextPageFailed: "下一页加载失败，点击重试",
+const questionTypeKeys = [
+  "游戏问题",
+  "登录注册",
+  "活动问题",
+  "代理问题",
+  "充值问题",
+  "提现问题",
+  "优化建议",
+  "其他建议"
+] as const;
+const text = computed(() => ({
+  defaultTitle: $t("反馈内容"),
+  empty: $t("暂无反馈"),
+  feedbackId: $t("反馈ID:"),
+  noMore: $t("没有更多了"),
+  loadFailed: $t("加载失败"),
+  retryLoadFailed: $t("加载失败，点击重试"),
+  retryNextPageFailed: $t("下一页加载失败，点击重试"),
   status: {
-    pending: "待处理",
-    accepted: "采纳",
-    rejected: "不采纳"
+    pending: $t("待处理"),
+    accepted: $t("采纳"),
+    rejected: $t("不采纳")
   }
-} as const;
+}));
 
 const containerRef = ref<HTMLElement | null>(null);
 const rewardList = ref<RewardItem[]>([]);
@@ -80,7 +91,13 @@ function getDisplayId(item: RewardItem) {
 }
 
 function getDisplayTitle(item: RewardItem) {
-  return String(item.title ?? item.questionType ?? TEXT.defaultTitle);
+  const title = String(item.title ?? item.questionType ?? "");
+
+  if (!title) return text.value.defaultTitle;
+
+  return questionTypeKeys.includes(title as (typeof questionTypeKeys)[number])
+    ? $t(title as any)
+    : title;
 }
 
 function getDisplayContent(item: RewardItem) {
@@ -106,20 +123,20 @@ function formatDateTime(value: unknown) {
 
 function getStatusText(item: RewardItem) {
   if (item.statusText) {
-    return String(item.statusText);
+    return $t(String(item.statusText) as any);
   }
 
   const status = String(item.status ?? item.state ?? "");
 
-  if (status === "0") return TEXT.status.pending;
-  if (status === "1") return TEXT.status.accepted;
-  if (status === "2") return TEXT.status.rejected;
+  if (status === "0") return text.value.status.pending;
+  if (status === "1") return text.value.status.accepted;
+  if (status === "2") return text.value.status.rejected;
 
-  return TEXT.status.pending;
+  return text.value.status.pending;
 }
 
 function isPositiveStatus(item: RewardItem) {
-  return getStatusText(item) === TEXT.status.accepted;
+  return getStatusText(item) === text.value.status.accepted;
 }
 
 function updateFinishedState(response: any, currentPageListLength: number) {
@@ -194,10 +211,10 @@ async function requestPage(targetPage: number) {
     await nextTick();
     await ensureScrollable();
   } catch (_error) {
-    requestError.value = isFirstPage ? TEXT.retryLoadFailed : TEXT.retryNextPageFailed;
+    requestError.value = isFirstPage ? text.value.retryLoadFailed : text.value.retryNextPageFailed;
     showCustomToast({
       type: "fail",
-      message: TEXT.loadFailed
+      message: text.value.loadFailed
     });
   } finally {
     isInitialLoading.value = false;
@@ -247,7 +264,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="rewardList.length === 0 && !requestError" class="empty-box">
-        <empty :text="TEXT.empty" />
+        <empty :text="text.empty" />
       </div>
 
       <div v-else-if="rewardList.length === 0 && requestError" class="status-box error-text" @click="refresh">
@@ -263,7 +280,7 @@ onMounted(() => {
           >
             <div class="row-1 flex justify-between">
               <div class="feedback-id">
-                <span class="feedback-id-literal">{{ TEXT.feedbackId }}</span>
+                <span class="feedback-id-literal">{{ text.feedbackId }}</span>
                 {{ getDisplayId(item) }}
                 <copy :text="getDisplayId(item)" class-name="!text-[12px] ml-[5px]" />
               </div>
@@ -292,7 +309,7 @@ onMounted(() => {
           {{ requestError }}
         </div>
         <div v-else-if="finished" class="status-box">
-          {{ TEXT.noMore }}
+          {{ text.noMore }}
         </div>
       </div>
     </div>

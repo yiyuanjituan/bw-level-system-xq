@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { $t } from '@/locales';
+import { computed, onMounted, ref } from 'vue';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import UiLoading from '@/components/UI/loading.vue';
@@ -8,34 +9,34 @@ import router from '@/router';
 
 dayjs.extend(isoWeek);
 
-const dayOptions = ref([
-  { label: '今日', value: 0, start_time: dayjs().startOf('day').unix(), end_time: dayjs().endOf('day').unix() },
+const dayOptions = computed(() => [
+  { label: $t('今日'), value: 0, start_time: dayjs().startOf('day').unix(), end_time: dayjs().endOf('day').unix() },
   {
-    label: '昨日',
+    label: $t('昨日'),
     value: 1,
     start_time: dayjs().startOf('day').subtract(1, 'day').unix(),
     end_time: dayjs().endOf('day').subtract(1, 'day').unix()
   },
-  { label: '本周', value: 2, start_time: dayjs().startOf('isoWeek').unix(), end_time: dayjs().endOf('isoWeek').unix() },
+  { label: $t('本周'), value: 2, start_time: dayjs().startOf('isoWeek').unix(), end_time: dayjs().endOf('isoWeek').unix() },
   {
-    label: '上周',
+    label: $t('上周'),
     value: 3,
     start_time: dayjs().startOf('isoWeek').subtract(7, 'day').unix(),
     end_time: dayjs().endOf('isoWeek').subtract(7, 'day').unix()
   },
-  { label: '本月', value: 4, start_time: dayjs().startOf('month').unix(), end_time: dayjs().endOf('month').unix() },
+  { label: $t('本月'), value: 4, start_time: dayjs().startOf('month').unix(), end_time: dayjs().endOf('month').unix() },
   {
-    label: '上月',
+    label: $t('上月'),
     value: 5,
     start_time: dayjs().startOf('month').subtract(1, 'month').unix(),
     end_time: dayjs().endOf('month').subtract(1, 'month').unix()
   }
 ]);
 
-const statusOptions = ref([
-  { label: '全部', value: 0 },
-  { label: '已派发', value: 1 },
-  { label: '已领取', value: 2 }
+const statusOptions = computed(() => [
+  { label: $t('全部'), value: 0 },
+  { label: $t('已派发'), value: 1 },
+  { label: $t('已领取'), value: 2 }
 ]);
 
 const daySelectIndex = ref(0);
@@ -59,6 +60,19 @@ function getAllData() {
 
 function jumpTo(url: string) {
   router.replace(url);
+}
+
+function getSourceName(source: number) {
+  const sourceNameMap: Record<number, string> = {
+    1: '系统派发',
+    2: '活动奖励',
+    3: '任务奖励',
+    4: 'VIP奖励',
+    5: '返水奖励',
+    6: '利息宝'
+  };
+  const sourceName = sourceNameMap[source];
+  return sourceName ? $t(sourceName as any) : '';
 }
 
 function refresh() {
@@ -109,11 +123,11 @@ onMounted(() => refresh());
       </div>
       <div class="received">
         <div class="item-box">
-          <span class="award">奖金</span>
+          <span class="award">{{ $t('奖金') }}</span>
           <span class="text">{{ (Number(recordData.money) || 0).toFixed(2) }}</span>
         </div>
         <div class="item-box" v-if="Number(recordData.actNum) > 0">
-          <span class="award">活跃度</span>
+          <span class="award">{{ $t('活跃度') }}</span>
           <span class="text !text-[#1FE11F]">{{ Number(recordData.actNum) }}</span>
         </div>
       </div>
@@ -123,10 +137,10 @@ onMounted(() => refresh());
       <div v-if="!isLoading && page > 1 && recordData.list.length == 0" class="empty-box">
         <img src="/siteadmin/skin/lobby_asset/img_none_sj.avif" alt="" class="ui-empty-box" />
         <span class="empty-text">
-          <span>{{ dayOptions[daySelectIndex].label }}暂无记录</span>
+          <span>{{ $t('暂无{label}记录', { label: dayOptions[daySelectIndex].label }) }}</span>
           <template v-if="daySelectIndex == 0">
-            <span>，可</span>
-            <span class="showAll" @click="getAllData">查看更多</span>
+            <span>，{{ $t('可') }}</span>
+            <span class="showAll" @click="getAllData">{{ $t('查看更多') }}</span>
           </template>
         </span>
       </div>
@@ -145,16 +159,13 @@ onMounted(() => refresh());
             <div class="source">
               <span>{{ dayjs(item.createTime).format('YYYY/MM/DD HH:mm') }}</span>
               <span class="template">
-                <span class="activeTypeName">来源:</span>
-                <span v-if="item.from == 1" class="source-text">系统派发</span>
-                <span v-if="item.from == 2" class="source-text" @click="jumpTo('/home/event')">活动奖励</span>
-                <span v-if="item.from == 3" class="source-text" @click="jumpTo('/home/task')">任务奖励</span>
-                <span v-if="item.from == 4" class="source-text">VIP奖励</span>
-                <span v-if="item.from == 5" class="source-text">返水奖励</span>
-                <span v-if="item.from == 6" class="source-text">利息宝</span>
+                <span class="activeTypeName">{{ $t('来源') }}:</span>
+                <span class="source-text" :class="{ clickable: [2, 3].includes(item.from) }" @click="[2, 3].includes(item.from) && jumpTo(item.from == 2 ? '/home/event' : '/home/task')">
+                  {{ getSourceName(item.from) }}
+                </span>
               </span>
             </div>
-            <div class="receiveStatus">{{ item.status == 1 ? '已派发' : '已领取' }}</div>
+            <div class="receiveStatus">{{ $t(item.status == 1 ? '已派发' : '已领取') }}</div>
           </div>
         </div>
       </div>
@@ -365,8 +376,12 @@ onMounted(() => refresh());
               }
 
               .source-text {
-                cursor: pointer;
+                cursor: default;
                 color: var(--skin__primary);
+
+                &.clickable {
+                  cursor: pointer;
+                }
               }
             }
           }

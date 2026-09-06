@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteSubordinateBettingDetail } from "@/api/common";
@@ -26,7 +27,7 @@ const emit = defineEmits<{
 const DEFAULT_PAGE_SIZE = 20;
 const selectedType = ref(0);
 const gameTypeOptions = ref<Array<{ label: string; value: number }>>([
-  { label: "全部类型", value: 0 }
+  { label: $t("全部类型"), value: 0 }
 ]);
 const records = ref<PromoteBettingDetailItem[]>([]);
 const summary = ref<PromoteBettingDetailResponse["summary"]>({
@@ -105,7 +106,7 @@ async function loadRecords(reset = false) {
     records.value = reset ? response.list : [...records.value, ...response.list];
     summary.value = response.summary;
     gameTypeOptions.value = [
-      { label: "全部类型", value: 0 },
+      { label: $t("全部类型"), value: 0 },
       ...response.gameTypes.filter(option => Number(option.value) > 0)
     ];
     failed.value = false;
@@ -167,7 +168,7 @@ watch(selectedType, () => {
           />
         </span>
         <span class="date-range">
-          <label>日期</label>
+          <label>{{ $t("日期") }}</label>
           <span class="value">{{ dateRangeText.start }}</span>
           <span>-</span>
           <span class="value">{{ dateRangeText.end }}</span>
@@ -178,13 +179,13 @@ watch(selectedType, () => {
         <div v-if="loading && !hasRecords" class="state"><ui-loading /></div>
         <ui-empty
           v-else-if="!hasRecords"
-          :text="failed ? '加载失败，请重试' : '暂无内容'"
+          :text="failed ? $t('加载失败，请重试') : $t('暂无内容')"
         >
           <template #text="{ text }">
             <span class="empty-text">
               <span>{{ text }}</span>
               <button v-if="failed" class="inline-retry" type="button" @click="loadRecords(true)">
-                重新加载
+                {{ $t("重新加载") }}
               </button>
             </span>
           </template>
@@ -218,24 +219,24 @@ watch(selectedType, () => {
             </div>
             <div class="row">
               <span class="column">
-                <label>游戏平台</label>
+                <label>{{ $t("游戏平台") }}</label>
                 <span class="number value">
                   {{ record.apiCode || "-" }}
                   <span v-if="record.typeName" class="suffix">({{ record.typeName }})</span>
                 </span>
               </span>
               <span class="column">
-                <label>游戏名称</label>
+                <label>{{ $t("游戏名称") }}</label>
                 <span class="number value">{{ record.playType || "-" }}</span>
               </span>
             </div>
             <div class="row">
               <span class="column">
-                <label>有效投注</label>
+                <label>{{ $t("有效投注") }}</label>
                 <span class="number value">{{ formatMoney(record.validBetAmount) }}</span>
               </span>
               <span class="column">
-                <label>会员输赢</label>
+                <label>{{ $t("会员输赢") }}</label>
                 <span class="number value" :class="getWinLossClass(record.netAmount)">
                   {{ formatMoney(record.netAmount) }}
                 </span>
@@ -244,22 +245,22 @@ watch(selectedType, () => {
           </div>
 
           <button v-if="failed" class="retry-button" type="button" @click="loadRecords(false)">
-            加载失败，点击重试
+            {{ $t("加载失败，点击重试") }}
           </button>
         </van-list>
       </div>
 
       <div class="summary-footer">
         <span class="summary-item">
-          <label>总有效投注</label>
+          <label>{{ $t("总有效投注") }}</label>
           <span class="number value">{{ formatMoney(summary.totalValidBetAmount) }}</span>
         </span>
         <span class="summary-item">
-          <label>总注单数</label>
+          <label>{{ $t("总注单数") }}</label>
           <span class="number value">{{ summary.totalBetCount }}</span>
         </span>
         <span class="summary-item">
-          <label>总输赢</label>
+          <label>{{ $t("总输赢") }}</label>
           <span class="number value" :class="getWinLossClass(summary.totalNetAmount)">
             {{ formatMoney(summary.totalNetAmount) }}
           </span>

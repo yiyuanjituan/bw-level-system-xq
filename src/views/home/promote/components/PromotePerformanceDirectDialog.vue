@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteCommissionDirectDetail } from "@/api/common";
@@ -152,21 +153,21 @@ watch(
     <div class="dialog-content">
       <div v-if="loading && !detail" class="dialog-state"><ui-loading /></div>
       <div v-else-if="failed && !detail" class="dialog-state dialog-state--failed">
-        <span>加载失败</span>
-        <button type="button" @click="loadDetail(true)">重新加载</button>
+        <span>{{ $t("加载失败") }}</span>
+        <button type="button" @click="loadDetail(true)">{{ $t("重新加载") }}</button>
       </div>
       <template v-else-if="detail">
         <div class="detail-summary">
-          <span><label>结算日期</label><span class="value">{{ settlementDate }}</span></span>
-          <span><label>直属业绩</label><span class="value">{{ formatMoney(detail.directPerformance) }}</span></span>
+        <span><label>{{ $t("结算日期") }}</label><span class="value">{{ settlementDate }}</span></span>
+        <span><label>{{ $t("直属业绩") }}</label><span class="value">{{ formatMoney(detail.directPerformance) }}</span></span>
         </div>
 
         <div class="member-list">
-          <ui-empty v-if="!hasMembers" :text="failed ? '加载失败，请重试' : '暂无内容'">
+        <ui-empty v-if="!hasMembers" :text="failed ? $t('加载失败，请重试') : $t('暂无内容')">
             <template #text="{ text }">
               <span class="empty-text">
                 <span>{{ text }}</span>
-                <button v-if="failed" type="button" @click="loadDetail(true)">重新加载</button>
+                <button v-if="failed" type="button" @click="loadDetail(true)">{{ $t("重新加载") }}</button>
               </span>
             </template>
           </ui-empty>
@@ -194,19 +195,19 @@ watch(
                   </span>
                 </span>
                 <span class="record-column">
-                  <label>贡献业绩</label>
+                  <label>{{ $t("贡献业绩") }}</label>
                   <span class="value">{{ formatMoney(getContributionPerformance(member)) }}</span>
                 </span>
               </div>
               <div class="record-row">
                 <span class="record-column">
-                  <label>会员输赢</label>
+                  <label>{{ $t("会员输赢") }}</label>
                   <span class="value" :class="getAmountClass(member.winLoseAmount)">{{ formatMoney(member.winLoseAmount) }}</span>
                 </span>
-                <span class="record-column"><label>优惠领取</label><span class="value">{{ formatMoney(member.discountAmount) }}</span></span>
+                <span class="record-column"><label>{{ $t("优惠领取") }}</label><span class="value">{{ formatMoney(member.discountAmount) }}</span></span>
               </div>
             </article>
-            <button v-if="failed" class="load-error" type="button" @click="loadDetail(false)">加载失败，点击重试</button>
+        <button v-if="failed" class="load-error" type="button" @click="loadDetail(false)">{{ $t("加载失败，点击重试") }}</button>
           </van-list>
         </div>
       </template>

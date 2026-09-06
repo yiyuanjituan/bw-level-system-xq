@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import type { AccountTimeFilterMode, AccountTimeRange } from "@/components/HomeReport/types";
+import { $t } from "@/locales";
 
 defineOptions({
   name: "AccountTimeFilter"
@@ -54,8 +55,8 @@ function createRange(mode: AccountTimeFilterMode, startDate: string, endDate: st
   const label = mode === "custom"
     ? `${normalizedStartDay.format("MM/DD")}-${normalizedEndDay.format("MM/DD")}`
     : mode === "yesterday"
-      ? "昨日"
-      : "今日";
+      ? $t("昨日")
+      : $t("今日");
 
   return {
     mode,
@@ -80,7 +81,11 @@ function syncDraft(rangeValue: AccountTimeRange) {
 }
 
 const currentRange = computed(() => props.modelValue ?? createPresetRange("today"));
-const currentLabel = computed(() => currentRange.value.label);
+const currentLabel = computed(() => {
+  if (currentRange.value.mode === "today") return $t("今日");
+  if (currentRange.value.mode === "yesterday") return $t("昨日");
+  return currentRange.value.label;
+});
 
 function togglePopover() {
   if (!showPopover.value) {

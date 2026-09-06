@@ -165,7 +165,7 @@ async function handleSaveQrCode() {
     );
 
     const downloadLink = document.createElement("a");
-    downloadLink.download = `邀请码-${props.inviteCode || "推广"}.png`;
+    downloadLink.download = `${$t("邀请码")}-${props.inviteCode || $t("推广")}.png`;
     downloadLink.href = canvas.toDataURL("image/png");
     document.body.appendChild(downloadLink);
     downloadLink.click();
@@ -176,27 +176,27 @@ async function handleSaveQrCode() {
   }
 }
 
-const socialMedia = [
-  { label: "微信", value: "wechat", icon: wechatIcon },
-  { label: "朋友圈", value: "moments", icon: momentsIcon },
-  { label: "抖音", value: "douyin", icon: douyinIcon },
-  { label: "快手", value: "kuaishou", icon: kuaishouIcon },
-  { label: "小红书", value: "xiaohongshu", icon: xiaohongshuIcon },
-  { label: "微博", value: "weibo", icon: weiboIcon },
+const socialMedia = computed(() => [
+  { label: $t("微信"), value: "wechat", icon: wechatIcon },
+  { label: $t("朋友圈"), value: "moments", icon: momentsIcon },
+  { label: $t("抖音"), value: "douyin", icon: douyinIcon },
+  { label: $t("快手"), value: "kuaishou", icon: kuaishouIcon },
+  { label: $t("小红书"), value: "xiaohongshu", icon: xiaohongshuIcon },
+  { label: $t("微博"), value: "weibo", icon: weiboIcon },
   { label: "QQ", value: "qq", icon: qqIcon },
   { label: "Telegram", value: "telegram", icon: telegramIcon },
   { label: "WhatsApp", value: "whatsapp", icon: whatsappIcon },
   { label: "Line", value: "line", icon: lineIcon },
   { label: "Facebook", value: "facebook", icon: facebookIcon }
-];
+]);
 </script>
 
 <template>
   <section class="invite-share" :class="{ 'invite-share--embedded': embedded }">
     <header v-if="showInviteCode" class="invite-share__header">
-      <p>邀请好友</p>
+      <p>{{ $t("邀请好友") }}</p>
       <div class="invite-share__code">
-        <label>我的邀请码</label>
+        <label>{{ $t("我的邀请码") }}</label>
         <strong>{{ inviteCode }}</strong>
         <copy :text="inviteCode" class-name="invite-share__copy-icon" />
       </div>
@@ -206,14 +206,14 @@ const socialMedia = [
       <div class="invite-share__qr-wrap">
         <div class="invite-share__qr">
           <img v-if="displayedQrCode" :src="displayedQrCode" :alt="$t('推广二维码')" />
-          <span v-else>暂无二维码</span>
+          <span v-else>{{ $t("暂无二维码") }}</span>
         </div>
         <x-button
           type="primary"
           class="invite-share__save-button"
           @click="handleSaveQrCode"
         >
-          保存邀请码
+          {{ $t("保存邀请码") }}
         </x-button>
       </div>
 
@@ -228,7 +228,7 @@ const socialMedia = [
               value-key="value"
               label-key="label"
             />
-            <span v-else class="invite-share__link-empty">暂无可用推广域名</span>
+            <span v-else class="invite-share__link-empty">{{ $t("暂无可用推广域名") }}</span>
           </div>
           <span class="invite-share__link-copy">
             <copy
@@ -244,7 +244,7 @@ const socialMedia = [
               <span class="invite-share__share-symbol">
                 <svg-icon name="promote-share" aria-hidden="true" />
               </span>
-              <small>分享</small>
+              <small>{{ $t("分享") }}</small>
             </button>
             <button
               v-for="media in socialMedia"

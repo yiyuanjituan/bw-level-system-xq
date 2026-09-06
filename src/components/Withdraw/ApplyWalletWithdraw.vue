@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { $t } from "@/locales";
+import { $t } from '@/locales';
 import { computed, inject, ref, Ref, watch } from 'vue';
 import { desensitizeWithLodash, showCustomToast } from '@/hooks/useCommon';
 
@@ -33,7 +33,7 @@ const withdrawLoading = ref(false);
 const formRef = ref<{ validate: () => Promise<void> } | null>(null);
 const formRules = ref<XFormRules>({
   card_id: [
-    { required: true, message: $t("请选择提现账户"), trigger: ['change', 'blur'] },
+    { required: true, message: $t('请选择提现账户'), trigger: ['change', 'blur'] },
     {
       validator: (_rule, value, callback) => {
         if (value === '' || value === null || value === undefined) {
@@ -41,7 +41,7 @@ const formRules = ref<XFormRules>({
           return;
         }
         if (isCardUnavailable.value) {
-          callback(new Error($t("该渠道维护中，无法提现")));
+          callback(new Error($t('该渠道维护中，无法提现')));
           return;
         }
 
@@ -51,7 +51,7 @@ const formRules = ref<XFormRules>({
     }
   ],
   money: [
-    { required: true, message: $t("提现金额不能为空"), trigger: ['input', 'blur'] },
+    { required: true, message: $t('提现金额不能为空'), trigger: ['input', 'blur'] },
     {
       validator: (_rule, value, callback) => {
         if (value === '' || value === null || value === undefined) {
@@ -63,19 +63,19 @@ const formRules = ref<XFormRules>({
         const min = Number(selectCardInfo.value?.min ?? 0);
         const max = Number(selectCardInfo.value?.max ?? 0);
         if (!/^\d+$/.test(String(value))) {
-          callback(new Error($t("提现金额只能为整数")));
+          callback(new Error($t('提现金额只能为整数')));
           return;
         }
         if (!Number.isInteger(amount) || amount < min) {
-          callback(new Error(`提现金额不能小于${min}`));
+          callback(new Error($t('提现金额不能小于{min}', { min })));
           return;
         }
         if (!Number.isInteger(amount) || amount > Number(auth.user.money)) {
-          callback(new Error($t("余额不足")));
+          callback(new Error($t('余额不足')));
           return;
         }
         if (!Number.isInteger(amount) || amount > max) {
-          callback(new Error(`提现金额不能大于${max}`));
+          callback(new Error($t('提现金额不能大于{max}', { max })));
           return;
         }
 
@@ -85,7 +85,7 @@ const formRules = ref<XFormRules>({
     }
   ],
   password: [
-    { required: true, message: $t("请输入提现密码"), trigger: ['input', 'blur'] },
+    { required: true, message: $t('请输入提现密码'), trigger: ['input', 'blur'] },
     {
       validator: (_rule, value, callback) => {
         if (value === '' || value === null || value === undefined) {
@@ -93,7 +93,7 @@ const formRules = ref<XFormRules>({
           return;
         }
         if (!/^\d{6}$/.test(String(value))) {
-          callback(new Error($t("提现密码必须为6位数字")));
+          callback(new Error($t('提现密码必须为6位数字')));
           return;
         }
 
@@ -138,7 +138,7 @@ async function handleApplyWithdraw() {
       .then(() => {
         formData.value = {};
         init();
-        showCustomToast({ message: $t("申请成功"), type: 'success' });
+        showCustomToast({ message: $t('申请成功'), type: 'success' });
         auth.updateInfo();
       });
   } catch {
@@ -159,7 +159,7 @@ async function handleApplyWithdraw() {
           icon-key="icon"
           :placeholder="$t('请选择发卡银行')"
         />
-        <div class="absolute right-0 flex items-center justify-end h-[40px]" @click="jumpToAddCard">
+        <div class="absolute right-[0px] flex items-center justify-end h-[40px]" @click="jumpToAddCard">
           <svg-icon name="icon_tx_txgl" class-name="text-[25px] main-text"></svg-icon>
         </div>
       </x-form-item>
@@ -167,7 +167,9 @@ async function handleApplyWithdraw() {
         <x-input
           :disabled="isCardUnavailable"
           :placeholder="
-            isCardUnavailable ? '该渠道维护中，无法提现' : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`
+            isCardUnavailable
+              ? $t('该渠道维护中，无法提现')
+              : $t('最低{min}，最高{max}', { min: Number(selectCardInfo?.min ?? 0), max: Number(selectCardInfo?.max ?? 0) })
           "
           v-model="formData.money"
         >
@@ -175,7 +177,7 @@ async function handleApplyWithdraw() {
             <div class="text-white text-[12px]">￥</div>
           </template>
           <template #suffix>
-            <div class="main-text text-[11px]" @click="withdrawAll">{{ $t("全部") }}</div>
+            <div class="main-text text-[11px]" @click="withdrawAll">{{ $t('全部') }}</div>
           </template>
         </x-input>
       </x-form-item>
@@ -198,7 +200,7 @@ async function handleApplyWithdraw() {
       </x-form-item>
       <div class="line"></div>
       <div class="form-item-title">
-        <span>{{ $t("验证提现密码") }}</span>
+        <span>{{ $t('验证提现密码') }}</span>
         <svg-icon name="comm_icon_hide" class-name="text-[18px] text-[#242424]" v-if="!showEye" @click="showEye = !showEye" />
         <svg-icon name="comm_icon_show" class-name="text-[18px] main-text" v-if="showEye" @click="showEye = !showEye" />
       </div>
@@ -208,10 +210,10 @@ async function handleApplyWithdraw() {
         </div>
       </x-form-item>
       <div class="button-list">
-        <x-button type="primary" class="button" plain>{{ $t("赚取利息") }}</x-button>
+        <x-button type="primary" class="button" plain>{{ $t('赚取利息') }}</x-button>
         <van-badge :content="$t('年利率88%')" position="top-left" :offset="['7%', '1%']" class="absolute"></van-badge>
         <x-button type="primary" class="button" :disabled="!canWithdraw" @click="handleApplyWithdraw" :loading="withdrawLoading">
-          {{ $t("确定提现") }}
+          {{ $t('确定提现') }}
         </x-button>
       </div>
     </x-form>
@@ -298,7 +300,7 @@ async function handleApplyWithdraw() {
 
 .apply-card-select {
   :deep(.x-select) {
-    padding-right: 12 px;
+    padding-right: 12px;
   }
 
   :deep(.x-select__icon-wrap) {
@@ -314,12 +316,11 @@ async function handleApplyWithdraw() {
 
   :deep(.x-select__label),
   :deep(.x-select-options__content) {
-    color: white;
+    color: var(--skin__lead) !important;
   }
 
   :deep(.x-select__label) {
     max-width: 100%;
   }
 }
-
 </style>

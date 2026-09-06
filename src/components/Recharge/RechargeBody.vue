@@ -115,9 +115,9 @@ const quickAmountOptions = computed<QuickAmountOption[]>(() => {
 });
 const isCryptoRecharge = computed(() => activeGroup.value.type == 2);
 const isUsdtPayMode = computed(() => activeGroup.value.type == 2 && payTypeMode.value == 'usdt');
-const payModeTitle = computed(() => (isUsdtPayMode.value ? '上分数量' : '存款金额'));
+const payModeTitle = computed(() => (isUsdtPayMode.value ? $t('上分数量') : $t('存款金额')));
 const inputPrefix = computed(() => (isUsdtPayMode.value ? 'U' : '￥'));
-const inputPlaceholder = computed(() => `最低${activeInfo.value.min ?? 0} ~ 最高${activeInfo.value.max ?? 0}`);
+const inputPlaceholder = computed(() => $t('最低{min} ~ 最高{max}', { min: activeInfo.value.min ?? 0, max: activeInfo.value.max ?? 0 }));
 const showGroupDownloadTip = computed(() => {
   return Boolean(
     activeGroup.value.download_tip &&
@@ -190,13 +190,13 @@ const amountSummary = computed<AmountSummary | null>(() => {
 
   if (payTypeMode.value == 'user_language') {
     return {
-      label: '支付金额≈',
+      label: $t('支付金额≈'),
       value: `${formatMoney(amount / currentRate.value)}USDT`
     };
   }
 
   return {
-    label: '到账金额≈',
+    label: $t('到账金额≈'),
     value: `￥${formatMoney(amount * currentRate.value)}`
   };
 });
@@ -456,7 +456,7 @@ watch(
 
     <div v-if="props.listData.length > 6" class="fold">
       <span class="btn" @click="showAllWallets = !showAllWallets">
-        <span class="text">{{ showAllWallets ? '收起' : '展开' }}</span>
+        <span class="text">{{ $t(showAllWallets ? '收起' : '展开') }}</span>
         <span class="arrow" :class="{ 'arrow-show': showAllWallets }"></span>
       </span>
     </div>
@@ -488,7 +488,7 @@ watch(
 
       <div v-if="activeChildren.length > 6" class="fold">
         <span class="btn" @click="showAllChildren = !showAllChildren">
-          <span class="text">{{ showAllChildren ? '收起' : '展开' }}</span>
+          <span class="text">{{ $t(showAllChildren ? '收起' : '展开') }}</span>
           <span class="arrow" :class="{ 'arrow-show': showAllChildren }"></span>
         </span>
       </div>
@@ -500,19 +500,19 @@ watch(
       <div class="no-balance">
         <div class="noWallet-id">
           <img src="/siteadmin/skin/lobby_asset/icon_cz_no.avif" alt="" class="mr-[5px] w-[25px]" />
-          <span>钱包账号：</span>
+          <span>{{ $t('钱包账号：') }}</span>
           <span class="id">{{ siteWalletInfo.qAccount }}</span>
           <span class="copy-id">
             <copy :text="String(siteWalletInfo.qAccount ?? '')" />
           </span>
         </div>
         <div class="bind-wallet">
-          <span>NO钱包余额</span>
+          <span>{{ $t('NO钱包余额') }}</span>
           <span class="balance">{{ (Number(siteWalletInfo.rmbBalance) ?? 0).toFixed(2) }}</span>
           <span class="refresh-icon" :class="{ animate__spin: isRefreshWallet }" @click="refreshSiteWallet">
             <svg-icon name="comm_icon_sx" />
           </span>
-          <x-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">购买余额</x-button>
+          <x-button type="primary" size="mini" class="buy-balance-btn" @click="clickToBuyBalance">{{ $t('购买余额') }}</x-button>
         </div>
       </div>
     </template>
@@ -555,7 +555,7 @@ watch(
 
       <div class="channel-exchange-rate" v-if="activeGroup.type == 2">
         <div class="left">
-          <span class="label">汇率</span>
+          <span class="label">{{ $t('汇率') }}</span>
           <div>
             <span dir="ltr" class="rate">1 :{{ currentRate || '--' }}</span>
             <svg-icon name="comm_icon_retry" class-name="retry-icon" @click="app.refreshData()" />

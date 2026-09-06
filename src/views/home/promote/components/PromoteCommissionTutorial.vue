@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { ref } from "vue";
 import CanvasConnector from "@/components/Common/CanvasConnector.vue";
 import type {
@@ -29,10 +30,10 @@ const connectorLineWidth = 5;
 const arrowOffsetY = 20;
 const activeTutorial = ref("a");
 const tutorialTabs = [
-  { label: "A的佣金", value: "a" },
-  { label: "B1的佣金", value: "b1" },
-  { label: "B2的佣金", value: "b2" },
-  { label: "C1的佣金", value: "c1" }
+  { label: $t("A的佣金"), value: "a" },
+  { label: $t("B1的佣金"), value: "b1" },
+  { label: $t("B2的佣金"), value: "b2" },
+  { label: $t("C1的佣金"), value: "c1" }
 ];
 
 const relationConnection = (
@@ -521,11 +522,11 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
               </x-badge>
 
               <div class="commission-tutorial__main-content">
-                <p>本期业绩=<em>500</em>+<em>3000</em>-<em>600</em>=<em>2900</em></p>
-                <p>直属佣金=2900*<bdi>10%</bdi>=<em>290</em></p>
-                <p>其他佣金=<em>-30</em>+<em>60</em>+<em>600</em>+<em>90</em>=<em>720</em></p>
-                <p>本期佣金=<em>290</em>+<em>720</em>=<em>1010</em></p>
-                <span class="commission-tutorial__balance">上期结余-600</span>
+                <p>{{ $t("本期业绩=") }}<em>500</em>+<em>3000</em>-<em>600</em>=<em>2900</em></p>
+                <p>{{ $t("直属佣金=") }}2900*<bdi>10%</bdi>=<em>290</em></p>
+                <p>{{ $t("其他佣金=") }}<em>-30</em>+<em>60</em>+<em>600</em>+<em>90</em>=<em>720</em></p>
+                <p>{{ $t("本期佣金=") }}<em>290</em>+<em>720</em>=<em>1010</em></p>
+                <span class="commission-tutorial__balance">{{ $t("上期结余") }}-600</span>
               </div>
             </article>
 
@@ -572,10 +573,10 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
               </x-badge>
 
               <div class="commission-tutorial__main-content">
-                <p>直属业绩=<em>-1000</em>+<em>2000</em>=<em>1000</em></p>
-                <p>直属佣金=1000*<bdi>10%</bdi>=<em>100</em></p>
-                <p>其他佣金=<em>90</em></p>
-                <p>本期佣金=<em>100</em>+<em>90</em>=<em>190</em></p>
+                <p>{{ $t("直属业绩=") }}<em>-1000</em>+<em>2000</em>=<em>1000</em></p>
+                <p>{{ $t("直属佣金=") }}1000*<bdi>10%</bdi>=<em>100</em></p>
+                <p>{{ $t("其他佣金=") }}<em>90</em></p>
+                <p>{{ $t("本期佣金=") }}<em>100</em>+<em>90</em>=<em>190</em></p>
               </div>
             </article>
 
@@ -617,21 +618,21 @@ const simpleTutorials: Record<string, SimpleTutorial> = {
                 >
                   <img
                     :src="simpleTutorials[tab.value].avatar"
-                    :alt="`${simpleTutorials[tab.value].name}代理头像`"
+                    :alt="$t('代理头像', { name: simpleTutorials[tab.value].name })"
                   />
                 </span>
               </x-badge>
 
               <div class="commission-tutorial__main-content">
-                <p>直属业绩=<em>{{ simpleTutorials[tab.value].performance }}</em></p>
+                <p>{{ $t("直属业绩=") }}<em>{{ simpleTutorials[tab.value].performance }}</em></p>
                 <p>
                   {{ $t("直属佣金=") }}{{ simpleTutorials[tab.value].performance }}*<bdi>10%</bdi>=<em>{{
                     simpleTutorials[tab.value].directCommission
                   }}</em>
                 </p>
-                <p>其他佣金=<em>0</em></p>
+                <p>{{ $t("其他佣金=") }}<em>0</em></p>
                 <p>
-                  本期佣金=<em>{{ simpleTutorials[tab.value].directCommission }}</em>+<em>0</em>=<em>{{
+                  {{ $t("本期佣金=") }}<em>{{ simpleTutorials[tab.value].directCommission }}</em>+<em>0</em>=<em>{{
                     simpleTutorials[tab.value].totalCommission
                   }}</em>
                 </p>

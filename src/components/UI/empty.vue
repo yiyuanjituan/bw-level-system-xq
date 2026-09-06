@@ -1,21 +1,23 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { $t } from "@/locales";
+
 defineOptions({
   name: "ui-empty"
 });
 interface Props {
   text?: string;
 }
-const props = withDefaults(defineProps<Props>(), {
-  text: "暂无游戏"
-});
+const props = defineProps<Props>();
+const displayText = computed(() => props.text ?? $t("暂无游戏"));
 </script>
 
 <template>
   <div class="empty-box">
     <img src="/siteadmin/skin/lobby_asset/img_none_sj.avif" alt="" class="ui-empty-box" />
     <div class="empty-text">
-      <slot name="text" :text="props.text">
-        <span>{{ props.text }}</span>
+      <slot name="text" :text="displayText">
+        <span>{{ displayText }}</span>
       </slot>
     </div>
   </div>

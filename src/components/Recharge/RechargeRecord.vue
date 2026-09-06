@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { useWindowSize } from "@vant/use";
@@ -52,14 +53,14 @@ const LOAD_MORE_OFFSET = 48;
 
 const rechargeRecordsService = service.base.recharge as RechargeRecordsService;
 
-const statusOptions: RechargeStatusOption[] = [
-  { label: "全部状态", value: "" },
-  { label: "已取消", value: -1 },
-  { label: "待支付", value: 1 },
-  { label: "待确认", value: 2 },
-  { label: "已存入", value: 3 },
-  { label: "未通过", value: 4 }
-];
+const statusOptions = computed<RechargeStatusOption[]>(() => [
+  { label: $t("全部状态"), value: "" },
+  { label: $t("已取消"), value: -1 },
+  { label: $t("待支付"), value: 1 },
+  { label: $t("待确认"), value: 2 },
+  { label: $t("已存入"), value: 3 },
+  { label: $t("未通过"), value: 4 }
+]);
 
 const show = ref(false);
 const params = ref<Record<string, any>>({});
@@ -67,7 +68,7 @@ const isLoading = ref(false);
 const isLoadingMore = ref(false);
 const pageData = ref<RechargeRecordPageData>(createDefaultPageData());
 const timeRange = ref<DateRangeValue>(createTodayRange());
-const statusFilterValue = ref<number | string>(statusOptions[0]?.value ?? "");
+const statusFilterValue = ref<number | string>(statusOptions.value[0]?.value ?? "");
 const { width: windowWidth } = useWindowSize();
 
 let latestRequestId = 0;
@@ -77,7 +78,7 @@ function createTodayRange(): DateRangeValue {
 
   return {
     mode: "today",
-    label: "今日",
+    label: $t("今日"),
     startTime: dayjs(today).startOf("day").unix(),
     endTime: dayjs(today).endOf("day").unix(),
     startDate: today,
@@ -116,10 +117,10 @@ const hasListData = computed(() => pageData.value.list.length > 0);
 const hasMoreData = computed(() => pageData.value.total > pageData.value.list.length);
 const emptyStateText = computed(() => {
   if (timeRange.value.mode === "custom") {
-    return "所选时间暂无充值记录";
+    return $t("所选时间暂无充值记录");
   }
 
-  return `${timeRange.value.label}暂无充值记录`;
+  return $t("暂无{label}充值记录", { label: timeRange.value.label });
 });
 
 async function fetchPage(page: number, append: boolean) {
@@ -200,7 +201,7 @@ defineExpose({
   <van-dialog v-model:show="show" :show-cancel-button="false" :width="dialogWidth" class-name="recharge-record-popup">
     <template #default>
       <div class="dialog-container">
-        <div class="header-box"><span>充值记录</span></div>
+        <div class="header-box"><span>{{ $t("充值记录") }}</span></div>
         <div class="content-box">
           <div class="content-header">
             <div class="time-picker">

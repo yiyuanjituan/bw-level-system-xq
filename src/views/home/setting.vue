@@ -258,14 +258,14 @@ onMounted(() => {
               <copy :text="String(auth.user.unionid ?? '')" class-name="copy-icon" />
             </div>
             <div class="nickname-field">
-              <span class="nickname-label">昵称:</span>
+              <span class="nickname-label">{{ $t("昵称:") }}</span>
               <x-form-item prop="nickName" class="nickname-content nickname-form-item">
                 <div
                   v-if="!isNicknameEditing"
                   class="nickname-display"
                   :class="{ 'has-nickname': form.nickName }"
                 >
-                  <span>{{ form.nickName || "请输入昵称" }}</span>
+                  <span>{{ form.nickName || $t("请输入昵称") }}</span>
                   <button
                     type="button"
                     class="nickname-edit-trigger"
@@ -300,7 +300,7 @@ onMounted(() => {
       </x-form>
 
       <section class="setting-section">
-        <h2>默认展示信息</h2>
+        <h2>{{ $t("默认展示信息") }}</h2>
         <div class="setting-select">
           <x-select v-model="form.showAccount" :options="displayOptions">
             <template #prefix>
@@ -312,7 +312,7 @@ onMounted(() => {
           </x-select>
         </div>
 
-        <div class="phone-label">绑定手机</div>
+        <div class="phone-label">{{ $t("绑定手机") }}</div>
         <x-input
           :model-value="String(auth.user.phone ?? '')"
           class="setting-input readonly-input"
@@ -328,7 +328,7 @@ onMounted(() => {
       </section>
 
       <section class="setting-section">
-        <h2>第三方账号绑定</h2>
+        <h2>{{ $t("第三方账号绑定") }}</h2>
         <x-input v-model="form.wechat" class="setting-input" :maxlength="50" :placeholder="$t('请输入微信号')">
           <template #prefix>
             <img :src="wechatIcon" class="setting-input-icon" :alt="$t('微信')" />
@@ -351,8 +351,8 @@ onMounted(() => {
         </x-input>
 
         <div class="birthday-title">
-          <span>生日</span>
-          <small>（设置后不能修改）</small>
+          <span>{{ $t("生日") }}</span>
+          <small>{{ $t("（设置后不能修改）") }}</small>
         </div>
         <x-date-picker
           v-model="form.birthday"
@@ -362,7 +362,7 @@ onMounted(() => {
           :max-date="maximumBirthdayDate"
           suffix-icon-name="comm_icon_fh"
         />
-        <p class="birthday-tip">{{ $t("系统要求满18周岁才能使用，即") }}{{ maximumBirthday.replaceAll('-', '/') }}前出生。</p>
+        <p class="birthday-tip">{{ $t("系统要求满18周岁才能使用，即") }}{{ maximumBirthday.replaceAll('-', '/') }}{{ $t("前出生。") }}</p>
       </section>
     </main>
 

@@ -27,12 +27,12 @@ interface AccumulatedMetric {
 }
 
 const periods: Array<{ label: string; value: PeriodValue; timeEnum: number }> = [
-  { label: "今日", value: "today", timeEnum: 1 },
-  { label: "昨日", value: "yesterday", timeEnum: 2 },
-  { label: "本周", value: "thisWeek", timeEnum: 3 },
-  { label: "上周", value: "lastWeek", timeEnum: 4 },
-  { label: "本月", value: "thisMonth", timeEnum: 5 },
-  { label: "上月", value: "lastMonth", timeEnum: 6 },
+  { label: $t("今日"), value: "today", timeEnum: 1 },
+  { label: $t("昨日"), value: "yesterday", timeEnum: 2 },
+  { label: $t("本周"), value: "thisWeek", timeEnum: 3 },
+  { label: $t("上周"), value: "lastWeek", timeEnum: 4 },
+  { label: $t("本月"), value: "thisMonth", timeEnum: 5 },
+  { label: $t("上月"), value: "lastMonth", timeEnum: 6 },
 ];
 
 const activePeriod = ref<PeriodValue>("today");
@@ -43,7 +43,7 @@ let latestRequestId = 0;
 
 const currentData = computed(() => periodCache.value[activePeriod.value]);
 const commissionTitle = computed(
-  () => `${periods.find(period => period.value === activePeriod.value)?.label ?? "今日"}佣金`,
+  () => `${periods.find(period => period.value === activePeriod.value)?.label ?? $t("今日")}${$t("佣金")}`,
 );
 
 function formatMoney(value: unknown) {
@@ -71,10 +71,10 @@ function hasValue(value: string) {
 const commissionDetails = computed(() => {
   const response = currentData.value;
   return [
-    { label: "直属佣金", value: formatMoney(response?.timeDirectCommission), highlight: true },
-    { label: "其他佣金", value: formatMoney(response?.timeOtherCommission), highlight: true },
-    { label: "推广活动奖励", value: formatMoney(response?.timePromoteActiveAmount) },
-    { label: "代理活动奖励", value: formatMoney(response?.timeAgentActiveAmount) },
+    { label: $t("直属佣金"), value: formatMoney(response?.timeDirectCommission), highlight: true },
+    { label: $t("其他佣金"), value: formatMoney(response?.timeOtherCommission), highlight: true },
+    { label: $t("推广活动奖励"), value: formatMoney(response?.timePromoteActiveAmount) },
+    { label: $t("代理活动奖励"), value: formatMoney(response?.timeAgentActiveAmount) },
   ];
 });
 
@@ -89,7 +89,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总充值"),
-      unit: "人次",
+      unit: $t("人次"),
       totalValue: formatMoney(response?.timeTotalDeposit),
       totalCount: formatCount(response?.timeTotalDepositPerson),
       directValue: formatMoney(response?.timeDirectDeposit),
@@ -99,7 +99,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总首充"),
-      unit: "人数",
+      unit: $t("人数"),
       totalValue: formatMoney(response?.timeTotalFirstDeposit),
       totalCount: formatCount(response?.timeTotalFirstDepositPerson),
       directValue: formatMoney(response?.timeDirectFirstDeposit),
@@ -109,7 +109,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("当天注册首充"),
-      unit: "人数",
+      unit: $t("人数"),
       totalValue: formatMoney(response?.timeTotalRegisterDeposit),
       totalCount: formatCount(response?.timeTotalRegisterDepositPerson),
       directValue: formatMoney(response?.timeDirectRegisterDeposit),
@@ -119,7 +119,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总提现"),
-      unit: "次数",
+      unit: $t("次数"),
       totalValue: formatMoney(response?.timeTotalWithdraw),
       totalCount: formatCount(response?.timeTotalWithdrawPerson),
       directValue: formatMoney(response?.timeDirectWithdraw),
@@ -129,7 +129,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("领取总奖励"),
-      unit: "人次",
+      unit: $t("人次"),
       totalValue: formatMoney(response?.timeTotalDiscount),
       totalCount: formatCount(response?.timeTotalDiscountPerson),
       directValue: formatMoney(response?.timeDirectDiscount),
@@ -139,7 +139,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总有效投注"),
-      unit: "人次",
+      unit: $t("人次"),
       totalValue: formatMoney(response?.timeTotalValidBet),
       totalCount: formatCount(response?.timeTotalValidBetPerson),
       directValue: formatMoney(response?.timeDirectValidBet),
@@ -149,7 +149,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总业绩"),
-      unit: "人次",
+      unit: $t("人次"),
       totalValue: formatMoney(response?.timeTotalPerformance),
       totalCount: formatCount(response?.timeTotalContribute),
       directValue: formatMoney(response?.timeDirectPerformance),
@@ -159,7 +159,7 @@ const allDataCards = computed<DataCard[]>(() => {
     },
     {
       title: $t("总输赢"),
-      unit: "人次",
+      unit: $t("人次"),
       totalValue: formatMoney(response?.timeTotalProfitLose),
       winLoss: true,
       totalCount: formatCount(response?.timeTotalProfitLosePerson),
@@ -175,23 +175,23 @@ const teamDataRows = computed<AccumulatedMetric[][]>(() => {
   const response = currentData.value;
   return [
     [
-      { label: "总人数", value: formatCount(response?.totalMember), link: true },
-      { label: "直属人数", value: formatCount(response?.directMember), link: true },
-      { label: "其他人数", value: formatCount(response?.otherMember), link: true },
+      { label: $t("总人数"), value: formatCount(response?.totalMember), link: true },
+      { label: $t("直属人数"), value: formatCount(response?.directMember), link: true },
+      { label: $t("其他人数"), value: formatCount(response?.otherMember), link: true },
     ],
     [
-      { label: "总业绩", value: formatMoney(response?.totalPerformance) },
-      { label: "直属业绩", value: formatMoney(response?.directPerformance) },
-      { label: "其他业绩", value: formatMoney(response?.otherPerformance) },
+      { label: $t("总业绩"), value: formatMoney(response?.totalPerformance) },
+      { label: $t("直属业绩"), value: formatMoney(response?.directPerformance) },
+      { label: $t("其他业绩"), value: formatMoney(response?.otherPerformance) },
     ],
     [
-      { label: "累计直属充值", value: formatMoney(response?.totalDeposit), link: true },
-      { label: "累计直属提现", value: formatMoney(response?.totalWithdraw), link: true },
-      { label: "累计直属领取", value: formatMoney(response?.totalDiscount), link: true },
+      { label: $t("累计直属充值"), value: formatMoney(response?.totalDeposit), link: true },
+      { label: $t("累计直属提现"), value: formatMoney(response?.totalWithdraw), link: true },
+      { label: $t("累计直属领取"), value: formatMoney(response?.totalDiscount), link: true },
     ],
     [
-      { label: "累计直属有效投注", value: formatMoney(response?.totalValidBet), link: true },
-      { label: "累计直属输赢", value: formatMoney(response?.totalProfitLose), winLoss: true },
+      { label: $t("累计直属有效投注"), value: formatMoney(response?.totalValidBet), link: true },
+      { label: $t("累计直属输赢"), value: formatMoney(response?.totalProfitLose), winLoss: true },
     ],
   ];
 });
@@ -200,18 +200,18 @@ const incomeRows = computed<AccumulatedMetric[][]>(() => {
   const response = currentData.value;
   return [
     [
-      { label: "总佣金", value: formatMoney(response?.totalCommission), highlight: true },
-      { label: "直属佣金", value: formatMoney(response?.directCommission), highlight: true },
-      { label: "其他佣金", value: formatMoney(response?.otherCommission), highlight: true },
+      { label: $t("总佣金"), value: formatMoney(response?.totalCommission), highlight: true },
+      { label: $t("直属佣金"), value: formatMoney(response?.directCommission), highlight: true },
+      { label: $t("其他佣金"), value: formatMoney(response?.otherCommission), highlight: true },
     ],
     [
-      { label: "累计实发佣金", value: formatMoney(response?.sumCommission), highlight: true },
-      { label: "待领取", value: formatMoney(response?.canTakeCommission), highlight: true },
-      { label: "已领取", value: formatMoney(response?.takenCommission), highlight: true },
+      { label: $t("累计实发佣金"), value: formatMoney(response?.sumCommission), highlight: true },
+      { label: $t("待领取"), value: formatMoney(response?.canTakeCommission), highlight: true },
+      { label: $t("已领取"), value: formatMoney(response?.takenCommission), highlight: true },
     ],
     [
-      { label: "推广活动累计奖励", value: formatMoney(response?.promoteActiveAmount) },
-      { label: "代理活动累计奖励", value: formatMoney(response?.agentActiveAmount) },
+      { label: $t("推广活动累计奖励"), value: formatMoney(response?.promoteActiveAmount) },
+      { label: $t("代理活动累计奖励"), value: formatMoney(response?.agentActiveAmount) },
     ],
   ];
 });
@@ -263,9 +263,9 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
       <ui-loading />
     </div>
     <div v-else-if="requestFailed && !currentData" class="promote-data__state">
-      <span>数据加载失败</span>
+      <span>{{ $t("数据加载失败") }}</span>
       <button type="button" class="promote-data__retry" @click="loadPeriod(activePeriod, true)">
-        重新加载
+        {{ $t("重新加载") }}
       </button>
     </div>
 
@@ -280,7 +280,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
               </span>
             </span>
             <span class="_subAmount_5ctcb_92">
-              (总佣金 <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">{{ formatMoney(currentData?.timeCommission) }}</span>)
+            ({{ $t("总佣金") }} <span class="number-column-value _number-column_1ngn0_59 _number-column-yellow_1ngn0_66 _value_5ctcb_122">{{ formatMoney(currentData?.timeCommission) }}</span>)
             </span>
           </div>
         </div>
@@ -296,7 +296,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
       </section>
 
       <section class="_allDataContainer_8fyve_59">
-        <div class="_header_8fyve_67">全部数据</div>
+        <div class="_header_8fyve_67">{{ $t("全部数据") }}</div>
         <div class="_grid_8fyve_78">
           <article v-for="card in allDataCards" :key="card.title" class="_dataItem_8fyve_83">
             <div>
@@ -324,7 +324,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
             </div>
             <div class="_divider_8fyve_134"></div>
             <div class="_detailRow_8fyve_139">
-              <span class="_label_8fyve_144">直属数据</span>
+              <span class="_label_8fyve_144">{{ $t("直属数据") }}</span>
               <div class="_valueWrap_8fyve_150">
                 <span
                   class="_value_8fyve_150"
@@ -344,7 +344,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
               </div>
             </div>
             <div class="_detailRow_8fyve_139">
-              <span class="_label_8fyve_144">其他数据</span>
+              <span class="_label_8fyve_144">{{ $t("其他数据") }}</span>
               <div class="_valueWrap_8fyve_150">
                 <span
                   class="_value_8fyve_150"
@@ -368,7 +368,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
       </section>
 
       <section class="_teamDataTableContainer_12h2o_59">
-        <div class="_header_12h2o_67">累计数据（含其他下级）</div>
+        <div class="_header_12h2o_67">{{ $t("累计数据（含其他下级）") }}</div>
         <div class="_blueSection_12h2o_132">
           <div class="_section_12h2o_78">
             <div v-for="(row, rowIndex) in teamDataRows" :key="rowIndex" class="_row_12h2o_98">
@@ -397,7 +397,7 @@ watch(activePeriod, periodValue => void loadPeriod(periodValue), { immediate: tr
         </div>
 
         <div class="_divider_12h2o_127"></div>
-        <div class="_sectionTitle_12h2o_78">我的累计收益</div>
+        <div class="_sectionTitle_12h2o_78">{{ $t("我的累计收益") }}</div>
         <div class="_yellowSection_12h2o_132">
           <div class="_section_12h2o_78">
             <div v-for="(row, rowIndex) in incomeRows" :key="rowIndex" class="_row_12h2o_98">

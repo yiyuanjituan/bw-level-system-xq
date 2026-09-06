@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromotePerformance } from "@/api/common";
@@ -20,7 +21,7 @@ const DEFAULT_PAGE_SIZE = 20;
 const today = dayjs();
 const selectedTimeRange = ref<DateRangeValue>({
   mode: "all",
-  label: "全部",
+  label: $t("全部"),
   startTime: today.subtract(89, "day").startOf("day").unix(),
   endTime: today.endOf("day").unix(),
   startDate: today.subtract(89, "day").format("YYYY-MM-DD"),
@@ -154,7 +155,7 @@ watch(
 
     <div class="performance-list">
       <div v-if="loading && !hasRecords" class="performance-state"><ui-loading /></div>
-      <ui-empty v-else-if="!hasRecords" :text="requestFailed ? '加载失败，请重试' : '暂无内容'">
+      <ui-empty v-else-if="!hasRecords" :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')">
         <template #text="{ text }">
           <span class="performance-empty-text">
             <span>{{ text }}</span>
@@ -181,28 +182,28 @@ watch(
         <article v-for="record in records" :key="record.id" class="performance-record">
           <div class="performance-record__row">
             <span class="performance-record__column">
-              <label>结算日期</label>
+              <label>{{ $t("结算日期") }}</label>
               <span class="performance-record__value">{{ formatStatisticDate(record.statisticDate) }}</span>
             </span>
             <span class="performance-record__column">
-              <label>总业绩</label>
+              <label>{{ $t("总业绩") }}</label>
               <span class="performance-record__value">{{ formatMoney(record.totalPerformance) }}</span>
             </span>
           </div>
           <div class="performance-record__row">
             <span class="performance-record__column">
-              <label>直属业绩</label>
+              <label>{{ $t("直属业绩") }}</label>
               <button
                 class="performance-record__value performance-record__value--button"
                 :class="{ 'performance-record__value--link': Boolean(record.id) }"
                 type="button"
                 :disabled="!record.id"
-                :aria-label="`查看${formatMoney(record.directPerformance)}直属业绩明细`"
+                :aria-label="$t('查看直属业绩明细', { amount: formatMoney(record.directPerformance) })"
                 @click="openDirectPerformance(record)"
               >{{ formatMoney(record.directPerformance) }}</button>
             </span>
             <span class="performance-record__column">
-              <label>其他业绩</label>
+              <label>{{ $t("其他业绩") }}</label>
               <span class="performance-record__value" :class="{ 'performance-record__value--empty': !record.otherPerformance }">
                 {{ formatOptionalMoney(record.otherPerformance) }}
               </span>
@@ -223,19 +224,19 @@ watch(
         @click="footerCollapsed = !footerCollapsed"
       >
         <svg-icon name="promote-collapse-arrow" class="performance-footer__arrow" />
-        {{ footerCollapsed ? "展示" : "收起" }}
+        {{ footerCollapsed ? $t("展示") : $t("收起") }}
       </button>
       <div class="performance-footer__content">
         <span class="performance-footer__item">
-          <label>总业绩</label>
+          <label>{{ $t("总业绩") }}</label>
           <span>{{ formatMoney(summary.totalPerformance) }}</span>
         </span>
         <span class="performance-footer__item">
-          <label>直属业绩</label>
+          <label>{{ $t("直属业绩") }}</label>
           <span>{{ formatMoney(summary.directPerformance) }}</span>
         </span>
         <span class="performance-footer__item">
-          <label>其他业绩</label>
+          <label>{{ $t("其他业绩") }}</label>
           <span :class="{ 'performance-record__value--empty': !summary.otherPerformance }">
             {{ formatOptionalMoney(summary.otherPerformance) }}
           </span>

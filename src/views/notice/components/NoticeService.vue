@@ -47,9 +47,9 @@ onMounted(() => init());
       <div class="service-container-card">
         <div class="online-box">
           <div class="inner-online-customers">
-            <div class="default-title">7×24在线客服</div>
+            <div class="default-title">{{ $t("7×24在线客服") }}</div>
             <div class="default-describe">
-              专业客服在线对话，为您解决遇到的问题。
+              {{ $t("专业客服在线对话，为您解决遇到的问题。") }}
             </div>
             <div class="button-mobile">
               <div
@@ -72,7 +72,7 @@ onMounted(() => init());
                 <img
                   src="/siteadmin/skin/lobby_asset/icon_kf_im.avif"
                   class="w-[18px] h-[18px] mr-[5px]"
-                />其他客服
+                />{{ $t("其他客服") }}
               </div>
             </template>
             <div class="py-[5px]">
@@ -89,7 +89,7 @@ onMounted(() => init());
                   />
                   <div class="wrapper-customer-name">
                     <div class="customer-name">
-                      <span class="label">昵称:</span>
+                      <span class="label">{{ $t("昵称:") }}</span>
                       <span class="name">{{ i.name }}</span>
                     </div>
                     <div class="customer-number">
@@ -97,11 +97,11 @@ onMounted(() => init());
                       <copy :text="i.account" class-name="!text-[12px]" />
                     </div>
                     <div class="online-time">
-                      <span class="label">在线时间:</span>
+                      <span class="label">{{ $t("在线时间:") }}</span>
                       <span>{{ i.time }}</span>
                     </div>
                   </div>
-                  <div class="call-btn" @click="jumpUrl(i, true)">立即联系</div>
+                  <div class="call-btn" @click="jumpUrl(i, true)">{{ $t("立即联系") }}</div>
                 </div>
               </div>
             </div>
@@ -112,7 +112,7 @@ onMounted(() => init());
                 <img
                   src="/siteadmin/skin/lobby_asset/icon_im_telegram.avif"
                   class="w-[18px] h-[18px] mr-[5px]"
-                />Telegram客服
+                />{{ $t("Telegram客服") }}
               </div>
             </template>
             <div class="py-[5px]">
@@ -129,7 +129,7 @@ onMounted(() => init());
                   />
                   <div class="wrapper-customer-name">
                     <div class="customer-name">
-                      <span class="label">昵称:</span>
+                      <span class="label">{{ $t("昵称:") }}</span>
                       <span class="name">{{ i.name }}</span>
                     </div>
                     <div class="customer-number">
@@ -137,11 +137,11 @@ onMounted(() => init());
                       <copy :text="i.account" class-name="!text-[12px]" />
                     </div>
                     <div class="online-time">
-                      <span class="label">在线时间:</span>
+                      <span class="label">{{ $t("在线时间:") }}</span>
                       <span>{{ i.time }}</span>
                     </div>
                   </div>
-                  <div class="call-btn" @click="jumpUrl(i, true)">立即联系</div>
+                  <div class="call-btn" @click="jumpUrl(i, true)">{{ $t("立即联系") }}</div>
                 </div>
               </div>
             </div>
@@ -151,9 +151,9 @@ onMounted(() => init());
 
       <div class="help-box">
         <div class="search-box">
-          <div class="help-title">帮助中心</div>
+          <div class="help-title">{{ $t("帮助中心") }}</div>
           <div class="search-bar">
-            <div class="search-info">请输入您的问题</div>
+            <div class="search-info">{{ $t("请输入您的问题") }}</div>
             <svg-icon name="comm_icon_ss" class="text-[15px]" />
           </div>
         </div>

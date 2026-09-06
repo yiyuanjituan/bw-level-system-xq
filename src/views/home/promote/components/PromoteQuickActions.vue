@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import createIcon from "@/assets/home/promote/action-create-subordinate.avif";
 import rebateIcon from "@/assets/home/promote/action-rebate-ratio.avif";
 

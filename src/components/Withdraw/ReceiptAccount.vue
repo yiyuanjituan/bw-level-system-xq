@@ -78,7 +78,7 @@ onMounted(() => updateWallet())
     <div class="manager-container">
       <div class="title">
         <div class="left">
-          收款账户
+          {{ $t("收款账户") }}
           <span class="number">({{ listData.length }}/{{ app.appInfo?.maxBindNum }})</span>
           <svg-icon name="comm_icon_retry" class-name="text-[14px] refresh-icon" :class="[walletIsLoading ? 'ml-[0px] animate__spin' : 'ml-[4px]']" @click="updateWallet" />
         </div>
@@ -99,7 +99,7 @@ onMounted(() => updateWallet())
             </div>
           </div>
           <div class="right">
-            <span class="setDefault" :style="[item.is_default ? 'color: var(--skin__neutral_2)': '']" @click="handleSetDefault(item)">{{ item.is_default ? '默认' : '设为默认' }}</span>
+            <span class="setDefault" :style="[item.is_default ? 'color: var(--skin__neutral_2)': '']" @click="handleSetDefault(item)">{{ item.is_default ? $t("默认") : $t("设为默认") }}</span>
           </div>
           <div class="corner" v-if="item.is_default">
             <svg-icon name="comm_img_corner" />

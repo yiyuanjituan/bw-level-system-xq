@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteCommissionDirectDetail } from "@/api/common";
@@ -147,33 +148,33 @@ watch(
     <div class="dialog-content">
       <div v-if="loading && !detail" class="dialog-state"><ui-loading /></div>
       <div v-else-if="failed && !detail" class="dialog-state dialog-state--failed">
-        <span>加载失败</span>
-        <button type="button" @click="loadDetail(true)">重新加载</button>
+        <span>{{ $t("加载失败") }}</span>
+        <button type="button" @click="loadDetail(true)">{{ $t("重新加载") }}</button>
       </div>
       <template v-else-if="detail">
         <div class="detail-summary">
-          <span><label>结算日</label><span class="value">{{ settlementDate }}</span></span>
-          <span><label>直属业绩</label><span class="value value--red">{{ formatMoney(detail.directPerformance) }}</span></span>
-          <span><label>上期结余</label><span class="value">{{ formatMoney(detail.carryInAmount) }}</span></span>
+          <span><label>{{ $t("结算日") }}</label><span class="value">{{ settlementDate }}</span></span>
+          <span><label>{{ $t("直属业绩") }}</label><span class="value value--red">{{ formatMoney(detail.directPerformance) }}</span></span>
+          <span><label>{{ $t("上期结余") }}</label><span class="value">{{ formatMoney(detail.carryInAmount) }}</span></span>
           <span>
-            <label>本期业绩</label>
-            <span class="help-mark" title="本期业绩=直属业绩+上期结余" aria-label="本期业绩说明">?</span>
+            <label>{{ $t("本期业绩") }}</label>
+            <span class="help-mark" :title="$t('本期业绩=直属业绩+上期结余')" :aria-label="$t('本期业绩说明')">?</span>
             <span class="value value--red">{{ formatMoney(detail.currentPerformance) }}</span>
           </span>
-          <span><label>返佣比例</label><span class="value">{{ formatMoney(detail.commissionRate) }}%</span></span>
+          <span><label>{{ $t("返佣比例") }}</label><span class="value">{{ formatMoney(detail.commissionRate) }}%</span></span>
           <span>
-            <label>直属佣金(人数)</label>
+            <label>{{ $t("直属佣金(人数)") }}</label>
             <span class="value value--yellow">{{ formatMoney(detail.directCommission) }}</span>
             <span>({{ detail.directMemberCount }})</span>
           </span>
         </div>
 
         <div class="member-list">
-          <ui-empty v-if="!hasMembers" :text="failed ? '加载失败，请重试' : '暂无内容'">
+          <ui-empty v-if="!hasMembers" :text="failed ? $t('加载失败，请重试') : $t('暂无内容')">
             <template #text="{ text }">
               <span class="empty-text">
                 <span>{{ text }}</span>
-                <button v-if="failed" type="button" @click="loadDetail(true)">重新加载</button>
+                <button v-if="failed" type="button" @click="loadDetail(true)">{{ $t("重新加载") }}</button>
               </span>
             </template>
           </ui-empty>
@@ -201,35 +202,35 @@ watch(
                   </span>
                 </span>
                 <span class="record-column">
-                  <label>净盈利</label>
-                  <span class="help-mark" title="净盈利=输赢金额+领取奖励+三方成本+总手续费" aria-label="净盈利说明">?</span>
+                  <label>{{ $t("净盈利") }}</label>
+                  <span class="help-mark" :title="$t('净盈利=输赢金额+领取奖励+三方成本+总手续费')" :aria-label="$t('净盈利说明')">?</span>
                   <span class="value" :class="getAmountClass(member.netProfit)">{{ formatMoney(member.netProfit) }}</span>
                 </span>
               </div>
               <div class="record-row">
                 <span class="record-column">
-                  <label>输赢金额</label>
+                  <label>{{ $t("输赢金额") }}</label>
                   <span class="value" :class="getAmountClass(member.winLoseAmount)">{{ formatMoney(member.winLoseAmount) }}</span>
                 </span>
-                <span class="record-column"><label>领取奖励</label><span class="value">{{ formatMoney(member.rewardAmount) }}</span></span>
+                <span class="record-column"><label>{{ $t("领取奖励") }}</label><span class="value">{{ formatMoney(member.rewardAmount) }}</span></span>
               </div>
               <div class="record-row">
-                <span class="record-column"><label>三方成本</label><span class="value">{{ formatMoney(member.thirdPartyCost) }}</span></span>
+                <span class="record-column"><label>{{ $t("三方成本") }}</label><span class="value">{{ formatMoney(member.thirdPartyCost) }}</span></span>
                 <span class="record-column">
-                  <label>总手续费</label>
-                  <span class="help-mark" title="总手续费=充值手续费+提现手续费" aria-label="总手续费说明">?</span>
+                  <label>{{ $t("总手续费") }}</label>
+                  <span class="help-mark" :title="$t('总手续费=充值手续费+提现手续费')" :aria-label="$t('总手续费说明')">?</span>
                   <span class="value">{{ formatMoney(member.feeAmount) }}</span>
                 </span>
               </div>
             </article>
-            <button v-if="failed" class="load-error" type="button" @click="loadDetail(false)">加载失败，点击重试</button>
+            <button v-if="failed" class="load-error" type="button" @click="loadDetail(false)">{{ $t("加载失败，点击重试") }}</button>
           </van-list>
         </div>
 
         <div class="calculation-tips">
-          <p><em>说明</em></p>
-          <p><em>净盈利</em>=输赢金额+领取奖励+三方成本+总手续费</p>
-          <p><em>本期业绩</em>=直属业绩+上期结余</p>
+          <p><em>{{ $t("说明") }}</em></p>
+          <p><em>{{ $t("净盈利") }}</em>{{ $t("=输赢金额+领取奖励+三方成本+总手续费") }}</p>
+          <p><em>{{ $t("本期业绩") }}</em>{{ $t("=直属业绩+上期结余") }}</p>
         </div>
       </template>
     </div>

@@ -5,6 +5,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import RangePicker from "./RangePicker.vue";
 import { service } from "@/api/service";
 import router from "@/router";
+import { $t } from "@/locales";
 
 dayjs.extend(isoWeek);
 
@@ -25,10 +26,10 @@ type TimeRangeOption = {
 const totalList = ref<NoticeItem[]>([]);
 const currentPage = ref(1);
 const PAGE_SIZE = 10;
-const dayOptions = ref([
-  { label: "全部", key: 0 },
-  { label: "已读", key: 1 },
-  { label: "未读", key: 2 }
+const dayOptions = computed(() => [
+  { label: $t("全部"), key: 0 },
+  { label: $t("已读"), key: 1 },
+  { label: $t("未读"), key: 2 }
 ]);
 
 const formInfo = reactive({
@@ -39,43 +40,43 @@ const formInfo = reactive({
 
 const timeRangeOptions = computed<TimeRangeOption[]>(() => [
   {
-    text: "今日",
+    text: $t("今日"),
     value: "today",
     startTime: dayjs().startOf("day").unix(),
     endTime: dayjs().endOf("day").unix()
   },
   {
-    text: "昨日",
+    text: $t("昨日"),
     value: "yesterday",
     startTime: dayjs().subtract(1, "day").startOf("day").unix(),
     endTime: dayjs().subtract(1, "day").endOf("day").unix()
   },
   {
-    text: "本周",
+    text: $t("本周"),
     value: "this-week",
     startTime: dayjs().startOf("isoWeek").unix(),
     endTime: dayjs().endOf("isoWeek").unix()
   },
   {
-    text: "上周",
+    text: $t("上周"),
     value: "last-week",
     startTime: dayjs().subtract(1, "week").startOf("isoWeek").unix(),
     endTime: dayjs().subtract(1, "week").endOf("isoWeek").unix()
   },
   {
-    text: "本月",
+    text: $t("本月"),
     value: "this-month",
     startTime: dayjs().startOf("month").unix(),
     endTime: dayjs().endOf("month").unix()
   },
   {
-    text: "上月",
+    text: $t("上月"),
     value: "last-month",
     startTime: dayjs().subtract(1, "month").startOf("month").unix(),
     endTime: dayjs().subtract(1, "month").endOf("month").unix()
   },
   {
-    text: "全部",
+    text: $t("全部"),
     value: "all",
     startTime: 0,
     endTime: 0
@@ -241,9 +242,9 @@ onMounted(() => init());
             </div>
             <div class="list-right">
               <span v-if="item.isRead" :class="{ 'show-text': !item.isRead }"
-              >已读</span
+              >{{ $t("已读") }}</span
               >
-              <span v-if="!item.isRead" class="show-text">未读</span>
+              <span v-if="!item.isRead" class="show-text">{{ $t("未读") }}</span>
               <svg-icon
                 name="comm_icon_fh"
                 class-name="rotate-[180deg] text-[12px] text-right-icon"

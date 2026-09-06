@@ -9,18 +9,18 @@
         </i>
       </div>
       <div class="right-box">
-        <van-tabs v-model:active="active" @change="handleHeaderChange">
+        <van-tabs v-model:active="active" shrink :ellipsis="false" @change="handleHeaderChange">
           <van-tab
             v-for="item in list"
-            :title="item.name"
-            :key="item.name"
+            :title="$t(item.label)"
+            :key="item.path"
           >
             <template #title>
               <x-badge
                 class="header-reward-badge"
                 :content="item.source ? canReceiveCounts[item.source] : 0"
               >
-                {{ item.name }}
+                {{ $t(item.label) }}
               </x-badge>
             </template>
           </van-tab>
@@ -45,22 +45,23 @@ import { useRoute } from "vue-router";
 import XBadge from "@/components/X/x-badge.vue";
 import { handleBack } from "@/utils/common";
 import { getCanReceiveList, type CanReceiveSource } from "@/api/common";
+import { $t } from "@/locales";
 
 interface HeaderTab {
-  name: string;
+  label: I18nType.I18nKey;
   path: string;
   source?: CanReceiveSource;
 }
 
 const route = useRoute();
 const list = ref<HeaderTab[]>([
-  { name: "活动", path: "/home/event", source: 2 },
-  { name: "任务", path: "/home/task", source: 3 },
-  { name: "VIP", path: "/home/vip", source: 4 },
-  { name: "返水", path: "/home/cashback", source: 5 },
-  { name: "待领取", path: "/home/canReceive" },
-  { name: "利息宝", path: "/home/yuebao", source: 6 },
-  { name: "领取记录", path: "/home/records" }
+  { label: "活动", path: "/home/event", source: 2 },
+  { label: "任务", path: "/home/task", source: 3 },
+  { label: "VIP", path: "/home/vip", source: 4 },
+  { label: "返水", path: "/home/cashback", source: 5 },
+  { label: "待领取", path: "/home/canReceive" },
+  { label: "利息宝", path: "/home/yuebao", source: 6 },
+  { label: "领取记录", path: "/home/records" }
 ]);
 const active = ref(0);
 const canReceiveCounts = ref<Record<CanReceiveSource, number>>({
@@ -147,6 +148,7 @@ onMounted(async () => {
       box-sizing: border-box;
     }
     .right-box {
+      min-width: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -167,7 +169,14 @@ onMounted(async () => {
       --van-tabs-nav-background: transparent;
 
       :deep(.van-tabs) {
+        width: 100%;
         height: 100%;
+      }
+
+      :deep(.van-tab) {
+        flex: 0 0 auto;
+        padding: 0 8px;
+        white-space: nowrap;
       }
 
       :deep(.header-reward-badge .x-badge--top-right) {

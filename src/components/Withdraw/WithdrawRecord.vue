@@ -8,6 +8,7 @@ import type { AccountTimeRange, SelectOption as ReportSelectOption } from '@/com
 import { desensitizeWithLodash } from '@/hooks/useCommon';
 import UiEmpty from '@/components/UI/empty.vue';
 import UiLoading from '@/components/UI/loading.vue';
+import { $t } from '@/locales';
 
 type WithdrawStatusOption = ReportSelectOption & {
   value: string | number;
@@ -40,16 +41,16 @@ const withdrawTypeIconMap: Record<number, string> = {
   3: '/siteadmin/pay-icon/icon_wallet_normal.png'
 };
 
-const statusOptions: WithdrawStatusOption[] = [
-  { label: '全部状态', value: 0 },
-  { label: '审核中', value: 1 },
-  { label: '出款中', value: 2 },
-  { label: '提现成功', value: 3 },
-  { label: '提现拒绝', value: 4 }
-];
+const statusOptions = computed<WithdrawStatusOption[]>(() => [
+  { label: $t('全部状态'), value: 0 },
+  { label: $t('审核中'), value: 1 },
+  { label: $t('出款中'), value: 2 },
+  { label: $t('提现成功'), value: 3 },
+  { label: $t('提现拒绝'), value: 4 }
+]);
 
 const timeRange = ref<AccountTimeRange>(createTodayRange());
-const statusFilterValue = ref<string | number>(statusOptions[0]?.value ?? 0);
+const statusFilterValue = ref<string | number>(statusOptions.value[0]?.value ?? 0);
 const isLoading = ref(false);
 const recordState = ref<WithdrawRecordState>({
   list: [],
@@ -61,10 +62,11 @@ let latestRequestId = 0;
 const hasListData = computed(() => recordState.value.list.length > 0);
 const emptyStateText = computed(() => {
   if (timeRange.value.mode === 'custom') {
-    return '所选时间暂无内容';
+    return $t('所选时间暂无内容');
   }
 
-  return `${timeRange.value.label}暂无内容`;
+  const label = timeRange.value.mode === 'yesterday' ? $t('昨日') : $t('今日');
+  return $t('暂无{label}', { label });
 });
 
 function createTodayRange(): AccountTimeRange {
@@ -72,7 +74,7 @@ function createTodayRange(): AccountTimeRange {
 
   return {
     mode: 'today',
-    label: '今日',
+    label: $t('今日'),
     startTime: dayjs(today).startOf('day').unix(),
     endTime: dayjs(today).endOf('day').unix(),
     startDate: today,
@@ -95,7 +97,7 @@ function getWithdrawIcon(item: WithdrawRecordItem) {
 
 function getWithdrawTitle(item: WithdrawRecordItem) {
   const bankName = String(item?.bank_name ?? '').trim();
-  return bankName ? `提现到${bankName}` : '提现申请';
+  return bankName ? `${$t('提现到')}${bankName}` : $t('提现申请');
 }
 
 function getWithdrawAccount(item: WithdrawRecordItem) {
@@ -110,11 +112,11 @@ function getWithdrawAmount(item: WithdrawRecordItem) {
 function getWithdrawStatusText(item: WithdrawRecordItem) {
   const payStatus = Number(item?.pay_status);
 
-  if (payStatus === 1) return '审核中';
-  if (payStatus === 2) return '出款中';
-  if (payStatus === 3) return '提现成功';
-  if (payStatus === 4) return '提现拒绝';
-  return '处理中';
+  if (payStatus === 1) return $t('审核中');
+  if (payStatus === 2) return $t('出款中');
+  if (payStatus === 3) return $t('提现成功');
+  if (payStatus === 4) return $t('提现拒绝');
+  return $t('处理中');
 }
 
 function getWithdrawStatusClass(item: WithdrawRecordItem) {
@@ -131,7 +133,7 @@ function getWithdrawRemark(item: WithdrawRecordItem) {
   }
 
   if (item?.real_name) {
-    return `收款人: ${item.real_name}`;
+    return `${$t('收款人:')}${item.real_name}`;
   }
 
   return '';
@@ -142,7 +144,7 @@ function handleSeeMore() {
 
   timeRange.value = {
     mode: 'yesterday',
-    label: '昨日',
+    label: $t('昨日'),
     startTime: yesterday.startOf('day').unix(),
     endTime: yesterday.endOf('day').unix(),
     startDate: yesterday.format('YYYY-MM-DD'),
@@ -201,7 +203,7 @@ onMounted(() => {
       </div>
 
       <div class="toolbar__summary">
-        <div class="toolbar__summary-label">累计提现</div>
+        <div class="toolbar__summary-label">{{ $t("累计提现") }}</div>
         <div class="toolbar__summary-value">
           <span>{{ formatAmount(recordState.totalAmount) }}</span>
           <svg-icon
@@ -241,11 +243,11 @@ onMounted(() => {
               </div>
               <div class="right">
                 <p class="money">{{ Number(0 - Number(item.money)).toFixed(2) }}</p>
-                <p class="status pending" v-if="item.pay_status == 1">审核中</p>
-                <p class="status pending" v-if="item.pay_status == 2">出款中</p>
-                <p class="status success" v-if="item.pay_status == 3">提现成功</p>
-                <p class="status failed" v-if="item.pay_status == 4">拒绝出款</p>
-                <p class="status cancel" v-if="item.pay_status == 100">提现取消</p>
+                <p class="status pending" v-if="item.pay_status == 1">{{ $t("审核中") }}</p>
+                <p class="status pending" v-if="item.pay_status == 2">{{ $t("出款中") }}</p>
+                <p class="status success" v-if="item.pay_status == 3">{{ $t("提现成功") }}</p>
+                <p class="status failed" v-if="item.pay_status == 4">{{ $t("拒绝出款") }}</p>
+                <p class="status cancel" v-if="item.pay_status == 100">{{ $t("提现取消") }}</p>
               </div>
             </div>
             <span class="arrows">
@@ -253,7 +255,7 @@ onMounted(() => {
             </span>
           </div>
           <div class="remark" v-if="item.remark">
-            <span class="label">备注</span>
+            <span class="label">{{ $t("备注") }}</span>
             <span class="front-remark">{{ item.remark }}</span>
           </div>
         </div>

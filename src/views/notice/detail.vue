@@ -1,27 +1,34 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { service } from "@/api/service";
+import { $t } from "@/locales";
 import dayjs from "dayjs";
 
 const route = useRoute()
-const title = ref('')
 const detailInfo = ref<any>({})
+const title = computed(() => {
+  const noticeType = Array.isArray(route.query.noticeType)
+    ? route.query.noticeType[0]
+    : route.query.noticeType;
+
+  if (noticeType === "1") return $t("通知详情");
+  if (noticeType === "2") return $t("公告详情");
+  if (noticeType === "3") return $t("跑马灯详情");
+  return $t("消息中心");
+});
 
 function init() {
   console.log(route.query);
   if (route.query.noticeType == '1') {
-    title.value = '通知详情'
     service.v1.notice.notifyInfo({ id: route.query.id }).then(res => {
       detailInfo.value = res.info
     })
   } else if (route.query.noticeType == '2') {
-    title.value = '公告详情'
     service.v1.notice.announcementInfo({ id: route.query.id }).then(res => {
       detailInfo.value = res.info
     })
   } else if (route.query.noticeType == '3') {
-    title.value = '跑马灯详情'
     service.v1.notice.marqueeInfo({ id: route.query.id }).then(res => {
       detailInfo.value = res.info
     })

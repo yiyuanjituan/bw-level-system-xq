@@ -67,7 +67,7 @@ const formRules = ref<XFormRules>({
           return;
         }
         if (!Number.isInteger(amount) || amount < min) {
-          callback(new Error(`提现金额不能小于${min}`));
+          callback(new Error($t("提现金额不能小于{min}", { min })));
           return;
         }
         if (!Number.isInteger(amount) || amount > Number(auth.user.money)) {
@@ -75,7 +75,7 @@ const formRules = ref<XFormRules>({
           return;
         }
         if (!Number.isInteger(amount) || amount > max) {
-          callback(new Error(`提现金额不能大于${max}`));
+          callback(new Error($t("提现金额不能大于{max}", { max })));
           return;
         }
 
@@ -159,7 +159,7 @@ async function handleApplyWithdraw() {
           icon-key="icon"
           :placeholder="$t('请选择发卡银行')"
         />
-        <div class="absolute right-0 flex items-center justify-end h-[40px]" @click="jumpToAddCard">
+        <div class="absolute right-[0px] flex items-center justify-end h-[40px]" @click="jumpToAddCard">
           <svg-icon name="icon_tx_txgl" class-name="text-[25px] main-text"></svg-icon>
         </div>
       </x-form-item>
@@ -167,7 +167,7 @@ async function handleApplyWithdraw() {
         <x-input
           :disabled="isCardUnavailable"
           :placeholder="
-            isCardUnavailable ? '该渠道维护中，无法提现' : `最低${Number(selectCardInfo?.min ?? 0)}，最高${Number(selectCardInfo?.max ?? 0)}`
+            isCardUnavailable ? $t('该渠道维护中，无法提现') : $t('最低{min}，最高{max}', { min: Number(selectCardInfo?.min ?? 0), max: Number(selectCardInfo?.max ?? 0) })
           "
           v-model="formData.money"
         >
@@ -298,7 +298,7 @@ async function handleApplyWithdraw() {
 
 .apply-card-select {
   :deep(.x-select) {
-    padding-right: 12 px;
+    padding-right: 12px;
   }
 
   :deep(.x-select__icon-wrap) {
@@ -314,7 +314,7 @@ async function handleApplyWithdraw() {
 
   :deep(.x-select__label),
   :deep(.x-select-options__content) {
-    color: white;
+    color: var(--skin__lead) !important;
   }
 
   :deep(.x-select__label) {

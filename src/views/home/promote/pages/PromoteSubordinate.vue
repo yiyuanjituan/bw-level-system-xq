@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { getPromoteSubordinates } from "@/api/common";
@@ -26,16 +27,16 @@ interface FooterItem {
 
 const DEFAULT_PAGE_SIZE = 20;
 const sortOptions: SortOption[] = [
-  { label: "登录日期排序", value: "lastLoginTime" },
-  { label: "下级人数排序", value: "directChildCount" },
-  { label: "充值金额排序", value: "deposit" },
-  { label: "有效投注排序", value: "validBet" }
+  { label: $t("登录日期排序"), value: "lastLoginTime" },
+  { label: $t("下级人数排序"), value: "directChildCount" },
+  { label: $t("充值金额排序"), value: "deposit" },
+  { label: $t("有效投注排序"), value: "validBet" }
 ];
 
 const today = dayjs();
 const defaultTimeRange: AccountTimeRange = {
   mode: "today",
-  label: "今日",
+  label: $t("今日"),
   startTime: today.startOf("day").unix(),
   endTime: today.endOf("day").unix(),
   startDate: today.format("YYYY-MM-DD"),
@@ -61,15 +62,15 @@ const hasMembers = computed(() => members.value.length > 0);
 const footerItems = computed<FooterItem[]>(() => {
   const current = summary.value;
   return [
-    { label: "总注册", value: formatCount(current?.totalRegisterPerson), unit: "人" },
-    { label: "直属注册（其他）", value: formatCount(current?.directRegisterPerson), unit: "人", extraValue: formatCount(current?.otherRegisterPerson), extraUnit: "人" },
-    { label: "总充值", value: formatMoney(current?.totalDeposit), extraValue: formatCount(current?.totalDepositPerson), extraUnit: "次" },
-    { label: "直属充值", value: formatMoney(current?.directDeposit), extraValue: formatCount(current?.directDepositPerson), extraUnit: "次" },
-    { label: "其他充值", value: formatMoney(current?.otherDeposit), extraValue: formatCount(current?.otherDepositPerson), extraUnit: "次" },
-    { label: "总首充", value: formatMoney(current?.totalFirstDeposit), extraValue: formatCount(current?.totalFirstDepositPerson), extraUnit: "人" },
-    { label: "总有效投注", value: formatMoney(current?.totalValidBet) },
-    { label: "直属有效投注", value: formatMoney(current?.directValidBet) },
-    { label: "其他有效投注", value: formatMoney(current?.otherValidBet) }
+    { label: $t("总注册"), value: formatCount(current?.totalRegisterPerson), unit: $t("人") },
+    { label: $t("直属注册（其他）"), value: formatCount(current?.directRegisterPerson), unit: $t("人"), extraValue: formatCount(current?.otherRegisterPerson), extraUnit: $t("人") },
+    { label: $t("总充值"), value: formatMoney(current?.totalDeposit), extraValue: formatCount(current?.totalDepositPerson), extraUnit: $t("次") },
+    { label: $t("直属充值"), value: formatMoney(current?.directDeposit), extraValue: formatCount(current?.directDepositPerson), extraUnit: $t("次") },
+    { label: $t("其他充值"), value: formatMoney(current?.otherDeposit), extraValue: formatCount(current?.otherDepositPerson), extraUnit: $t("次") },
+    { label: $t("总首充"), value: formatMoney(current?.totalFirstDeposit), extraValue: formatCount(current?.totalFirstDepositPerson), extraUnit: $t("人") },
+    { label: $t("总有效投注"), value: formatMoney(current?.totalValidBet) },
+    { label: $t("直属有效投注"), value: formatMoney(current?.directValidBet) },
+    { label: $t("其他有效投注"), value: formatMoney(current?.otherValidBet) }
   ];
 });
 function formatMoney(value: unknown) {
@@ -211,7 +212,7 @@ watch(
 
     <div class="list">
       <div v-if="loading && !hasMembers" class="state"><ui-loading /></div>
-      <ui-empty v-else-if="!hasMembers" :text="requestFailed ? '加载失败，请重试' : '暂无内容'">
+      <ui-empty v-else-if="!hasMembers" :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')">
         <template #text="{ text }">
           <span class="empty-text">
             <span>{{ text }}</span>
@@ -240,21 +241,21 @@ watch(
                   <button class="member-id" type="button" @click="openMemberDetail(member.userIdx)">{{ member.userIdx }}</button>
                   <copy class="copy" :text="String(member.userIdx)" />
                 </span>
-                <span class="number" :class="{ 'number--green': member.online === 1 }">{{ member.online === 1 ? "在线" : "离线" }}</span>
+                <span class="number" :class="{ 'number--green': member.online === 1 }">{{ member.online === 1 ? $t("在线") : $t("离线") }}</span>
               </div>
             </span>
-            <span class="col"><label>他的下级</label><span class="number value">{{ member.directChildCount }}</span></span>
+            <span class="col"><label>{{ $t("他的下级") }}</label><span class="number value">{{ member.directChildCount }}</span></span>
           </div>
           <div class="row">
-            <span class="col"><label>充值金额</label><span class="number value">{{ formatMoney(member.deposit) }}</span></span>
-            <span class="col"><label>有效投注</label><span class="number value">{{ formatMoney(member.validBet) }}</span></span>
+            <span class="col"><label>{{ $t("充值金额") }}</label><span class="number value">{{ formatMoney(member.deposit) }}</span></span>
+            <span class="col"><label>{{ $t("有效投注") }}</label><span class="number value">{{ formatMoney(member.validBet) }}</span></span>
           </div>
           <div class="row">
-            <span class="col"><label>状态</label><span class="number value" :class="member.status === 1 ? 'number--green' : 'number--red'">{{ member.status === 1 ? "正常" : "停用" }}</span></span>
-            <span class="col"><label>登录日期</label><span class="number value">{{ formatTime(member.lastLoginTime) }}</span></span>
+            <span class="col"><label>{{ $t("状态") }}</label><span class="number value" :class="member.status === 1 ? 'number--green' : 'number--red'">{{ member.status === 1 ? $t("正常") : $t("停用") }}</span></span>
+            <span class="col"><label>{{ $t("登录日期") }}</label><span class="number value">{{ formatTime(member.lastLoginTime) }}</span></span>
           </div>
         </div>
-        <div v-if="requestFailed" class="load-error" @click="handleRetry">加载失败，点击重试</div>
+        <div v-if="requestFailed" class="load-error" @click="handleRetry">{{ $t("加载失败，点击重试") }}</div>
       </van-list>
     </div>
 
@@ -267,7 +268,7 @@ watch(
         <svg class="footer-arrow" viewBox="0 0 23 16" aria-hidden="true">
           <path d="M11.5 16 0 3.36 3.06 0l8.44 9.27L19.94 0 23 3.36Z" />
         </svg>
-        {{ footerCollapsed ? "展示" : "收起" }}
+        {{ footerCollapsed ? $t("展示") : $t("收起") }}
       </button>
       <div class="footer-content">
         <span v-for="footerItem in footerItems" :key="footerItem.label" class="footer-item">

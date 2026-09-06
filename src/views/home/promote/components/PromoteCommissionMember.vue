@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
+
 type MemberLevel = "B" | "C" | "D";
 
 withDefaults(
@@ -34,14 +36,14 @@ withDefaults(
         class="commission-member__avatar"
         :data-connector-id="avatarConnectorId || undefined"
       >
-        <img :src="avatar" :alt="`${name}代理头像`" loading="lazy" />
+        <img :src="avatar" :alt="$t('代理头像', { name })" loading="lazy" />
       </span>
     </x-badge>
 
     <div class="commission-member__content" :data-connector-id="connectorId">
       <p>{{ $t("净盈利") }} {{ netProfit }}</p>
       <p>
-        <span>{{ $t("给") }}{{ recipient }}佣金</span>
+        <span>{{ $t("给{recipient}佣金", { recipient }) }}</span>
         <span>{{ formula }}=<em>{{ commission }}</em></span>
       </p>
     </div>

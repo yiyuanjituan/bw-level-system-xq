@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import dayjs from "dayjs";
 import levelIcon from "@/assets/home/promote/level-current.avif";
@@ -20,7 +21,7 @@ const props = withDefaults(
   {
     loggedIn: false,
     platformId: "",
-    agentModeName: "加载中",
+    agentModeName: $t("加载中"),
     auditMultiple: 0,
     settlementCycleName: "",
     nextSettlementTimestamp: 0,
@@ -64,7 +65,7 @@ const countdownText = computed(() => {
   const seconds = remainingSeconds % 60;
   const pad = (value: number) => String(value).padStart(2, "0");
 
-  return `${days}天 ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  return `${days}${$t("天")} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 });
 
 onMounted(() => {
@@ -92,10 +93,10 @@ onBeforeUnmount(() => {
             <button v-if="loggedIn" type="button" class="agent-summary__id">{{ platformId }}</button>
             <span v-else class="agent-summary__guest-value">-</span>
           </p>
-          <p><label>稽核倍数</label><strong>{{ loggedIn ? auditMultipleText : "-" }}</strong></p>
+          <p><label>{{ $t("稽核倍数") }}</label><strong>{{ loggedIn ? auditMultipleText : "-" }}</strong></p>
           <p><span class="agent-summary__mode">{{ agentModeName }}</span></p>
-          <p v-if="loggedIn"><label>{{ settlementCycleName || "结算" }}日期</label><strong>{{ settlementDate }}</strong></p>
-          <p v-else><label>结算周期</label><strong>{{ settlementCycleName || "-" }}</strong></p>
+          <p v-if="loggedIn"><label>{{ settlementCycleName || $t("结算") }}{{ $t("日期") }}</label><strong>{{ settlementDate }}</strong></p>
+          <p v-else><label>{{ $t("结算周期") }}</label><strong>{{ settlementCycleName || "-" }}</strong></p>
         </div>
       </div>
 
@@ -108,15 +109,15 @@ onBeforeUnmount(() => {
               :translate-x="false"
               bg-color="var(--skin__accent_2, #ea4e3d)"
             >
-              <span class="agent-summary__commission-label">我的佣金</span>
+              <span class="agent-summary__commission-label">{{ $t("我的佣金") }}</span>
               <template #content>
                 <span class="agent-summary__bubble-content">
                   <svg-icon name="promote-megaphone" class-name="agent-summary__bubble-icon" />
-                  <span>最高返佣<em>{{ highestCommissionRate.toFixed(2) }}%</em></span>
+                  <span>{{ $t("最高返佣") }}<em>{{ highestCommissionRate.toFixed(2) }}%</em></span>
                 </span>
               </template>
             </x-badge>
-            <small>(距离下次结算 <i>{{ countdownText }}</i>)</small>
+            <small>({{ $t("距离下次结算") }} <i>{{ countdownText }}</i>)</small>
           </div>
           <span class="agent-summary__arrow" aria-hidden="true">
             <svg-icon name="arrow-back" />
@@ -124,21 +125,21 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="agent-summary__row">
-          <span class="agent-summary__col"><label>已领取</label><strong>{{ receivedCommission }}</strong></span>
+          <span class="agent-summary__col"><label>{{ $t("已领取") }}</label><strong>{{ receivedCommission }}</strong></span>
           <span class="agent-summary__col agent-summary__col--claim">
-            <span><label>待领取</label><strong class="agent-summary__amount">{{ unclaimedCommission }}</strong></span>
+            <span><label>{{ $t("待领取") }}</label><strong class="agent-summary__amount">{{ unclaimedCommission }}</strong></span>
             <x-button
               class="agent-summary__claim-button"
               type="primary"
               size="mini"
               :disabled="!canClaimCommission"
               @click="$emit('claim')"
-            >领 取</x-button>
+            >{{ $t("领 取") }}</x-button>
           </span>
         </div>
         <div class="agent-summary__row">
-          <span class="agent-summary__col"><label>昨日直属业绩</label><strong>{{ yesterdayPerformance }}</strong></span>
-          <span class="agent-summary__col"><label>累计佣金</label><strong>{{ totalCommission }}</strong></span>
+          <span class="agent-summary__col"><label>{{ $t("昨日直属业绩") }}</label><strong>{{ yesterdayPerformance }}</strong></span>
+          <span class="agent-summary__col"><label>{{ $t("累计佣金") }}</label><strong>{{ totalCommission }}</strong></span>
         </div>
       </div>
     </div>

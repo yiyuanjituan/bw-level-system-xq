@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import vipBadgeIcon from "@/assets/home/promote/vip-badge.avif";
 import Copy from "@/components/Common/Copy.vue";
 import type { PromoteSubordinateReceive } from "../types";
@@ -35,7 +36,7 @@ function formatMoney(value: unknown) {
         </span>
       </span>
       <span class="receive-column">
-        <label>他的下级</label>
+        <label>{{ $t("他的下级") }}</label>
         <button
           type="button"
           class="number value link-value"
@@ -48,16 +49,16 @@ function formatMoney(value: unknown) {
       </span>
     </div>
     <div class="receive-row">
-      <span class="receive-column"><label>活动领取</label><span class="number value">{{ formatMoney(member.activityReward) }}</span></span>
-      <span class="receive-column"><label>返水领取</label><span class="number value">{{ formatMoney(member.returnGold) }}</span></span>
+      <span class="receive-column"><label>{{ $t("活动领取") }}</label><span class="number value">{{ formatMoney(member.activityReward) }}</span></span>
+      <span class="receive-column"><label>{{ $t("返水领取") }}</label><span class="number value">{{ formatMoney(member.returnGold) }}</span></span>
     </div>
     <div class="receive-row">
-      <span class="receive-column"><label>任务领取</label><span class="number value">{{ formatMoney(member.taskReward) }}</span></span>
-      <span class="receive-column"><label>代理佣金</label><span class="number value">{{ formatMoney(member.agentCommission) }}</span></span>
+      <span class="receive-column"><label>{{ $t("任务领取") }}</label><span class="number value">{{ formatMoney(member.taskReward) }}</span></span>
+      <span class="receive-column"><label>{{ $t("代理佣金") }}</label><span class="number value">{{ formatMoney(member.agentCommission) }}</span></span>
     </div>
     <div class="receive-row">
       <span class="receive-column">
-        <label>其他汇总</label>
+        <label>{{ $t("其他汇总") }}</label>
         <button
           type="button"
           class="number value link-value"
@@ -68,7 +69,7 @@ function formatMoney(value: unknown) {
           {{ formatMoney(member.totalOther) }}
         </button>
       </span>
-      <span class="receive-column"><label>合计领取</label><span class="number value">{{ formatMoney(member.totalReward) }}</span></span>
+      <span class="receive-column"><label>{{ $t("合计领取") }}</label><span class="number value">{{ formatMoney(member.totalReward) }}</span></span>
     </div>
   </div>
 </template>

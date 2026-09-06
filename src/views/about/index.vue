@@ -1,5 +1,6 @@
 <script setup lang="ts" name="About">
 import UiEmpty from "@/components/UI/empty.vue";
+import { $t } from "@/locales";
 import { handleBack } from "@/utils/common";
 </script>
 
@@ -9,7 +10,7 @@ import { handleBack } from "@/utils/common";
       <header class="lobby-base-header lobby-base-header__has-logo-false">
         <div class="lobby-base-header__section lobby-base-header__section--left">
           <div class="lobby-base-header__back" @click="handleBack">
-            <i class="ui-arrow ui-arrow--left" aria-label="返回">
+            <i class="ui-arrow ui-arrow--left" :aria-label="$t('返回上一级')">
               <svg width="1em" height="1em" fill="currentColor">
                 <use xlink:href="#ui-arrow-418a3a"></use>
               </svg>
@@ -17,7 +18,7 @@ import { handleBack } from "@/utils/common";
           </div>
         </div>
         <div class="lobby-base-header__section lobby-base-header__section--center">
-          <div dir="ltr" class="about-page__title">关于我们</div>
+          <div dir="ltr" class="about-page__title">{{ $t("关于我们") }}</div>
         </div>
         <div class="lobby-base-header__section lobby-base-header__section--right"></div>
       </header>
@@ -27,7 +28,7 @@ import { handleBack } from "@/utils/common";
       data-route-for-scroll="about-us-detail"
       class="_main_zzwue_102 lobby-scroll lobby-scroll--y lobby-scroll--system-scrollbar about-page__scroll"
     >
-      <ui-empty text="暂无记录" />
+      <ui-empty :text="$t('暂无记录')" />
     </section>
   </div>
 </template>

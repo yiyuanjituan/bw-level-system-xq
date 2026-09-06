@@ -74,6 +74,36 @@ function getIsShow(type: any, allowType: any[]) {
   return allowType.includes(type);
 }
 
+function getTaskName(task: any) {
+  const amount = Number(task.maxProgress ?? task.need_num ?? 0);
+  switch (Number(task.taskDetailType)) {
+    case 0:
+      return $t("注册账号");
+    case 1:
+      return $t("首次安装APP");
+    case 2:
+      return $t("参与首存");
+    case 3:
+      return $t("设置取款密码");
+    case 4:
+      return $t("利息宝首存");
+    case 5:
+      return $t("绑定钱包");
+    case 6:
+      return $t("首次提现");
+    case 7:
+      return $t("绑定社交账号");
+    case 8:
+      return $t("累计投注≥{amount}", { amount });
+    case 9:
+      return $t("累计充值≥{amount}", { amount });
+    case 10:
+      return $t("累计亏损≥{amount}", { amount });
+    default:
+      return task.name;
+  }
+}
+
 function handleTapGo(type: any) {
   if (!auth.token) {
     openLoginEntry(1);
@@ -119,10 +149,10 @@ function handleGetReward(record: any) {
 function seeMore(record: any) {
   let titleText = "";
   if (record.taskDetailType == 8 || record.taskDetailType == 10) {
-    titleText = "仅限游戏";
+    titleText = $t("仅限游戏");
   }
   if (record.taskDetailType == 9) {
-    titleText = "仅限充值";
+    titleText = $t("仅限充值");
   }
   taskLimitTipRef.value.open({
     title: titleText,
@@ -152,10 +182,10 @@ function handleGetBox(record: any) {
   showCustomDialog({
     width: 300,
     title: $t("活跃度兑换"),
-    message: `将使用${record?.vitality}活跃度兑换宝箱`,
-    confirmButtonText: "立即兑换",
+    message: $t("将使用{count}活跃度兑换宝箱", { count: record?.vitality }),
+    confirmButtonText: $t("立即兑换"),
     showCancelButton: true,
-    cancelButtonText: "取消"
+    cancelButtonText: $t("取消")
   }).then(isValid => {
     if (isValid) {
       service.activity.data.getBoxReward({ taskId: record.id }).then(res => {
@@ -164,10 +194,10 @@ function handleGetBox(record: any) {
         showCustomDialog({
           width: 300,
           title: $t("兑换成功"),
-          message: `您已获得${res.val}彩金`,
-          confirmButtonText: "去游戏",
+          message: $t("您已获得{amount}彩金", { amount: res.val }),
+          confirmButtonText: $t("去游戏"),
           showCancelButton: true,
-          cancelButtonText: "稍后游戏"
+          cancelButtonText: $t("稍后游戏")
         }).then(isGame => isGame && router.replace("/"));
       });
     }
@@ -186,7 +216,7 @@ onMounted(() => init());
             <svg-icon name="comm_icon_shy" class-name="text-[14px]"></svg-icon>
             <span class="ml-[1px]">{{ totalConfig?.vitalityBalance ?? 0 }}</span>
           </span>
-          <span class="detail" @click="tapDetailDialog">详情</span>
+          <span class="detail" @click="tapDetailDialog">{{ $t("详情") }}</span>
         </div>
         <div class="active-list-wrap relative">
           <div class="active-list">
@@ -213,12 +243,11 @@ onMounted(() => init());
                   </template>
                   <div class="activityBoxTip">
                     <span class="tip-text">
-                      打开后获得
-                      <span>{{ item.minNum }}</span>
-                      -
-                      <span>{{ item.showMaxNum }}</span>
-                      奖金需要<span>{{ Number(item.scale) }}</span>
-                      倍流水可提现
+                      {{ $t("打开后获得{min}-{max}奖金需要{scale}倍流水可提现", {
+                        min: item.minNum,
+                        max: item.showMaxNum,
+                        scale: Number(item.scale)
+                      }) }}
                     </span>
                   </div>
                 </x-popover>
@@ -239,19 +268,19 @@ onMounted(() => init());
     <div class="task-tabs-title">
       <div class="left-main">
         <div class="item-tab" v-if="totalConfig?.taskConfig?.['101']" @click="handleChangeTaskData(101)">
-          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '101' }">新手任务</div>
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '101' }">{{ $t("新手任务") }}</div>
         </div>
         <div class="item-tab" @click="handleChangeTaskData(102)">
-          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '102' }">每日任务</div>
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '102' }">{{ $t("每日任务") }}</div>
         </div>
         <div class="item-tab" v-if="totalConfig?.taskConfig?.['103']" @click="handleChangeTaskData(103)">
-          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '103' }">每周任务</div>
+          <div class="task-tab-name" :class="{ 'active-name': activeTabName == '103' }">{{ $t("每周任务") }}</div>
         </div>
       </div>
       <div class="task-extra-button">
         <div class="refresh-box" @click="handleLoading">
           <svg-icon name="comm_icon_retry" :class-name="isLoading ? 'loading' : ''" />
-          <span class="event-refresh-btn-text">刷新</span>
+          <span class="event-refresh-btn-text">{{ $t("刷新") }}</span>
         </div>
       </div>
     </div>
@@ -270,7 +299,7 @@ onMounted(() => init());
               <span class="block">{{ padStart(String(timeData.seconds), 2, "0") }}</span>
             </template>
           </van-count-down>
-          <span>后重置</span>
+          <span>{{ $t("后重置") }}</span>
         </template>
       </div>
       <div class="active-receive-right" @click="jumpToRecord">
@@ -300,7 +329,7 @@ onMounted(() => init());
             <div class="flex card-top">
               <div class="instruction-info">
                 <div class="instruction-base-info">
-                  <div class="description-primary">{{ item.name }}</div>
+                  <div class="description-primary">{{ getTaskName(item) }}</div>
                   <div class="more-limit" v-if="item.desc">
                     <span class="text">
                       <span class="text-inner">{{ $t("仅限：") }}{{ item.desc }}</span>
@@ -310,7 +339,7 @@ onMounted(() => init());
                       v-if="(item.limit_ids && item.limit_ids.length > 3) || (item.desc && item.desc.length > 16)"
                       @click="seeMore(item)"
                     >
-                      更多
+                      {{ $t("更多") }}
                     </span>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getPromoteInfo } from "@/api/common";
@@ -19,21 +20,32 @@ import type { PromoteInfo } from "./types";
 const route = useRoute();
 const router = useRouter();
 
-const promoteTabs = [
-  { label: "首页", value: "index" },
-  { label: "推广分享", value: "share" },
-  { label: "下级信息", value: "subordinate" },
-  { label: "我的数据", value: "data" },
-  { label: "我的业绩", value: "performance" },
-  { label: "我的佣金", value: "commission" },
-  { label: "下级投注", value: "subordinateBetting" },
-  { label: "下级财务", value: "subordinateFinance" },
-  { label: "下级领取", value: "subordinateReceive" },
-  { label: "创建下级", value: "createSubordinate" },
-  { label: "返佣比例", value: "rebateRatio" },
-] as const;
+const promoteTabs = computed(() => [
+  { label: $t("首页"), value: "index" },
+  { label: $t("推广分享"), value: "share" },
+  { label: $t("下级信息"), value: "subordinate" },
+  { label: $t("我的数据"), value: "data" },
+  { label: $t("我的业绩"), value: "performance" },
+  { label: $t("我的佣金"), value: "commission" },
+  { label: $t("下级投注"), value: "subordinateBetting" },
+  { label: $t("下级财务"), value: "subordinateFinance" },
+  { label: $t("下级领取"), value: "subordinateReceive" },
+  { label: $t("创建下级"), value: "createSubordinate" },
+  { label: $t("返佣比例"), value: "rebateRatio" },
+]);
 
-type PromoteTabValue = (typeof promoteTabs)[number]["value"];
+type PromoteTabValue =
+  | "index"
+  | "share"
+  | "subordinate"
+  | "data"
+  | "performance"
+  | "commission"
+  | "subordinateBetting"
+  | "subordinateFinance"
+  | "subordinateReceive"
+  | "createSubordinate"
+  | "rebateRatio";
 
 const defaultActive: PromoteTabValue = "index";
 const activeTab = ref<PromoteTabValue>(defaultActive);
@@ -41,12 +53,12 @@ const promoteInfo = ref<PromoteInfo | null>(null);
 const promoteInfoLoaded = ref(false);
 const isLoggedIn = computed(() => Boolean(promoteInfo.value?.user?.account));
 const visiblePromoteTabs = computed(() =>
-  promoteTabs.filter(tab => tab.value !== "createSubordinate" || isLoggedIn.value)
+  promoteTabs.value.filter(tab => tab.value !== "createSubordinate" || isLoggedIn.value)
 );
 
 function normalizeActive(active: unknown): PromoteTabValue {
   const activeValue = String(Array.isArray(active) ? active[0] : active ?? defaultActive);
-  return promoteTabs.some(tab => tab.value === activeValue)
+  return promoteTabs.value.some(tab => tab.value === activeValue)
     ? (activeValue as PromoteTabValue)
     : defaultActive;
 }

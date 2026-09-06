@@ -137,11 +137,11 @@ onMounted(() => {
               type="button"
               class="avatar-option"
               :class="{ active: isSelected(avatarUrl) }"
-              :aria-label="`选择第${index + 1}个${activeGender === 'male' ? '男' : '女'}头像`"
+              :aria-label="$t('选择第{index}个{gender}头像', { index: index + 1, gender: $t(activeGender === 'male' ? '男' : '女') })"
               :aria-pressed="isSelected(avatarUrl)"
               @click="selectedAvatarUrl = avatarUrl"
             >
-              <img :src="avatarUrl" :alt="`头像${index + 1}`" loading="lazy" @error="handleImageError" />
+              <img :src="avatarUrl" :alt="$t('头像{index}', { index: index + 1 })" loading="lazy" @error="handleImageError" />
               <span v-if="isSelected(avatarUrl)" class="selected-mark" aria-hidden="true">
                 <svg viewBox="0 0 20 15">
                   <path d="M1.5 7.6 7.1 12.4 18.5 1.5" />

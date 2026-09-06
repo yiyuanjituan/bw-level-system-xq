@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
 import type { PromoteInfo } from "../types";
 
@@ -83,17 +84,17 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
         </button>
       </nav>
 
-      <section class="rebate-ratio__table" :aria-label="`${activeGroup.name}返佣比例`">
+      <section class="rebate-ratio__table" :aria-label="$t('{name}返佣比例', { name: activeGroup.name })">
         <div class="rebate-ratio__header">
           <span class="rebate-ratio__header-cell">
-            <span>有效人数</span>
+            <span>{{ $t("有效人数") }}</span>
             <van-popover
               v-model:show="showValidMemberTooltip"
               placement="bottom-start"
               :offset="[-10, 8]"
             >
               <span class="rebate-ratio__tooltip-content">
-                有效的条件：该下级充值金额<em> ≥ {{ formatNumber(info?.config.validMemberRechargeAmount ?? 0) }}</em>，并且有效投注<em> ≥ {{ formatNumber(info?.config.validMemberBetAmount ?? 0) }}</em>
+                {{ $t("有效的条件：该下级充值金额 ≥ {recharge}，并且有效投注 ≥ {bet}", { recharge: formatNumber(info?.config.validMemberRechargeAmount ?? 0), bet: formatNumber(info?.config.validMemberBetAmount ?? 0) }) }}
               </span>
               <template #reference>
                 <button
@@ -107,17 +108,17 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
             </van-popover>
           </span>
           <span class="rebate-ratio__header-cell rebate-ratio__performance-title">
-            <span>业绩</span>
-            <small>（单位：个）</small>
+            <span>{{ $t("业绩") }}</span>
+            <small>（{{ $t("单位") }}：{{ $t("个") }}）</small>
           </span>
           <span
             v-if="isUnlimitedMode"
             class="rebate-ratio__header-cell rebate-ratio__commission-title"
           >
-            <span>返佣金额</span>
-            <small>（比例）</small>
+            <span>{{ $t("返佣金额") }}</span>
+            <small>（{{ $t("比例") }}）</small>
           </span>
-          <span v-else class="rebate-ratio__header-cell">返佣比例</span>
+          <span v-else class="rebate-ratio__header-cell">{{ $t("返佣比例") }}</span>
         </div>
 
         <div class="rebate-ratio__body">
@@ -143,7 +144,7 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
     </div>
 
     <div v-else class="rebate-ratio__empty">
-      {{ info ? "暂无返佣规则" : "代理配置加载中" }}
+      {{ info ? $t("暂无返佣规则") : $t("代理配置加载中") }}
     </div>
   </div>
 </template>
