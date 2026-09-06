@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { $locale, $t } from "@/locales";
+import { $locale, $t, languageNames } from "@/locales";
 import { handleBack } from "@/utils/common";
 import { showCustomDialog, showCustomToast } from "@/hooks/useCommon";
 import { bus } from "@/utils/mitt";
@@ -84,7 +84,7 @@ const mineBgStyle = computed(() => {
 });
 
 const currentLanguageName = computed(() => {
-  return $locale.value === "en" ? "English" : $t("简体中文");
+  return languageNames[$locale.value] || $t("简体中文");
 });
 
 const defaultQuickActions = computed<MineTemplateActionItem[]>(() => [

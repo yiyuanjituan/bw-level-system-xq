@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import router from "@/router";
-import { $locale, $t } from "@/locales";
+import { $locale, $t, languageNames } from "@/locales";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import ULanguageDialog from "@/components/Home/ULanguageDialog.vue";
 import useAppStore from "@/store/modules/app";
@@ -20,7 +20,7 @@ defineProps<{
 const app = useAppStore();
 const home = useHomeDataStore();
 const languageDialogVisible = ref(false);
-const currentLanguageName = computed(() => $locale.value === "zh-cn" ? "中文" : "English");
+const currentLanguageName = computed(() => languageNames[$locale.value]);
 
 function openGameSearch() {
   const homeSections = Array.isArray(home.venueList) ? home.venueList : [];
@@ -67,7 +67,7 @@ function openLanguageDialog() {
       <button
         type="button"
         class="u-home-header__action"
-        :aria-label="`${$t('common.language')}：${currentLanguageName}`"
+        :aria-label="`${$t('语言')}：${currentLanguageName}`"
         @click="openLanguageDialog"
       >
         <img :src="languageIcon" alt="" />

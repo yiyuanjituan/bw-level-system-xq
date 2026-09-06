@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { $locale, $t, setLocale } from "@/locales";
+import { languageOptions as supportedLanguageOptions } from "@/locales/language";
 
 defineOptions({
   name: "UHomeLanguageDialog"
@@ -18,10 +19,7 @@ const visible = computed({
   get: () => props.modelValue,
   set: value => emit("update:modelValue", value)
 });
-const languageOptions = computed<Array<{ label: string; value: I18nType.LangType }>>(() => [
-  { label: $t("简体中文"), value: "zh-cn" },
-  { label: "English", value: "en" }
-]);
+const languageOptions = computed(() => supportedLanguageOptions);
 
 function selectLanguage(locale: I18nType.LangType) {
   if ($locale.value !== locale) setLocale(locale);
