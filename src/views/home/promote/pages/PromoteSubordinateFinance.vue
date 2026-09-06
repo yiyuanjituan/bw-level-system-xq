@@ -20,7 +20,7 @@ interface FooterItem {
   label: string;
   value: string;
   count: number;
-  unit: "人" | "次";
+  unit: string;
 }
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -58,22 +58,22 @@ const footerItems = computed<FooterItem[]>(() => {
   const current = summary.value;
   return [
     {
-    label: $t("总充值"),
+      label: $t("总充值"),
       value: formatMoney(current?.totalDeposit),
       count: formatCount(current?.totalDepositCount),
-    unit: $t("次")
+      unit: $t("次")
     },
     {
-    label: $t("总首充"),
+      label: $t("总首充"),
       value: formatMoney(current?.totalFirstDeposit),
       count: formatCount(current?.totalFirstDepositPerson),
-    unit: $t("人")
+      unit: $t("人")
     },
     {
-    label: $t("总提现"),
+      label: $t("总提现"),
       value: formatMoney(current?.totalWithdraw),
       count: formatCount(current?.totalWithdrawCount),
-    unit: $t("次")
+      unit: $t("次")
     }
   ];
 });
@@ -251,7 +251,7 @@ watch(
       <div v-if="loading && !hasMembers" class="state"><ui-loading /></div>
       <ui-empty
         v-else-if="!hasMembers"
-      :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')"
+        :text="requestFailed ? $t('加载失败，请重试') : $t('暂无内容')"
       >
         <template #text="{ text }">
           <span class="empty-text">
@@ -293,31 +293,31 @@ watch(
               </div>
             </span>
             <span class="member-column">
-            <label>{{ $t("他的下级") }}</label>
+              <label>{{ $t("他的下级") }}</label>
               <span class="number value">{{ formatCount(member.directChildCount) }}</span>
             </span>
           </div>
           <div class="member-row">
             <span class="member-column">
-          <label>{{ $t("充值") }}</label>
+              <label>{{ $t("充值") }}</label>
               <span class="number value">{{ formatMoney(member.deposit) }}</span>
               <span>({{ formatCount(member.depositCount) }}{{ $t("次") }})</span>
             </span>
             <span class="member-column">
-          <label>{{ $t("提现") }}</label>
+              <label>{{ $t("提现") }}</label>
               <span class="number value">{{ formatMoney(member.withdraw) }}</span>
               <span>({{ formatCount(member.withdrawCount) }}{{ $t("次") }})</span>
             </span>
           </div>
           <div class="member-row">
             <span class="member-column">
-          <label>{{ $t("差额") }}</label>
+              <label>{{ $t("差额") }}</label>
               <span class="number value" :class="getDifferenceClass(member.difference)">
                 {{ formatMoney(member.difference) }}
               </span>
             </span>
             <span class="member-column">
-          <label>{{ $t("余额") }}</label>
+              <label>{{ $t("余额") }}</label>
               <span class="number value">{{ formatMoney(member.balance) }}</span>
             </span>
           </div>

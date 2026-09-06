@@ -31,6 +31,15 @@ type HotFilterKey = 'hot' | 'last' | 'collect';
 const HOME_GAME_EXPAND_COUNT = 18;
 const VENUE_EXPAND_COUNT = 5;
 const SCROLL_ACTIVE_OFFSET = 8;
+const gameClassifyLocaleKeys: Record<string, I18nType.I18nKey> = {
+  '1': '真人',
+  '2': '捕鱼',
+  '3': '电子',
+  '4': '彩票',
+  '5': '体育',
+  '6': '棋牌',
+  '7': '电竞'
+};
 
 const home = useHomeDataStore();
 const appData = useDataStore();
@@ -229,15 +238,20 @@ function toggleVenueExpand(index: number) {
   expandedVenueMap.set(index, true);
 }
 
-function formatCategoryName(name: string) {
-  const trimmed = String(name ?? '').trim();
-  return trimmed.length === 2 ? `${trimmed[0]} ${trimmed[1]}` : trimmed;
+function getCategoryName(category: { name: string; type?: unknown }) {
+  const localeKey = gameClassifyLocaleKeys[String(category.type ?? '')];
+  return localeKey ? $t(localeKey) : String(category.name ?? '').trim();
 }
 
-// 分类标题：与参考稿一致，如“真人游戏”。
-function sectionTitle(name: string) {
-  const trimmed = String(name ?? '').trim();
-  return trimmed && !trimmed.endsWith('游戏') ? `${trimmed}游戏` : trimmed;
+function formatCategoryName(category: { name: string; type?: unknown }) {
+  const categoryName = getCategoryName(category);
+  return categoryName.length === 2 ? `${categoryName[0]} ${categoryName[1]}` : categoryName;
+}
+
+// 分类标题使用完整语言键，避免翻译后继续拼接中文“游戏”。
+function sectionTitle(category: { name: string; type?: unknown }) {
+  const categoryName = getCategoryName(category);
+  return categoryName ? $t('{name}游戏', { name: categoryName }) : '';
 }
 
 // “全部”入口：跳转该分类全量场馆列表。
@@ -473,7 +487,7 @@ onBeforeUnmount(() => {
             fit="contain"
             loading="lazy"
           />
-          <span class="basic-game-list__category-name">{{ formatCategoryName(category.name) }}</span>
+          <span class="basic-game-list__category-name">{{ formatCategoryName(category) }}</span>
         </div>
       </div>
     </aside>
@@ -532,7 +546,7 @@ onBeforeUnmount(() => {
         <home-section-header
           class="basic-game-section__headline"
           :icon="category.icon"
-          :title="sectionTitle(category.name)"
+          :title="sectionTitle(category)"
           :show-all="category.type !== undefined && category.type !== null && category.type !== ''"
           @all="openCategoryAll(category)"
         />

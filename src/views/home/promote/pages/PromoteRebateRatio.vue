@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { $t } from "@/locales";
 import { computed, ref, watch } from "vue";
-import type { PromoteInfo } from "../types";
+import type { PromoteInfo, PromoteRuleGroup } from "../types";
 
 const props = defineProps<{
   info: PromoteInfo | null;
@@ -19,6 +19,15 @@ const gameClassifyIcons: Record<string, string> = {
   "5": "game-icon_dtfl_ty_0",
   "6": "game-icon_dtfl_qp_0",
   "7": "game-icon_dtfl_dianjing_0",
+};
+const gameClassifyLocaleKeys: Record<string, I18nType.I18nKey> = {
+  "1": "真人",
+  "2": "捕鱼",
+  "3": "电子",
+  "4": "彩票",
+  "5": "体育",
+  "6": "棋牌",
+  "7": "电竞",
 };
 const activeGroup = computed(() =>
   ruleGroups.value.find(group => group.key === activeGroupKey.value) || ruleGroups.value[0]
@@ -44,9 +53,17 @@ function formatAmount(value: number) {
   });
 }
 
+function getGameClassify(groupKey: string) {
+  return String(groupKey).replace(/^game-/, "");
+}
+
 function getGameClassifyIcon(groupKey: string) {
-  const gameClassify = String(groupKey).replace(/^game-/, "");
-  return gameClassifyIcons[gameClassify];
+  return gameClassifyIcons[getGameClassify(groupKey)];
+}
+
+function getGroupName(group: PromoteRuleGroup) {
+  const localeKey = gameClassifyLocaleKeys[getGameClassify(group.key)];
+  return localeKey ? $t(localeKey) : group.name;
 }
 
 function getCommissionAmount(performanceAmount: number, commissionRate: number, commissionAmount?: number) {
@@ -80,11 +97,11 @@ function getCommissionAmount(performanceAmount: number, commissionRate: number, 
           <span v-if="getGameClassifyIcon(group.key)" class="rebate-ratio__group-icon">
             <svg-icon :name="getGameClassifyIcon(group.key)" />
           </span>
-          <span class="rebate-ratio__group-name">{{ group.name }}</span>
+          <span class="rebate-ratio__group-name">{{ getGroupName(group) }}</span>
         </button>
       </nav>
 
-      <section class="rebate-ratio__table" :aria-label="$t('{name}返佣比例', { name: activeGroup.name })">
+      <section class="rebate-ratio__table" :aria-label="$t('{name}返佣比例', { name: getGroupName(activeGroup) })">
         <div class="rebate-ratio__header">
           <span class="rebate-ratio__header-cell">
             <span>{{ $t("有效人数") }}</span>

@@ -1009,5 +1009,6 @@
   "任务领取排序": "Sort by Task Claims",
   "代理佣金排序": "Sort by Agent Commission",
   "其他奖励": "Other Rewards",
-  "的下级": "'s Subordinates"
+  "的下级": "'s Subordinates",
+  "{name}游戏": "เกม{name}"
 }
