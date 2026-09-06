@@ -8,6 +8,7 @@ import PlazzaEmojiPicker from "./components/PlazzaEmojiPicker.vue";
 import { showCustomToast } from "@/hooks/useCommon";
 import router from "@/router";
 import useAuthStore from "@/store/modules/user";
+import { openLoginEntry } from "@/utils/login";
 
 const MAX_CONTENT_LENGTH = 5000;
 const MAX_IMAGE_COUNT = 9;
@@ -123,7 +124,7 @@ async function handlePublish() {
 
 onMounted(async () => {
   if (!auth.token) {
-    await router.replace("/home/login");
+    openLoginEntry(1);
     return;
   }
 

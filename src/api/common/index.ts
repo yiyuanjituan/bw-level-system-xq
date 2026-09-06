@@ -133,6 +133,7 @@ export interface ThemeConfigResponse {
   theme: number;
   templateTag?: string;
   preset: string;
+  loginMode?: number;
   variables: Record<string, string>;
   pageLayouts?: {
     home?: HomePageLayout;

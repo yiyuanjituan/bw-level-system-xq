@@ -17,6 +17,7 @@ import mineIcon from "@/assets/tabbar/u-series/mine.avif";
 import mineActiveIcon from "@/assets/tabbar/u-series/mine-active.avif";
 import { computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
+import { openLoginEntry } from "@/utils/login";
 
 type TabBarAction = "recharge" | "withdraw";
 
@@ -84,7 +85,7 @@ const activeIndex = computed(() => {
 
 function handleWithdraw() {
   if (!auth.token || !auth.user?.id) {
-    router.push("/home/login");
+    openLoginEntry(1);
     return;
   }
 

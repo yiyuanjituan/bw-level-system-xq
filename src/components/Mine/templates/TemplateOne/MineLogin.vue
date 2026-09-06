@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import router from '@/router';
 import guestRewardImage from '@/assets/mine/template-one/guest-reward.avif';
+import { openLoginEntry, type LoginEntryTab } from '@/utils/login';
 
 defineOptions({ name: 'MineLogin' });
 
-function jumpTo(path: string) {
-  void router.push(path);
+function jumpTo(tab: LoginEntryTab) {
+  openLoginEntry(tab);
 }
 </script>
 
@@ -14,10 +14,10 @@ function jumpTo(path: string) {
     <div class="mine-guest-card__content">
       <p class="mine-guest-card__title">{{ $t('登录后可领取收益') }}</p>
       <div class="mine-guest-card__actions">
-        <button type="button" class="mine-guest-card__button" @click="jumpTo('/home/login')">
+        <button type="button" class="mine-guest-card__button" @click="jumpTo(1)">
           <span>{{ $t('登 录') }}</span>
         </button>
-        <button type="button" class="mine-guest-card__button mine-guest-card__button--plain" @click="jumpTo('/home/register')">
+        <button type="button" class="mine-guest-card__button mine-guest-card__button--plain" @click="jumpTo(0)">
           <span>{{ $t('注 册') }}</span>
         </button>
       </div>

@@ -17,6 +17,7 @@ import telegramIcon from "@/assets/setting/telegram.avif";
 import vipImage from "@/assets/setting/vip.avif";
 import verifiedIcon from "@/assets/setting/verified.avif";
 import { $t } from "@/locales";
+import { openLoginEntry } from "@/utils/login";
 
 type SettingForm = Required<Pick<
   Eps.UserInfoEntity,
@@ -214,7 +215,7 @@ watch(
 
 onMounted(() => {
   if (!auth.token) {
-    router.replace("/home/login");
+    openLoginEntry(1);
   }
 });
 </script>

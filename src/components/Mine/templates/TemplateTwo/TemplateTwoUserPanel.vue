@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import CommonCopy from "@/components/Common/Copy.vue";
-import MineShowInfo from "@/components/Mine/MineShowInfo.vue";
+import AccountDisplaySelector from "@/components/Common/AccountDisplaySelector.vue";
 import defaultAvatarUrl from "@/assets/setting/default-avatar.avif";
 import { $t } from "@/locales";
 import useAuthStore from "@/store/modules/user";
@@ -21,7 +21,6 @@ const emit = defineEmits<{
 }>();
 
 const auth = useAuthStore();
-const isShowInfo = ref(false);
 const isRefresh = ref(false);
 const avatarLoadFailed = ref(false);
 
@@ -32,25 +31,6 @@ const avatarUrl = computed(() => {
 const avatarBackgroundStyle = computed(() => ({
   backgroundImage: `url(${JSON.stringify(avatarUrl.value)})`
 }));
-
-const displayName = computed(() => {
-  if (props.user.showAccount === 2 && props.user.phone) {
-    const prefix = props.currencyPrefix ? `+${props.currencyPrefix} ` : "";
-    return `${prefix}***${String(props.user.phone).slice(-3)}`;
-  }
-
-  if (props.user.showAccount === 0) return props.user.unionid || "--";
-
-  return props.user.account || props.user.nickName || props.user.unionid || "--";
-});
-
-const copyText = computed(() => {
-  if (props.user.showAccount === 0) return props.user.unionid || "";
-  if (props.user.showAccount === 1 || props.user.showAccount === undefined) {
-    return props.user.account || "";
-  }
-  return "";
-});
 
 function onRefresh() {
   if (isRefresh.value) return;
@@ -104,27 +84,10 @@ watch(
       <div class="mine-template-two-user__account account">
         <div class="mine-template-two-user__custom-name select-custom-name">
           <div class="mine-template-two-user__name-content">
-            <span class="ui-popover__wrapper mine-template-two-user__popover">
-              <span
-                class="mine-template-two-user__toggle mine-account-toggle-box"
-                :class="{ 'mine-template-two-user__toggle--active': isShowInfo }"
-                role="button"
-                tabindex="0"
-                @click="isShowInfo = !isShowInfo"
-                @keydown.enter.space.prevent="isShowInfo = !isShowInfo"
-              >
-                <svg-icon name="comm_icon_sort" class-name="!text-[4px]" />
-              </span>
-              <MineShowInfo v-if="isShowInfo" @close="isShowInfo = false" />
-            </span>
-            <span class="mine-template-two-user__name show-hidden-arrow user-info-show-name">
-              {{ displayName }}
-            </span>
-            <CommonCopy
-              v-if="copyText"
-              class="mine-template-two-user__copy copy"
-              class-name="text-[13px]"
-              :text="copyText"
+            <AccountDisplaySelector
+              :user="user"
+              :currency-prefix="currencyPrefix"
+              class="mine-template-two-user__account-selector"
             />
           </div>
         </div>
@@ -254,45 +217,6 @@ watch(
   position: relative;
 }
 
-.mine-template-two-user__popover {
-  position: relative;
-  display: inline-flex;
-}
-
-.mine-template-two-user__toggle {
-  width: 13px;
-  height: 8px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--skin__neutral_2);
-  font-size: 13px;
-  transform: rotate(0deg);
-  transition: transform 0.2s;
-  cursor: pointer;
-
-  :deep(svg) {
-    width: 13px;
-    height: 8px;
-  }
-
-  &--active {
-    transform: rotate(180deg);
-  }
-}
-
-.mine-template-two-user__name {
-  min-width: 0;
-  max-width: 110px;
-  overflow: hidden;
-  color: var(--skin__lead);
-  font-size: 12px;
-  line-height: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .mine-template-two-user__copy {
   margin-left: 4px;
   color: var(--skin__primary);
@@ -330,6 +254,14 @@ watch(
 .mine-template-two-user__copy--id {
   margin-left: 5px;
   font-size: 14px;
+}
+
+.mine-template-two-user__account-selector {
+  max-width: 150px;
+}
+
+.mine-template-two-user__account-selector :deep(.account-display-selector__name) {
+  max-width: 110px;
 }
 
 .mine-template-two-user__divider {

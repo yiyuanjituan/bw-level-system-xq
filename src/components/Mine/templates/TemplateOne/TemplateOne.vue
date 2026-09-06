@@ -19,6 +19,7 @@ import MineWalletCard from './MineWalletCard.vue';
 import topBackground from '@/assets/mine/template-one/top_bg.avif';
 import depositIcon from '@/assets/mine/template-one/deposit.avif';
 import withdrawIcon from '@/assets/mine/template-one/withdraw.avif';
+import { openLoginEntry } from '@/utils/login';
 
 defineOptions({ name: 'TemplateOne' });
 
@@ -70,7 +71,7 @@ function jumpToMessage() {
 
 function handleWithdraw() {
   if (!auth.token || !auth.user?.id) {
-    void router.push('/home/login');
+    openLoginEntry(1);
     return;
   }
   if (!auth.user.hasPayPassword) {

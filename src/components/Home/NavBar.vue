@@ -1,7 +1,7 @@
 <script setup lang="ts" name="HomeNavBar">
 import { $t } from "@/locales";
 import { computed, ref } from "vue";
-import router from "@/router";
+import { openLoginEntry } from "@/utils/login";
 import UiButton from "@/components/Common/Button.vue";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import useAppStore from "@/store/modules/app";
@@ -24,11 +24,11 @@ const currencyInfo = computed(() => {
 });
 
 function handleToLogin() {
-  router.push("/home/login");
+  openLoginEntry(1);
 }
 
 function handleToRegister() {
-  router.push("/home/register");
+  openLoginEntry(0);
 }
 
 function handleRecharge() {

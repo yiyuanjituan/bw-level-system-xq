@@ -10,6 +10,7 @@ import UMorePopover from "@/components/Home/UMorePopover.vue";
 import useAppStore from "@/store/modules/app";
 import useAuthStore from "@/store/modules/user";
 import { bus } from "@/utils/mitt";
+import { openLoginEntry } from "@/utils/login";
 import serviceIcon from "@/assets/home/u-series/icon_dt_1kf.png";
 import vipIcon from "@/assets/home/u-series/icon_dt_1vip.png";
 import shareIcon from "@/assets/home/u-series/icon_dt_1tg.png";
@@ -159,13 +160,13 @@ async function updateWallet() {
       </button>
     </div>
     <div v-else class="u-quick-nav__guest">
-      <button type="button" class="u-quick-nav__guest-button" @click="router.push('/home/login')">
+      <button type="button" class="u-quick-nav__guest-button" @click="openLoginEntry(1)">
         {{ $t("登 录") }}
       </button>
       <button
         type="button"
         class="u-quick-nav__guest-button u-quick-nav__guest-button--register"
-        @click="router.push('/home/register')"
+        @click="openLoginEntry(0)"
       >
         <span>{{ $t("注 册") }}</span>
         <img :src="registerDecoration" alt="" />

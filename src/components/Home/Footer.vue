@@ -211,7 +211,7 @@ function sanitizeFooterRichText(value: string) {
   padding: 18px 10px calc(50px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   color: var(--skin__neutral_1);
-  background: var(--skin__home_bg);
+  background-color: var(--skin__web_bs_yj_bg);
 }
 
 .home-footer__links {

@@ -11,6 +11,7 @@ import useAuthStore from "@/store/modules/user";
 import TaskRecord from "./components/TaskRecord.vue";
 import TaskLimitTip from "@/views/home/components/TaskLimitTip.vue";
 import UiEmpty from "@/components/UI/empty.vue";
+import { openLoginEntry } from "@/utils/login";
 
 const isLoading = ref(false);
 const totalConfig = ref<any>({});
@@ -75,10 +76,11 @@ function getIsShow(type: any, allowType: any[]) {
 
 function handleTapGo(type: any) {
   if (!auth.token) {
-    return router.push("/home/login");
+    openLoginEntry(1);
+    return;
   }
   if (type == 0) {
-    router.push("/home/register");
+    openLoginEntry(0);
   } else if (type == 1) {
     bus.emit("showDownloadTip");
   } else if (type == 2) {

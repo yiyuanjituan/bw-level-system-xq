@@ -398,6 +398,21 @@ watch(
   font-family: inherit;
   font-size: inherit;
   min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+// 覆盖 Chromium 自动填充的浅色背景，避免登录表单出现与主题不一致的高亮块。
+.x-input__field:-webkit-autofill,
+.x-input__field:-webkit-autofill:hover,
+.x-input__field:-webkit-autofill:focus,
+.x-input__field:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--skin__lead) !important;
+  caret-color: var(--skin__lead);
+  background-color: transparent !important;
+  box-shadow: 0 0 0 1000px var(--skin__bg_2) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--skin__bg_2) inset !important;
+  transition: background-color 9999s ease-out 0s;
 }
 
 .x-input__field::placeholder {

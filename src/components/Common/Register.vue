@@ -170,7 +170,9 @@ defineExpose({
 
 <style scoped lang="less">
 .register-container {
-  width: 375px;
+  width: 100%;
+  max-width: 375px;
+  box-sizing: border-box;
   color: white;
   padding-left: 20px;
   padding-right: 20px;

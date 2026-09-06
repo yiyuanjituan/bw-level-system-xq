@@ -5,8 +5,11 @@ import { $t } from '@/locales';
 import HomeSkeletonImage from '@/components/Home/SkeletonImage.vue';
 import ULanguageDialog from '@/components/Home/ULanguageDialog.vue';
 import UMorePopover from '@/components/Home/UMorePopover.vue';
+import AccountDisplaySelector from '@/components/Common/AccountDisplaySelector.vue';
+import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
 import { bus } from '@/utils/mitt';
+import { openLoginEntry } from '@/utils/login';
 import kfIcon from '@/assets/home/basic/icon_dt_1kf.avif';
 import appIcon from '@/assets/home/basic/icon_dt_1app.avif';
 import languageIcon from '@/assets/home/basic/icon_dt_1yuyuan.avif';
@@ -17,8 +20,15 @@ defineOptions({
 });
 
 const emit = defineEmits<{ 'select-hot': [mode: 'last' | 'collect'] }>();
+const app = useAppStore();
 const auth = useAuthStore();
 const languageDialogVisible = ref(false);
+const walletIsLoading = ref(false);
+
+const currencyInfo = computed(() => {
+  const currencyList = Array.isArray(app.appInfo?.countryList) ? app.appInfo.countryList : [];
+  return currencyList.find(currency => currency.id == auth.user?.currencyId);
+});
 
 const quickLinks = computed(() => [
   { key: 'service', title: $t('客服'), icon: kfIcon },
@@ -78,11 +88,22 @@ function openMoreLink(key: string) {
 }
 
 function openLogin() {
-  void router.push('/home/login');
+  openLoginEntry(1);
 }
 
 function openRegister() {
-  void router.push('/home/register');
+  openLoginEntry(0);
+}
+
+async function updateWallet() {
+  if (walletIsLoading.value) return;
+
+  walletIsLoading.value = true;
+  try {
+    await auth.updateInfo();
+  } finally {
+    walletIsLoading.value = false;
+  }
 }
 
 function openMine() {
@@ -120,7 +141,36 @@ function openMine() {
       </template>
       <template v-else>
         <div class="basic-nav-container__logged-in" role="button" tabindex="0" @click="openMine" @keydown.enter="openMine">
-          <span class="basic-nav-container__mine-label">{{ $t('我的') }}</span>
+          <AccountDisplaySelector
+            class="basic-nav-container__account-top"
+            :user="auth.user"
+            :currency-prefix="currencyInfo?.numberPrefix"
+          />
+          <button
+            type="button"
+            class="basic-nav-container__balance"
+            :aria-label="$t('刷新余额')"
+            @click.stop="updateWallet"
+            @keydown.stop
+          >
+            <span class="basic-nav-container__currency-frame">
+              <home-skeleton-image
+                v-if="currencyInfo?.icon"
+                :src="currencyInfo.icon"
+                class="basic-nav-container__currency"
+                alt=""
+                fit="cover"
+              />
+            </span>
+            <span class="basic-nav-container__balance-value" dir="ltr">
+              {{ walletIsLoading ? $t('加载中') : (auth.user?.money ?? '0.00') }}
+            </span>
+            <svg-icon
+              name="comm_icon_sx"
+              class-name="basic-nav-container__refresh"
+              :class="{ 'basic-nav-container__refresh--loading': walletIsLoading }"
+            />
+          </button>
         </div>
       </template>
     </div>
@@ -230,23 +280,76 @@ function openMine() {
 
   &__logged-in {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: flex-start;
-    height: 25px;
-    min-width: 60px;
+    align-items: flex-start;
+    width: 100%;
+    height: 40px;
+    min-width: 0;
+    overflow: visible;
     color: var(--skin__lead);
     cursor: pointer;
+  }
 
-    .basic-nav-container__mine-label {
-      font-size: 13px;
-      line-height: 25px;
-      white-space: nowrap;
-    }
+  &__account-top {
+    width: 100%;
+    height: 17px;
+    min-width: 0;
+  }
 
-    .basic-nav-container__mine-sub {
-      color: var(--skin__neutral_2);
-      font-size: 10px;
-      line-height: 14px;
+  &__balance {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 21px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    color: var(--skin__lead);
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  &__currency-frame {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    flex: none;
+    border-radius: 50%;
+    background: url("@/assets/common/img_hb_frame.avif") center / cover no-repeat;
+  }
+
+  &__currency {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+  }
+
+  &__balance-value {
+    min-width: 0;
+    max-width: 88px;
+    margin-left: 4px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--skin__accent_3);
+    color: var(--skin__accent_3);
+    font-size: 12px;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__refresh {
+    width: 15px;
+    height: 15px;
+    margin-left: 4px;
+    flex: none;
+    color: var(--skin__primary);
+
+    &--loading {
+      animation: basic-nav-spin 0.3s linear infinite;
     }
   }
 
@@ -316,6 +419,12 @@ function openMine() {
   }
 }
 
+:global([dir='rtl']) .basic-nav-container__balance-value,
+:global([dir='rtl']) .basic-nav-container__refresh {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
 // 右侧导航行对齐 u投(UQuickNav) 布局：不换行、flex 均分、min45/max50
 .basic-nav-container__right {
   flex-wrap: nowrap;
@@ -350,6 +459,11 @@ function openMine() {
 @keyframes basic-register-pulse {
   from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--skin__primary) 40%, transparent); }
   to { box-shadow: 0 0 0 8px transparent; }
+}
+
+@keyframes basic-nav-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -94,6 +94,7 @@ const readLocalJson = <T>(key: string, fallback: T): T => {
 const createEmptyAppInfo = () => ({
   countryList: [],
   home_popup: [],
+  loginMode: 1,
 });
 
 const normalizeAppInfo = (value: any) => {
@@ -102,6 +103,8 @@ const normalizeAppInfo = (value: any) => {
     ...(value && typeof value === 'object' ? value : {}),
     countryList: Array.isArray(value?.countryList) ? value.countryList : [],
     home_popup: Array.isArray(value?.home_popup) ? value.home_popup : [],
+    // 登录方式归属主题装修，网站配置或旧缓存中的同名字段不再生效。
+    loginMode: 1,
   };
 
   delete appInfo.theme_config;
@@ -163,6 +166,7 @@ export const useAppStore = defineStore('app', () => {
     mineMenuItems.value = minePageLayout.config.menuItems.map(item => ({ ...item }))
     appInfo.value = {
       ...(appInfo.value || {}),
+      loginMode: normalizedThemeConfig.loginMode,
       theme_config: normalizedThemeConfig
     }
     applyThemeVariables(normalizedThemeConfig)

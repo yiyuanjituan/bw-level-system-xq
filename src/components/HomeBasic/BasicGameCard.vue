@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import HomeSkeletonImage from '@/components/Home/SkeletonImage.vue';
 import { setMomentsGameFavorite } from '@/api/common';
 import { showCustomToast } from '@/hooks/useCommon';
@@ -11,6 +10,7 @@ import { getHomeGameImage, shouldShowHomeGameName } from '@/components/Home/type
 import favoriteOffIcon from '@/assets/home/btn_sc_off_2.avif';
 import favoriteOnIcon from '@/assets/home/btn_sc_on_2.avif';
 import maintenanceIcon from '@/assets/home/u-series/img_whz_style_1.png';
+import { openLoginEntry } from '@/utils/login';
 
 defineOptions({
   name: 'BasicGameCard'
@@ -33,7 +33,6 @@ const emit = defineEmits<{
 }>();
 
 const auth = useAuthStore();
-const router = useRouter();
 const pendingFavoriteEntryKeys = ref<string[]>([]);
 
 const gameImage = computed(() => getHomeGameImage(props.game, props.imageDisplay));
@@ -75,7 +74,7 @@ async function toggleFavorite() {
   if (!entry || favoritePending.value || isDisabled.value) return;
 
   if (!auth.token) {
-    void router.push('/home/login');
+    openLoginEntry(1);
     return;
   }
 

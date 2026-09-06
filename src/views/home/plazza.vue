@@ -21,6 +21,7 @@ import PlazzaProfileSetupDialog from './plazza/components/PlazzaProfileSetupDial
 import PlazzaFollowRecommendations from './plazza/components/PlazzaFollowRecommendations.vue';
 import type { MomentsFollowRecommendation } from '@/api/common';
 import type { PlazzaPost, PlazzaProfile, PlazzaRecentGame, PlazzaTabValue } from './plazza/types';
+import { openLoginEntry } from '@/utils/login';
 
 const route = useRoute();
 const router = useRouter();
@@ -141,7 +142,7 @@ function hasCompletePublishProfile() {
 
 function handlePublish() {
   if (!auth.token) {
-    void router.push('/home/login');
+    openLoginEntry(1);
     return;
   }
 

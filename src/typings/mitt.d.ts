@@ -22,6 +22,8 @@ export type MittEvent = {
   switchTab: string;
   sseMessage: SseMessage;
   showWithdrawSuccess: any;
+  showLogin: 0 | 1;
+  showRegister: null;
 };
 
 export interface DialogPromiseHandlers {

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { $t } from "@/locales";
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
 import {
   getPromoteInfo,
   getSpecialInviteData,
@@ -16,8 +15,8 @@ import PromoteInviteShare from "@/views/home/promote/components/PromoteInviteSha
 import type { PromoteInfo } from "@/views/home/promote/types";
 import InviteRewardRoadmap from "./InviteRewardRoadmap.vue";
 import SpecialInviteMemberDialog from "./SpecialInviteMemberDialog.vue";
+import { openLoginEntry } from "@/utils/login";
 
-const router = useRouter();
 const authStore = useAuthStore();
 const promoteInfo = ref<PromoteInfo | null>(null);
 const inviteData = ref<SpecialInviteData | null>(null);
@@ -103,7 +102,7 @@ onMounted(() => {
   <section class="invite-template">
     <div v-if="!isLoggedIn" class="invite-template__state">
       <span>请先登录后查看邀请红包活动</span>
-      <x-button type="primary" @click="router.push('/home/login')">去登录</x-button>
+      <x-button type="primary" @click="openLoginEntry(1)">去登录</x-button>
     </div>
 
     <div v-else-if="isLoading && !inviteData" class="invite-template__state">

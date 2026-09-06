@@ -52,8 +52,32 @@ const formRules = ref<XFormRules>({
     }
   ],
   sms_code: [
-    { required: true, message: $t("请输入验证码"), trigger: "blur" },
-    { min: 4, max: 6, message: $t("请输入正确验证码"), trigger: "blur" }
+    {
+      validator: (_rule, value, callback) => {
+        const requiresSmsCode = modelValue.value.accountType === "phone"
+          && modelValue.value.type === "sms";
+
+        // 密码登录不会使用验证码，隐藏字段也不能参与校验。
+        if (!requiresSmsCode) {
+          callback();
+          return;
+        }
+
+        const smsCode = String(value || "").trim();
+        if (!smsCode) {
+          callback(new Error($t("请输入验证码")));
+          return;
+        }
+
+        if (smsCode.length < 4 || smsCode.length > 6) {
+          callback(new Error($t("请输入正确验证码")));
+          return;
+        }
+
+        callback();
+      },
+      trigger: "blur"
+    }
   ],
   password: [
     { required: true, message: $t("密码不能为空"), trigger: "input" },
@@ -146,7 +170,9 @@ defineExpose({
 
 <style scoped lang="less">
 .login-container {
-  width: 375px;
+  width: 100%;
+  max-width: 375px;
+  box-sizing: border-box;
   color: white;
   padding-left: 20px;
   padding-right: 20px;

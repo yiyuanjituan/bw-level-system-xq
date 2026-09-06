@@ -6,6 +6,7 @@ import { updateUserInfo } from "@/api/common";
 import { showCustomToast } from "@/hooks/useCommon";
 import useAuthStore from "@/store/modules/user";
 import router from "@/router";
+import { openLoginEntry } from "@/utils/login";
 
 type AvatarGender = "male" | "female";
 
@@ -86,7 +87,7 @@ async function handleSave() {
 
 onMounted(() => {
   if (!auth.token) {
-    router.replace("/home/login");
+    openLoginEntry(1);
   }
 });
 </script>

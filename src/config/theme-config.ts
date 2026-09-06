@@ -48,6 +48,7 @@ export const THEME_VARIABLE_CONFIGS: ThemeVariableConfig[] = [
   { name: "--skin__tg_accent_1", label: "推广强调色 1", defaultValue: "#CCF1CB" },
   { name: "--skin__tg_accent_3", label: "推广强调色 3", defaultValue: "#FEEDCD" },
   { name: "--skin__bs_topnav_bg", label: "首页顶部背景", defaultValue: "#191919" },
+  { name: "--skin__web_bs_yj_bg", label: "页脚背景", defaultValue: "#191919" },
   { name: "--skin__home_bg", label: "首页背景", defaultValue: "#000000" },
   { name: "--skin__ddt_bg", label: "图片背景色", defaultValue: "#1B1B1B" },
   { name: "--skin__bs_topnav_wallet_bg", label: "钱包背景", defaultValue: "rgba(255, 255, 255, 0.08)" },
@@ -68,6 +69,7 @@ export const DEFAULT_THEME_CONFIG: ThemeConfigResponse = {
   theme: DEFAULT_THEME_TEMPLATE,
   templateTag: "",
   preset: DEFAULT_THEME_PRESET,
+  loginMode: 1,
   variables: { ...DEFAULT_THEME_VARIABLES },
   pageLayouts: {
     home: {
@@ -107,6 +109,7 @@ export function normalizeThemeConfig(value?: Partial<ThemeConfigResponse> | null
     preset: typeof source.preset === "string" && source.preset.trim()
       ? source.preset.trim()
       : DEFAULT_THEME_PRESET,
+    loginMode: Number(source.loginMode) === 2 ? 2 : 1,
     variables,
     pageLayouts: {
       home: normalizeHomePageLayout(source.pageLayouts?.home),

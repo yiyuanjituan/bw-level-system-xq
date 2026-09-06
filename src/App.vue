@@ -9,6 +9,7 @@
     </router-view>
     <ui-toast />
     <ui-dialog />
+    <LoginDialog v-if="!previewMode" />
     <van-watermark :content="$t('YG游戏')" opacity="0.04" v-if="app.appInfo?.isDemo" />
     <FindUs :ref="setRefs('findUs')" />
     <recharge-drawer :ref="setRefs('rechargeDrawer')" />
@@ -27,6 +28,7 @@ import { systemTransitionName } from './hooks/useTransition';
 import AppLoading from '@/components/AppLoading.vue';
 import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
+import LoginDialog from '@/components/Common/LoginDialog.vue';
 import RedpackDialog from '@/components/Dialog/RedpackDialog.vue';
 import { computed, nextTick, onUnmounted, watch } from 'vue';
 import useAppStore from '@/store/modules/app';
@@ -49,6 +51,7 @@ const app = useAppStore();
 const auth = useAuthStore();
 const appData = useDataStore();
 const route = useRoute();
+const previewMode = isThemePreviewMode();
 const { handleTelegramWebAppStart } = useTelegramWebAppStart();
 const currentVantLocale = computed(() => vantLocales[$locale.value]);
 const popupRefMap = {

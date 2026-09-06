@@ -21,6 +21,7 @@ import type {
   MineTemplateSelectPayload
 } from "./types";
 import { isThemePreviewMode } from "@/utils/themePreview";
+import { openLoginEntry } from "@/utils/login";
 
 defineOptions({
   name: "TemplateTwo"
@@ -302,7 +303,7 @@ async function loadInterestRate() {
 
 function handleWithdraw() {
   if (!auth.token || !auth.user?.id) {
-    void router.push("/home/login");
+    openLoginEntry(1);
     return;
   }
 
@@ -361,12 +362,12 @@ function handleBuiltinAction(action: string, item?: MineTemplateActionItem) {
   }
 
   if (action === "login") {
-    void router.push("/home/login");
+    openLoginEntry(1);
     return;
   }
 
   if (action === "register") {
-    void router.push("/home/register");
+    openLoginEntry(0);
     return;
   }
 
