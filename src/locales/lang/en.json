@@ -1,4 +1,10 @@
 {
+  "请输入搜索内容": "Enter a search term",
+  "最近搜索": "Recent searches",
+  "删除全部": "Delete all",
+  "删除": "Delete",
+  "共{count}个结果": "{count} results",
+  "加载更多": "Load more",
   "暂无游戏": "No games available",
   "tips": {
     "maintenance": "The game is currently under maintenance"

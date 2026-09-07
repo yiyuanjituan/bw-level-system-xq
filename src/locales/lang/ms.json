@@ -1,4 +1,10 @@
 {
+  "请输入搜索内容": "Masukkan kata carian",
+  "最近搜索": "Carian terkini",
+  "删除全部": "Padam semua",
+  "删除": "Padam",
+  "共{count}个结果": "{count} hasil",
+  "加载更多": "Muatkan lagi",
   "暂无游戏": "Tiada permainan",
   "tips": {
     "maintenance": "Permainan sedang diselenggara"

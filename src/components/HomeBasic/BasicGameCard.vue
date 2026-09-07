@@ -20,11 +20,11 @@ const props = withDefaults(
   defineProps<{
     game: HomeGameRecord;
     imageDisplay?: 'square' | 'long';
-    highlightKeyword?: string;
+    nameOverlay?: boolean;
   }>(),
   {
     imageDisplay: 'square',
-    highlightKeyword: ''
+    nameOverlay: false
   }
 );
 
@@ -39,6 +39,7 @@ const pendingFavoriteEntryKeys = ref<string[]>([]);
 
 const gameImage = computed(() => getHomeGameImage(props.game, props.imageDisplay));
 const showName = computed(() => Boolean(props.game.name) && shouldShowHomeGameName(props.game));
+const showOverlayName = computed(() => showName.value && props.nameOverlay && props.imageDisplay === 'long');
 const isDisabled = computed(() => Number(props.game.isOpen) === 0);
 
 // 与场馆/子游戏收藏一致的入口归一：venue/game 决定 entryId，entryKey 用于防重复提交。
@@ -59,27 +60,6 @@ const favoriteEntry = computed(() => {
 });
 
 const favorite = computed(() => Boolean(props.game.favorite));
-const gameNameParts = computed(() => {
-  const name = String(props.game.name ?? '');
-  const keyword = props.highlightKeyword.trim();
-  if (!name || !keyword) return [{ text: name, matched: false }];
-
-  const parts: Array<{ text: string; matched: boolean }> = [];
-  const normalizedName = name.toLocaleLowerCase();
-  const normalizedKeyword = keyword.toLocaleLowerCase();
-  let cursor = 0;
-  let matchIndex = normalizedName.indexOf(normalizedKeyword, cursor);
-
-  while (matchIndex >= 0) {
-    if (matchIndex > cursor) parts.push({ text: name.slice(cursor, matchIndex), matched: false });
-    parts.push({ text: name.slice(matchIndex, matchIndex + keyword.length), matched: true });
-    cursor = matchIndex + keyword.length;
-    matchIndex = normalizedName.indexOf(normalizedKeyword, cursor);
-  }
-
-  if (cursor < name.length) parts.push({ text: name.slice(cursor), matched: false });
-  return parts;
-});
 const favoritePending = computed(() => (
   favoriteEntry.value ? pendingFavoriteEntryKeys.value.includes(favoriteEntry.value.entryKey) : false
 ));
@@ -131,6 +111,11 @@ async function toggleFavorite() {
         fit="cover"
         loading="lazy"
       />
+      <div v-if="showOverlayName" class="basic-game-card__title-overlay" dir="ltr">
+        <p class="basic-game-card__name basic-game-card__name--overlay">
+          {{ game.name }}
+        </p>
+      </div>
       <div v-if="isDisabled" class="basic-game-card__mask">
         <img :src="maintenanceIcon" :alt="$t('tips.maintenance')" />
       </div>
@@ -156,11 +141,8 @@ async function toggleFavorite() {
       </div>
     </div>
 
-    <p v-if="showName" class="basic-game-card__name" dir="ltr">
-      <template v-for="(part, index) in gameNameParts" :key="`${part.text}-${index}`">
-        <mark v-if="part.matched">{{ part.text }}</mark>
-        <template v-else>{{ part.text }}</template>
-      </template>
+    <p v-if="showName && !showOverlayName" class="basic-game-card__name" dir="ltr">
+      {{ game.name }}
     </p>
   </section>
 </template>
@@ -193,6 +175,21 @@ async function toggleFavorite() {
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  &__title-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 34.125px;
+    padding: 0 3.9375px 3.9375px;
+    pointer-events: none;
   }
 
   &__mask {
@@ -247,9 +244,14 @@ async function toggleFavorite() {
     -webkit-box-orient: vertical;
     height: 32px;
 
-    mark {
-      color: var(--skin__primary);
-      background: transparent;
+    &--overlay {
+      height: auto;
+      margin: 0;
+      color: #fff;
+      font-size: 11.8125px;
+      font-weight: 700;
+      line-height: 1.25;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
   }
 }

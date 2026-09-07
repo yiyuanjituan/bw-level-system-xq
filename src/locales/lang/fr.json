@@ -1,4 +1,10 @@
 {
+  "请输入搜索内容": "Saisissez votre recherche",
+  "最近搜索": "Recherches récentes",
+  "删除全部": "Tout supprimer",
+  "删除": "Supprimer",
+  "共{count}个结果": "{count} résultats",
+  "加载更多": "Charger plus",
   "暂无游戏": "Aucun jeu disponible",
   "tips": {
     "maintenance": "Le jeu est actuellement en maintenance"
