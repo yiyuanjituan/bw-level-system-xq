@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import router from '@/router';
 import useAppStore from '@/store/modules/app';
 import searchIcon from '@/assets/home/basic/icon_dt_1ss.avif';
 
@@ -7,9 +8,12 @@ defineOptions({
   name: 'BasicHeader'
 });
 
-const emit = defineEmits<{ search: [] }>();
 const app = useAppStore();
 const siteLogo = computed(() => app.appInfo?.logo as string | undefined);
+
+function openGameSearch() {
+  void router.push('/home/search');
+}
 </script>
 
 <template>
@@ -21,7 +25,7 @@ const siteLogo = computed(() => app.appInfo?.logo as string | undefined);
         </div>
       </div>
       <div class="basic-header__section basic-header__section--right">
-        <button type="button" class="basic-header__search" @click="emit('search')">
+        <button type="button" class="basic-header__search" @click="openGameSearch">
           <img class="basic-header__search-icon" :src="searchIcon" alt="" />
           <span>{{ $t('搜索') }}</span>
         </button>

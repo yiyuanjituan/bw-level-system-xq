@@ -159,6 +159,15 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("@/layout/second.vue"),
     children: [
       {
+        path: "search",
+        name: "HomeSearch",
+        component: () => import("@/views/home/search.vue"),
+        meta: {
+          isSecondary: true,
+          pageTransition: "page-slide-forward"
+        }
+      },
+      {
         path: "subGame",
         name: "Detail",
         component: () => import("@/views/home/subGame.vue"),

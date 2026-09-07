@@ -5,7 +5,6 @@ import { $locale, $t, languageNames } from "@/locales";
 import HomeSkeletonImage from "@/components/Home/SkeletonImage.vue";
 import ULanguageDialog from "@/components/Home/ULanguageDialog.vue";
 import useAppStore from "@/store/modules/app";
-import useHomeDataStore from "@/store/modules/home";
 import searchIcon from "@/assets/home/u-series/icon_dt_ss.png";
 import languageIcon from "@/assets/home/u-series/icon_dt_yuyan.png";
 
@@ -18,23 +17,11 @@ defineProps<{
 }>();
 
 const app = useAppStore();
-const home = useHomeDataStore();
 const languageDialogVisible = ref(false);
 const currentLanguageName = computed(() => languageNames[$locale.value]);
 
 function openGameSearch() {
-  const homeSections = Array.isArray(home.venueList) ? home.venueList : [];
-  const venueList = Array.isArray(app.venueList) ? app.venueList : [];
-  const firstSection = homeSections[0] ?? venueList[0];
-  if (!firstSection) return;
-
-  void router.push({
-    path: "/home/subGame",
-    query: {
-      type: firstSection.type,
-      platformId: 0
-    }
-  });
+  void router.push("/home/search");
 }
 
 function openLanguageDialog() {

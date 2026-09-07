@@ -20,9 +20,11 @@ const props = withDefaults(
   defineProps<{
     game: HomeGameRecord;
     imageDisplay?: 'square' | 'long';
+    highlightKeyword?: string;
   }>(),
   {
-    imageDisplay: 'square'
+    imageDisplay: 'square',
+    highlightKeyword: ''
   }
 );
 
@@ -57,6 +59,27 @@ const favoriteEntry = computed(() => {
 });
 
 const favorite = computed(() => Boolean(props.game.favorite));
+const gameNameParts = computed(() => {
+  const name = String(props.game.name ?? '');
+  const keyword = props.highlightKeyword.trim();
+  if (!name || !keyword) return [{ text: name, matched: false }];
+
+  const parts: Array<{ text: string; matched: boolean }> = [];
+  const normalizedName = name.toLocaleLowerCase();
+  const normalizedKeyword = keyword.toLocaleLowerCase();
+  let cursor = 0;
+  let matchIndex = normalizedName.indexOf(normalizedKeyword, cursor);
+
+  while (matchIndex >= 0) {
+    if (matchIndex > cursor) parts.push({ text: name.slice(cursor, matchIndex), matched: false });
+    parts.push({ text: name.slice(matchIndex, matchIndex + keyword.length), matched: true });
+    cursor = matchIndex + keyword.length;
+    matchIndex = normalizedName.indexOf(normalizedKeyword, cursor);
+  }
+
+  if (cursor < name.length) parts.push({ text: name.slice(cursor), matched: false });
+  return parts;
+});
 const favoritePending = computed(() => (
   favoriteEntry.value ? pendingFavoriteEntryKeys.value.includes(favoriteEntry.value.entryKey) : false
 ));
@@ -133,7 +156,12 @@ async function toggleFavorite() {
       </div>
     </div>
 
-    <p v-if="showName" class="basic-game-card__name" dir="ltr">{{ game.name }}</p>
+    <p v-if="showName" class="basic-game-card__name" dir="ltr">
+      <template v-for="(part, index) in gameNameParts" :key="`${part.text}-${index}`">
+        <mark v-if="part.matched">{{ part.text }}</mark>
+        <template v-else>{{ part.text }}</template>
+      </template>
+    </p>
   </section>
 </template>
 
@@ -218,6 +246,11 @@ async function toggleFavorite() {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     height: 32px;
+
+    mark {
+      color: var(--skin__primary);
+      background: transparent;
+    }
   }
 }
 
