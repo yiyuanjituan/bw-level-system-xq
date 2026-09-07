@@ -20,8 +20,6 @@ import useAuthStore from '@/store/modules/user';
 import useAppStore from '@/store/modules/app';
 import type { HomeGameRecord } from '@/components/Home/types';
 import hotIcon from '@/assets/home/icon_dtfl_rm_1.avif';
-import sideActiveBg from '@/assets/home/basic/btn_zc1_1.avif';
-import sideNormalBg from '@/assets/home/basic/btn_zc1_2.avif';
 
 defineOptions({
   name: 'BasicGameList'
@@ -434,9 +432,7 @@ onBeforeUnmount(() => {
         :key="category.key"
         type="button"
         class="basic-catalog__category"
-        :class="{ 'basic-catalog__category--active': index === activeCategoryIndex }"
         :aria-current="index === activeCategoryIndex ? 'true' : undefined"
-        :style="{ backgroundImage: 'url(' + (index === activeCategoryIndex ? sideActiveBg : sideNormalBg) + ')' }"
         @click="scrollToSection(index)"
       >
         <home-skeleton-image v-if="category.icon" :src="category.icon" alt="" class="basic-catalog__category-icon" fit="contain" />
@@ -526,14 +522,15 @@ onBeforeUnmount(() => {
     width: 75px;
     height: 35px;
     margin: 0 0 10px;
-    padding: 0 3px 0 1.5px;
-    border: 0;
+    padding: 0 3px 0 2px;
+    box-sizing: border-box;
+    border: 1px solid var(--skin__border);
     border-radius: 7px;
     color: var(--skin__leftnav_def, var(--skin__left_nav_def));
-    background-color: transparent;
-    background-size: 100% 100%;
-    box-shadow: 0 1.5px 3.5px var(--skin__web_left_bg_shadow);
+    background: var(--skin__bg_2);
+    box-shadow: 0 1px 2px 0 #0000001f;
     cursor: pointer;
+    word-break: break-all;
 
     span {
       display: -webkit-box;
@@ -548,10 +545,6 @@ onBeforeUnmount(() => {
       -webkit-box-orient: vertical;
     }
 
-    &--active {
-      color: var(--skin__leftnav_active, var(--skin__left_nav_active));
-      box-shadow: 0 1px 2px var(--skin__web_left_bg_shadow_active);
-    }
   }
 
   &__category-icon {

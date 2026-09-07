@@ -6,10 +6,12 @@ import BasicNotice from '@/components/HomeBasic/BasicNotice.vue';
 import BasicNavContainer from '@/components/HomeBasic/BasicNavContainer.vue';
 import BasicGameList from '@/components/HomeBasic/BasicGameList.vue';
 import HomeFooter from '@/components/Home/Footer.vue';
+import useAppStore from '@/store/modules/app';
 
 defineOptions({ name: 'BasicHome' });
 
-const catalogRef = ref<InstanceType<typeof BasicGameList>>();
+const catalogRef = ref<InstanceType<typeof BasicGameList> | null>(null);
+const app = useAppStore();
 </script>
 
 <template>
@@ -17,12 +19,18 @@ const catalogRef = ref<InstanceType<typeof BasicGameList>>();
     <BasicHeader />
     <main class="basic-home__scroll">
       <div class="basic-home__content">
-        <BasicBanner />
-        <BasicNotice />
-        <BasicNavContainer @select-hot="catalogRef?.selectHotFilter($event)" />
-        <section class="basic-home__catalog" data-home-game-section>
-          <BasicGameList ref="catalogRef" />
-        </section>
+        <template v-for="section in app.homePageSections" :key="section.key">
+          <template v-if="section.visible">
+            <BasicBanner v-if="section.key === 'banner'" />
+            <BasicNotice v-else-if="section.key === 'notice'" />
+            <template v-else-if="section.key === 'gameList'">
+              <BasicNavContainer @select-hot="catalogRef?.selectHotFilter($event)" />
+              <section class="basic-home__catalog" data-home-game-section>
+                <BasicGameList :ref="instance => (catalogRef = instance as InstanceType<typeof BasicGameList> | null)" />
+              </section>
+            </template>
+          </template>
+        </template>
       </div>
       <HomeFooter />
     </main>
