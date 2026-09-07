@@ -75,6 +75,7 @@ export interface HomeFooterConfig {
 
 export interface HomePageConfig {
   gameImageDisplay: GameImageDisplay;
+  basicVenueColumns: 1 | 3;
   footer: HomeFooterConfig;
 }
 

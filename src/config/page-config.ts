@@ -38,6 +38,7 @@ export const DEFAULT_HOME_FOOTER_CONFIG: HomeFooterConfig = {
 };
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
   gameImageDisplay: DEFAULT_GAME_IMAGE_DISPLAY,
+  basicVenueColumns: 1,
   footer: cloneHomeFooterConfig(DEFAULT_HOME_FOOTER_CONFIG),
 };
 export const DEFAULT_HOME_PAGE_LAYOUT: HomePageLayout = {
@@ -156,6 +157,7 @@ export function normalizeHomePageConfig(value: unknown): HomePageConfig {
   const source = isPlainObject(value) ? value : {};
   return {
     gameImageDisplay: source.gameImageDisplay === "square" ? "square" : DEFAULT_GAME_IMAGE_DISPLAY,
+    basicVenueColumns: source.basicVenueColumns === 3 ? 3 : 1,
     footer: normalizeHomeFooterConfig(source.footer),
   };
 }

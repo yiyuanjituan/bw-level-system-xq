@@ -30,7 +30,7 @@ const home = useHomeDataStore();
     padding: 0;
 
     :deep(.van-swipe__indicators) {
-      bottom: 5px;
+      bottom: 2px;
     }
 
     :deep(.van-swipe__indicator) {
@@ -39,7 +39,7 @@ const home = useHomeDataStore();
     }
 
     :deep(.van-swipe__indicator--active) {
-      width: 5px !important;
+      width: 12px !important;
       opacity: 1;
     }
   }

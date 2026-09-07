@@ -6,7 +6,9 @@ import UiEmpty from '@/components/UI/empty.vue';
 import HomeSkeletonImage from '@/components/Home/SkeletonImage.vue';
 import BasicGameCard from '@/components/HomeBasic/BasicGameCard.vue';
 import BasicVenueCard from '@/components/HomeBasic/BasicVenueCard.vue';
-import HomeLineTabs from '@/components/Home/HomeLineTabs.vue';
+import XTabs from '@/components/X/x-tabs.vue';
+import XTab from '@/components/X/x-tab.vue';
+import XLoading from '@/components/X/x-loading.vue';
 import HomeExpandMore from '@/components/Home/HomeExpandMore.vue';
 import HomeSectionHeader from '@/components/Home/HomeSectionHeader.vue';
 import { getHomeApiData, getGameListById, getMomentsRecentGames } from '@/api/common';
@@ -28,8 +30,7 @@ defineOptions({
 // 最近记录单独读取真实游玩历史，通用游戏接口当前只支持收藏过滤。
 type HotFilterKey = 'hot' | 'last' | 'collect';
 
-const HOME_GAME_EXPAND_COUNT = 18;
-const VENUE_EXPAND_COUNT = 5;
+
 const SCROLL_ACTIVE_OFFSET = 8;
 const gameClassifyLocaleKeys: Record<string, I18nType.I18nKey> = {
   '1': '真人',
@@ -54,10 +55,8 @@ const loading = ref(false);
 const serverListCache = reactive(new Map<string, HomeGameRecord[]>());
 const pendingLists = reactive(new Set<string>());
 const listLoading = computed(() => pendingLists.has(getServerCacheKey(activeHotKey.value)));
-const searchVisible = ref(false);
-const searchKeyword = ref('');
-const searchLoading = ref(false);
-const searchGames = ref<HomeGameRecord[]>([]);
+const hotDisplayCount = computed(() => app.gameImageDisplay === 'long' ? 15 : 9);
+const venueDisplayCount = computed(() => app.basicVenueColumns === 3 ? 9 : 5);
 let sessionVersion = 0;
 
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -172,7 +171,7 @@ async function loadHotServerTab(mode: HotFilterKey) {
 function handleHotFavoriteChange(game: HomeGameRecord, favorite: boolean) {
   // 同一入口可同时出现在热门、最近和搜索中，收藏完成后同步这些实例。
   const entryKey = game.entryKey || `${isVenueItem(game) ? 'venue' : 'game'}:${game.id}`;
-  const pools = [home.suggestList, searchGames.value, ...serverListCache.values()];
+  const pools = [home.suggestList, ...serverListCache.values()];
   for (const records of pools) {
     for (const record of records) {
       const recordKey = record.entryKey || `${isVenueItem(record) ? 'venue' : 'game'}:${record.id}`;
@@ -183,39 +182,18 @@ function handleHotFavoriteChange(game: HomeGameRecord, favorite: boolean) {
   if (activeHotFilterKey.value === 'collect') void loadHotServerTab('collect');
 }
 
-const filteredSearchGames = computed(() => {
-  const keyword = searchKeyword.value.trim().toLocaleLowerCase();
-  return searchGames.value.filter(game => String(game.name ?? '').toLocaleLowerCase().includes(keyword));
-});
-
-async function openSearch() {
-  searchVisible.value = true;
-  searchKeyword.value = '';
-  if (searchLoading.value) return;
-  searchLoading.value = true;
-  const requestVersion = sessionVersion;
-  try {
-    const records = await getGameListById({ id: 0, mode: 'all' });
-    if (requestVersion === sessionVersion) searchGames.value = normalizeGameList(records);
-  } catch {
-    showCustomToast({ type: 'fail', message: $t('操作失败') });
-  } finally {
-    searchLoading.value = false;
-  }
-}
-
 function selectHotFilter(mode: HotFilterKey) {
   activeHotKey.value = mode;
   scrollToSection(0);
 }
 
-defineExpose({ openSearch, selectHotFilter });
+defineExpose({ selectHotFilter });
 
 // ---------- 分区展示 ----------
 
 function hotShownGames() {
   const total = hotServerPool.value.length;
-  const visibleCount = expandedHot.value ? total : Math.min(HOME_GAME_EXPAND_COUNT, total);
+  const visibleCount = expandedHot.value ? total : Math.min(hotDisplayCount.value, total);
   return hotServerPool.value.slice(0, visibleCount);
 }
 
@@ -227,7 +205,7 @@ function venueShownGames(index: number) {
   const section = categoryList.value[index];
   const list = normalizeGameList(section?.children ?? []);
   const isExpanded = expandedVenueMap.get(index) === true;
-  return isExpanded ? list : list.slice(0, VENUE_EXPAND_COUNT);
+  return isExpanded ? list : list.slice(0, venueDisplayCount.value);
 }
 
 function venueTotalCount(index: number) {
@@ -241,11 +219,6 @@ function toggleVenueExpand(index: number) {
 function getCategoryName(category: { name: string; type?: unknown }) {
   const localeKey = gameClassifyLocaleKeys[String(category.type ?? '')];
   return localeKey ? $t(localeKey) : String(category.name ?? '').trim();
-}
-
-function formatCategoryName(category: { name: string; type?: unknown }) {
-  const categoryName = getCategoryName(category);
-  return categoryName.length === 2 ? `${categoryName[0]} ${categoryName[1]}` : categoryName;
 }
 
 // 分类标题使用完整语言键，避免翻译后继续拼接中文“游戏”。
@@ -363,7 +336,6 @@ function openSubGame(record: HomeGameRecord) {
 }
 
 function clickGameItem(record: HomeGameRecord) {
-  searchVisible.value = false;
   if (isVenueItem(record)) {
     openSubGame(record);
     return;
@@ -436,7 +408,6 @@ watch(() => auth.token, () => {
   sessionVersion += 1;
   serverListCache.clear();
   pendingLists.clear();
-  searchGames.value = [];
   void getHomeData();
   void loadHotServerTab(activeHotKey.value);
 });
@@ -456,306 +427,245 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="scrollContainer" class="basic-game-list">
-    <!-- 左侧 sticky 竖向分类 -->
-    <aside ref="sidebar" class="basic-game-list__sidebar" :style="{ maxHeight: sidebarHeight }">
-      <div
+  <div ref="scrollContainer" class="basic-catalog">
+    <aside ref="sidebar" class="basic-catalog__sidebar" :style="{ maxHeight: sidebarHeight }">
+      <button
         v-for="(category, index) in categoryList"
-        :key="`${category.key}-${index}`"
-        class="basic-game-list__category"
-        :class="{ 'basic-game-list__category--active': index === activeCategoryIndex }"
-        role="button"
-        tabindex="0"
+        :key="category.key"
+        type="button"
+        class="basic-catalog__category"
+        :class="{ 'basic-catalog__category--active': index === activeCategoryIndex }"
         :aria-current="index === activeCategoryIndex ? 'true' : undefined"
+        :style="{ backgroundImage: 'url(' + (index === activeCategoryIndex ? sideActiveBg : sideNormalBg) + ')' }"
         @click="scrollToSection(index)"
-        @keydown.enter="scrollToSection(index)"
-        @keydown.space.prevent="scrollToSection(index)"
       >
-        <div
-          class="basic-game-list__category-bg"
-          :style="{
-            backgroundImage: index === activeCategoryIndex
-              ? `url(${sideActiveBg})`
-              : `url(${sideNormalBg})`
-          }"
-        >
-          <home-skeleton-image
-            v-if="category.icon"
-            :src="category.icon"
-            alt="."
-            class="basic-game-list__category-icon"
-            fit="contain"
-            loading="lazy"
-          />
-          <span class="basic-game-list__category-name">{{ formatCategoryName(category) }}</span>
-        </div>
-      </div>
+        <home-skeleton-image v-if="category.icon" :src="category.icon" alt="" class="basic-catalog__category-icon" fit="contain" />
+        <span>{{ getCategoryName(category) }}</span>
+      </button>
     </aside>
 
-    <!-- 右侧：纵向堆叠分区，点击左侧滚动到对应区块 -->
-    <div class="basic-game-list__content">
-      <!-- 热门区：含 热门/最近/收藏 筛选 Tab -->
-      <section
-        v-if="categoryList[0]"
-        :ref="el => setSectionElement(el, 0)"
-        class="basic-game-section basic-game-section--boxed"
-      >
-        <home-line-tabs
-          v-model:active-key="activeHotKey"
-          :tabs="hotFilterTabs"
-          class="basic-hot-tabs"
-        />
-
-        <div class="basic-game-list__panel">
-          <div v-if="listLoading || (loading && !hotServerPool.length)" class="basic-game-list__empty" role="status">
-            <van-loading color="var(--skin__primary)">{{ $t('加载中') }}</van-loading>
+    <div class="basic-catalog__sections">
+      <section :ref="el => setSectionElement(el, 0)" class="basic-catalog__section basic-catalog__section--hot">
+        <x-tabs v-model="activeHotKey" class="basic-catalog__tabs" :show-nav-arrows="false">
+          <x-tab v-for="filter in hotFilterTabs" :key="filter.key" :name="filter.key" :title="filter.label" />
+        </x-tabs>
+        <div class="basic-catalog__games">
+          <div v-if="listLoading || (loading && !hotServerPool.length)" class="basic-catalog__state" role="status">
+            <x-loading size="24px" /><span>{{ $t('加载中') }}</span>
           </div>
           <template v-else-if="hotServerPool.length">
-            <div class="basic-game-list__grid basic-game-list__grid--games">
-              <basic-game-card
-                v-for="(game, index) in hotShownGames()"
-                :key="`hot-${activeHotFilterKey}-${index}-${String(game.id ?? '')}`"
+            <div class="basic-catalog__game-grid" :class="{ 'basic-catalog__game-grid--long': app.gameImageDisplay === 'long' }">
+              <BasicGameCard
+                v-for="game in hotShownGames()"
+                :key="game.entryKey || String(game.gameMode) + ':' + game.id"
                 :game="game"
                 :image-display="app.gameImageDisplay"
+                :name-overlay="true"
                 @select="clickGameItem"
                 @disabled="showDisabledTip"
                 @favorite-change="handleHotFavoriteChange"
               />
             </div>
-
-            <home-expand-more
-              v-if="!expandedHot && hotRemainingCount() > 0"
-              :count="hotRemainingCount()"
-              @expand="expandedHot = true"
-            />
+            <HomeExpandMore v-if="hotRemainingCount() > 0" :count="hotRemainingCount()" @expand="expandedHot = true" />
           </template>
-
-          <div v-else class="basic-game-list__empty">
-            <ui-empty :text="$t('暂无游戏')" />
-          </div>
+          <UiEmpty v-else :text="$t('暂无游戏')" />
         </div>
       </section>
 
-      <!-- 场馆分类区：标题行(含“全部”) + 默认 5 个场馆，点击展开显示全部 -->
       <section
         v-for="(category, index) in categoryList.slice(1)"
-        :key="`venue-${category.key}-${index}`"
+        :key="category.key"
         :ref="el => setSectionElement(el, index + 1)"
-        class="basic-game-section basic-game-section--boxed"
+        class="basic-catalog__section"
       >
-        <home-section-header
-          class="basic-game-section__headline"
-          :icon="category.icon"
-          :title="sectionTitle(category)"
-          :show-all="category.type !== undefined && category.type !== null && category.type !== ''"
-          @all="openCategoryAll(category)"
-        />
-
+        <HomeSectionHeader :icon="category.icon" :title="sectionTitle(category)" :show-all="true" @all="openCategoryAll(category)" />
         <template v-if="venueShownGames(index + 1).length">
-          <div class="basic-game-list__venue-list">
-            <basic-venue-card
-              v-for="(venue, venueIndex) in venueShownGames(index + 1)"
-              :key="`venue-${category.key}-${index}-${venueIndex}-${String(venue.id ?? '')}`"
+          <div class="basic-catalog__venue-grid" :class="{ 'basic-catalog__venue-grid--triple': app.basicVenueColumns === 3 }">
+            <BasicVenueCard
+              v-for="venue in venueShownGames(index + 1)"
+              :key="venue.entryKey || String(venue.id)"
               :venue="venue"
-              :image-display="app.gameImageDisplay"
+              :columns="app.basicVenueColumns"
               @select="clickVenueItem"
               @disabled="showDisabledTip"
             />
           </div>
-
-          <home-expand-more
-            v-if="!expandedVenueMap.get(index + 1) && venueTotalCount(index + 1) > VENUE_EXPAND_COUNT"
-            :count="venueTotalCount(index + 1) - VENUE_EXPAND_COUNT"
+          <HomeExpandMore
+            v-if="!expandedVenueMap.get(index + 1) && venueTotalCount(index + 1) > venueDisplayCount"
+            :count="venueTotalCount(index + 1) - venueDisplayCount"
             @expand="toggleVenueExpand(index + 1)"
           />
         </template>
-
-        <div v-else class="basic-game-list__empty">
-          <ui-empty :text="$t('暂无数据')" />
-        </div>
+        <UiEmpty v-else :text="$t('暂无数据')" />
       </section>
     </div>
   </div>
-  <van-popup v-model:show="searchVisible" position="right" class="basic-game-search" teleport="body" close-on-popstate>
-    <van-search v-model="searchKeyword" :placeholder="$t('搜索游戏')" show-action autofocus @cancel="searchVisible = false" />
-    <div class="basic-game-search__results">
-      <div v-if="searchLoading" class="basic-game-list__empty" role="status">
-        <van-loading color="var(--skin__primary)">{{ $t('加载中') }}</van-loading>
-      </div>
-      <div v-else-if="filteredSearchGames.length" class="basic-game-search__grid">
-        <basic-game-card
-          v-for="game in filteredSearchGames"
-          :key="game.entryKey || `${game.gameMode}-${game.id}`"
-          :game="game"
-          :image-display="app.gameImageDisplay"
-          @select="clickGameItem"
-          @disabled="showDisabledTip"
-          @favorite-change="handleHotFavoriteChange"
-        />
-      </div>
-      <ui-empty v-else :text="$t('暂无游戏')" />
-    </div>
-  </van-popup>
 </template>
 
 <style scoped lang="less">
-.basic-game-list {
+.basic-catalog {
   display: flex;
   align-items: flex-start;
+  width: 100%;
   padding: 0 10px;
   box-sizing: border-box;
 
   &__sidebar {
     position: sticky;
     top: 10px;
-    flex: none;
-    width: 75px;
-    margin-right: 10px;
-    box-sizing: border-box;
+    flex: 0 0 85px;
+    padding-right: 10px;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: none;
   }
 
   &__category {
-    width: 75px;
-    height: 35px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  &__category-bg {
     display: flex;
     align-items: center;
-    justify-content: center;
     width: 75px;
     height: 35px;
+    margin: 0 0 10px;
     padding: 0 3px 0 1.5px;
-    box-sizing: border-box;
+    border: 0;
     border-radius: 7px;
-    background-repeat: no-repeat;
+    color: var(--skin__leftnav_def, var(--skin__left_nav_def));
+    background-color: transparent;
     background-size: 100% 100%;
-    background-position: center;
-    box-shadow: 0 1.5px 3.5px 0 var(--skin__web_left_bg_shadow);
-    overflow: hidden;
+    box-shadow: 0 1.5px 3.5px var(--skin__web_left_bg_shadow);
+    cursor: pointer;
+
+    span {
+      display: -webkit-box;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 12px;
+      line-height: 16px;
+      text-align: center;
+      word-break: break-word;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    &--active {
+      color: var(--skin__leftnav_active, var(--skin__left_nav_active));
+      box-shadow: 0 1px 2px var(--skin__web_left_bg_shadow_active);
+    }
   }
 
   &__category-icon {
-    flex: none;
+    flex: 0 0 24px;
     width: 24px;
     height: 18px;
-    background-color: transparent;
   }
 
-  &__category-name {
-    flex: 1;
-    min-width: 0;
-    display: -webkit-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    color: var(--skin__left_nav_def);
-    font-size: 12px;
-    line-height: 16px;
-    text-align: center;
-    word-break: break-word;
-  }
-
-  &__category--active &__category-name {
-    color: var(--skin__left_nav_active);
-  }
-
-  &__category--active &__category-bg {
-    box-shadow: 0 1.5px 3.5px var(--skin__web_left_bg_shadow_active, var(--skin__web_left_bg_shadow));
-  }
-
-  &__content {
+  &__sections {
     flex: 1;
     min-width: 0;
   }
 
-  &__panel {
-    padding-top: 10px;
+  &__section {
+    padding: 10px 0 15px;
+    border-top: var(--lobby__px) solid var(--skin__border);
+
+    &--hot {
+      padding: 0;
+      border: 0;
+    }
+
+    :deep(.home-section-header) {
+      margin-bottom: 10px;
+    }
   }
 
-  &__grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 7px 7px;
+  &__tabs {
+    :deep(.x-tabs__wrap) {
+      min-height: 0;
+      border-bottom: var(--lobby__px) solid var(--skin__border);
+    }
 
-    &--games {
-      > .basic-game-card {
-        width: calc((100% - 14px) / 3);
+    :deep(.x-tabs__nav) {
+      padding: 0;
+      background: transparent;
+    }
+
+    :deep(.x-tab) {
+      height: 35px;
+      min-height: 35px;
+      font-size: 13px;
+    }
+
+    :deep(.x-tabs__line) {
+      bottom: 0;
+      border-radius: 0;
+    }
+
+    :deep(.x-tabs__content) {
+      display: none;
+    }
+  }
+
+  &__games {
+    padding: 10px 0 15px;
+  }
+
+  &__game-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 85px);
+    width: 270px;
+    margin: 0 auto;
+    column-gap: 7px;
+    row-gap: 7px;
+
+    &--long {
+      grid-template-columns: repeat(3, 80px);
+      width: 260px;
+      column-gap: 9.5px;
+      row-gap: 10px;
+
+      :deep(.basic-game-card__poster) {
+        border-radius: 10px;
+      }
+
+      :deep(.basic-game-card__title-overlay) {
+        height: 26px;
+        padding: 0 3px 3px;
+      }
+
+      :deep(.basic-game-card__name--overlay) {
+        font-size: 9px;
+      }
+
+      :deep(.basic-game-card__favorite),
+      :deep(.basic-game-card__favorite-icon) {
+        width: 17px;
+        height: 17px;
       }
     }
   }
 
-  &__empty {
+  &__venue-grid {
+    display: grid;
+    grid-template-columns: 260px;
+    width: 260px;
+    margin: 0 auto;
+    row-gap: 10px;
+
+    &--triple {
+      grid-template-columns: repeat(3, 80px);
+      column-gap: 9.5px;
+    }
+  }
+
+  &__state {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 120px;
-  }
-}
-
-.basic-game-list__venue-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-// 分区列表盒：与参考稿 ._game-list-box 一致，分区之间保留上分隔线
-.basic-game-section {
-  width: 100%;
-  padding-top: 10px;
-  padding-bottom: 15px;
-}
-
-.basic-game-section:first-child {
-  padding-top: 0;
-}
-
-.basic-game-section + .basic-game-section {
-  border-top: thin solid var(--skin__border);
-}
-
-.basic-game-section__headline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 26px;
-  margin-bottom: 10px;
-}
-
-.basic-game-search {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  padding-top: env(safe-area-inset-top);
-  background: var(--skin__home_bg);
-  --van-search-background: var(--skin__bs_topnav_bg);
-  --van-search-content-background: var(--skin__bg_2);
-  --van-field-input-text-color: var(--skin__lead);
-  --van-search-action-text-color: var(--skin__primary);
-
-  &__results {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 15px 10px calc(15px + env(safe-area-inset-bottom));
-  }
-
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px 5px;
+    gap: 8px;
+    min-height: 150px;
+    color: var(--skin__neutral_2);
+    font-size: 12px;
   }
 }
 </style>
