@@ -23,6 +23,8 @@ interface WithdrawRecordItem {
   bank_name?: string;
   bank_number?: string;
   money?: string | number;
+  exchangeRate?: string | number;
+  payoutAmount?: string | number;
   fee?: string | number;
   pay_status?: number;
   remark?: string;
@@ -243,6 +245,9 @@ onMounted(() => {
               </div>
               <div class="right">
                 <p class="money">{{ Number(0 - Number(item.money)).toFixed(2) }}</p>
+                <p v-if="item.type == 2 && item.payoutAmount" class="crypto-amount">
+                  {{ $t('到账金额≈') }} {{ Number(item.payoutAmount).toFixed(2) }}USDT
+                </p>
                 <p class="status pending" v-if="item.pay_status == 1">{{ $t("审核中") }}</p>
                 <p class="status pending" v-if="item.pay_status == 2">{{ $t("出款中") }}</p>
                 <p class="status success" v-if="item.pay_status == 3">{{ $t("提现成功") }}</p>
@@ -450,6 +455,12 @@ onMounted(() => {
             color: var(--skin__lead);
             font-weight: 400;
             font-size: 12px;
+          }
+          .crypto-amount {
+            margin-top: 4px;
+            color: var(--skin__accent_3);
+            font-size: 10px;
+            white-space: nowrap;
           }
           .status {
             margin-top: 6px;

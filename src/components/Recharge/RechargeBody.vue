@@ -11,7 +11,7 @@ type PayTypeMode = 'usdt' | 'user_language';
 
 interface CountryInfo {
   id: number | string;
-  uRate?: number | string;
+  rechargeRate?: number | string;
 }
 
 interface RechargeChannel {
@@ -95,7 +95,7 @@ const activeGroup = computed<RechargeGroup>(() => props.listData.find(item => it
 const activeChildren = computed<RechargeChannel[]>(() => activeGroup.value.children ?? []);
 const activeInfo = computed<RechargeChannel>(() => activeChildren.value.find(item => item.id == activeChannelId.value) ?? EMPTY_CHANNEL);
 const currentRate = computed(() => {
-  const rate = Number(countryList.value.find(item => item.id == activeGroup.value.country_id)?.uRate);
+  const rate = Number(countryList.value.find(item => item.id == activeGroup.value.country_id)?.rechargeRate);
   return Number.isFinite(rate) && rate > 0 ? rate : 0;
 });
 const visibleWallets = computed(() => (showAllWallets.value ? props.listData : props.listData.slice(0, 6)));
@@ -321,13 +321,8 @@ function handleSubmit() {
     return showCustomToast({ type: 'fail', message: $t("金额换算错误") });
   }
 
-  const orderPayload: Record<string, number> = { id: channelId, money: submitAmount };
-  if (isCryptoRecharge.value) {
-    orderPayload.cryptoAmount = cryptoTransferAmount.value;
-  }
-
   isLoading.value = true;
-  createOrder(orderPayload)
+  createOrder({ id: channelId, money: submitAmount })
     .then(res => {
       const url = res?.url;
       if (!url) {

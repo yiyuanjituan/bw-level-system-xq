@@ -7,7 +7,6 @@ import UiLoading from '@/components/UI/loading.vue';
 import { service } from '@/api/service';
 import { formatMoney, openUrlInNewWindow } from '@/utils/common';
 import router from '@/router';
-import useAppStore from '@/store/modules/app';
 import { showImagePreview } from 'vant';
 
 const orderId = ref<number>(0);
@@ -15,15 +14,7 @@ const show = ref(false);
 const orderInfo = ref<any>({});
 const generatedAddressQrCode = ref('');
 let qrCodeGenerationId = 0;
-const app = useAppStore();
-
 const orderContent = computed(() => orderInfo.value?.content ?? {});
-const currentRate = computed(() => {
-  const countryList = app.appInfo?.countryList ?? [];
-  const countryInfo = countryList.find((item: any) => item.id == orderInfo.value?.country_id);
-  const rate = Number(countryInfo?.uRate);
-  return Number.isFinite(rate) && rate > 0 ? rate : 0;
-});
 const isCryptoRecharge = computed(() => {
   const contentName = String(orderContent.value?.name || '').toUpperCase();
   return Number(orderContent.value?.channelType) === 2 || String(orderContent.value?.cryptoCurrency || '').toUpperCase() === 'USDT' || contentName.includes('USDT');
@@ -34,16 +25,7 @@ const cryptoAddress = computed(() => String(orderContent.value?.cryptoAddress ||
 const cryptoAddressText = computed(() => cryptoAddress.value || '--');
 const cryptoTransferAmount = computed(() => {
   const amount = Number(orderContent.value?.cryptoAmount);
-  if (Number.isFinite(amount) && amount > 0) {
-    return amount;
-  }
-
-  const money = Number(orderInfo.value?.money);
-  if (isCryptoRecharge.value && Number.isFinite(money) && money > 0 && currentRate.value) {
-    return Number((money / currentRate.value).toFixed(2));
-  }
-
-  return 0;
+  return Number.isFinite(amount) && amount > 0 ? amount : 0;
 });
 const cryptoTransferAmountText = computed(() => {
   return cryptoTransferAmount.value ? `${formatMoney(cryptoTransferAmount.value)} ${cryptoCurrency.value}` : '--';

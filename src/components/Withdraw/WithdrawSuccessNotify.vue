@@ -54,7 +54,10 @@ defineExpose({
               </li>
               <li>
                 <span>{{ $t("实际到账") }}</span>
-                <p>{{ formatMoney(remoteData.money) }}<span class="member-currency">CNY</span></p>
+                <p>
+                  {{ formatMoney(remoteData.type == 2 ? remoteData.payoutAmount : remoteData.money) }}
+                  <span class="member-currency">{{ remoteData.type == 2 ? 'USDT' : 'CNY' }}</span>
+                </p>
               </li>
               <li class="!items-center">
                 <span>{{ $t("提现到") }}</span>

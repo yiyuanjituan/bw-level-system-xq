@@ -2,16 +2,23 @@
 import { $t } from "@/locales";
 import { computed, inject, ref, Ref, watch } from 'vue';
 import { desensitizeWithLodash, showCustomToast } from '@/hooks/useCommon';
+import { formatMoney } from '@/utils/common';
 
 import useAuthStore from '@/store/modules/user';
 import { service } from '@/api/service';
 import router from '@/router';
 import type { XFormRules } from '@/components/X/x-form-context';
+import useWithdrawStore from '@/store/modules/withdraw';
 
 const auth = useAuthStore();
+const withdrawStore = useWithdrawStore();
+const withdrawRate = computed(() => {
+  const rate = Number(withdrawStore.withdrawInfo?.withdrawRate);
+  return Number.isFinite(rate) && rate > 0 ? rate : 0;
+});
 const canWithdraw = computed(() => {
   const { password, card_id, money } = formData.value;
-  return password && password.length == 6 && card_id && money && money > 0;
+  return password && password.length == 6 && card_id && money && money > 0 && withdrawRate.value > 0;
 });
 const showEye = ref(false);
 const showKeyboard = ref(false);
@@ -30,6 +37,13 @@ const withdrawCardOptions = computed(() =>
 const selectCardInfo = computed(() => withdrawCardList.value.find(v => v.id == formData.value.card_id) ?? {});
 const isCardUnavailable = computed(() => selectCardInfo.value?.disabled || !selectCardInfo.value?.id);
 const withdrawLoading = ref(false);
+const payoutAmount = computed(() => {
+  const money = Number(formData.value.money);
+  if (!Number.isFinite(money) || money <= 0 || !withdrawRate.value) {
+    return 0;
+  }
+  return Number((money / withdrawRate.value).toFixed(2));
+});
 const formRef = ref<{ validate: () => Promise<void> } | null>(null);
 const formRules = ref<XFormRules>({
   card_id: [
@@ -179,6 +193,10 @@ async function handleApplyWithdraw() {
           </template>
         </x-input>
       </x-form-item>
+      <div v-if="formData.card_id" class="withdraw-rate">
+        <span>{{ $t('汇率') }} 1 : {{ withdrawRate || '--' }}</span>
+        <span v-if="payoutAmount">{{ $t('到账金额≈') }} {{ formatMoney(payoutAmount) }}USDT</span>
+      </div>
       <x-form-item v-if="!formData.card_id">
         <x-input readonly :placeholder="$t('添加提现账户')" v-model="formData.money" @click="jumpToAddCard">
           <template #prefix>
@@ -230,6 +248,14 @@ async function handleApplyWithdraw() {
     height: 0.5px;
     background: var(--skin__border);
     margin: 10px 0;
+  }
+  .withdraw-rate {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: -2px 0 10px;
+    color: var(--skin__neutral_1);
+    font-size: 11px;
   }
   .form-item-title {
     display: flex;
