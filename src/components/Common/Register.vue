@@ -4,7 +4,8 @@ import UiInput from "@/components/UI/input.vue";
 import UiForm from "@/components/UI/form.vue";
 import UiFormItem from "@/components/UI/form-item.vue";
 import { getCopyText, predictPhoneNumber } from "@/utils/common";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
+import { useRoute } from "vue-router";
 import PasswordPower from "@/components/Common/PasswordPower.vue";
 import ChangeMode from "@/components/Common/ChangeMode.vue";
 import { sendSms } from "@/api/common";
@@ -19,6 +20,7 @@ defineOptions({
 });
 
 const app = useAppStore()
+const route = useRoute();
 let smsTimer = null;
 const smsTime = ref<number>(0)
 const smsLoading = ref<boolean>(false)
@@ -29,7 +31,6 @@ const modelValue = defineModel<registerProps>({
     type: 'password',
     password: '',
     invite_code: '',
-    two_password: '',
     sms_code: '',
     currency: '',
   })
@@ -37,6 +38,39 @@ const modelValue = defineModel<registerProps>({
 const checkInputIsPhone = computed(() => {
   return predictPhoneNumber(modelValue.value.account, modelValue.value.type == 'sms')?.isValid;
 });
+const routeInviteCode = computed(() => {
+  const inviteCode = Array.isArray(route.query.dl) ? route.query.dl[0] : route.query.dl;
+  return typeof inviteCode === 'string' ? inviteCode.trim() : '';
+});
+const hasRouteInviteCode = computed(() => Boolean(routeInviteCode.value));
+watch(
+  routeInviteCode,
+  inviteCode => {
+    if (inviteCode) modelValue.value.invite_code = inviteCode;
+  },
+  { immediate: true }
+);
+const currencyOptions = computed(() => {
+  const countryList = Array.isArray(app.appInfo?.countryList) ? app.appInfo.countryList : [];
+  return countryList.map(currency => ({
+    ...currency,
+    label: currency.englishName && currency.name
+      ? currency.englishName + '(' + currency.name + ')'
+      : currency.englishName || currency.name || ''
+  }));
+});
+const shouldShowCurrencySelector = computed(() => {
+  return !hasRouteInviteCode.value && currencyOptions.value.length > 1;
+});
+watch(
+  currencyOptions,
+  options => {
+    if (!hasRouteInviteCode.value && options.length === 1) {
+      modelValue.value.currency = options[0].id ?? '';
+    }
+  },
+  { immediate: true }
+);
 // 校验规则
 const formRef = useTemplateRef<FormExpose>('form')
 
@@ -76,21 +110,26 @@ const formRules = ref<FormRules>({
     { min: 6, max: 16, message: $t("6-16位，至少包含英文/数字/符号中的两种"), trigger: 'input' },
     { pattern: /^(?![a-zA-Z]+$)(?![0-9]+$)(?![^a-zA-Z0-9]+$)[a-zA-Z0-9\W_]{6,16}$/, message: $t("6-16位，至少包含英文/数字/符号中的两种"), trigger: "change" },
   ],
-  two_password: [
-    { required: true, message: $t("确认密码不能为空"), trigger: 'input' },
-    {
-      validator: (rule, value, callback) => {
-        if (value == modelValue.value.password) {
-          return callback();
-        }
-        return callback('两次密码输入不一致，请重新输入');
-      },
-      trigger: 'blur'
-    }
-  ],
   invite_code: [
     { required: false, message: $t("请输入邀请码"), trigger: 'blur' },
   ],
+  currency: [
+    {
+      validator: (_rule, value, callback) => {
+        if (hasRouteInviteCode.value) {
+          callback();
+          return;
+        }
+        const currencyId = Number(value);
+        if (!Number.isInteger(currencyId) || currencyId <= 0) {
+          callback(new Error($t("请选择币种")));
+          return;
+        }
+        callback();
+      },
+      trigger: ['blur', 'change']
+    }
+  ]
 })
 
 async function copyToForm() {
@@ -151,13 +190,16 @@ defineExpose({
         <x-input prefix="lock" required :placeholder="$t('请输入密码')" v-model="modelValue.password" show-eye />
       </x-form-item>
       <password-power :text="modelValue.password" />
-      <x-form-item prop="two_password">
-        <x-input prefix="lock" v-model="modelValue.two_password" required :placeholder="$t('请再次输入密码')" show-eye />
+      <x-form-item prop="currency" v-if="shouldShowCurrencySelector">
+        <x-select
+          required
+          :placeholder="$t('请选择币种')"
+          v-model="modelValue.currency"
+          show-eye
+          :options="currencyOptions"
+        />
       </x-form-item>
-      <x-form-item prop="currency" v-if="false">
-        <x-select required :placeholder="$t('请输入密码')" v-model="modelValue.currency" show-eye :options="app.appInfo.countryList.map(v => ({ ...v, label: `${v.englishName}(${v.name})` }))" />
-      </x-form-item>
-      <x-form-item prop="invite_code">
+      <x-form-item prop="invite_code" v-if="!hasRouteInviteCode">
         <x-input prefix="invite_code" v-model="modelValue.invite_code" :placeholder="$t('请输入您的邀请码')">
           <template #suffix>
             <span class="main-text text-[11px] cursor-pointer" @click="copyToForm">{{ $t("粘贴") }}</span>
@@ -210,6 +252,7 @@ defineExpose({
 .loading-icon {
   animation: spin 0.8s linear infinite;
 }
+
 @keyframes spin {
   from {
     transform: rotate(0deg);

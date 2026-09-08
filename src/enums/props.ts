@@ -3,9 +3,8 @@ export interface registerProps {
   type: 'password' | 'sms';
   password: string;
   invite_code: string;
-  two_password: string;
   sms_code: string;
-  currency: string;
+  currency: string | number;
 }
 
 export interface loginProps {

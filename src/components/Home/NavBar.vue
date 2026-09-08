@@ -22,6 +22,7 @@ const showDownloadApp = computed(() => app.isShowDownload && !inApp);
 const currencyInfo = computed(() => {
   return app.appInfo.countryList.find(currency => currency.id == auth.user.currencyId);
 });
+const currencyName = computed(() => currencyInfo.value?.englishName || currencyInfo.value?.name || '');
 
 function handleToLogin() {
   openLoginEntry(1);
@@ -127,6 +128,8 @@ async function updateWallet() {
                 loading="eager"
               />
             </div>
+
+            <span v-if="currencyName" class="home-wallet__currency-name">{{ currencyName }}</span>
 
             <div class="home-wallet__content">
               <span v-if="!walletIsLoading" class="home-wallet__amount" dir="ltr">
@@ -367,6 +370,17 @@ async function updateWallet() {
   margin-left: 4px;
   display: flex;
   align-items: center;
+}
+
+.home-wallet__currency-name {
+  max-width: 42px;
+  margin-left: 4px;
+  overflow: hidden;
+  color: var(--skin__neutral_1);
+  font-size: 10px;
+  line-height: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 :global([dir="rtl"]) .home-wallet__content {

@@ -44,6 +44,11 @@ function normalizeTab(value: unknown): LoginFlowTab {
   return Number(value) === 0 ? 0 : 1;
 }
 
+function getRouteInviteCode(route: ReturnType<typeof useRoute>) {
+  const inviteCode = Array.isArray(route.query.dl) ? route.query.dl[0] : route.query.dl;
+  return typeof inviteCode === "string" ? inviteCode.trim() : "";
+}
+
 /**
  * 页面与弹窗共用认证流程，避免验证码、短信登录和第三方回调出现两套行为。
  */
@@ -51,6 +56,7 @@ export function useLoginFlow(options: LoginFlowOptions = {}) {
   const route = useRoute();
   const app = useAppStore();
   const auth = useAuthStore();
+  const registerInviteCode = () => getRouteInviteCode(route) || getStoredInviteCode();
   const activeTabs = ref<LoginFlowTab>(
     options.initialTab === undefined ? getTabByPath(route.path) : normalizeTab(options.initialTab)
   );
@@ -68,8 +74,7 @@ export function useLoginFlow(options: LoginFlowOptions = {}) {
     type: "password",
     account: "",
     password: "",
-    invite_code: getStoredInviteCode(),
-    two_password: "",
+    invite_code: registerInviteCode(),
     sms_code: "",
     currency: ""
   });
@@ -85,8 +90,7 @@ export function useLoginFlow(options: LoginFlowOptions = {}) {
   ]);
 
   function replaceCurrentPath(path: string) {
-    const nextUrl = `${window.location.pathname}${window.location.search}#${path}`;
-    window.history.replaceState(window.history.state, "", nextUrl);
+    void router.replace({ path, query: { ...route.query } });
   }
 
   function setTab(tab: number | string) {
@@ -108,8 +112,7 @@ export function useLoginFlow(options: LoginFlowOptions = {}) {
       type: "password",
       account: "",
       password: "",
-      invite_code: getStoredInviteCode(),
-      two_password: "",
+      invite_code: registerInviteCode(),
       sms_code: "",
       currency: ""
     };

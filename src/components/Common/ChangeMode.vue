@@ -28,6 +28,7 @@ const handleChange = () => {
   font-size: 11px;
   .item {
     display: flex;
+    align-items: center;
     font-size: 11px;
     flex: 1;
     color: var(--skin__lead);

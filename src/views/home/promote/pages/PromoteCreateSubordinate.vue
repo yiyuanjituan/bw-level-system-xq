@@ -82,7 +82,6 @@ async function handleCreate() {
       account: formModel.account.trim(),
       type: "password",
       password: formModel.password,
-      two_password: formModel.password,
       invite_code: inviteCode,
       sms_code: "",
       currency: ""

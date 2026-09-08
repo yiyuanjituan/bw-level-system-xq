@@ -1,6 +1,6 @@
 const INVITE_CODE_STORAGE_KEY = "YG_PREFIX_invite_code";
 
-function normalizeInviteCode(value: unknown) {
+export function normalizeInviteCode(value: unknown) {
   const inviteCode = Array.isArray(value) ? value[0] : value;
   return typeof inviteCode === "string" ? inviteCode.trim() : "";
 }

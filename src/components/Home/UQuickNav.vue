@@ -30,6 +30,7 @@ const currencyInfo = computed(() => {
   const currencyList = Array.isArray(app.appInfo?.countryList) ? app.appInfo.countryList : [];
   return currencyList.find(currency => currency.id == auth.user.currencyId);
 });
+const currencyName = computed(() => currencyInfo.value?.englishName || currencyInfo.value?.name || '');
 const displayName = computed(() => {
   if (auth.user.showAccount === 2 && auth.user.phone) {
     const prefix = currencyInfo.value?.numberPrefix ? `+${currencyInfo.value.numberPrefix} ` : "";
@@ -149,6 +150,7 @@ async function updateWallet() {
             fit="cover"
           />
         </span>
+        <span v-if="currencyName" class="u-quick-nav__currency-name">{{ currencyName }}</span>
         <span class="u-quick-nav__balance-value">
           {{ walletIsLoading ? $t("加载中") : auth.user.money }}
         </span>
@@ -369,6 +371,16 @@ async function updateWallet() {
   height: 15px;
   flex: none;
   border-radius: 50%;
+}
+
+.u-quick-nav__currency-name {
+  max-width: 42px;
+  overflow: hidden;
+  color: var(--skin__neutral_1);
+  font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .u-quick-nav__refresh {
