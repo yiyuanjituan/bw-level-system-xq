@@ -66,6 +66,11 @@ provide(X_FORM_ITEM_PROP_KEY, propRef);
     align-items: center;
     border-radius: 49950px;
     flex-shrink: 0;
+
+    img {
+      width: 12px;
+      height: 12px;
+    }
   }
 }
 
