@@ -20,9 +20,11 @@ const props = withDefaults(
   defineProps<{
     initialTab?: LoginFlowTab;
     syncRoute?: boolean;
+    hideTabs?: boolean;
   }>(),
   {
-    syncRoute: false
+    syncRoute: false,
+    hideTabs: false
   }
 );
 
@@ -82,6 +84,7 @@ defineExpose({
     </header>
 
     <x-tabs
+      v-if="!props.hideTabs"
       swipeable
       v-model:active="activeTabs"
       :line-width="78"
@@ -106,6 +109,10 @@ defineExpose({
         <login-popup v-model="loginForm" ref="loginFormRef" />
       </x-tab>
     </x-tabs>
+    <template v-else>
+      <register-popup v-if="activeTabs === 0" v-model="registerForm" ref="registerFormRef" />
+      <login-popup v-else v-model="loginForm" ref="loginFormRef" />
+    </template>
 
     <section class="login-register-panel__extra">
       <div class="login-register-panel__agreement">

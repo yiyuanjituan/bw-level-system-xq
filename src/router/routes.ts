@@ -207,19 +207,13 @@ const routes: Array<RouteRecordRaw> = [
         path: "login",
         name: "LoginPage",
         component: () => import("@/views/home/login.vue"),
-        meta: {
-          isSecondary: true,
-          pageTransition: "page-slide-forward"
-        }
+        meta: { isSecondary: true, pageTransition: "page-slide-forward" }
       },
       {
         path: "register",
         name: "RegisterPage",
         component: () => import("@/views/home/login.vue"),
-        meta: {
-          isSecondary: true,
-          pageTransition: "page-slide-forward"
-        }
+        meta: { isSecondary: true, pageTransition: "page-slide-forward" }
       },
       {
         path: "embedded",

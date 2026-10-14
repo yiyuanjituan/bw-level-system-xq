@@ -26,6 +26,16 @@ export const autoCalculateTransitionName = (
   to: toRouteType,
   state: any
 ) => {
+  // 登录与注册共用同一个页面，切换时只更新表单和地址，不应触发整页滑动过渡。
+  const isAuthPath = (path: string) => path === "/home/login" || path === "/home/register";
+  console.log(isAuthPath)
+
+  if (isAuthPath(from.path) && isAuthPath(to.path)) {
+    setSystemName("none");
+    setTabBarName("none");
+    return;
+  }
+
   if (from.path === "/") {
     setSystemName("none");
     setTimeout(() => setSystemName("page-slide-forward"), 100);

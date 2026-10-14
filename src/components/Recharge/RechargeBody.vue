@@ -36,6 +36,7 @@ interface RechargeGroup {
   image?: string;
   type?: number;
   country_id?: number | string;
+  rechargeRate?: number | string;
   download_tip?: string;
   wallet_url?: string;
   tipRichText?: string;
@@ -74,6 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits<{
   (event: 'close'): void;
+  (event: 'refresh'): void;
 }>();
 
 const app = useAppStore();
@@ -95,7 +97,7 @@ const activeGroup = computed<RechargeGroup>(() => props.listData.find(item => it
 const activeChildren = computed<RechargeChannel[]>(() => activeGroup.value.children ?? []);
 const activeInfo = computed<RechargeChannel>(() => activeChildren.value.find(item => item.id == activeChannelId.value) ?? EMPTY_CHANNEL);
 const currentRate = computed(() => {
-  const rate = Number(countryList.value.find(item => item.id == activeGroup.value.country_id)?.rechargeRate);
+  const rate = Number(activeGroup.value.rechargeRate ?? countryList.value.find(item => item.id == activeGroup.value.country_id)?.rechargeRate);
   return Number.isFinite(rate) && rate > 0 ? rate : 0;
 });
 const visibleWallets = computed(() => (showAllWallets.value ? props.listData : props.listData.slice(0, 6)));
@@ -553,7 +555,7 @@ watch(
           <span class="label">{{ $t('汇率') }}</span>
           <div>
             <span dir="ltr" class="rate">1 :{{ currentRate || '--' }}</span>
-            <svg-icon name="comm_icon_retry" class-name="retry-icon" @click="app.refreshData()" />
+            <svg-icon name="comm_icon_retry" class-name="retry-icon" @click="emits('refresh')" />
           </div>
         </div>
         <div v-if="amountSummary" class="amount">

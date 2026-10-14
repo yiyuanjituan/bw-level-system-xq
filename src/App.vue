@@ -30,10 +30,11 @@ import UiToast from '@/components/UI/toast.vue';
 import UiDialog from '@/components/UI/dialog.vue';
 import LoginDialog from '@/components/Common/LoginDialog.vue';
 import RedpackDialog from '@/components/Dialog/RedpackDialog.vue';
-import { computed, nextTick, onUnmounted, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import useAppStore from '@/store/modules/app';
 import useAuthStore from '@/store/modules/user';
-import { bus, userMoneyIn } from '@/utils/mitt';
+import { bus } from '@/utils/mitt';
+import { useGameBalanceRecovery } from '@/hooks/useGameBalanceRecovery';
 import router from '@/router';
 import useDataStore from '@/store/modules/data';
 import { useRefs } from '@/hooks/useRefs';
@@ -66,10 +67,16 @@ const popupQueue: HomePopupKey[] = [];
 let popupTimer: ReturnType<typeof setTimeout> | undefined;
 let stopVersionUpdateCheck: (() => void) | undefined;
 let isRuntimeStarted = false;
+const isBalanceRecoveryReady = ref(false);
+const { recoverGameBalance } = useGameBalanceRecovery(isBalanceRecoveryReady);
 
 const busListen = () => {
   bus.on('moneyIn', () => {
-    if (auth.token) userMoneyIn(appData.enterGameInfo.venueId).then(() => auth.updateInfo());
+    const { venueId, os_type } = appData.enterGameInfo;
+    const id = Number(venueId);
+    if (auth.token && os_type !== 1 && Number.isSafeInteger(id) && id > 0) {
+      void recoverGameBalance(id);
+    }
     appData.setEnterInfo(void 0, void 0);
   });
 
@@ -184,7 +191,10 @@ async function startRuntimeSideEffects() {
 
   if (auth.token) {
     connectSse(auth.token);
-    auth.updateInfo();
+  }
+  isBalanceRecoveryReady.value = true;
+  if (auth.token && !['/index', '/home/mine'].includes(route.path)) {
+    void auth.updateInfo().catch(() => undefined);
   }
 
   checkPopupTip();

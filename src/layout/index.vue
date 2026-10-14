@@ -16,8 +16,8 @@
 <script setup lang="ts">
 import { tabbarTransitionName } from "@/hooks/useTransition";
 import useAppStore from "@/store/modules/app";
-
 const app = useAppStore();
+
 </script>
 
 <style scoped>

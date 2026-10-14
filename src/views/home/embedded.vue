@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import useDataStore from "@/store/modules/data";
+import useAuthStore from "@/store/modules/user";
 import { onMounted, ref } from "vue";
 import router from "@/router";
 import { getGameUrl } from "@/api/common";
 import { isFullscreen, toggleFullScreen } from "@/utils/site";
+import { waitForGameBalanceRecovery } from "@/utils/gameBalanceRecovery";
 
 const appData = useDataStore();
+const auth = useAuthStore();
 const showLoading = ref<boolean>(true);
 const url = ref<any>("");
 const offset = ref({ x: 1.5, y: 1.5 });
@@ -24,12 +27,18 @@ const replaceToHome = () => {
   router.replace(window.history.state.back);
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!appData.enterGameInfo.gameId && !appData.enterGameInfo.venueId) {
     return router.replace("/index");
   }
+  const gameInfo = { ...appData.enterGameInfo };
+  if (gameInfo.os_type !== 1) {
+    const token = auth.token;
+    await waitForGameBalanceRecovery(token);
+    if (router.currentRoute.value.path !== '/home/embedded' || auth.token !== token) return;
+  }
   // 选择
-  getGameUrl(appData.enterGameInfo)
+  getGameUrl(gameInfo)
     .then(res => {
       url.value = res.url;
       showLoading.value = false;

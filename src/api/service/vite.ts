@@ -4,7 +4,7 @@ import http from "node:http";
 import https from "node:https";
 import type { IncomingHttpHeaders } from "node:http";
 import type { Plugin, ViteDevServer } from "vite";
-import { createEpsService, type EpsListItem } from "./eps.ts";
+import { createEpsService, type EpsListItem } from "./eps";
 
 interface EpsTypeMappingItem {
 	type?: string;

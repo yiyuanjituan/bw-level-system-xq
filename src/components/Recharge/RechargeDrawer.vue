@@ -20,6 +20,10 @@ function close() {
 
 function initData() {
   listData.value = [];
+  refreshChannels();
+}
+
+function refreshChannels() {
   getChannelList().then(res => {
     listData.value = res;
   });
@@ -69,7 +73,7 @@ defineExpose({
                 <span class="pl-[5px]">{{ $t("在线存款") }}</span>
               </recharge-badge>
             </template>
-            <recharge-body :listData="listData.filter(v => v.type == 1)" @close="show = false" />
+            <recharge-body :listData="listData.filter(v => v.type == 1)" @close="show = false" @refresh="refreshChannels" />
           </van-tab>
           <van-tab>
             <template #title>
@@ -78,7 +82,7 @@ defineExpose({
                 <span class="pl-[5px]">{{ $t("数字货币") }}</span>
               </recharge-badge>
             </template>
-            <recharge-body :listData="listData.filter(v => v.type == 2)" @close="show = false" />
+            <recharge-body :listData="listData.filter(v => v.type == 2)" @close="show = false" @refresh="refreshChannels" />
           </van-tab>
         </van-tabs>
       </div>

@@ -10,8 +10,8 @@ import fs from "node:fs";
 import vueSetupExtend from "vite-plugin-vue-setup-extend";
 import viteCompression from "vite-plugin-compression";
 import { createHtmlPlugin } from "vite-plugin-html";
-import { enableCDN } from './build/cdn.ts'
-import { createEpsPlugin } from './src/api/service/vite.ts'
+import { enableCDN } from './build/cdn'
+import { createEpsPlugin } from './src/api/service/vite'
 // 当前工作目录路径
 const root: string = process.cwd();
 
